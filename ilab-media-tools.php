@@ -21,6 +21,7 @@ define('ILAB_PUB_CSS_URL',$plug_url.'public/css');
 
 // Helper functions
 require_once('helpers/ilab-media-tool-helpers.php');
+require_once('helpers/ilab-media-tool-view.php');
 
 // Admin
 require_once('classes/ilab-media-tools-admin.php');

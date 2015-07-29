@@ -1,0 +1,37 @@
+#ilab-crop-wrapper .media-modal-backdrop {
+    z-index: 17000000 !important;
+}
+
+#ilab-crop-wrapper .media-modal {
+    z-index: 17000001 !important;;
+}
+
+#ilab-crop-wrapper .media-frame-content,#ilab-crop-wrapper .media-frame-router,#ilab-crop-wrapper .media-frame-title
+{
+    left: 0;
+}
+
+#ilab-crop-wrapper .media-frame-content {
+    bottom: 0;
+    padding-left: 16px;
+}
+
+#ilab-crop-wrapper .attachments-browser .attachments {
+    top: 9px;
+}
+
+#ilab-crop-wrapper .media-frame-toolbar {
+    border-top: none;
+}
+
+#ilab-crop-wrapper .media-toolbar {
+    border: none;
+}
+
+#ilab-crop-wrapper .media-modal-close {
+    border: none !important;
+}
+
+#ilab-crop-wrapper .message.error.yoimg-crop-smaller, #ilab-crop-wrapper .message.error.yoimg-crop-retina-smaller {
+    border-left-color: #FFFF00;
+}
