@@ -1,0 +1,6 @@
+{
+  "name" : "ilab/ilab-media-tools",
+  "require" : {
+    "aws/aws-sdk-php": "^3.2"
+  }
+}

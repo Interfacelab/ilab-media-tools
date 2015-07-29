@@ -1,0 +1,55 @@
+{
+    "name": "aws/aws-sdk-php",
+    "homepage": "http://aws.amazon.com/sdkforphp",
+    "description": "AWS SDK for PHP - Use Amazon Web Services in your PHP project",
+    "keywords": ["aws","amazon","sdk","s3","ec2","dynamodb","cloud","glacier"],
+    "type": "library",
+    "license": "Apache-2.0",
+    "authors": [
+        {
+            "name": "Amazon Web Services",
+            "homepage": "http://aws.amazon.com"
+        }
+    ],
+    "support": {
+        "forum": "https://forums.aws.amazon.com/forum.jspa?forumID=80",
+        "issues": "https://github.com/aws/aws-sdk-php/issues"
+    },
+    "require": {
+        "php": ">=5.5",
+        "guzzlehttp/guzzle": ">=5.3|~6.0.1|~6.1",
+        "guzzlehttp/psr7": "~1.0",
+        "guzzlehttp/promises": "~1.0",
+        "mtdowling/jmespath.php": "~2.2"
+    },
+    "require-dev": {
+        "ext-openssl": "*",
+        "ext-pcre": "*",
+        "ext-spl": "*",
+        "ext-json": "*",
+        "ext-dom": "*",
+        "ext-simplexml": "*",
+        "phpunit/phpunit": "~4.0",
+        "behat/behat": "~3.0"
+    },
+    "suggest": {
+        "ext-openssl": "Allows working with CloudFront private distributions and verifying received SNS messages",
+        "ext-curl": "To send requests using cURL"
+    },
+    "autoload": {
+        "psr-4": {
+            "Aws\\": "src/"
+        },
+        "files": ["src/functions.php"]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Aws\\Test\\": "tests/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "3.0-dev"
+        }
+    }
+}

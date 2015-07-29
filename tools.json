@@ -1,0 +1,12 @@
+{
+  "crop": {
+    "admin": {
+      "file": "ilab-media-crop-tool-admin.php",
+      "class": "ILabMediaCropToolAdmin"
+    },
+    "tool":{
+      "file": "ilab-media-crop-tool.php",
+      "class": "ILabMediaCropTool"
+    }
+  }
+}
