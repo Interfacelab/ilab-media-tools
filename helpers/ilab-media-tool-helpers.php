@@ -15,6 +15,10 @@ function vomit($what, $die=true)
         die();
 }
 
+/**
+ * Returns a json response and dies.
+ * @param $data
+ */
 function json_response($data)
 {
     status_header( 200 );

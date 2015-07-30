@@ -1,35 +1,79 @@
 {
-
   "crop": {
+    "source": "ilab-media-crop-tool.php",
+    "class": "ILabMediaCropTool",
+    "dependencies":[],
     "info":{
       "title":"ILab Image Crop",
-      "description":"Provides an easy to use tool for manually cropping images for all image sizes."
-    },
-    "dependencies":[],
-    "admin": {
-      "file": "ilab-media-crop-tool-admin.php",
-      "class": "ILabMediaCropToolAdmin"
-    },
-    "tool":{
-      "file": "ilab-media-crop-tool.php",
-      "class": "ILabMediaCropTool"
+      "description":"Provides an easy to use tool for manually cropping images for all image sizes.",
+      "settings":{
+        "title":"Crop Settings",
+        "menu":"Crop Settings",
+        "options-page":"media-tools-crop",
+        "options-group":"ilab-media-crop",
+        "groups":{
+          "ilab-media-crop-settings":{
+            "title":"Crop Settings",
+            "description":"Put your crop settings here",
+            "options": {
+              "ilab-media-crop-quality": {
+                "title": "Crop Quality",
+                "type": "text-field"
+              }
+            }
+          }
+        }
+      }
     }
   },
 
   "s3": {
+    "source": "ilab-media-s3-tool.php",
+    "class": "ILabMediaS3Tool",
+    "dependencies":[],
     "info":{
       "title":"ILab S3",
-      "description":"Automatically uploads media to Amazon S3."
-    },
-    "dependencies":[],
-    "admin": {
-      "file": "ilab-media-s3-tool-admin.php",
-      "class": "ILabMediaS3ToolAdmin"
-    },
-    "tool":{
-      "file": "ilab-media-s3-tool.php",
-      "class": "ILabMediaS3Tool"
+      "description":"Automatically uploads media to Amazon S3.",
+      "settings":{
+        "title":"S3 Settings",
+        "menu":"S3 Settings",
+        "options-page":"media-tools-s3",
+        "options-group":"ilab-media-s3",
+        "groups":{
+          "ilab-media-s3-aws-settings":{
+            "title":"AWS Settings",
+            "description":"Put your AWS settings here",
+            "options": {
+              "ilab-media-s3-access-key": {
+                "title": "AWS Access Key",
+                "type": "text-field"
+              },
+              "ilab-media-s3-access-secret": {
+                "title": "AWS Secret",
+                "type": "password"
+              },
+              "ilab-media-s3-access-bucket": {
+                "title": "AWS Bucket",
+                "type": "text-field"
+              },
+              "ilab-media-s3-region": {
+                "title": "AWS Region",
+                "type": "text-field"
+              }
+            }
+          },
+          "ilab-media-s3-cdn-settings": {
+            "title": "CDN Settings",
+            "description": "Put your CDN settings here",
+            "options": {
+              "ilab-media-s3-cdn-base": {
+                "title": "CDN Base URL",
+                "type": "text-field"
+              }
+            }
+          }
+        }
+      }
     }
   }
-
 }

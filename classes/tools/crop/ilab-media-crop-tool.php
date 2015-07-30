@@ -3,9 +3,9 @@ require_once(ILAB_CLASSES_DIR.'/ilab-media-tool-base.php');
 
 class ILabMediaCropTool extends ILabMediaToolBase
 {
-    public function __construct($toolManager)
+    public function __construct($toolInfo, $toolManager)
     {
-        parent::__construct($toolManager);
+        parent::__construct($toolInfo, $toolManager);
 
         $this->hookup_ui();
 

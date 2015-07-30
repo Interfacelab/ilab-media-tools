@@ -15,6 +15,17 @@
 function get_view($view)
 {
     $contents=file_get_contents($view);
+    $contents=parse_view($contents);
+    return $contents;
+}
+
+/**
+ * Extracts short tags from the view
+ * @param $contents
+ * @return string
+ */
+function parse_view($contents)
+{
     $contents=preg_replace('#{%\s*foreach\s*\(\s*(.*)\s*\)\s*%}#','<?php foreach($1):?>',$contents);
     $contents=preg_replace('#{%\s*endforeach\s*%}#','<?php endforeach; ?>',$contents);
     $contents=preg_replace('#{%\s*if\s*\((.*)\)\s*%}#','<?php if ($1): ?>',$contents);
@@ -23,6 +34,7 @@ function get_view($view)
     $contents=preg_replace('#{%\s*endif\s*%}#','<?php endif; ?>',$contents);
     $contents=preg_replace("|\{{2}([^}]*)\}{2}|is",'<?php echo $1; ?>',$contents);
     $contents=preg_replace("|\{{2}(.*)\}{2}|is",'<?php echo $1; ?>',$contents); // for closures.
+
     return $contents;
 }
 
@@ -32,7 +44,7 @@ function get_view($view)
  * @param string $fragment The fragment of PHP code to render
  * @param array $data Variables to extract before rendering the fragment.
  */
-function render_fragment($fragment, &$data)
+function render_fragment($fragment, $data)
 {
     if ($data!=null)
         extract($data);
@@ -52,9 +64,21 @@ function render_fragment($fragment, &$data)
  * @param array $data The data to pass into the view
  * @return string The rendered view
  */
-function render_view($view,&$data)
+function render_view($view,$data)
 {
     $contents=get_view(ILAB_VIEW_DIR.'/'.$view);
     return render_fragment($contents,$data);
 }
+
+/**
+ * Renders a snippet
+ * @param $snippet
+ * @param $data
+ */
+function render_snippet($snippet,$data)
+{
+    $snippet=parse_view($snippet);
+    return render_fragment($snippet,$data);
+}
+
 

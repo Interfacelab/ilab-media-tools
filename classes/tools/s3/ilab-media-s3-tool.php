@@ -7,9 +7,9 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 
     private $bucket;
 
-    public function __construct($toolManager)
+    public function __construct($toolInfo, $toolManager)
     {
-        parent::__construct($toolManager);
+        parent::__construct($toolInfo, $toolManager);
 
         $this->bucket=get_option('ilab-media-s3-bucket', getenv('ILAB_AWS_S3_BUCKET'));
 
