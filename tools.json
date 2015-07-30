@@ -1,5 +1,11 @@
 {
+
   "crop": {
+    "info":{
+      "title":"ILab Image Crop",
+      "description":"Provides an easy to use tool for manually cropping images for all image sizes."
+    },
+    "dependencies":[],
     "admin": {
       "file": "ilab-media-crop-tool-admin.php",
       "class": "ILabMediaCropToolAdmin"
@@ -8,5 +14,22 @@
       "file": "ilab-media-crop-tool.php",
       "class": "ILabMediaCropTool"
     }
+  },
+
+  "s3": {
+    "info":{
+      "title":"ILab S3",
+      "description":"Automatically uploads media to Amazon S3."
+    },
+    "dependencies":[],
+    "admin": {
+      "file": "ilab-media-s3-tool-admin.php",
+      "class": "ILabMediaS3ToolAdmin"
+    },
+    "tool":{
+      "file": "ilab-media-s3-tool.php",
+      "class": "ILabMediaS3Tool"
+    }
   }
+
 }
