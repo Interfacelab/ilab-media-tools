@@ -286,18 +286,33 @@ class ILabMediaCropTool extends ILabMediaToolBase
         $filename=preg_replace('#^(IL[0-9-]*)#','',$save_path_parts['filename']);
         $filename='IL'.date("YmdHis").'-'.$filename.'-'.$dest_width.'x'.$dest_height.'.'.$extension;
 
-        $meta['sizes'][$size] = array(
-            'file' => $filename,
-            'width' => $dest_width,
-            'height' => $dest_height,
-            'mime-type' => $meta['sizes']['thumbnail']['mime-type'],
-            'crop'=> [
+        if (isset($meta['sizes'][$size]))
+        {
+            $meta['sizes'][$size]['file']=$filename;
+            $meta['sizes'][$size]['width']=$dest_width;
+            $meta['sizes'][$size]['height']=$dest_height;
+            $meta['sizes'][$size]['crop']=[
                 'x'=>$crop_x,
                 'y'=>$crop_y,
                 'w'=>$crop_width,
                 'h'=>$crop_height
-            ]
-        );
+            ];
+        }
+        else
+        {
+            $meta['sizes'][$size] = array(
+                'file' => $filename,
+                'width' => $dest_width,
+                'height' => $dest_height,
+                'mime-type' => $meta['sizes']['thumbnail']['mime-type'],
+                'crop'=> [
+                    'x'=>$crop_x,
+                    'y'=>$crop_y,
+                    'w'=>$crop_width,
+                    'h'=>$crop_height
+                ]
+            );
+        }
 
         $img_editor->save($save_path . '/' . $filename);
         wp_update_attachment_metadata($req_post, $meta);

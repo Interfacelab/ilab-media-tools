@@ -1,33 +1,7 @@
 {% if (!$partial) %}
-<script>
-    var ilab_image_id,
-        ilab_image_size,
-        ilab_cropper_min_width,
-        ilab_cropper_min_height,
-        ilab_cropper_aspect_ratio,
-        ilab_prev_crop_x,
-        ilab_prev_crop_y,
-        ilab_prev_crop_width,
-        ilab_prev_crop_height;
-</script>
-{% endif %}
-
-<script>
-    ilab_image_id = {{$image_id}};
-    ilab_image_size = '{{ $size}}';
-    ilab_cropper_min_width = {{$crop_width}};
-    ilab_cropper_min_height = {{$crop_height}};
-    ilab_cropper_aspect_ratio = {{ $ratio }};
-    ilab_prev_crop_x = {{($prev_crop_x!=null) ? $prev_crop_x : 'undefined'}};
-    ilab_prev_crop_y = {{($prev_crop_y!=null) ? $prev_crop_y : 'undefined'}};
-    ilab_prev_crop_width = {{($prev_crop_width!=null) ? $prev_crop_width : 'undefined'}};
-    ilab_prev_crop_height = {{($prev_crop_height!=null) ? $prev_crop_height : 'undefined'}};
-</script>
-
-{% if (!$partial) %}
     <div id="ilab-crop-wrapper">
         <div class="media-modal wp-core-ui">
-            <a title="{{__('Close')}}" href="javascript:ilabCancelCropImage();" class="media-modal-close">
+            <a title="{{__('Close')}}" href="javascript:ILabCrop.cancel();" class="media-modal-close">
                 <span class="media-modal-icon"></span>
             </a>
             <div class="media-modal-content">
@@ -71,7 +45,7 @@
                                     <h3 id="ilab-crop-preview-title">{{ __( 'Crop preview') }}</h3>
                                     <div id="ilab-crop-preview"></div>
                                     <div class="ilab-crop-now-wrapper">
-                                        <a href="javascript:ilabCropImage();"
+                                        <a href="javascript:ILabCrop.crop();"
                                            class="button media-button button-primary button-large media-button-select">
                                             {{__('Crop')}} {{(ucwords(str_replace('-', ' ', $size)))}}
                                         </a>
@@ -89,4 +63,16 @@
     </div>
 {% endif %}
 
-<script>ilabInitCrop();</script>
+<script>
+    ILabCrop.init({
+        image_id:{{$image_id}},
+        size:'{{ $size}}',
+        min_width:{{$crop_width}},
+        min_height:{{$crop_height}},
+        aspect_ratio:{{ $ratio }},
+        prev_crop_x:{{($prev_crop_x!=null) ? $prev_crop_x : 'undefined'}},
+        prev_crop_y:{{($prev_crop_y!=null) ? $prev_crop_y : 'undefined'}},
+        prev_crop_width:{{($prev_crop_width!=null) ? $prev_crop_width : 'undefined'}},
+        prev_crop_height:{{($prev_crop_height!=null) ? $prev_crop_height : 'undefined'}}
+    });
+</script>
