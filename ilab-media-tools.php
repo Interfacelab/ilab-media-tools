@@ -23,13 +23,6 @@ define('ILAB_PUB_CSS_URL',$plug_url.'public/css');
 require_once('helpers/ilab-media-tool-helpers.php');
 require_once('helpers/ilab-media-tool-view.php');
 
-// Admin
-require_once('classes/ilab-media-tools-admin.php');
-$ilabAdmin=new ILabMediaToolsAdmin();
-
-register_activation_hook(__FILE__,[$ilabAdmin,'install']);
-register_deactivation_hook(__FILE__,[$ilabAdmin,'uninstall']);
-
-// Load Plugin
-require_once('classes/ilab-media-tools.php');
-new ILabMediaTools();
+require_once('classes/ilab-media-tools-manager.php');
+register_activation_hook(__FILE__,[ILabMediaToolsManager::instance(),'install']);
+register_deactivation_hook(__FILE__,[ILabMediaToolsManager::instance(),'uninstall']);

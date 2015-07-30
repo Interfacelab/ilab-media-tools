@@ -1,8 +1,11 @@
 <?php
-class ILabMediaCropTool
+require_once(ILAB_CLASSES_DIR.'/ilab-media-tool-base.php');
+
+class ILabMediaCropTool extends ILabMediaToolBase
 {
-    public function __construct()
+    public function __construct($toolManager)
     {
+        parent::__construct($toolManager);
 
         $this->hookup_ui();
 
@@ -44,8 +47,10 @@ class ILabMediaCropTool
 
         wp_enqueue_style( 'wp-pointer' );
         wp_enqueue_style ( 'ilab-crop-css', ILAB_PUB_CSS_URL . '/ilab-crop.css' );
+        wp_enqueue_style ( 'cropper-css', ILAB_PUB_CSS_URL . '/cropper.css' );
         wp_enqueue_script( 'wp-pointer' );
-        wp_enqueue_script ( 'ilab-crop-js', ILAB_PUB_JS_URL. '/ilab-crop.js', ['jquery'], false, true );
+        wp_enqueue_script ( 'cropper-js', ILAB_PUB_JS_URL. '/cropper.js', ['jquery'], false, true );
+        wp_enqueue_script ( 'ilab-crop-js', ILAB_PUB_JS_URL. '/ilab-crop.js', ['cropper-js'], false, true );
     }
 
     /**
@@ -113,7 +118,11 @@ class ILabMediaCropTool
         return $url;
     }
 
-    private function get_image_sizes()
+    /**
+     * Returns all of the defined wordpress image sizes
+     * @return array
+     */
+    private function get_image_sizes($size=null)
     {
         global $_wp_additional_image_sizes;
 
@@ -139,6 +148,14 @@ class ILabMediaCropTool
             }
         }
 
+        if ($size!=null)
+        {
+            if (isset($sizes[$size]))
+                return $sizes[$size];
+
+            return null;
+        }
+
         return $sizes;
     }
 
@@ -155,8 +172,7 @@ class ILabMediaCropTool
         $meta = wp_get_attachment_metadata($image_id);
 
         $attrs = wp_get_attachment_image_src($image_id, 'full');
-        $full_width=$attrs[1];
-        $full_height=$attrs[2];
+        list($full_src,$full_width,$full_height,$full_cropped)=$attrs;
         $orientation=($full_width<$full_height) ? 'landscape' : 'portrait';
 
         $sizeInfo=$sizes[$size];
@@ -164,8 +180,28 @@ class ILabMediaCropTool
         $crop_height=$sizeInfo['height'];
         $ratio=$crop_width/$crop_height;
 
+        $crop_exists = !empty($meta['sizes'][$size]['file']);
+        $crop_attrs = (!$crop_exists) ? null : wp_get_attachment_image_src($image_id, $size);
+
+        $cropped_src=null; $cropped_width=null; $cropped_height=null;
+        if ($crop_attrs)
+            list($cropped_src,$cropped_width,$cropped_height,$cropped_cropped)=$crop_attrs;
 
         $partial = isset($_GET['partial']) && ($_GET['partial'] == '1');
+
+        $prev_crop_x=null;
+        $prev_crop_y=null;
+        $prev_crop_w=null;
+        $prev_crop_h=null;
+
+        if (isset($meta['sizes'][$size]['crop']))
+        {
+            $prev_crop_x=$meta['sizes'][$size]['crop']['x'];
+            $prev_crop_y=$meta['sizes'][$size]['crop']['y'];
+            $prev_crop_w=$meta['sizes'][$size]['crop']['w'];
+            $prev_crop_h=$meta['sizes'][$size]['crop']['h'];
+        }
+
         $data=[
             'partial'=>$partial,
             'image_id'=>$image_id,
@@ -176,13 +212,23 @@ class ILabMediaCropTool
             'orientation'=>$orientation,
             'crop_width'=>$crop_width,
             'crop_height'=>$crop_height,
+            'crop_exists'=>$crop_exists,
+            'crop_attrs'=>$crop_attrs,
             'ratio'=>$ratio,
             'tool'=>$this,
-            'size'=>$size
+            'size'=>$size,
+            'cropped_src'=>$cropped_src,
+            'cropped_width'=>$cropped_width,
+            'cropped_height'=>$cropped_height,
+            'prev_crop_x' => $prev_crop_x,
+            'prev_crop_y' => $prev_crop_y,
+            'prev_crop_width' => $prev_crop_w,
+            'prev_crop_height' => $prev_crop_h,
+            'src'=>$full_src
         ];
 
         if (current_user_can( 'edit_post', $image_id))
-            echo render_view('ilab-crop-ui.php', $data);
+            echo render_view('crop/ilab-crop-ui.php', $data);
 
         die;
     }
@@ -192,6 +238,78 @@ class ILabMediaCropTool
      */
     public function performCrop()
     {
+        $req_post = esc_html( $_POST['post'] );
+        if (!current_user_can('edit_post', $req_post))
+            json_response([
+                'status'=>'error',
+                'message'=>'You are not strong enough, smart enough or fast enough.'
+                          ]);
 
+
+        $size = esc_html($_POST['size']);
+        $crop_width = esc_html($_POST['width']);
+        $crop_height = esc_html($_POST['height']);
+        $crop_x = esc_html($_POST['x']);
+        $crop_y = esc_html($_POST['y']);
+
+        $img_path = _load_image_to_edit_path( $req_post );
+        $meta = wp_get_attachment_metadata( $req_post );
+        $img_editor = wp_get_image_editor( $img_path );
+        if (is_wp_error($img_editor))
+            json_response([
+                              'status'=>'error',
+                              'message'=>'Could not create image editor.'
+                          ]);
+
+        $crop_size=$this->get_image_sizes($size);
+        $dest_width = $crop_size['width'];
+        $dest_height = $crop_size['height'];
+
+        $img_editor->crop($crop_x, $crop_y, $crop_width, $crop_height, $dest_width, $dest_height, false );
+        $img_editor->set_quality(get_option('ilab-media-crop-quality',92));
+        $save_path_parts = pathinfo($img_path);
+
+        $path_url=parse_url($img_path);
+        if (($path_url!==false) && (isset($path_url['scheme'])))
+        {
+            $parsed_path=pathinfo($path_url['path']);
+            $img_subpath=$parsed_path['dirname'];
+
+            $upload_dir=wp_upload_dir();
+            $save_path=$upload_dir['basedir'].$img_subpath;
+            @mkdir($save_path,0777,true);
+        }
+        else
+            $save_path=$save_path_parts['dirname'];
+
+        $extension=$save_path_parts['extension'];
+        $filename=preg_replace('#^(IL[0-9-]*)#','',$save_path_parts['filename']);
+        $filename='IL'.date("YmdHis").'-'.$filename.'-'.$dest_width.'x'.$dest_height.'.'.$extension;
+
+        $meta['sizes'][$size] = array(
+            'file' => $filename,
+            'width' => $dest_width,
+            'height' => $dest_height,
+            'mime-type' => $meta['sizes']['thumbnail']['mime-type'],
+            'crop'=> [
+                'x'=>$crop_x,
+                'y'=>$crop_y,
+                'w'=>$crop_width,
+                'h'=>$crop_height
+            ]
+        );
+
+        $img_editor->save($save_path . '/' . $filename);
+        wp_update_attachment_metadata($req_post, $meta);
+
+        $attrs = wp_get_attachment_image_src($req_post, $size);
+        list($full_src,$full_width,$full_height,$full_cropped)=$attrs;
+
+        json_response([
+            'status'=>'ok',
+            'src'=>$full_src,
+            'width'=>$full_width,
+            'height'=>$full_height
+                      ]);
     }
 }

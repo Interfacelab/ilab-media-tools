@@ -15,8 +15,10 @@
 function get_view($view)
 {
     $contents=file_get_contents($view);
-    $contents=preg_replace('#{%\s*foreach\s*\(\s*(.*)\s*\)\s*%}(.*){%\s*endforeach\s*%}#s','<?php foreach($1):?>$2<?php endforeach;?>',$contents);
+    $contents=preg_replace('#{%\s*foreach\s*\(\s*(.*)\s*\)\s*%}#','<?php foreach($1):?>',$contents);
+    $contents=preg_replace('#{%\s*endforeach\s*%}#','<?php endforeach; ?>',$contents);
     $contents=preg_replace('#{%\s*if\s*\((.*)\)\s*%}#','<?php if ($1): ?>',$contents);
+    $contents=preg_replace('#{%\s*else\s*%}#','<?php else: ?>',$contents);
     $contents=preg_replace('#{%\s*elseif\s*\((.*)\)\s*%}#','<?php elseif ($1): ?>',$contents);
     $contents=preg_replace('#{%\s*endif\s*%}#','<?php endif; ?>',$contents);
     $contents=preg_replace("|\{{2}([^}]*)\}{2}|is",'<?php echo $1; ?>',$contents);
@@ -53,7 +55,6 @@ function render_fragment($fragment, &$data)
 function render_view($view,&$data)
 {
     $contents=get_view(ILAB_VIEW_DIR.'/'.$view);
-    error_log($contents);
     return render_fragment($contents,$data);
 }
 
