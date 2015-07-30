@@ -68,17 +68,17 @@
   opacity: .5;
 }
 .cropper-dashed.dashed-h {
-  top: 33.33333333%;
+  top: 38.4615385%;/*33.33333333%;*/
   left: 0;
   width: 100%;
-  height: 33.33333333%;
+  height: 23.076923%;/*33.33333333%;*/
   border-top-width: 1px;
   border-bottom-width: 1px;
 }
 .cropper-dashed.dashed-v {
   top: 0;
-  left: 33.33333333%;
-  width: 33.33333333%;
+  left: 38.4615385%;
+  width: 23.076923%;
   height: 100%;
   border-right-width: 1px;
   border-left-width: 1px;
