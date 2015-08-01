@@ -18,6 +18,7 @@ define('ILAB_VIEW_DIR',ILAB_TOOLS_DIR.'/views');
 $plug_url = plugin_dir_url( __FILE__ );
 define('ILAB_PUB_JS_URL',$plug_url.'public/js');
 define('ILAB_PUB_CSS_URL',$plug_url.'public/css');
+define('ILAB_PUB_IMG_URL',$plug_url.'public/img');
 
 // Helper functions
 require_once('helpers/ilab-media-tool-helpers.php');

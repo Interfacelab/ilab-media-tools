@@ -1,7 +1,7 @@
 {% if (!$partial) %}
     <div id="ilab-modal-wrapper">
         <div class="media-modal wp-core-ui">
-            <a title="{{__('Close')}}" href="javascript:ILabCrop.cancel();" class="media-modal-close">
+            <a title="{{__('Close')}}" href="javascript:ILabModal.cancel();" class="media-modal-close">
                 <span class="media-modal-icon"></span>
             </a>
             <div class="media-modal-content">
@@ -70,9 +70,9 @@
         min_width:{{$crop_width}},
         min_height:{{$crop_height}},
         aspect_ratio:{{ $ratio }},
-        prev_crop_x:{{($prev_crop_x!==null) ? $prev_crop_x : 'undefined'}},
-        prev_crop_y:{{($prev_crop_y!==null) ? $prev_crop_y : 'undefined'}},
-        prev_crop_width:{{($prev_crop_width!==null) ? $prev_crop_width : 'undefined'}},
-        prev_crop_height:{{($prev_crop_height!==null) ? $prev_crop_height : 'undefined'}}
+        prev_crop_x:{{($prev_crop_x!==null) ? (int)$prev_crop_x : 'undefined'}},
+        prev_crop_y:{{($prev_crop_y!==null) ? (int)$prev_crop_y : 'undefined'}},
+        prev_crop_width:{{($prev_crop_width!==null) ? (int)$prev_crop_width : 'undefined'}},
+        prev_crop_height:{{($prev_crop_height!==null) ? (int)$prev_crop_height : 'undefined'}}
     });
 </script>

@@ -68,6 +68,98 @@
             }
           }
         }
+      },
+      "params":{
+        "bri":{
+          "title":"Brightness",
+          "min":-100,
+          "max":100,
+          "default": 0
+        },
+        "con":{
+          "title":"Contrast",
+          "min":-100,
+          "max":100,
+          "default": 0
+        },
+        "exp":{
+          "title":"Exposure",
+          "min":-100,
+          "max":100,
+          "default": 0
+        },
+        "gam":{
+          "title":"Gamma",
+          "min":-100,
+          "max":100,
+          "default": 0
+        },
+        "high":{
+          "title":"Highlight",
+          "min":-100,
+          "max":100,
+          "default": 0
+        },
+        "shad":{
+          "title":"Shadow",
+          "min":-100,
+          "max":100,
+          "default": 0
+        },
+        "sat":{
+          "title":"Saturation",
+          "min":-100,
+          "max":100,
+          "default": 0
+        },
+        "sharp":{
+          "title":"Sharpen",
+          "min":0,
+          "max":100,
+          "default": 0
+        },
+        "vib":{
+          "title":"Vibrancy",
+          "min":-100,
+          "max":100,
+          "default": 0
+        },
+        "nr":{
+          "title":"Noise Reduction",
+          "min":-100,
+          "max":100,
+          "default": 0
+        },
+        "nrs":{
+          "title":"Noise Reduction Sharpen Bound",
+          "min":-100,
+          "max":100,
+          "default": 0
+        },
+        "blur":{
+          "title":"Blur",
+          "min":0,
+          "max":2000,
+          "default": 0
+        },
+        "htn":{
+          "title":"Halftone",
+          "min":0,
+          "max":100,
+          "default": 0
+        },
+        "px":{
+          "title":"Pixellate",
+          "min":0,
+          "max":100,
+          "default": 0
+        },
+        "sepia":{
+          "title":"Sepia",
+          "min":0,
+          "max":100,
+          "default": 0
+        }
       }
     }
   },
