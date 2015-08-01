@@ -10,5 +10,6 @@ return array(
     $vendorDir . '/guzzlehttp/psr7/src/functions.php',
     $vendorDir . '/mtdowling/jmespath.php/src/JmesPath.php',
     $vendorDir . '/guzzlehttp/guzzle/src/functions_include.php',
+    $vendorDir . '/jakeasmith/http_build_url/src/http_build_url.php',
     $vendorDir . '/aws/aws-sdk-php/src/functions.php',
 );

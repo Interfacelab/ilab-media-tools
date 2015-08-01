@@ -9,7 +9,7 @@ class ILabMediaToolsManager
 {
     private static $instance;
 
-    protected $tools;
+    public $tools;
 
     public function __construct()
     {
@@ -21,14 +21,25 @@ class ILabMediaToolsManager
         {
             require_once(ILAB_CLASSES_DIR."/tools/$toolName/".$toolInfo['source']);
             $className=$toolInfo['class'];
-            $this->tools[$toolName]=new $className($toolInfo,$this);
+            $this->tools[$toolName]=new $className($toolName,$toolInfo,$this);
+        }
+
+        foreach($this->tools as $key => $tool)
+        {
+            $tool->setup();
         }
 
         add_action('admin_menu', function(){
-            add_menu_page('Settings', 'ILab Media Tools', 'manage_options', 'media-tools-top', [$this,'render_settings']);
-            add_submenu_page( 'media-tools-top', 'Settings', 'Settings', 'manage_options', 'media-tools-top', [$this,'render_settings']);
+            add_menu_page('Settings', 'ILab Media Tools', 'manage_options', 'media-tools-top', [$this,'renderSettings']);
+            add_submenu_page( 'media-tools-top', 'ILab Tools', 'Tools', 'manage_options', 'media-tools-top', [$this,'renderSettings']);
+
+            add_settings_section('ilab-media-tools','Enabled Tools',[$this,'renderSettingsSection'],'media-tools-top');
+
             foreach($this->tools as $key => $tool)
             {
+                register_setting('ilab-media-tools',"ilab-media-tool-enabled-$key");
+                add_settings_field("ilab-media-tool-enabled-$key",$tool->toolInfo['title'],[$this,'renderToolSettings'],'media-tools-top','ilab-media-tools',['key'=>$key]);
+
                 $tool->registerMenu('media-tools-top');
                 $tool->registerSettings();
             }
@@ -51,6 +62,20 @@ class ILabMediaToolsManager
     }
 
     /**
+     * Determines if a tool is enabled or not
+     *
+     * @param $toolName
+     * @return bool
+     */
+    public function toolEnabled($toolName)
+    {
+        if (isset($this->tools[$toolName]))
+            return $this->tools[$toolName]->enabled();
+
+        return false;
+    }
+
+    /**
      * Perform plugin installation
      */
     public function install()
@@ -66,5 +91,36 @@ class ILabMediaToolsManager
     {
         foreach($this->tools as $key => $tool)
             $tool->uninstall();
+    }
+
+    /**
+     * Render the options page
+     */
+    public function renderSettings()
+    {
+        echo render_view('base/ilab-settings.php',[
+            'title'=>'Enabled Tools',
+            'group'=>'ilab-media-tools',
+            'page'=>'media-tools-top'
+        ]);
+    }
+
+    /**
+     * Render the settings section
+     */
+    public function renderSettingsSection()
+    {
+        echo 'Enabled/disable tools.';
+    }
+
+    public function renderToolSettings($args)
+    {
+        $tool=$this->tools[$args['key']];
+
+        echo render_view('base/ilab-tool-settings.php',[
+            'name'=>$args['key'],
+            'tool'=>$tool,
+            'manager'=>$this
+        ]);
     }
 }

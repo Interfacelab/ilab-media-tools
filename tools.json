@@ -1,25 +1,70 @@
 {
   "crop": {
+    "title":"Image Crop",
+    "description":"Provides an easy to use tool for manually cropping images for all image sizes.",
     "source": "ilab-media-crop-tool.php",
     "class": "ILabMediaCropTool",
     "dependencies":[],
-    "info":{
-      "title":"ILab Image Crop",
-      "description":"Provides an easy to use tool for manually cropping images for all image sizes.",
-      "settings":{
-        "title":"Crop Settings",
-        "menu":"Crop Settings",
-        "options-page":"media-tools-crop",
-        "options-group":"ilab-media-crop",
-        "groups":{
-          "ilab-media-crop-settings":{
-            "title":"Crop Settings",
-            "description":"Put your crop settings here",
-            "options": {
-              "ilab-media-crop-quality": {
-                "title": "Crop Quality",
-                "type": "text-field"
-              }
+    "settings":{
+      "title":"Crop Settings",
+      "menu":"Crop Settings",
+      "options-page":"media-tools-crop",
+      "options-group":"ilab-media-crop",
+      "groups":{
+        "ilab-media-crop-settings":{
+          "title":"Crop Settings",
+          "description":"Put your crop settings here",
+          "options": {
+            "ilab-media-crop-quality": {
+              "title": "Crop Quality",
+              "type": "number"
+            }
+          }
+        }
+      }
+    }
+  },
+
+  "imgix": {
+    "title":"Imgix Support",
+    "description":"Serves images through imgix.com",
+    "source": "ilab-media-imgix-tool.php",
+    "class": "ILabMediaImgixTool",
+    "dependencies":["crop","s3"],
+    "settings":{
+      "title":"Imgix Settings",
+      "menu":"Imgix Settings",
+      "options-page":"media-tools-imgix",
+      "options-group":"ilab-media-imgix",
+      "groups":{
+        "ilab-media-imgix-settings":{
+          "title":"Imgix Settings",
+          "description":"Required settings for imgix integration to work.",
+          "options": {
+            "ilab-media-imgix-domains": {
+              "title": "Imgix Domains",
+              "description":"List of your source domains.  For more information, please read the <a href='https://www.imgix.com/docs/tutorials/creating-sources' target='_blank'>imgix documentation</a>",
+              "type": "text-area"
+            },
+            "ilab-media-imgix-signing-key": {
+              "title": "Imgix Signing Key",
+              "description": "Optional signing key to create secure URLs.  <strong>Recommended</strong>.  For information on setting it up, refer to the <a href='https://www.imgix.com/docs/tutorials/securing-images' target='_blank'>imgix documentation</a>.",
+              "type": "password"
+            }
+          }
+        },
+        "ilab-media-imgix-image-settings":{
+          "title":"Imgix Image Settings",
+          "description":"Put your imgix image settings here",
+          "options": {
+            "ilab-media-imgix-default-quality": {
+              "title": "Lossy Image Quality",
+              "type": "number"
+            },
+            "ilab-media-imgix-auto-format": {
+              "title": "Auto Format",
+              "description":"Allows imgix to choose the most appropriate file format to deliver your image based on the requesting web browser.",
+              "type": "checkbox"
             }
           }
         }
@@ -28,48 +73,50 @@
   },
 
   "s3": {
+    "title":"S3",
+    "description":"Automatically uploads media to Amazon S3.",
     "source": "ilab-media-s3-tool.php",
     "class": "ILabMediaS3Tool",
     "dependencies":[],
-    "info":{
-      "title":"ILab S3",
-      "description":"Automatically uploads media to Amazon S3.",
-      "settings":{
-        "title":"S3 Settings",
-        "menu":"S3 Settings",
-        "options-page":"media-tools-s3",
-        "options-group":"ilab-media-s3",
-        "groups":{
-          "ilab-media-s3-aws-settings":{
-            "title":"AWS Settings",
-            "description":"Put your AWS settings here",
-            "options": {
-              "ilab-media-s3-access-key": {
-                "title": "AWS Access Key",
-                "type": "text-field"
-              },
-              "ilab-media-s3-access-secret": {
-                "title": "AWS Secret",
-                "type": "password"
-              },
-              "ilab-media-s3-access-bucket": {
-                "title": "AWS Bucket",
-                "type": "text-field"
-              },
-              "ilab-media-s3-region": {
-                "title": "AWS Region",
-                "type": "text-field"
-              }
+    "settings":{
+      "title":"S3 Settings",
+      "menu":"S3 Settings",
+      "options-page":"media-tools-s3",
+      "options-group":"ilab-media-s3",
+      "groups":{
+        "ilab-media-s3-aws-settings":{
+          "title":"AWS Settings",
+          "description":"To get S3 working, you'll have to supply your AWS credentials.  However, the better way of doing it would be to place that information in a .env file, instead of storing it in the database.",
+          "options": {
+            "ilab-media-s3-access-key": {
+              "title": "AWS Access Key",
+              "description": "If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_AWS_S3_ACCESS_KEY</strong>",
+              "type": "text-field"
+            },
+            "ilab-media-s3-secret": {
+              "title": "AWS Secret",
+              "description": "If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_AWS_S3_ACCESS_SECRET</strong>",
+              "type": "password"
+            },
+            "ilab-media-s3-bucket": {
+              "title": "AWS Bucket",
+              "description": "If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_AWS_S3_BUCKET</strong>",
+              "type": "text-field"
+            },
+            "ilab-media-s3-region": {
+              "title": "AWS Region",
+              "description": "If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_AWS_S3_REGION</strong>",
+              "type": "text-field"
             }
-          },
-          "ilab-media-s3-cdn-settings": {
-            "title": "CDN Settings",
-            "description": "Put your CDN settings here",
-            "options": {
-              "ilab-media-s3-cdn-base": {
-                "title": "CDN Base URL",
-                "type": "text-field"
-              }
+          }
+        },
+        "ilab-media-s3-cdn-settings": {
+          "title": "CDN Settings",
+          "description": "Put your CDN settings here",
+          "options": {
+            "ilab-media-s3-cdn-base": {
+              "title": "CDN Base URL",
+              "type": "text-field"
             }
           }
         }

@@ -3,15 +3,21 @@ require_once(ILAB_CLASSES_DIR.'/ilab-media-tool-base.php');
 
 class ILabMediaCropTool extends ILabMediaToolBase
 {
-    public function __construct($toolInfo, $toolManager)
+    public function __construct($toolName, $toolInfo, $toolManager)
     {
-        parent::__construct($toolInfo, $toolManager);
+        parent::__construct($toolName, $toolInfo, $toolManager);
+    }
 
-        $this->hookup_ui();
+    public function setup()
+    {
+        if ($this->enabled())
+        {
+            $this->hookup_ui();
 
-        add_action('admin_enqueue_scripts', [$this,'enqueueTheGoods']);
-        add_action('wp_ajax_ilab_crop_image_page',[$this,'displayCropUI']);
-        add_action('wp_ajax_ilab_perform_crop',[$this,'performCrop']);
+            add_action('admin_enqueue_scripts', [$this,'enqueueTheGoods']);
+            add_action('wp_ajax_ilab_crop_image_page',[$this,'displayCropUI']);
+            add_action('wp_ajax_ilab_perform_crop',[$this,'performCrop']);
+        }
     }
 
     /**
@@ -46,6 +52,7 @@ class ILabMediaCropTool extends ILabMediaToolBase
             wp_enqueue_style ( 'media-views' );
 
         wp_enqueue_style( 'wp-pointer' );
+        wp_enqueue_style ( 'ilab-modal-css', ILAB_PUB_CSS_URL . '/ilab-modal.css' );
         wp_enqueue_style ( 'ilab-crop-css', ILAB_PUB_CSS_URL . '/ilab-crop.css' );
         wp_enqueue_style ( 'cropper-css', ILAB_PUB_CSS_URL . '/cropper.css' );
         wp_enqueue_script( 'wp-pointer' );
@@ -61,12 +68,19 @@ class ILabMediaCropTool extends ILabMediaToolBase
         // TODO: Still need to hook up the edit attachment page
 
         add_filter('media_row_actions',function($actions,$post){
-            $newaction['ilab_crop_image'] = '<a class="thickbox" href="'.$this->crop_page_url($post->ID).'" title="Crop Image" rel="permalink">' . __('Crop Image') . '</a>';
+            $newaction['ilab_crop_image'] = '<a class="ilab-thickbox" href="'.$this->crop_page_url($post->ID).'" title="Crop Image">' . __('Crop Image') . '</a>';
             return array_merge($actions,$newaction);
         },10,2);
 
         add_filter('admin_post_thumbnail_html', function($content,$id){
-            $content.='<a href="'.$this->crop_page_url($id).'">'.__('Crop Image').'</a>';
+            if (!has_post_thumbnail($id))
+                return $content;
+
+            $image_id = get_post_thumbnail_id($id);
+            if (!current_user_can('edit_post',$image_id))
+                return $content;
+
+            $content.='<a class="ilab-thickbox" href="'.$this->crop_page_url($image_id,'post-thumbnail').'">'.__('Crop Image').'</a>';
             return $content;
         },10,2);
 
@@ -122,49 +136,14 @@ class ILabMediaCropTool extends ILabMediaToolBase
      * Returns all of the defined wordpress image sizes
      * @return array
      */
-    private function get_image_sizes($size=null)
-    {
-        global $_wp_additional_image_sizes;
 
-        $sizes = [];
-        $get_intermediate_image_sizes = get_intermediate_image_sizes();
-
-        // Create the full array with sizes and crop info
-        foreach( $get_intermediate_image_sizes as $_size )
-        {
-            if (in_array($_size, ['thumbnail','medium', 'large']))
-            {
-                $sizes[$_size]['width'] = get_option($_size.'_size_w');
-                $sizes[$_size]['height'] = get_option($_size.'_size_h');
-                $sizes[$_size]['crop'] = (bool)get_option($_size.'_crop');
-            }
-            else if (isset($_wp_additional_image_sizes[$_size ]))
-            {
-                $sizes[$_size] = [
-                    'width' => $_wp_additional_image_sizes[$_size]['width'],
-                    'height' => $_wp_additional_image_sizes[$_size]['height'],
-                    'crop' =>  $_wp_additional_image_sizes[$_size]['crop']
-                ];
-            }
-        }
-
-        if ($size!=null)
-        {
-            if (isset($sizes[$size]))
-                return $sizes[$size];
-
-            return null;
-        }
-
-        return $sizes;
-    }
 
     /**
      * Render the crop ui
      */
     public function displayCropUI()
     {
-        $sizes=$this->get_image_sizes();
+        $sizes=ilab_get_image_sizes();
 
         $image_id = esc_html($_GET['post']);
         $size = esc_html($_GET['size']);
@@ -261,7 +240,7 @@ class ILabMediaCropTool extends ILabMediaToolBase
                               'message'=>'Could not create image editor.'
                           ]);
 
-        $crop_size=$this->get_image_sizes($size);
+        $crop_size=ilab_get_image_sizes($size);
         $dest_width = $crop_size['width'];
         $dest_height = $crop_size['height'];
 
@@ -292,10 +271,10 @@ class ILabMediaCropTool extends ILabMediaToolBase
             $meta['sizes'][$size]['width']=$dest_width;
             $meta['sizes'][$size]['height']=$dest_height;
             $meta['sizes'][$size]['crop']=[
-                'x'=>$crop_x,
-                'y'=>$crop_y,
-                'w'=>$crop_width,
-                'h'=>$crop_height
+                'x'=>round($crop_x),
+                'y'=>round($crop_y),
+                'w'=>round($crop_width),
+                'h'=>round($crop_height)
             ];
         }
         else
@@ -306,10 +285,10 @@ class ILabMediaCropTool extends ILabMediaToolBase
                 'height' => $dest_height,
                 'mime-type' => $meta['sizes']['thumbnail']['mime-type'],
                 'crop'=> [
-                    'x'=>$crop_x,
-                    'y'=>$crop_y,
-                    'w'=>$crop_width,
-                    'h'=>$crop_height
+                    'x'=>round($crop_x),
+                    'y'=>round($crop_y),
+                    'w'=>round($crop_width),
+                    'h'=>round($crop_height)
                 ]
             );
         }

@@ -1,5 +1,5 @@
 {% if (!$partial) %}
-    <div id="ilab-crop-wrapper">
+    <div id="ilab-modal-wrapper">
         <div class="media-modal wp-core-ui">
             <a title="{{__('Close')}}" href="javascript:ILabCrop.cancel();" class="media-modal-close">
                 <span class="media-modal-icon"></span>
@@ -32,7 +32,7 @@
                                 <div class="attachment-details">
                                     {% if ($crop_exists) %}
                                         <h3>{{ __('Current')}} {{(ucwords(str_replace('-', ' ', $size)))}} ({{$cropped_width}} x {{$cropped_height}})</h3>
-                                        <img id="ilab-current-crop-img" src="{{$cropped_src}}?{{mt_rand( 1000, 9999 )}}" style="width: 100%; height: auto;" />
+                                        <img id="ilab-current-crop-img" src="{{$cropped_src}}" style="width: 100%; height: auto;" />
                                     {% else %}
                                         <h3>{{ __('Current')}} {{(ucwords(str_replace('-', ' ', $size)))}} ({{$crop_width}} x {{$crop_height}})</h3>
                                         <img id="ilab-current-crop-img" style="width: 100%; height: auto;" />
@@ -70,9 +70,9 @@
         min_width:{{$crop_width}},
         min_height:{{$crop_height}},
         aspect_ratio:{{ $ratio }},
-        prev_crop_x:{{($prev_crop_x!=null) ? $prev_crop_x : 'undefined'}},
-        prev_crop_y:{{($prev_crop_y!=null) ? $prev_crop_y : 'undefined'}},
-        prev_crop_width:{{($prev_crop_width!=null) ? $prev_crop_width : 'undefined'}},
-        prev_crop_height:{{($prev_crop_height!=null) ? $prev_crop_height : 'undefined'}}
+        prev_crop_x:{{($prev_crop_x!==null) ? $prev_crop_x : 'undefined'}},
+        prev_crop_y:{{($prev_crop_y!==null) ? $prev_crop_y : 'undefined'}},
+        prev_crop_width:{{($prev_crop_width!==null) ? $prev_crop_width : 'undefined'}},
+        prev_crop_height:{{($prev_crop_height!==null) ? $prev_crop_height : 'undefined'}}
     });
 </script>

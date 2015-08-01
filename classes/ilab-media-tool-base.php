@@ -5,7 +5,14 @@
  */
 abstract class ILabMediaToolBase {
 
+    private $adminNotices;
     protected $settingSections;
+
+    /**
+     * Name of the tool
+     * @var string
+     */
+    public  $toolName;
 
     /**
      * Tool manager that owns this tool's admin
@@ -17,7 +24,7 @@ abstract class ILabMediaToolBase {
      * Information about this tool
      * @var array
      */
-    protected $toolInfo;
+    public $toolInfo;
 
     /**
      * The page slug for this tool's options
@@ -32,21 +39,32 @@ abstract class ILabMediaToolBase {
     protected $options_group;
 
     /**
-     * Creates a new instance
+     * Creates a new instance.  Subclasses should do any setup dependent on being enabled in setup()
+     * @param $toolName
      * @param $toolInfo
      * @param $toolManager
      */
-    public function __construct($toolInfo, $toolManager)
+    public function __construct($toolName, $toolInfo, $toolManager)
     {
+        $this->adminNotices=[];
+        $this->toolName=$toolName;
         $this->settingSections=[];
         $this->toolInfo=$toolInfo;
         $this->toolManager=$toolManager;
 
-        if (isset($toolInfo['info']['settings']['options-page']))
-            $this->options_page=$toolInfo['info']['settings']['options-page'];
+        if (isset($toolInfo['settings']['options-page']))
+            $this->options_page=$toolInfo['settings']['options-page'];
 
-        if (isset($toolInfo['info']['settings']['options-group']))
-            $this->options_group=$toolInfo['info']['settings']['options-group'];
+        if (isset($toolInfo['settings']['options-group']))
+            $this->options_group=$toolInfo['settings']['options-group'];
+    }
+
+    /**
+     * Perform any setup
+     */
+    public function setup()
+    {
+
     }
 
     /**
@@ -66,14 +84,47 @@ abstract class ILabMediaToolBase {
     }
 
     /**
+     * Determines if this tool is enabled or not
+     */
+    public function enabled()
+    {
+        $enabled=get_option("ilab-media-tool-enabled-$this->toolName",true);
+
+        if ($enabled && isset($this->toolInfo['dependencies']))
+        {
+            foreach($this->toolInfo['dependencies'] as $dep)
+            {
+                if (!$this->toolManager->toolEnabled($dep))
+                    return false;
+            }
+        }
+
+        return $enabled;
+    }
+
+    public function displayAdminNotice($type,$message)
+    {
+        if (isset($this->adminNotices[$message]))
+            return;
+
+        $this->adminNotices[$message]=true;
+        add_action('admin_notices',function() use($type,$message) {
+            echo render_view('base/ilab-admin-notice.php',[
+                'type'=>$type,
+                'message'=>$message
+            ]);
+        });
+    }
+
+    /**
      * Register any settings
      */
     public function registerSettings()
     {
-        if (!isset($this->toolInfo['info']['settings']['groups']))
+        if (!isset($this->toolInfo['settings']['groups']))
             return;
 
-        $groups=$this->toolInfo['info']['settings']['groups'];
+        $groups=$this->toolInfo['settings']['groups'];
         foreach($groups as $group => $groupInfo)
         {
             $this->registerSettingsSection($group,$groupInfo['title'],$groupInfo['description']);
@@ -87,10 +138,19 @@ abstract class ILabMediaToolBase {
                         switch($optionInfo['type'])
                         {
                             case 'text-field':
-                                $this->registerTextFieldSetting($option,$optionInfo['title'],$group);
+                                $this->registerTextFieldSetting($option,$optionInfo['title'],$group,(isset($optionInfo['description']) ? $optionInfo['description'] : null));
+                                break;
+                            case 'text-area':
+                                $this->registerTextAreaFieldSetting($option,$optionInfo['title'],$group,(isset($optionInfo['description']) ? $optionInfo['description'] : null));
                                 break;
                             case 'password':
-                                $this->registerPasswordFieldSetting($option,$optionInfo['title'],$group);
+                                $this->registerPasswordFieldSetting($option,$optionInfo['title'],$group,(isset($optionInfo['description']) ? $optionInfo['description'] : null));
+                                break;
+                            case 'checkbox':
+                                $this->registerCheckboxFieldSetting($option,$optionInfo['title'],$group,(isset($optionInfo['description']) ? $optionInfo['description'] : null));
+                                break;
+                            case 'number':
+                                $this->registerNumberFieldSetting($option,$optionInfo['title'],$group,(isset($optionInfo['description']) ? $optionInfo['description'] : null));
                                 break;
                         }
                     }
@@ -111,10 +171,10 @@ abstract class ILabMediaToolBase {
      */
     public function registerMenu($top_menu_slug)
     {
-        if (!isset($this->toolInfo['info']['settings']))
+        if (!isset($this->toolInfo['settings']))
             return;
 
-        $settings=$this->toolInfo['info']['settings'];
+        $settings=$this->toolInfo['settings'];
         add_submenu_page( $top_menu_slug, $settings['title'], $settings['menu'], 'manage_options', $this->options_page, [$this,'renderSettings']);
     }
 
@@ -125,7 +185,7 @@ abstract class ILabMediaToolBase {
     public function renderSettings()
     {
         echo render_view('base/ilab-settings.php',[
-            'title'=>$this->toolInfo['info']['title'],
+            'title'=>$this->toolInfo['title'],
             'group'=>$this->options_group,
             'page'=>$this->options_page
         ]);
@@ -161,9 +221,9 @@ abstract class ILabMediaToolBase {
         echo $settingSection['description'];
     }
 
-    protected function registerTextFieldSetting($option_name,$title,$settings_slug)
+    protected function registerTextFieldSetting($option_name,$title,$settings_slug,$description=null)
     {
-        add_settings_field($option_name,$title,[$this,'renderTextFieldSetting'],$this->options_page,$settings_slug,['option'=>$option_name]);
+        add_settings_field($option_name,$title,[$this,'renderTextFieldSetting'],$this->options_page,$settings_slug,['option'=>$option_name,'description'=>$description]);
 
     }
 
@@ -171,11 +231,13 @@ abstract class ILabMediaToolBase {
     {
         $value=get_option($args['option']);
         echo "<input size='40' type=\"text\" name=\"{$args['option']}\" value=\"$value\">";
+        if ($args['description'])
+            echo "<p class='description'>".$args['description']."</p>";
     }
 
-    protected function registerPasswordFieldSetting($option_name,$title,$settings_slug)
+    protected function registerPasswordFieldSetting($option_name,$title,$settings_slug,$description=null)
     {
-        add_settings_field($option_name,$title,[$this,'renderPasswordFieldSetting'],$this->options_page,$settings_slug,['option'=>$option_name]);
+        add_settings_field($option_name,$title,[$this,'renderPasswordFieldSetting'],$this->options_page,$settings_slug,['option'=>$option_name,'description'=>$description]);
 
     }
 
@@ -183,5 +245,49 @@ abstract class ILabMediaToolBase {
     {
         $value=get_option($args['option']);
         echo "<input size='40' type=\"password\" name=\"{$args['option']}\" value=\"$value\">";
+        if ($args['description'])
+            echo "<p class='description'>".$args['description']."</p>";
+    }
+
+    protected function registerTextAreaFieldSetting($option_name,$title,$settings_slug,$description=null)
+    {
+        add_settings_field($option_name,$title,[$this,'renderTextAreaFieldSetting'],$this->options_page,$settings_slug,['option'=>$option_name,'description'=>$description]);
+
+    }
+
+    public function renderTextAreaFieldSetting($args)
+    {
+        $value=get_option($args['option']);
+        echo "<textarea cols='40' rows='4' name=\"{$args['option']}\">$value</textarea>";
+        if ($args['description'])
+            echo "<p class='description'>".$args['description']."</p>";
+    }
+
+    protected function registerCheckboxFieldSetting($option_name,$title,$settings_slug,$description=null)
+    {
+        add_settings_field($option_name,$title,[$this,'renderCheckboxFieldSetting'],$this->options_page,$settings_slug,['option'=>$option_name,'description'=>$description]);
+
+    }
+
+    public function renderCheckboxFieldSetting($args)
+    {
+        $value=get_option($args['option']);
+        echo "<input type=\"checkbox\" name=\"{$args['option']}\" ".(($value) ? 'checked':'').">";
+        if ($args['description'])
+            echo "<p class='description'>".$args['description']."</p>";
+    }
+
+    protected function registerNumberFieldSetting($option_name,$title,$settings_slug,$description=null)
+    {
+        add_settings_field($option_name,$title,[$this,'renderNumberFieldSetting'],$this->options_page,$settings_slug,['option'=>$option_name,'description'=>$description]);
+
+    }
+
+    public function renderNumberFieldSetting($args)
+    {
+        $value=get_option($args['option']);
+        echo "<input type=\"number\" min=\"0\" step=\"1\" name=\"{$args['option']}\" value=\"$value\">";
+        if ($args['description'])
+            echo "<p class='description'>".$args['description']."</p>";
     }
 }

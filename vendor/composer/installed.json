@@ -358,5 +358,79 @@
             "s3",
             "sdk"
         ]
+    },
+    {
+        "name": "jakeasmith/http_build_url",
+        "version": "1.0.0",
+        "version_normalized": "1.0.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/jakeasmith/http_build_url.git",
+            "reference": "15bdd686e5178ddfa3e88de60fa585adffb292bb"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/jakeasmith/http_build_url/zipball/15bdd686e5178ddfa3e88de60fa585adffb292bb",
+            "reference": "15bdd686e5178ddfa3e88de60fa585adffb292bb",
+            "shasum": ""
+        },
+        "require-dev": {
+            "phpunit/phpunit": "~3.7"
+        },
+        "time": "2015-05-06 12:27:20",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "files": [
+                "src/http_build_url.php"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Jake A. Smith",
+                "email": "theman@jakeasmith.com"
+            }
+        ],
+        "description": "Provides functionality for http_build_url() to environments without pecl_http."
+    },
+    {
+        "name": "imgix/imgix-php",
+        "version": "1.0.6",
+        "version_normalized": "1.0.6.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/imgix/imgix-php.git",
+            "reference": "74b873e533c6a154ac3108d1c4af8dfc38ca8e28"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/imgix/imgix-php/zipball/74b873e533c6a154ac3108d1c4af8dfc38ca8e28",
+            "reference": "74b873e533c6a154ac3108d1c4af8dfc38ca8e28",
+            "shasum": ""
+        },
+        "require": {
+            "jakeasmith/http_build_url": "^1.0",
+            "php": ">=5.3"
+        },
+        "require-dev": {
+            "phpunit/phpunit": "*"
+        },
+        "time": "2015-06-23 00:14:02",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-0": {
+                "Imgix\\": "src/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "description": "A PHP client library for generating URLs with imgix.",
+        "keywords": [
+            "imgix"
+        ]
     }
 ]

@@ -1,42 +1,77 @@
 <?php
 require_once(ILAB_VENDOR_DIR.'/autoload.php');
 require_once(ILAB_CLASSES_DIR.'/ilab-media-tool-base.php');
-require_once('ilab-media-s3-credentials-provider.php');
 
 class ILabMediaS3Tool extends ILabMediaToolBase {
 
+    private $key;
+    private $secret;
+    private $region;
     private $bucket;
 
-    public function __construct($toolInfo, $toolManager)
+    public function __construct($toolName, $toolInfo, $toolManager)
     {
-        parent::__construct($toolInfo, $toolManager);
+        parent::__construct($toolName, $toolInfo, $toolManager);
 
         $this->bucket=get_option('ilab-media-s3-bucket', getenv('ILAB_AWS_S3_BUCKET'));
-
-        add_filter('wp_update_attachment_metadata', [$this,'updateAttachmentMetadata'], 31337, 2 );
-        add_filter('delete_attachment', [$this,'deleteAttachment'], 20 );
-        add_filter('wp_get_attachment_url', [$this, 'getAttachmentURL'], 31337, 2 );
+        $this->key = get_option('ilab-media-s3-access-key', getenv('ILAB_AWS_S3_ACCESS_KEY'));
+        $this->secret = get_option('ilab-media-s3-secret', getenv('ILAB_AWS_S3_ACCESS_SECRET'));
+        $this->region=get_option('ilab-media-s3-region', getenv('ILAB_AWS_S3_REGION'));
     }
+
+    public function enabled()
+    {
+        $enabled=parent::enabled();
+
+        if ($enabled)
+        {
+            if (!($this->key && $this->secret && $this->bucket && $this->region))
+            {
+                $this->displayAdminNotice('error',"To start using S3, you will need to <a href='admin.php?page={$this->options_page}'>supply your AWS credentials.</a>.");
+                return false;
+            }
+
+            if (!get_option('ilab-media-s3-cdn-base', getenv('ILAB_AWS_S3_CDN_BASE')))
+            {
+                $this->displayAdminNotice('error',"To start using S3, you will need to <a href='admin.php?page={$this->options_page}'>set up CDN information.</a>.");
+                return false;
+            }
+        }
+
+        return $enabled;
+    }
+
+    public function setup()
+    {
+        if ($this->enabled())
+        {
+            add_filter('wp_update_attachment_metadata', [$this, 'updateAttachmentMetadata'], 1000, 2);
+            add_filter('delete_attachment', [$this, 'deleteAttachment'], 1000);
+        }
+
+        if (get_option('ilab-media-s3-cdn-base', getenv('ILAB_AWS_S3_CDN_BASE')))
+            add_filter('wp_get_attachment_url', [$this, 'getAttachmentURL'], 1000, 2 );
+    }
+
 
     private function s3Client($insure_bucket=false)
     {
-        $region=get_option('ilab-media-s3-region', getenv('ILAB_AWS_S3_REGION'));
-
-        if ($region && $this->bucket)
-        {
-            $s3=new Aws\S3\S3Client([
-                                        'version' => 'latest',
-                                        'region'  => $region,
-                                        'credentials' => ILabMediaS3CredentialsProvider::ilab()
-                                    ]);
-
-            if ($insure_bucket && (!$s3->doesBucketExist($this->bucket)))
-                return null;
-
-            return $s3;
-        }
-        else
+        if (!$this->enabled())
             return null;
+
+        $s3=new Aws\S3\S3Client([
+                                    'version' => 'latest',
+                                    'region'  => $this->region,
+                                    'credentials' => [
+                                        'key'    => $this->key,
+                                        'secret' => $this->secret
+                                    ]
+                                ]);
+
+        if ($insure_bucket && (!$s3->doesBucketExist($this->bucket)))
+            return null;
+
+        return $s3;
     }
 
     /**

@@ -6,7 +6,7 @@ var ILabCrop=(function(){
     var _data={};
 
     var cancel=function(){
-        jQuery('#ilab-crop-wrapper').remove();
+        jQuery('#ilab-modal-wrapper').remove();
     };
 
     var updatePreviewWidth=function() {
@@ -39,8 +39,8 @@ var ILabCrop=(function(){
                 }
 
                 jQuery('#ilab-crop-container').css({
-                    'max-width' : jQuery('#ilab-crop-wrapper .attachments').width() + 'px',
-                    'max-height' : jQuery('#ilab-crop-wrapper .attachments').height() + 'px'
+                    'max-width' : jQuery('#ilab-modal-wrapper .attachments').width() + 'px',
+                    'max-height' : jQuery('#ilab-modal-wrapper .attachments').height() + 'px'
                 });
 
                 jQuery('#ilab-cropper').on('built.cropper', function() {
@@ -56,6 +56,7 @@ var ILabCrop=(function(){
                     autoCropArea: 1,
                     movable: false,
                     data : cropperData,
+                    checkImageOrigin: false,
                     preview: '#ilab-crop-preview'
                 });
 
@@ -70,7 +71,7 @@ var ILabCrop=(function(){
     };
 
     var crop=function(){
-        jQuery('#ilab-crop-wrapper .spinner').addClass('is-active');
+        jQuery('#ilab-modal-wrapper .spinner').addClass('is-active');
 
         var data = jQuery('#ilab-cropper').cropper('getData');
         data['action'] = 'ilab_perform_crop';
@@ -80,7 +81,7 @@ var ILabCrop=(function(){
             if (response.status=='ok')
                 jQuery('#ilab-current-crop-img').attr('src',response.src);
 
-            jQuery('#ilab-crop-wrapper .spinner').removeClass('is-active');
+            jQuery('#ilab-modal-wrapper .spinner').removeClass('is-active');
             jQuery(window).resize();
         });
     };
@@ -99,7 +100,7 @@ jQuery(document).ready(function($){
         var partial=currEl.hasClass('ilab-thickbox-partial');
         jQuery.get(currEl.attr('href'), function(data) {
             if (partial) {
-                jQuery('#ilab-crop-wrapper .media-modal-content').empty().append(data);
+                jQuery('#ilab-modal-wrapper .media-modal-content').empty().append(data);
             } else {
                 jQuery('body').append(data);
             }
