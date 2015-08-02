@@ -14,7 +14,7 @@
         <div id="ilab-modal-sidebar">
             {% content sidebar-tabs %}
             {% content sidebar-content %}
-            {% content sidebar-action %}
+            {% content sidebar-actions %}
         </div>
     </div>
 </div>

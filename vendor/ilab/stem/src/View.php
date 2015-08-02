@@ -23,6 +23,18 @@ class View {
     public function parse($view) {
         $contents=file_get_contents($view);
 
+        $includeMatches=[];
+        if (preg_match_all('#{%\s*include\s+([/aA-zZ0-9-_.]+)\s*%}#',$contents,$includeMatches,PREG_PATTERN_ORDER | PREG_OFFSET_CAPTURE))
+        {
+            for($i=count($includeMatches[0])-1; $i>=0; $i--)
+            {
+                $included=file_get_contents(ILAB_VIEW_DIR.'/'.$includeMatches[1][$i][0]);
+                $contents=substr_replace($contents,$included,$includeMatches[0][$i][1],strlen($includeMatches[0][$i][0]));
+//                $contents=str_replace($includeMatches[0][$i],$included,$contents);
+            }
+        }
+
+
         // parse parent template
         $extendMatches=[];
         if (preg_match('#{%\s*extends\s+([/aA-zZ0-9-_.]+)\s*%}#',$contents,$extendMatches))
