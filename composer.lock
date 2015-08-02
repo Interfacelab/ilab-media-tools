@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "0628dda5445773e0824a519d809b7829",
+    "hash": "7821b048988a8edf5fd370c6a550b2e5",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.2.2",
+            "version": "3.2.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "677b931b10163726f9fb5662d9748db67a825d29"
+                "reference": "eb255de0b6b693a69649cdc835386da55a8e163a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/677b931b10163726f9fb5662d9748db67a825d29",
-                "reference": "677b931b10163726f9fb5662d9748db67a825d29",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/eb255de0b6b693a69649cdc835386da55a8e163a",
+                "reference": "eb255de0b6b693a69649cdc835386da55a8e163a",
                 "shasum": ""
             },
             "require": {
@@ -77,7 +77,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2015-07-28 22:59:37"
+            "time": "2015-07-30 20:47:44"
         },
         {
             "name": "guzzlehttp/guzzle",

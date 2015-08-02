@@ -27,7 +27,7 @@ class View {
         $extendMatches=[];
         if (preg_match('#{%\s*extends\s+([/aA-zZ0-9-_.]+)\s*%}#',$contents,$extendMatches))
         {
-            $template=$extendMatches[1][0];
+            $template=$extendMatches[1];
 
             $this->parent=new View(ILAB_VIEW_DIR.'/'.$template);
 
@@ -35,11 +35,11 @@ class View {
         }
 
         // parse content targets
-        $contents=preg_replace('#{%\s*content\s+([/aA-zZ0-9-_.]+)\s*%}#',"<php echo $view->getBlock('$1'); ?>",$contents);
+        $contents=preg_replace('#{%\s*content\s+([/aA-zZ0-9-_.]+)\s*%}#','<?php echo $view->getBlock("$1"); ?>',$contents);
 
         // parse blocks
         $blockMatches=[];
-        if (preg_match_all('#{%\s*block\s*([aA-zZ0-9-_]*)\s*%}(.*?){%\s*endblock\s*%}#s',$contents,$blockMatches))
+        if (preg_match_all('#{%\s*block\s*([aA-zZ0-9-_]*)\s*%}(.*?){%\s*end\s*block\s*%}#s',$contents,$blockMatches))
         {
             for($i=0; $i<count($blockMatches[1]); $i++)
             {
@@ -47,19 +47,19 @@ class View {
                 $this->blocks[$blockName]=$this->parseFragment($blockMatches[2][$i]);
             }
 
-            $contents=preg_replace('#{%\s*block\s*([aA-zZ0-9-_]*)\s*%}(.*?){%\s*endblock\s*%}#s','',$contents);
+            $contents=preg_replace('#{%\s*block\s*([aA-zZ0-9-_]*)\s*%}(.*?){%\s*end\s*block\s*%}#s','',$contents);
         }
 
         $this->parsed=$this->parseFragment($contents);
     }
 
     private function parseFragment($fragment) {
-        $fragment=preg_replace('#{%\s*foreach\s*\(\s*(.*)\s*\)\s*%}#','<?php foreach($1):?>',$fragment);
-        $fragment=preg_replace('#{%\s*endforeach\s*%}#','<?php endforeach; ?>',$fragment);
+        $fragment=preg_replace('#{%\s*for\s*each\s*\(\s*(.*)\s*\)\s*%}#','<?php foreach($1):?>',$fragment);
+        $fragment=preg_replace('#{%\s*end\s*for\s*each\s*%}#','<?php endforeach; ?>',$fragment);
         $fragment=preg_replace('#{%\s*if\s*\((.*)\)\s*%}#','<?php if ($1): ?>',$fragment);
         $fragment=preg_replace('#{%\s*else\s*%}#','<?php else: ?>',$fragment);
-        $fragment=preg_replace('#{%\s*elseif\s*\((.*)\)\s*%}#','<?php elseif ($1): ?>',$fragment);
-        $fragment=preg_replace('#{%\s*endif\s*%}#','<?php endif; ?>',$fragment);
+        $fragment=preg_replace('#{%\s*else\s*if\s*\((.*)\)\s*%}#','<?php elseif ($1): ?>',$fragment);
+        $fragment=preg_replace('#{%\s*end\s*if\s*%}#','<?php endif; ?>',$fragment);
         $fragment=preg_replace("|\{{2}([^}]*)\}{2}|is",'<?php echo $1; ?>',$fragment);
         $fragment=preg_replace("|\{{2}(.*)\}{2}|is",'<?php echo $1; ?>',$fragment); // for closures.
 
@@ -67,8 +67,10 @@ class View {
     }
 
     private function renderFragment($fragment) {
-        if ($this->currentData!=null)
-            extract($this->currentData);
+        $data=($this->currentData!=null) ? $this->currentData : [];
+
+        $data['view']=$this;
+        extract($data);
 
         ob_start();
         eval("?>".trim($fragment));

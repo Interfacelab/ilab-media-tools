@@ -6,7 +6,7 @@
   },
   "autoload": {
     "psr-4": {
-      "ILab": "vendor\\ilab\\stem\\src"
+      "ILab\\Stem\\": "vendor\\ilab\\stem\\src"
     }
   }
 }

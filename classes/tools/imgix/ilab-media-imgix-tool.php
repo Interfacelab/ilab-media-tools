@@ -253,7 +253,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         ];
 
         if (current_user_can( 'edit_post', $image_id))
-            echo render_view('imgix/ilab-imgix-ui.php', $data);
+            echo \ILab\Stem\View::render_view('imgix/ilab-imgix-ui.php', $data);
 
         die;
     }
@@ -309,6 +309,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
             $markMeta=wp_get_attachment_metadata($media_id);
             $params['mark']='/'.$markMeta['file'];
         }
+
 
         json_response(['status'=>'ok','src'=>$imgix->createURL($meta['file'],$params)]);
     }
