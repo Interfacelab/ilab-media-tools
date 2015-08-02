@@ -1,28 +1,13 @@
-.ilab-imgix-media-sidebar {
-    right: 0px !important;
-    width: 299px !important;
-    padding: 0 !important;
-}
-
-.ilab-imgix-media-frame-content {
-    top: 50px;
-}
-
-.ilab-imgix-attachment-details {
-    position:relative;
-    height:100%;
-    width:100%;
-}
-
 .ilab-imgix-parameters-container {
     position: absolute;
-    left:0px; right:0px; top:0px; bottom: 45px;
+    left:0px; right:0px; top:0px; bottom: 0px;
     padding-right: 15px;
     padding-left:15px;
     margin-right: 4px;
     margin-top: 10px;
-    margin-bottom: 10px;
+    margin-bottom: 0px !important;
     overflow: scroll;
+    padding-bottom:  0px !important;
 }
 
 .ilab-imgix-parameters-container::-webkit-scrollbar {
@@ -41,8 +26,102 @@
     border-bottom: 1px solid rgba(0,0,0,0.125);
 }
 
-.ilab-imgix-parameter h3 {
+.ilab-imgix-parameter:first-child {
+    margin-top:15px !important;
+}
+
+.ilab-imgix-parameter:last-child {
+    border-bottom: 0px none;
+    margin-bottom: 30px !important;
+}
+
+.ilab-imgix-param-title {
+    display: -webkit-flex;
+    display: flex;
+    -webkit-align-items: baseline;
+    align-items: baseline;
+}
+
+.ilab-imgix-param-title-left {
+    -webkit-flex: 1 50%;
+    flex: 1 50%;
+}
+
+.ilab-imgix-param-title-right {
+    -webkit-flex: 1 50%;
+    flex: 1 50%;
+    padding-left: 40px;
+
+}
+
+.ilab-imgix-param-title .wp-picker-input-wrap {
+    display: none;
+}
+
+.ilab-imgix-param-title-right .wp-picker-holder {
+    position: absolute;
+    left: 80px;
+    top: 60px;
+}
+
+.ilab-imgix-param-title-right .iris-picker {
+    box-shadow: 0px 0px 8px rgba(0,0,0,0.5);
+}
+
+.ilab-imgix-param-title-right h3 {
+    text-align: right;
+}
+
+.ilab-imgix-param-title h3, .imgix-param-blend-mode h3 {
     margin-top:0px;
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #666;
+}
+
+.ilab-imgix-media-param-title .ilab-imgix-param-title-left {
+    -webkit-flex: 2 80%;
+    flex:2 80%;
+}
+
+.ilab-imgix-media-param-title .ilab-imgix-param-title-right {
+    -webkit-flex:1 20%;
+    flex:1 20%;
+}
+
+.ilab-imgix-media-param-title .ilab-imgix-param-title-right a {
+    text-align:center !important;
+}
+
+.imgix-param-blend-mode h3 {
+    -webkit-flex: 1 50%;
+    flex: 1 50%;
+}
+
+.imgix-param-blend-mode {
+    margin-top: 15px;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-align-items: baseline;
+    align-items: baseline;
+}
+
+.imgix-param-blend-mode select {
+    -webkit-flex: 2 100%;
+    flex: 2 100%;
+}
+
+.ilab-imgix-parameters-container h4 {
+    margin-left:-20px;
+    margin-right:-15px;
+    margin-bottom:15px;
+    margin-top: 0px;
+    font-size: 10px;
+    text-transform: uppercase;
+    color: #999;
+    background-color: #ddd;
+    padding: 5px;
+    padding-left: 20px;
 }
 
 .ilab-imgix-parameter input[type=range]{
@@ -108,15 +187,16 @@
     margin-top: -6px;
 }
 
-.ilab-imgix-parameter a {
+.ilab-imgix-parameter a.imgix-param-reset {
     font-size: 11px;
     display:block;
     width: 100%;
     text-align:right;
     font-style: italic;
-    margin-bottom: 5px;
+    margin-bottom: 10px;
     outline: none !important;
     border:0px none !important;
+    text-decoration: none;
 }
 .ilab-imgix-parameter a:focus {
     outline: none !important;
@@ -156,4 +236,64 @@
 
 .is-hidden {
     display:none;
+}
+
+
+.ilab-imgix-media-preview {
+    position:relative;
+    padding:0px !important;
+    margin: 0px !important;
+    padding-bottom:100% !important;
+    background-image: url(../img/ilab-imgix-edit-bg.png);
+}
+
+.ilab-imgix-media-preview-inner {
+    position:absolute;
+    left:0px; right:0px; bottom:0px; top:0px;
+    display: -webkite-flex;
+    display: flex;
+    -webkit-align-items: center;
+    align-items: center;
+    justify-content: center;
+    -webkit-justify-content: center;
+}
+
+.ilab-imgix-media-preview img {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-50%,-50%);
+    transform: translate(-50%, -50%);
+    max-width: 100%;
+    max-height: 100%;
+    display: block;
+
+}
+
+.ilab-imgix-alignment-container {
+    display: -webkit-flex;
+    display: flex;
+    flex: row;
+    flex-wrap: wrap;
+    justify-content:space-around;
+    align-items:baseline;
+    padding:0px 35px;
+}
+
+.imgix-alignment-button {
+    background-color: #ddd;
+    display: block;
+    width: 60px;
+    height: 60px;
+    margin: 5px 5px;
+    text-decoration:none;
+    border-radius: 4px;
+    border:1px solid #888;
+
+    box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 0 rgba(0, 0, 0, 0.15) !important;
+}
+
+.imgix-alignment-button.selected-alignment {
+    background-color: #bbb;
+    box-shadow: inset 1px 1px 1px rgba(0,0,0,0.25), 0 1px 0 rgba(0, 0, 0, 0.15) !important;
 }

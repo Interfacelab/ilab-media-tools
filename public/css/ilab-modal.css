@@ -1,9 +1,9 @@
 #ilab-modal-wrapper .media-modal-backdrop {
-    z-index: 17000000 !important;
+    z-index: 160000 !important;
 }
 
 #ilab-modal-wrapper .media-modal {
-    z-index: 17000001 !important;;
+    z-index: 160000 !important;;
 }
 
 #ilab-modal-wrapper .media-frame-content,#ilab-modal-wrapper .media-frame-router,#ilab-modal-wrapper .media-frame-title
@@ -34,4 +34,154 @@
 
 #ilab-modal-wrapper .message.error.yoimg-crop-smaller, #ilab-modal-wrapper .message.error.yoimg-crop-retina-smaller {
     border-left-color: #FFFF00;
+}
+
+
+
+#ilab-modal-container {
+    z-index: 160000 !important;;
+    background-color: rgb(252, 252, 252);
+    position: absolute;
+    left: 30px;
+    top: -1px;
+    right: 30px;
+    bottom: 30px;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+    border-radius: 0px;
+}
+
+#ilab-modal-titlebar {
+    border-bottom: 1px solid #ddd;
+    min-height: 50px;
+    max-height: 50px;
+    display: -webkit-flex;
+    display: flex;
+    box-shadow: 0px 0px 4px rgba(0,0,0,0.15);
+}
+
+#ilab-modal-titlebar h1 {
+    -webkit-flex:2 100%;
+    flex: 2 100%;
+    display: block;
+    padding: 0px;
+    margin: 0px;
+    padding: 0 16px;
+    font-size: 22px;
+    line-height: 50px;
+}
+
+#ilab-modal-titlebar a {
+    display: block;
+    max-width: 50px;
+    min-width: 50px;
+    border-left: 1px solid #ddd;
+}
+
+#ilab-modal-window-area {
+    -webkit-flex:2 100%;
+    flex: 2 100%;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-direction: row;
+    flex-direction: row;
+}
+
+#ilab-modal-editor-container {
+    background-color: #fff;
+    -webkit-flex:2 100%;
+    flex: 2 100%;
+    position: relative;
+}
+
+#ilab-modal-editor-area {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    right: 0px;
+    bottom: 0px;
+    background-image: url(../img/ilab-imgix-edit-bg.png);
+    display: block;
+    margin: 10px;
+}
+
+#ilab-imgix-preview-image {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-50%,-50%);
+    transform: translate(-50%, -50%);
+    max-width: 100%;
+    max-height: 100%;
+    display: block;
+}
+
+#ilab-modal-sidebar {
+    min-width: 350px;
+    max-width: 350px;
+    background-color: rgb(243, 243, 243);
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+    border-left: 1px solid #ddd;
+}
+
+.ilab-modal-tabs {
+    background: #ddd;
+    display: -webkit-flex;
+    display: flex;
+    min-height: 31px;
+    max-height: 31px;
+}
+
+.ilab-modal-tab {
+    background-color: #ccc;
+    line-height: 30px;
+    padding: 0px 15px;
+    margin-right: 3px;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #888;
+    font-weight: bold;
+    cursor: pointer !important;
+}
+
+.ilab-modal-tab.active-tab {
+    background-color: rgb(243, 243, 243);
+    color: #777;
+}
+
+.ilab-modal-sidebar-content {
+    position: relative;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex:2 100%;
+    flex: 2 100%;
+}
+
+.ilab-modal-sidebar-actions {
+    display: -webkit-flex;
+    display: flex;
+    flex-direction: row;
+    background-color: white;
+    border-top: 1px solid #eee;
+    -webkit-justify-content:space-between;
+    justify-content:space-between;
+    align-items: center;
+    -webkit-align-items: center;
+    padding: 15px;
+}
+
+.ilab-modal-sidebar-actions a {
+    display: block;
+}
+
+a.button-reset {
+    background: #AA0000 !important;
+    border-color: #770000 !important;
+    color: white;
+    box-shadow: inset 0 1px 0 #DD0000, 0 1px 0 rgba(0, 0, 0, 0.15) !important;
 }

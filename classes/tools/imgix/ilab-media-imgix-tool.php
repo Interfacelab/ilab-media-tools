@@ -166,11 +166,12 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         else
             wp_enqueue_style ( 'media-views' );
 
+        wp_enqueue_style( 'wp-color-picker' );
         wp_enqueue_style('wp-pointer');
         wp_enqueue_style('ilab-modal-css', ILAB_PUB_CSS_URL . '/ilab-modal.css' );
         wp_enqueue_style('ilab-imgix-css', ILAB_PUB_CSS_URL . '/ilab-imgix.css' );
         wp_enqueue_script('wp-pointer');
-        wp_enqueue_script('ilab-modal-js', ILAB_PUB_JS_URL. '/ilab-modal.js', ['jquery'], false, true );
+        wp_enqueue_script('ilab-modal-js', ILAB_PUB_JS_URL. '/ilab-modal.js', ['jquery','wp-color-picker'], false, true );
         wp_enqueue_script('ilab-imgix-js', ILAB_PUB_JS_URL. '/ilab-imgix.js', ['ilab-modal-js'], false, true );
     }
 
@@ -300,6 +301,15 @@ class ILabMediaImgixTool extends ILabMediaToolBase
             $imgix->setSignKey($this->signingKey);
 
         $params=(isset($_POST['settings'])) ? $_POST['settings'] : [];
+
+        if (isset($params['media']))
+        {
+            $media_id=$params['media'];
+            unset($params['media']);
+            $markMeta=wp_get_attachment_metadata($media_id);
+            $params['mark']='/'.$markMeta['file'];
+        }
+
         json_response(['status'=>'ok','src'=>$imgix->createURL($meta['file'],$params)]);
     }
 }

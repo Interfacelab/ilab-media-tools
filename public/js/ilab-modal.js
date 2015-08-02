@@ -6,7 +6,7 @@ var ILabModal=(function(){
     var _data={};
 
     var cancel=function(){
-        jQuery('#ilab-modal-wrapper').remove();
+        jQuery('#ilab-modal-container').remove();
     };
 
     return {
@@ -24,6 +24,7 @@ jQuery(document).ready(function($){
                 jQuery('#ilab-modal-wrapper .media-modal-content').empty().append(data);
             } else {
                 jQuery('body').append(data);
+                console.log(data);
             }
         });
 
