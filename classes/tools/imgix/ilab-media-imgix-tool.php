@@ -249,6 +249,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
             'tool'=>$this,
             'settings'=>$imgix_settings,
             'src'=>$full_src,
+            'current'=>[],
             'params'=>$this->toolInfo['settings']['params']
         ];
 
@@ -310,6 +311,42 @@ class ILabMediaImgixTool extends ILabMediaToolBase
             $params['mark']='/'.$markMeta['file'];
         }
 
+        if (isset($params['mark']))
+        {
+            if (($params['mark']=='/') || (isset($params['markscale']) && ($params['markscale']==0)))
+            {
+                unset($params['mark']);
+                unset($params['markalign']);
+                unset($params['markalpha']);
+                unset($params['markscale']);
+            }
+        }
+        else
+        {
+            unset($params['mark']);
+            unset($params['markalign']);
+            unset($params['markalpha']);
+            unset($params['markscale']);
+        }
+
+        if (isset($params['border-width']) && isset($params['border-color']))
+        {
+            $params['border']=$params['border-width'].','.str_replace('#','',$params['border-color']);
+        }
+
+        unset($params['border-width']);
+        unset($params['border-color']);
+
+        if (isset($params['padding-width']))
+        {
+            $params['pad']=$params['padding-width'];
+
+            if (isset($params['padding-color']))
+                $params['bg']=$params['padding-color'];
+        }
+
+        unset($params['padding-width']);
+        unset($params['padding-color']);
 
         json_response(['status'=>'ok','src'=>$imgix->createURL($meta['file'],$params)]);
     }

@@ -66,8 +66,8 @@
 <script>
     ILabImageEdit.init({
         image_id:{{$image_id}},
-    settings:{{json_encode($settings,JSON_FORCE_OBJECT | JSON_PRETTY_PRINT)}}
-
+        current:{{json_encode($current,JSON_FORCE_OBJECT|JSON_PRETTY_PRINT)}},
+        settings:{{json_encode($settings,JSON_FORCE_OBJECT | JSON_PRETTY_PRINT)}}
     });
 </script>
 {% endblock %}

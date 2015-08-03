@@ -38,8 +38,9 @@
 .ilab-imgix-param-title {
     display: -webkit-flex;
     display: flex;
-    -webkit-align-items: baseline;
-    align-items: baseline;
+    -webkit-align-items: center;
+    align-items: center;
+    margin-bottom: 10px;
 }
 
 .ilab-imgix-param-title-left {
@@ -51,17 +52,31 @@
     -webkit-flex: 1 50%;
     flex: 1 50%;
     padding-left: 40px;
-
+    text-align:right;
 }
 
 .ilab-imgix-param-title .wp-picker-input-wrap {
     display: none;
 }
 
+.ilab-imgix-param-title-right .wp-picker-container {
+    position: relative;
+}
+
 .ilab-imgix-param-title-right .wp-picker-holder {
     position: absolute;
-    left: 80px;
-    top: 60px;
+    right: 0px;
+    top: 20px;
+}
+
+.ilab-imgix-param-title-right .wp-color-result {
+    margin: 0 0px 8px 0px;
+    height: 20px;
+}
+
+.ilab-imgix-param-title-right .wp-color-result::after {
+    line-height:20px;
+    font-size:10px;
 }
 
 .ilab-imgix-param-title-right .iris-picker {
@@ -273,6 +288,10 @@
 .ilab-imgix-alignment-container {
     display: -webkit-flex;
     display: flex;
+    -webkit-flex: row;
+    -webkit-flex-wrap: wrap;
+    -webkit-justify-content:space-around;
+    -webkit-align-items:baseline;
     flex: row;
     flex-wrap: wrap;
     justify-content:space-around;

@@ -168,15 +168,12 @@
     flex-direction: row;
     background-color: white;
     border-top: 1px solid #eee;
-    -webkit-justify-content:space-between;
-    justify-content:space-between;
-    align-items: center;
-    -webkit-align-items: center;
     padding: 15px;
 }
 
 .ilab-modal-sidebar-actions a {
     display: block;
+    margin-right: 10px !important;
 }
 
 a.button-reset {

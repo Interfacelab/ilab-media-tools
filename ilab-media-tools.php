@@ -10,6 +10,7 @@ Author URI: http://interfacelab.com
 
 // Directory defines
 define('ILAB_TOOLS_DIR',dirname(__FILE__));
+define('ILAB_HELPERS_DIR',ILAB_TOOLS_DIR.'/helpers');
 define('ILAB_CLASSES_DIR',ILAB_TOOLS_DIR.'/classes');
 define('ILAB_VENDOR_DIR',ILAB_TOOLS_DIR.'/vendor');
 define('ILAB_VIEW_DIR',ILAB_TOOLS_DIR.'/views');

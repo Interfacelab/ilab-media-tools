@@ -1,26 +1,37 @@
 /**
  * Created by jong on 7/31/15.
  */
-var ILabImageEdit=(function(){
-    var _data={};
+
+/**
+ * Image Editing Module
+ * @type {{init, resetAll}}
+ */
+var ILabImageEdit=(function($){
+    var _settings={};
     var _previewTimeout;
 
+    /**
+     * Requests a preview to be generated.
+     */
     var preview=function(){
         clearTimeout(_previewTimeout);
-        _previewTimeout=setTimeout(doPreview,500);
+        _previewTimeout=setTimeout(_preview,500);
     };
 
-    var doPreview=function(){
+    /**
+     * Performs the actual request for a preview to be generated
+     */
+    var _preview=function(){
         var postData={};
-        jQuery('.imgix-param').each(function(){
-            var param=jQuery(this);
-            var paramIsColor=((param.data('param-type')=='color') || (param.data('param-type')=='blend-color'));
-            val=param.val();
+        $('.imgix-param').each(function(){
+            var param=$(this);
+            var paramType=param.data('param-type');
+            var val=param.val();
 
-            if (paramIsColor)
+            if ((paramType=='color') || (paramType=='blend-color'))
             {
-                var paramAlpha=jQuery('#imgix-param-alpha-'+param.attr('name'));
-                alpha=parseInt((paramAlpha.val()/100.0)*255);
+                var paramAlpha=$('#imgix-param-alpha-'+param.attr('name'));
+                var alpha=parseInt((paramAlpha.val()/100.0)*255);
                 if (alpha==0)
                     return;
 
@@ -29,9 +40,9 @@ var ILabImageEdit=(function(){
                 val='#'+hexChar[(alpha >> 4) & 0x0f] + hexChar[alpha & 0x0f]+val;
             }
 
-            if (param.data('param-type')=='blend-color')
+            if (paramType=='blend-color')
             {
-                var paramBlend=jQuery('#imgix-param-blend-'+param.attr('name'));
+                var paramBlend=$('#imgix-param-blend-'+param.attr('name'));
                 var paramBlendParam=paramBlend.data('blend-param');
                 var blendVal=paramBlend.val();
                 if (blendVal!='none')
@@ -44,81 +55,94 @@ var ILabImageEdit=(function(){
                 postData[param.attr('name')]=val;
         });
 
-        data={};
+        var data={};
         data['action'] = 'ilab_imgix_preview';
-        data['image_id'] = _data.image_id;
+        data['image_id'] = _settings.image_id;
         data['settings']=postData;
-        jQuery('#ilab-preview-wait-modal').removeClass('is-hidden');
-        jQuery.post(ajaxurl, data, function(response) {
+
+        $('#ilab-preview-wait-modal').removeClass('is-hidden');
+
+        $.post(ajaxurl, data, function(response) {
             if (response.status=='ok')
             {
-                console.log(response.src);
-                jQuery('#ilab-imgix-preview-image').on('load',function(){
-                    jQuery('#ilab-preview-wait-modal').addClass('is-hidden');
+                if (_settings.debug)
+                    console.log(response.src);
+
+                $('#ilab-imgix-preview-image').on('load',function(){
+                    $('#ilab-preview-wait-modal').addClass('is-hidden');
                 });
 
-                jQuery('#ilab-imgix-preview-image').attr('src',response.src);
+                $('#ilab-imgix-preview-image').attr('src',response.src);
             }
             else
             {
-                jQuery('#ilab-preview-wait-modal').addClass('is-hidden');
+                $('#ilab-preview-wait-modal').addClass('is-hidden');
             }
         });
 
     };
 
-    var resetAll=function(){
-
-    };
-
-    var init=function(settings) {
-        _data=settings;
-
+    /**
+     * Setup the tabs
+     * @private
+     */
+    var _setupTabs=function() {
         var firstTab=false;
-        jQuery(".ilab-modal-tab").each(function(){
-            var thisTab=jQuery(this);
-            var target=jQuery('#'+thisTab.data('target'));
+        $(".ilab-modal-tab").each(function(){
+            var tab=$(this);
+            var target=$('#'+tab.data('target'));
 
             if (!firstTab)
             {
-                thisTab.addClass('active-tab');
+                tab.addClass('active-tab');
                 target.removeClass('is-hidden');
 
                 firstTab=true;
             }
 
-            thisTab.on('click',function(e){
+            tab.on('click',function(e){
                 e.preventDefault();
 
-                jQuery(".ilab-modal-tab").each(function() {
-                    var tab = jQuery(this);
-                    var tabTarget = jQuery('#' + tab.data('target'));
+                $(".ilab-modal-tab").each(function() {
+                    var otherTab = $(this);
+                    var tabTarget = $('#' + otherTab.data('target'));
 
-                    tab.removeClass('active-tab');
+                    otherTab.removeClass('active-tab');
                     tabTarget.addClass('is-hidden');
                 });
 
-                thisTab.addClass('active-tab');
+                tab.addClass('active-tab');
                 target.removeClass('is-hidden');
 
                 return false;
             });
         });
+    };
 
-        jQuery('.imgix-param-color').wpColorPicker({
+    /**
+     * Initialize the whole thing
+     * @param settings
+     */
+    var init=function(settings) {
+        _settings=settings;
+
+        _setupTabs();
+
+        $('.imgix-param-color').wpColorPicker({
            palettes: false,
             change: function(event, ui) {
                 preview();
             }
         });
 
-        jQuery('.imgix-param').each(function(){
-            var param=jQuery(this);
+        $('.imgix-param').each(function(){
+            var param=$(this);
             var paramIsColor=((param.data('param-type')=='color') || (param.data('param-type')=='blend-color'));
-            var paramValueDisplay=jQuery('#imgix-current-value-'+param.attr('name'));
+            var paramValueDisplay=$('#imgix-current-value-'+param.attr('name'));
 
             paramValueDisplay.text(param.val());
             param.on('change',function(e){
+                param.hide().show(0);
                 preview();
                 if (paramValueDisplay)
                     paramValueDisplay.text(param.val());
@@ -132,39 +156,71 @@ var ILabImageEdit=(function(){
             });
         });
 
-        jQuery('.imgix-param-alpha').each(function(){
-            var param=jQuery(this);
-            param.on('change',function(e){
-                preview();
-            });
-        });
-
-        jQuery('.imgix-param-blend').each(function(){
-            var param=jQuery(this);
-            param.on('change',function(e){
-                preview();
-            });
-        });
-
-        jQuery('.imgix-param-reset').on('click',function(){
-            paramName=jQuery(this).data('param');
-            paramValueDisplay=jQuery('#imgix-current-value-'.paramName);
-            param=jQuery('#imgix-param-'+paramName);
-            param.val(param.data('default-value'));
-            paramValueDisplay.text(param.data('default-value'));
+        $('.imgix-param-alpha').on('change',function(){
             preview();
         });
 
-        jQuery('.imgix-media-button').on('click',function(){
-            var selectButton=jQuery(this);
+        $('.imgix-param-blend').on('change',function(){
+            preview();
+        });
+
+        $('.imgix-param-reset').on('click',function(){
+            var paramName=$(this).data('param');
+            var paramValueDisplay=$('#imgix-current-value-'+paramName);
+            var param=$('#imgix-param-'+paramName);
+            var paramType=param.data('param-type');
+
+            if (paramType=='slider')
+            {
+                param.val(param.data('default-value'));
+                paramValueDisplay.text(param.data('default-value'));
+                param.hide().show(0);
+            }
+            else if (paramType=='color')
+            {
+                param.val('#FF0000');
+                param.wpColorPicker('color', '#FF0000');
+                $('#imgix-param-alpha-'+paramName).val(0);
+                $('#imgix-param-alpha-'+paramName).hide().show(0);
+            }
+            else if (paramType=='blend-color')
+            {
+                param.val('#FF0000');
+                param.wpColorPicker('color', '#FF0000');
+                $('#imgix-param-alpha-'+paramName).val(0);
+                $('#imgix-param-alpha-'+paramName).hide().show(0);
+                $('#imgix-param-blend-'+paramName).val('none');
+            }
+            else if (paramType=='alignment')
+            {
+                param.val('bottom,right');
+                $('.imgix-alignment-button').each(function(){
+                    var selectButton=$(this);
+                    selectButton.removeClass('selected-alignment');
+                    if (selectButton.data('param-value')=='bottom,right')
+                        selectButton.addClass('selected-alignment');
+                });
+            }
+            else if (paramType=='media-chooser')
+            {
+                $('#imgix-param-'+paramName).val('');
+                $image=$('#imgix-media-preview');
+                $image.removeAttr('src').replaceWith($image.clone());
+            }
+
+            preview();
+        });
+
+        $('.imgix-media-button').on('click',function(){
+            var selectButton=$(this);
             var param=selectButton.data('param');
 
             var send_attachment_bkp = wp.media.editor.send.attachment;
 
             wp.media.editor.send.attachment = function(props, attachment) {
 
-                jQuery('#imgix-param-'+param).val(attachment.id);
-                jQuery('#imgix-media-preview').attr('src',attachment.url);
+                $('#imgix-param-'+param).val(attachment.id);
+                $('#imgix-media-preview').attr('src',attachment.url);
 
                 preview();
 
@@ -176,23 +232,30 @@ var ILabImageEdit=(function(){
             return false;
         });
 
-        jQuery('.imgix-alignment-button').on('click',function(){
-            var selectButton=jQuery(this);
+        $('.imgix-alignment-button').on('click',function(){
+            var selectButton=$(this);
             var param=selectButton.data('param');
-            jQuery('.imgix-alignment-button').each(function(){
-                jQuery(this).removeClass('selected-alignment');
+            $('.imgix-alignment-button').each(function(){
+                $(this).removeClass('selected-alignment');
             });
             selectButton.addClass('selected-alignment');
-            jQuery('#imgix-param-'+param).val(selectButton.data('param-value'));
+            $('#imgix-param-'+param).val(selectButton.data('param-value'));
             preview();
         });
+    };
+
+    /**
+     * Reset all of the values
+     */
+    var resetAll=function(){
+        $('.imgix-param-reset').click();
     };
 
     return {
         init: init,
         resetAll:resetAll
     }
-})();
+})(jQuery);
 
 jQuery(document).ready(function(){
 

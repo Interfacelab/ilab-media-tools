@@ -31,6 +31,7 @@
     "source": "ilab-media-imgix-tool.php",
     "class": "ILabMediaImgixTool",
     "dependencies":["crop","s3"],
+    "helpers":["ilab-imgix-helpers.php"],
     "settings":{
       "title":"Imgix Settings",
       "menu":"Imgix Settings",
@@ -71,14 +72,7 @@
       },
       "params":{
         "adjust": {
-          "Color Controls": {
-            "hue":{
-              "title":"Hue",
-              "type":"slider",
-              "min":-359,
-              "max":359,
-              "default": 0
-            },
+          "Luminosity Controls":{
             "bri":{
               "title":"Brightness",
               "type":"slider",
@@ -119,6 +113,15 @@
               "type":"slider",
               "min":-100,
               "max":100,
+              "default": 0
+            }
+          },
+          "Color Controls": {
+            "hue":{
+              "title":"Hue",
+              "type":"slider",
+              "min":-359,
+              "max":359,
               "default": 0
             },
             "sat":{
@@ -183,7 +186,7 @@
               "type":"blend-color",
               "blend-param": "bm",
               "blends":{
-                "none":"None",
+                "none":"Normal",
                 "color":"Color",
                 "burn":"Burn",
                 "dodge":"Dodge",

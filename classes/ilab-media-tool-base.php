@@ -57,6 +57,12 @@ abstract class ILabMediaToolBase {
 
         if (isset($toolInfo['settings']['options-group']))
             $this->options_group=$toolInfo['settings']['options-group'];
+
+        if (isset($toolInfo['helpers']))
+        {
+            foreach($toolInfo['helpers'] as $helper)
+                require_once(ILAB_HELPERS_DIR.'/'.$helper);
+        }
     }
 
     /**
