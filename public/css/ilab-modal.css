@@ -137,7 +137,7 @@
     display: flex;
     -webkit-flex-direction: column;
     flex-direction: column;
-    border-left: 1px solid #ddd;
+    border-left:3px solid #ddd;
 }
 
 .ilab-modal-tabs {
