@@ -4,6 +4,14 @@
 {{ __('Edit Image') }} ({{$full_width}} x {{$full_height}})
 {% end block %}
 
+{% block main-tabs %}
+<div id="ilab-modal-editor-tabs">
+    <div class="ilab-modal-editor-tab active-tab">Original Image</div>
+    <div class="ilab-modal-editor-tab">Tab 1</div>
+    <div class="ilab-modal-editor-tab">Tab 1</div>
+</div>
+{% end block %}
+
 {% block editor %}
 <img id="ilab-imgix-preview-image" src="{{ $src }}" />
 <div id="ilab-preview-wait-modal" class="is-hidden">

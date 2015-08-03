@@ -1,13 +1,17 @@
 .ilab-imgix-parameters-container {
     position: absolute;
     left:0px; right:0px; top:0px; bottom: 0px;
-    padding-right: 15px;
-    padding-left:15px;
+    padding-right: 20px;
+    padding-left:10px;
     margin-right: 4px;
+    margin-left: 10px;
     margin-top: 10px;
     margin-bottom: 0px !important;
     overflow: scroll;
     padding-bottom:  0px !important;
+}
+.ilab-imgix-parameters-container select {
+    font-size: 12px;
 }
 
 .ilab-imgix-parameters-container::-webkit-scrollbar {
@@ -40,7 +44,7 @@
     display: flex;
     -webkit-align-items: center;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: 0px;
 }
 
 .ilab-imgix-param-title-left {
@@ -67,6 +71,7 @@
     position: absolute;
     right: 0px;
     top: 20px;
+    z-index: 1000;
 }
 
 .ilab-imgix-param-title-right .wp-color-result {
@@ -89,7 +94,7 @@
 
 .ilab-imgix-param-title h3, .imgix-param-blend-mode h3 {
     margin-top:0px;
-    font-size: 12px;
+    font-size: 11px;
     text-transform: uppercase;
     color: #666;
 }

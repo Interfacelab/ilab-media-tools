@@ -6,9 +6,12 @@
         </a>
     </div>
     <div id="ilab-modal-window-area">
-        <div id="ilab-modal-editor-container">
-            <div id="ilab-modal-editor-area">
-                {% content editor %}
+        <div id="ilab-modal-window-content-area">
+            {% content main-tabs %}
+            <div id="ilab-modal-editor-container">
+                <div id="ilab-modal-editor-area">
+                    {% content editor %}
+                </div>
             </div>
         </div>
         <div id="ilab-modal-sidebar">
