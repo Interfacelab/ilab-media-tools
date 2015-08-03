@@ -54,3 +54,16 @@ function imgixIsSelected($param,$current,$value,$defaultValue,$selectedOutput,$u
 
     return $unselectedOutput;
 }
+
+function imgixModeIsSelected($current,$mode,$selectedOutput,$unselectedOutput='')
+{
+    if (isset($current['auto']))
+    {
+        $modes=explode(',',$current['auto']);
+        foreach($modes as $amode)
+            if ($amode==$mode)
+                return $selectedOutput;
+    }
+
+    return $unselectedOutput;
+}

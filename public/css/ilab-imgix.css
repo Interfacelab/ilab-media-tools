@@ -321,3 +321,60 @@
     background-color: #bbb;
     box-shadow: inset 1px 1px 1px rgba(0,0,0,0.25), 0 1px 0 rgba(0, 0, 0, 0.15) !important;
 }
+
+.ilab-modal-pillbox {
+    padding: 10px 0px 20px 0px;
+    text-align: center;
+}
+
+.ilab-imgix-pill {
+    line-height:30px;
+    font-size: 11px;
+
+    padding: 10px 14px 10px 35px;
+    background-color: #eaeaea;
+    text-transform: uppercase;
+    font-weight: bold;
+    color: #444;
+    text-decoration: none;
+    border-radius: 8px;
+
+    margin:3px;
+}
+
+.ilab-imgix-pill.pill-selected {
+    background-color: #ccc;
+    box-shadow: inset 1px 1px 1px rgba(0,0,0,0.25);
+    color: white;
+
+}
+
+.ilab-imgix-pill-enhance {
+    background-image: url(../img/ilab-imgix-magic-wand-black.png);
+    background-repeat: no-repeat;
+    background-position: 12px 8px;
+    padding-left: 40px;
+    background-size: 20px 20px;
+}
+
+
+.ilab-imgix-pill-enhance.pill-selected {
+    background-image: url(../img/ilab-imgix-magic-wand-white.png);
+}
+
+
+.ilab-imgix-pill-redeye {
+    background-image: url(../img/ilab-imgix-red-eye-black.png);
+    background-repeat: no-repeat;
+    background-position: 12px 8px;
+    padding-left: 40px;
+    background-size: 20px 20px;
+}
+
+.ilab-imgix-pill-redeye.pill-selected {
+    background-image: url(../img/ilab-imgix-red-eye-white.png);
+}
+
+
+
+

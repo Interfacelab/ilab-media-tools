@@ -303,6 +303,18 @@ class ILabMediaImgixTool extends ILabMediaToolBase
 
         $params=(isset($_POST['settings'])) ? $_POST['settings'] : [];
 
+        $auto=['format'];
+        if (isset($params['enhance']))
+            $auto[]='enhance';
+
+        if (isset($params['redeye']))
+            $auto[]='redeye';
+
+        unset($params['enhance']);
+        unset($params['redeye']);
+
+        $params['auto']=implode(',',$auto);
+
         if (isset($params['media']))
         {
             $media_id=$params['media'];

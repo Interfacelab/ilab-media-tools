@@ -32,6 +32,14 @@
 <div class="ilab-modal-sidebar-content">
     {% for each($params as $paramSection => $paramSectionInfo) %}
     <div id="ilab-imgix-params-section-{{$paramSection}}" class="ilab-imgix-parameters-container is-hidden">
+        {% if ($paramSection=='adjust') %}
+        <div class="ilab-modal-pillbox">
+            <input type="hidden" data-param-type="hidden" data-default-value="0" class="imgix-param" name="enhance" id="imgix-param-enhance" value="{{imgixCurrentValue('enhance',$current,0)}}">
+            <input type="hidden" data-param-type="hidden" data-default-value="0" class="imgix-param" name="redeye" id="imgix-param-redeye" value="{{imgixCurrentValue('redeye',$current,0)}}">
+            <a data-param="enhance" id="imgix-pill-enhance" class="ilab-imgix-pill ilab-imgix-pill-enhance {{imgixIsSelected('enhance',$current,1,0,'pill-selected')}}" href="#">Auto Enhance</a>
+            <a data-param="redeye" id="imgix-pill-redeye" class="ilab-imgix-pill ilab-imgix-pill-redeye {{imgixIsSelected('redeye',$current,1,0,'pill-selected')}}" href="#">Remove Red Eye</a>
+        </div>
+        {% endif %}
         {% for each($paramSectionInfo as $group => $groupParams) %}
         <h4>{{$group}}</h4>
         <div>

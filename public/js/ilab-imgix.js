@@ -242,6 +242,23 @@ var ILabImageEdit=(function($){
             $('#imgix-param-'+param).val(selectButton.data('param-value'));
             preview();
         });
+
+        $('.ilab-imgix-pill').on('click',function(){
+            paramName=$(this).data('param');
+            param=$('#imgix-param-'+paramName);
+            if (param.val()==1)
+            {
+                param.val(0);
+                $(this).removeClass('pill-selected');
+            }
+            else
+            {
+                param.val(1);
+                $(this).addClass('pill-selected');
+            }
+
+            preview();
+        });
     };
 
     /**
