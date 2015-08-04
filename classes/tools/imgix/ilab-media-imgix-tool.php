@@ -61,7 +61,76 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         return $url;
     }
 
-    public function imageDownsize($fail,$id,$size)
+    private function buildImgixParams($params)
+    {
+        if ($this->autoFormat)
+            $auto=['format'];
+        else
+            $auto=[];
+
+        if (isset($params['enhance']))
+            $auto[]='enhance';
+
+        if (isset($params['redeye']))
+            $auto[]='redeye';
+
+        unset($params['enhance']);
+        unset($params['redeye']);
+
+        $params['auto']=implode(',',$auto);
+
+        if ($this->imageQuality)
+            $params['q']=$this->imageQuality;
+
+        if (isset($params['media']))
+        {
+            $media_id=$params['media'];
+            unset($params['media']);
+            $markMeta=wp_get_attachment_metadata($media_id);
+            $params['mark']='/'.$markMeta['file'];
+        }
+
+        if (isset($params['mark']))
+        {
+            if (($params['mark']=='/') || ($params['mark']=='') || (isset($params['markscale']) && ($params['markscale']==0)))
+            {
+                unset($params['mark']);
+                unset($params['markalign']);
+                unset($params['markalpha']);
+                unset($params['markscale']);
+            }
+        }
+        else
+        {
+            unset($params['mark']);
+            unset($params['markalign']);
+            unset($params['markalpha']);
+            unset($params['markscale']);
+        }
+
+        if (isset($params['border-width']) && isset($params['border-color']))
+        {
+            $params['border']=$params['border-width'].','.str_replace('#','',$params['border-color']);
+        }
+
+        unset($params['border-width']);
+        unset($params['border-color']);
+
+        if (isset($params['padding-width']))
+        {
+            $params['pad']=$params['padding-width'];
+
+            if (isset($params['padding-color']))
+                $params['bg']=$params['padding-color'];
+        }
+
+        unset($params['padding-width']);
+        unset($params['padding-color']);
+
+        return $params;
+    }
+
+    private function buildImgixImage($id,$size, $params=null, $skipParams=false)
     {
         if (is_array($size))
             return false;
@@ -75,8 +144,18 @@ class ILabMediaImgixTool extends ILabMediaToolBase
 
         if ($size=='full')
         {
+            if (!$params)
+            {
+                if (isset($meta['imgix-params']))
+                    $params=$meta['imgix-params'];
+                else
+                    $params=[];
+            }
+
+            $params=$this->buildImgixParams($params);
+
             $result=[
-                $imgix->createURL($meta['file']),
+                $imgix->createURL($meta['file'],($skipParams) ? [] : $params),
                 $meta['width'],
                 $meta['height'],
                 false
@@ -89,12 +168,31 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         if (!$sizeInfo)
             return false;
 
-        $params=[];
+        $metaSize=null;
+        if (isset($meta['sizes'][$size]))
+        {
+            $metaSize = $meta['sizes'][$size];
+        }
 
-        if ($this->autoFormat)
-            $params['auto']='format';
-        if ($this->imageQuality)
-            $params['q']=$this->imageQuality;
+        if (!$params)
+        {
+            if (isset($meta['imgix-size-params'][$size]))
+            {
+                $params=$meta['imgix-size-params'][$size];
+            }
+            else if (isset($meta['imgix-size-presets'][$size]))
+            {
+                $preset=$meta['imgix-size-presets'][$size];
+                $presets=get_option('ilab-imgix-presets');
+                if ($presets && isset($presets[$preset]))
+                    $params=$presets[$preset];
+            }
+
+            if ((!$params) && (isset($meta['imgix-params'])))
+                $params=$meta['imgix-params'];
+            else if (!$params)
+                $params=[];
+        }
 
         if ($sizeInfo['crop'])
         {
@@ -102,7 +200,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
             $params['h']=$sizeInfo['height'];
             $params['fit']='crop';
 
-            if (isset($meta['sizes'][$size]))
+            if ($metaSize)
             {
                 $metaSize=$meta['sizes'][$size];
                 if (isset($metaSize['crop']))
@@ -123,12 +221,21 @@ class ILabMediaImgixTool extends ILabMediaToolBase
             $params['fit']='scale';
         }
 
+        $params=$this->buildImgixParams($params);
+
         $result=[
             $imgix->createURL($meta['file'],$params),
             $params['w'],
             $params['h'],
             false
         ];
+
+        return $result;
+    }
+
+    public function imageDownsize($fail,$id,$size)
+    {
+        $result=$this->buildImgixImage($id,$size);
 
         error_log('imageDownsize - '.json_encode($result, JSON_PRETTY_PRINT));
         return $result;
@@ -215,9 +322,13 @@ class ILabMediaImgixTool extends ILabMediaToolBase
      * @param string $size
      * @return string
      */
-    public function editPageURL($id, $size = 'thumbnail', $partial=false)
+    public function editPageURL($id, $size = 'full', $partial=false)
     {
         $url=admin_url('admin-ajax.php')."?action=ilab_imgix_edit_page&post=$id";
+
+        if ($size!='full')
+            $url.="&size=$size";
+
         if ($partial===true)
             $url.='&partial=1';
 
@@ -232,24 +343,57 @@ class ILabMediaImgixTool extends ILabMediaToolBase
     {
         $image_id = esc_html($_GET['post']);
 
+        $partial=(isset($_GET['partial']) && ($_GET['partial']==1));
+
+        if (isset($_GET['size']))
+            $size=esc_html($_GET['size']);
+        else
+            $size='full';
+
         $meta = wp_get_attachment_metadata($image_id);
 
-        $attrs = wp_get_attachment_image_src($image_id, 'full');
+        $attrs = wp_get_attachment_image_src($image_id, $size);
         list($full_src,$full_width,$full_height,$full_cropped)=$attrs;
-        $orientation=($full_width<$full_height) ? 'landscape' : 'portrait';
 
-        $imgix_settings=(isset($meta['imgix-settings']) ? $meta['imgix-settings'] : []);
+        $imgix_settings=[];
+
+        if ($size=='full')
+        {
+            if (!$params)
+            {
+                if (isset($meta['imgix-params']))
+                    $imgix_settings=$meta['imgix-params'];
+            }
+        }
+        else
+        {
+            if (isset($meta['imgix-size-params'][$size]))
+            {
+                $imgix_settings=$meta['imgix-size-params'][$size];
+            }
+            else if (isset($meta['imgix-size-presets'][$size]))
+            {
+                $preset=$meta['imgix-size-presets'][$size];
+                $presets=get_option('ilab-imgix-presets');
+                if ($presets && isset($presets[$preset]))
+                    $imgix_settings=$presets[$preset];
+            }
+
+            if ((!$imgix_settings) && (isset($meta['imgix-params'])))
+                $imgix_settings=$meta['imgix-params'];
+        }
 
         $data=[
+            'partial'=>$partial,
             'image_id'=>$image_id,
+            'size'=>$size,
+            'sizes'=>ilab_get_image_sizes(),
             'meta'=>$meta,
             'full_width'=>$full_width,
             'full_height'=>$full_height,
-            'orientation'=>$orientation,
             'tool'=>$this,
             'settings'=>$imgix_settings,
             'src'=>$full_src,
-            'current'=>[],
             'params'=>$this->toolInfo['settings']['params']
         ];
 
@@ -260,106 +404,59 @@ class ILabMediaImgixTool extends ILabMediaToolBase
     }
 
     /**
-     * Perform the actual crop
+     * Save The Parameters
      */
     public function saveAdjustments()
     {
-        $req_post = esc_html( $_POST['post'] );
-        if (!current_user_can('edit_post', $req_post))
-            json_response([
-                              'status'=>'error',
-                              'message'=>'You are not strong enough, smart enough or fast enough.'
-                          ]);
-
-
-        $meta = wp_get_attachment_metadata( $req_post );
-        wp_update_attachment_metadata($req_post, $meta);
-
-        $attrs = wp_get_attachment_image_src($req_post, 'full');
-        list($full_src,$full_width,$full_height,$full_cropped)=$attrs;
-
-        json_response([
-                          'status'=>'ok',
-                          'src'=>$full_src,
-                          'width'=>$full_width,
-                          'height'=>$full_height
-                      ]);
-    }
-
-    public function previewAdjustments()
-    {
         $image_id = esc_html( $_POST['image_id'] );
+        $size=esc_html($_POST['size']);
+        $params=(isset($_POST['settings'])) ? $_POST['settings'] : [];
+
         if (!current_user_can('edit_post', $image_id))
             json_response([
                               'status'=>'error',
                               'message'=>'You are not strong enough, smart enough or fast enough.'
                           ]);
 
+
         $meta = wp_get_attachment_metadata( $image_id );
-        $imgix=new Imgix\UrlBuilder($this->imgixDomains);
+        if (!$meta)
+            json_response([
+                              'status'=>'error',
+                              'message'=>'Invalid image id.'
+                          ]);
 
-        if ($this->signingKey)
-            $imgix->setSignKey($this->signingKey);
-
-        $params=(isset($_POST['settings'])) ? $_POST['settings'] : [];
-
-        $auto=['format'];
-        if (isset($params['enhance']))
-            $auto[]='enhance';
-
-        if (isset($params['redeye']))
-            $auto[]='redeye';
-
-        unset($params['enhance']);
-        unset($params['redeye']);
-
-        $params['auto']=implode(',',$auto);
-
-        if (isset($params['media']))
+        if ($size=='full')
         {
-            $media_id=$params['media'];
-            unset($params['media']);
-            $markMeta=wp_get_attachment_metadata($media_id);
-            $params['mark']='/'.$markMeta['file'];
-        }
-
-        if (isset($params['mark']))
-        {
-            if (($params['mark']=='/') || (isset($params['markscale']) && ($params['markscale']==0)))
-            {
-                unset($params['mark']);
-                unset($params['markalign']);
-                unset($params['markalpha']);
-                unset($params['markscale']);
-            }
+            $meta['imgix-params']=$params;
         }
         else
         {
-            unset($params['mark']);
-            unset($params['markalign']);
-            unset($params['markalpha']);
-            unset($params['markscale']);
+            $meta['imgix-size-params'][$size]=$params;
         }
 
-        if (isset($params['border-width']) && isset($params['border-color']))
-        {
-            $params['border']=$params['border-width'].','.str_replace('#','',$params['border-color']);
-        }
+        wp_update_attachment_metadata($image_id, $meta);
 
-        unset($params['border-width']);
-        unset($params['border-color']);
+        json_response([
+                          'status'=>'ok'
+                      ]);
+    }
 
-        if (isset($params['padding-width']))
-        {
-            $params['pad']=$params['padding-width'];
+    public function previewAdjustments()
+    {
+        $image_id = esc_html( $_POST['image_id'] );
+        $size=esc_html($_POST['size']);
 
-            if (isset($params['padding-color']))
-                $params['bg']=$params['padding-color'];
-        }
+        if (!current_user_can('edit_post', $image_id))
+            json_response([
+                              'status'=>'error',
+                              'message'=>'You are not strong enough, smart enough or fast enough.'
+                          ]);
 
-        unset($params['padding-width']);
-        unset($params['padding-color']);
 
-        json_response(['status'=>'ok','src'=>$imgix->createURL($meta['file'],$params)]);
+        $params=(isset($_POST['settings'])) ? $_POST['settings'] : [];
+        $result=$this->buildImgixImage($image_id,$size,$params);
+
+        json_response(['status'=>'ok','src'=>$result[0]]);
     }
 }

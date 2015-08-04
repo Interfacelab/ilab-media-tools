@@ -6,9 +6,12 @@
 
 {% block main-tabs %}
 <div id="ilab-modal-editor-tabs">
-    <div class="ilab-modal-editor-tab active-tab">Original Image</div>
-    <div class="ilab-modal-editor-tab">Tab 1</div>
-    <div class="ilab-modal-editor-tab">Tab 1</div>
+    <div data-url="{{$tool->editPageURL($image_id,'full',true) }}"  class="ilab-modal-editor-tab {{(($size=='full')?'active-tab':'')}}">Original Image</div>
+    {% foreach ($sizes as $name => $info) %}
+    {% if ($info['crop']==1) %}
+    <div data-url="{{$tool->editPageURL($image_id,$name,true) }}" class="ilab-modal-editor-tab {{(($size==$name)?'active-tab':'')}}">{{ ucwords(str_replace('_', ' ', str_replace('-', ' ', $name))) }}</div>
+    {% endif %}
+    {% endforeach %}
 </div>
 {% end block %}
 
@@ -34,10 +37,10 @@
     <div id="ilab-imgix-params-section-{{$paramSection}}" class="ilab-imgix-parameters-container is-hidden">
         {% if ($paramSection=='adjust') %}
         <div class="ilab-modal-pillbox">
-            <input type="hidden" data-param-type="hidden" data-default-value="0" class="imgix-param" name="enhance" id="imgix-param-enhance" value="{{imgixCurrentValue('enhance',$current,0)}}">
-            <input type="hidden" data-param-type="hidden" data-default-value="0" class="imgix-param" name="redeye" id="imgix-param-redeye" value="{{imgixCurrentValue('redeye',$current,0)}}">
-            <a data-param="enhance" id="imgix-pill-enhance" class="ilab-imgix-pill ilab-imgix-pill-enhance {{imgixIsSelected('enhance',$current,1,0,'pill-selected')}}" href="#">Auto Enhance</a>
-            <a data-param="redeye" id="imgix-pill-redeye" class="ilab-imgix-pill ilab-imgix-pill-redeye {{imgixIsSelected('redeye',$current,1,0,'pill-selected')}}" href="#">Remove Red Eye</a>
+            <input type="hidden" data-param-type="hidden" data-default-value="0" class="imgix-param" name="enhance" id="imgix-param-enhance" value="{{imgixCurrentValue('enhance',$settings,0)}}">
+            <input type="hidden" data-param-type="hidden" data-default-value="0" class="imgix-param" name="redeye" id="imgix-param-redeye" value="{{imgixCurrentValue('redeye',$settings,0)}}">
+            <a data-param="enhance" id="imgix-pill-enhance" class="ilab-imgix-pill ilab-imgix-pill-enhance {{imgixIsSelected('enhance',$settings,1,0,'pill-selected')}}" href="#">Auto Enhance</a>
+            <a data-param="redeye" id="imgix-pill-redeye" class="ilab-imgix-pill ilab-imgix-pill-redeye {{imgixIsSelected('redeye',$settings,1,0,'pill-selected')}}" href="#">Remove Red Eye</a>
         </div>
         {% endif %}
         {% for each($paramSectionInfo as $group => $groupParams) %}
@@ -82,7 +85,7 @@
 <script>
     ILabImageEdit.init({
         image_id:{{$image_id}},
-        current:{{json_encode($current,JSON_FORCE_OBJECT|JSON_PRETTY_PRINT)}},
+        size:"{{$size}}",
         settings:{{json_encode($settings,JSON_FORCE_OBJECT | JSON_PRETTY_PRINT)}}
     });
 </script>

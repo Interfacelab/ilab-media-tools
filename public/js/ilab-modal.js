@@ -21,11 +21,21 @@ jQuery(document).ready(function($){
         var partial=currEl.hasClass('ilab-thickbox-partial');
         jQuery.get(currEl.attr('href'), function(data) {
             if (partial) {
-                jQuery('#ilab-modal-wrapper .media-modal-content').empty().append(data);
+                jQuery('#ilab-modal-window-area').empty().append(data);
             } else {
                 jQuery('body').append(data);
                 console.log(data);
             }
+        });
+
+        return false;
+    });
+
+    $(document).on('click', '.ilab-modal-editor-tab', function(e) {
+        e.preventDefault();
+        var currEl = $(this);
+        jQuery.get(currEl.data('url'), function(data) {
+            jQuery('#ilab-modal-window-area').empty().append(data);
         });
 
         return false;

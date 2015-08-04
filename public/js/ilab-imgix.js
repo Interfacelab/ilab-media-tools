@@ -18,10 +18,7 @@ var ILabImageEdit=(function($){
         _previewTimeout=setTimeout(_preview,500);
     };
 
-    /**
-     * Performs the actual request for a preview to be generated
-     */
-    var _preview=function(){
+    var _postAjax=function(action,callback){
         var postData={};
         $('.imgix-param').each(function(){
             var param=$(this);
@@ -56,13 +53,21 @@ var ILabImageEdit=(function($){
         });
 
         var data={};
-        data['action'] = 'ilab_imgix_preview';
         data['image_id'] = _settings.image_id;
+        data['action'] = action;
+        data['size'] = _settings.size;
         data['settings']=postData;
 
+        $.post(ajaxurl, data, callback);
+    };
+
+    /**
+     * Performs the actual request for a preview to be generated
+     */
+    var _preview=function(){
         $('#ilab-preview-wait-modal').removeClass('is-hidden');
 
-        $.post(ajaxurl, data, function(response) {
+        _postAjax('ilab_imgix_preview',function(response) {
             if (response.status=='ok')
             {
                 if (_settings.debug)
@@ -79,7 +84,6 @@ var ILabImageEdit=(function($){
                 $('#ilab-preview-wait-modal').addClass('is-hidden');
             }
         });
-
     };
 
     /**
@@ -261,6 +265,15 @@ var ILabImageEdit=(function($){
         });
     };
 
+    var apply=function(){
+        jQuery('.ilab-modal-sidebar-actions .spinner').addClass('is-active');
+
+        _postAjax('ilab_imgix_save', function(response) {
+            jQuery('.ilab-modal-sidebar-actions .spinner').removeClass('is-active');
+        });
+
+    };
+
     /**
      * Reset all of the values
      */
@@ -269,6 +282,7 @@ var ILabImageEdit=(function($){
     };
 
     return {
+        apply:apply,
         init: init,
         resetAll:resetAll
     }
