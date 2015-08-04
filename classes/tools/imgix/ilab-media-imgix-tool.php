@@ -383,6 +383,12 @@ class ILabMediaImgixTool extends ILabMediaToolBase
                 $imgix_settings=$meta['imgix-params'];
         }
 
+        if (isset($imgix_settings['media']))
+        {
+            $media_id=$imgix_settings['media'];
+            $imgix_settings['media_url']=wp_get_attachment_url($media_id);
+        }
+
         $data=[
             'partial'=>$partial,
             'image_id'=>$image_id,
