@@ -359,7 +359,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
 
         if ($size=='full')
         {
-            if (!$params)
+            if (!$imgix_settings)
             {
                 if (isset($meta['imgix-params']))
                     $imgix_settings=$meta['imgix-params'];
