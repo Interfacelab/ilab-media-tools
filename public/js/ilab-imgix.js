@@ -14,11 +14,13 @@ var ILabImageEdit=(function($){
      * Requests a preview to be generated.
      */
     var preview=function(){
+        ILabModal.makeDirty();
+
         clearTimeout(_previewTimeout);
         _previewTimeout=setTimeout(_preview,500);
     };
 
-    var _postAjax=function(action,callback){
+    var _postAjax=function(action,data,callback){
         var postData={};
         $('.imgix-param').each(function(){
             var param=$(this);
@@ -52,7 +54,6 @@ var ILabImageEdit=(function($){
                 postData[param.attr('name')]=val;
         });
 
-        var data={};
         data['image_id'] = _settings.image_id;
         data['action'] = action;
         data['size'] = _settings.size;
@@ -65,9 +66,12 @@ var ILabImageEdit=(function($){
      * Performs the actual request for a preview to be generated
      */
     var _preview=function(){
+        displayStatus('Building preview ...');
+
         $('#ilab-preview-wait-modal').removeClass('is-hidden');
 
-        _postAjax('ilab_imgix_preview',function(response) {
+        _postAjax('ilab_imgix_preview',{},function(response) {
+            hideStatus();
             if (response.status=='ok')
             {
                 if (_settings.debug)
@@ -263,12 +267,48 @@ var ILabImageEdit=(function($){
 
             preview();
         });
+
+        $(document).on('change','.imgix-image-size-select',function(){
+            var sizeSelect=$(this);
+            ILabModal.loadURL(sizeSelect.val(),true);
+        });
+
+        initPresets();
+    };
+
+    var initPresets=function(){
+        $('#imgix-presets').find('option').remove();
+
+        if (Object.keys(_settings.presets).length==0)
+        {
+            $('#imgix-preset-container').addClass('is-hidden');
+        }
+        else
+        {
+            Object.keys(_settings.presets).forEach(function(key,index) {
+                console.log(key);
+                $('#imgix-presets').append($('<option></option>')
+                    .attr("value",key)
+                    .text(_settings.presets[key].title));
+            });
+
+            $('#imgix-preset-container').removeClass('is-hidden');
+            $('#imgix-presets').val(_settings.currentPreset);
+        }
+
+
+        $('#imgix-presets').on('change',function(){
+            ILabModal.loadURL(_settings.presets[$('#imgix-presets').val()].url,true);
+        });
     };
 
     var apply=function(){
-        jQuery('.ilab-modal-sidebar-actions .spinner').addClass('is-active');
+        displayStatus('Saving adjustments ...');
 
-        _postAjax('ilab_imgix_save', function(response) {
+        _postAjax('ilab_imgix_save', {}, function(response) {
+            hideStatus();
+            ILabModal.makeClean();
+
             jQuery('.ilab-modal-sidebar-actions .spinner').removeClass('is-active');
         });
 
@@ -281,13 +321,88 @@ var ILabImageEdit=(function($){
         $('.imgix-param-reset').click();
     };
 
+    var newPreset=function(){
+        var name=prompt("New preset name");
+        if (name!=null)
+        {
+            displayStatus('Saving preset ...');
+
+            var data={};
+            data['name']=name;
+            if ($('#imgix-preset-make-default').is(':checked'))
+                data['make_default']=1;
+
+
+            _postAjax('ilab_imgix_new_preset', data, function(response) {
+                hideStatus();
+                if (response.status=='ok')
+                {
+                    _settings.currentPreset=response.currentPreset;
+                    _settings.presets=response.presets;
+
+                    initPresets();
+                }
+            });
+        }
+    };
+
+    var savePreset=function(){
+        if ($('#imgix-presets').val()==null)
+            return;
+
+        displayStatus('Saving preset ...');
+
+        var data={};
+        data['key']=$('#imgix-presets').val();
+        if ($('#imgix-preset-make-default').is(':checked'))
+            data['make_default']=1;
+
+        _postAjax('ilab_imgix_save_preset', data, function(response) {
+            hideStatus();
+        });
+    };
+
+    var deletePreset=function(){
+        if ($('#imgix-presets').val()==null)
+            return;
+
+        if (!confirm("Are you sure you want to delete this preset?"))
+            return;
+
+        displayStatus('Delete preset ...');
+
+        var data={};
+        data['key']=$('#imgix-presets').val();
+
+        _postAjax('ilab_imgix_delete_preset', data, function(response) {
+            hideStatus();
+            if (response.status=='ok')
+            {
+                _settings.currentPreset=response.currentPreset;
+                _settings.presets=response.presets;
+
+                initPresets();
+            }
+        });
+    };
+
+    var displayStatus=function(message){
+        $('#imgix-status-label').text(message);
+        $('#imgix-status-container').removeClass('is-hidden');
+    };
+
+    var hideStatus=function(){
+        $('#imgix-status-container').addClass('is-hidden');
+    };
+
     return {
         apply:apply,
         init: init,
-        resetAll:resetAll
+        resetAll:resetAll,
+        newPreset:newPreset,
+        savePreset:savePreset,
+        deletePreset:deletePreset,
+        displayStatus:displayStatus,
+        hideStatus:hideStatus
     }
 })(jQuery);
-
-jQuery(document).ready(function(){
-
-});

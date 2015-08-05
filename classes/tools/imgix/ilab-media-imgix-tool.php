@@ -44,7 +44,9 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         $this->imageQuality=get_option('ilab-media-imgix-default-quality');
         $this->autoFormat=get_option('ilab-media-imgix-auto-format');
 
-        add_filter('wp_get_attachment_url', [$this, 'getAttachmentURL'], 1000, 2 );
+        add_filter('wp_get_attachment_url', [$this, 'getAttachmentURL'], 10000, 2);
+        add_filter('wp_prepare_attachment_for_js', array($this, 'prepareAttachmentForJS'), 1000, 3);
+
         add_filter('image_downsize', [$this, 'imageDownsize'], 1000, 3 );
 
         $this->hookupUI();
@@ -53,11 +55,33 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         add_action('wp_ajax_ilab_imgix_edit_page',[$this,'displayEditUI']);
         add_action('wp_ajax_ilab_imgix_save',[$this,'saveAdjustments']);
         add_action('wp_ajax_ilab_imgix_preview',[$this,'previewAdjustments']);
+
+
+        add_action('wp_ajax_ilab_imgix_new_preset',[$this,'newPreset']);
+        add_action('wp_ajax_ilab_imgix_save_preset',[$this,'savePreset']);
+        add_action('wp_ajax_ilab_imgix_delete_preset',[$this,'deletePreset']);
+
+    }
+
+    public function registerSettings()
+    {
+        parent::registerSettings();
+
+        register_setting('ilab-imgix-preset','ilab-imgix-presets');
+        register_setting('ilab-imgix-preset','ilab-imgix-size-presets');
+    }
+
+    function prepareAttachmentForJS( $response, $attachment, $meta )
+    {
+        foreach($response['sizes'] as $key => $sizeInfo)
+            $response['sizes'][$key]['url']=$this->buildImgixImage($response['id'],$key)[0];
+
+        return $response;
     }
 
     public function getAttachmentURL($url, $post_id)
     {
-        //error_log('getAttachmentURL - '.$url);
+        $url=$this->buildImgixImage($post_id,'full')[0];
         return $url;
     }
 
@@ -82,7 +106,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         if ($this->imageQuality)
             $params['q']=$this->imageQuality;
 
-        if (isset($params['media']))
+        if (isset($params['media']) && !empty($params['media']))
         {
             $media_id=$params['media'];
             unset($params['media']);
@@ -155,12 +179,11 @@ class ILabMediaImgixTool extends ILabMediaToolBase
             $params=$this->buildImgixParams($params);
 
             $result=[
-                $imgix->createURL($meta['file'],($skipParams) ? [] : $params),
+                $imgix->createURL(urlencode($meta['file']),($skipParams) ? [] : $params),
                 $meta['width'],
                 $meta['height'],
                 false
             ];
-            error_log('imageDownsize - '.json_encode($result, JSON_PRETTY_PRINT));
             return $result;
         }
 
@@ -176,28 +199,31 @@ class ILabMediaImgixTool extends ILabMediaToolBase
 
         if (!$params)
         {
+            // get the settings for this image at this size
             if (isset($meta['imgix-size-params'][$size]))
             {
                 $params=$meta['imgix-size-params'][$size];
             }
-            else if (isset($meta['imgix-size-presets'][$size]))
+            else // see if a preset has been globally assigned to a size and use that
             {
-                $preset=$meta['imgix-size-presets'][$size];
                 $presets=get_option('ilab-imgix-presets');
-                if ($presets && isset($presets[$preset]))
-                    $params=$presets[$preset];
+                $sizePresets=get_option('ilab-imgix-size-presets');
+
+                if ($presets && $sizePresets && isset($sizePresets[$size]) && isset($presets[$sizePresets[$size]]))
+                    $params=$presets[$sizePresets[$size]]['settings'];
             }
 
+            // still no parameters?  use any that may have been assigned to the full size image
             if ((!$params) && (isset($meta['imgix-params'])))
                 $params=$meta['imgix-params'];
-            else if (!$params)
+            else if (!$params) // too bad so sad
                 $params=[];
         }
 
         if ($sizeInfo['crop'])
         {
-            $params['w']=$sizeInfo['width'];
-            $params['h']=$sizeInfo['height'];
+            $params['w']=$sizeInfo['width'] ?: $sizeInfo['height'];
+            $params['h']=$sizeInfo['height'] ?: $sizeInfo['width'];
             $params['fit']='crop';
 
             if ($metaSize)
@@ -215,7 +241,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         }
         else
         {
-            $newSize=sizeToFitSize($meta['width'],$meta['height'],$sizeInfo['width'],$sizeInfo['height']);
+            $newSize=sizeToFitSize($meta['width'],$meta['height'],$sizeInfo['width'] ?: 10000,$sizeInfo['height'] ?: 10000);
             $params['w']=$newSize[0];
             $params['h']=$newSize[1];
             $params['fit']='scale';
@@ -224,7 +250,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         $params=$this->buildImgixParams($params);
 
         $result=[
-            $imgix->createURL($meta['file'],$params),
+            $imgix->createURL(urlencode($meta['file']),$params),
             $params['w'],
             $params['h'],
             false
@@ -236,8 +262,6 @@ class ILabMediaImgixTool extends ILabMediaToolBase
     public function imageDownsize($fail,$id,$size)
     {
         $result=$this->buildImgixImage($id,$size);
-
-        error_log('imageDownsize - '.json_encode($result, JSON_PRETTY_PRINT));
         return $result;
     }
 
@@ -322,7 +346,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
      * @param string $size
      * @return string
      */
-    public function editPageURL($id, $size = 'full', $partial=false)
+    public function editPageURL($id, $size = 'full', $partial=false, $preset=null)
     {
         $url=admin_url('admin-ajax.php')."?action=ilab_imgix_edit_page&post=$id";
 
@@ -331,6 +355,9 @@ class ILabMediaImgixTool extends ILabMediaToolBase
 
         if ($partial===true)
             $url.='&partial=1';
+
+        if ($preset!=null)
+            $url.='&preset='.$preset;
 
         return $url;
     }
@@ -342,6 +369,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
     public function displayEditUI()
     {
         $image_id = esc_html($_GET['post']);
+        $current_preset=(isset($_GET['preset'])) ? esc_html($_GET['preset']) : null;
 
         $partial=(isset($_GET['partial']) && ($_GET['partial']==1));
 
@@ -355,9 +383,23 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         $attrs = wp_get_attachment_image_src($image_id, $size);
         list($full_src,$full_width,$full_height,$full_cropped)=$attrs;
 
+
         $imgix_settings=[];
 
-        if ($size=='full')
+        $presets=get_option('ilab-imgix-presets');
+        $sizePresets=get_option('ilab-imgix-size-presets');
+
+
+        $presetsUI=$this->buildPresetsUI($image_id,$size);
+
+
+
+        if ($current_preset && $presets && isset($presets[$current_preset]))
+        {
+            $imgix_settings=$presets[$current_preset]['settings'];
+            $full_src=$this->buildImgixImage($image_id,$size,$imgix_settings)[0];
+        }
+        else if ($size=='full')
         {
             if (!$imgix_settings)
             {
@@ -371,12 +413,15 @@ class ILabMediaImgixTool extends ILabMediaToolBase
             {
                 $imgix_settings=$meta['imgix-size-params'][$size];
             }
-            else if (isset($meta['imgix-size-presets'][$size]))
+            else
             {
-                $preset=$meta['imgix-size-presets'][$size];
-                $presets=get_option('ilab-imgix-presets');
-                if ($presets && isset($presets[$preset]))
-                    $imgix_settings=$presets[$preset];
+                if ($presets && $sizePresets && isset($sizePresets[$size]) && isset($presets[$sizePresets[$size]]))
+                {
+                    $imgix_settings=$presets[$sizePresets[$size]];
+
+                    if (!$current_preset)
+                        $current_preset=$sizePresets[$size];
+                }
             }
 
             if ((!$imgix_settings) && (isset($meta['imgix-params'])))
@@ -400,6 +445,8 @@ class ILabMediaImgixTool extends ILabMediaToolBase
             'tool'=>$this,
             'settings'=>$imgix_settings,
             'src'=>$full_src,
+            'presets'=>$presetsUI,
+            'currentPreset'=>$current_preset,
             'params'=>$this->toolInfo['settings']['params']
         ];
 
@@ -448,6 +495,9 @@ class ILabMediaImgixTool extends ILabMediaToolBase
                       ]);
     }
 
+    /**
+     * Preview the adjustment
+     */
     public function previewAdjustments()
     {
         $image_id = esc_html( $_POST['image_id'] );
@@ -464,5 +514,192 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         $result=$this->buildImgixImage($image_id,$size,$params);
 
         json_response(['status'=>'ok','src'=>$result[0]]);
+    }
+
+    private function buildPresetsUI($image_id,$size)
+    {
+        $presets=get_option('ilab-imgix-presets');
+        if (!$presets)
+            $presets=[];
+
+        $sizePresets=get_option('ilab-imgix-size-presets');
+        if (!$sizePresets)
+            $sizePresets=[];
+
+        $presetsUI=[];
+        foreach($presets as $pkey => $pinfo)
+        {
+            $default_for='';
+            foreach($sizePresets as $psize => $psizePreset)
+            {
+                if ($psizePreset == $pkey)
+                {
+                    $default_for = $psize;
+                    break;
+                }
+            }
+
+            $presetsUI[$pkey]=[
+                'title'=>$pinfo['title'],
+                'url'=>$this->editPageURL($image_id,$size,true,$pkey),
+                'default_for'=>$default_for,
+                'settings'=>$pinfo['settings']
+            ];
+        }
+
+        return $presetsUI;
+    }
+
+    /**
+     * Update the presets
+     * @param $key
+     * @param $name
+     * @param $settings
+     * @param $size
+     */
+    private function doUpdatePresets($key,$name,$settings,$size,$makeDefault)
+    {
+        $image_id = esc_html( $_POST['image_id'] );
+        $presets=get_option('ilab-imgix-presets');
+        if (!$presets)
+            $presets=[];
+
+        $presets[$key]=[
+            'title'=>$name,
+            'settings'=>$settings
+        ];
+        update_option('ilab-imgix-presets',$presets);
+
+        $sizePresets=get_option('ilab-imgix-size-presets');
+        if (!$sizePresets)
+            $sizePresets=[];
+
+        if ($size && $makeDefault)
+        {
+            $sizePresets[$size]=$key;
+        }
+        else if ($size && !$makeDefault)
+        {
+            foreach($sizePresets as $s => $k)
+            {
+                if ($k==$key)
+                    unset($sizePresets[$s]);
+            }
+        }
+
+        update_option('ilab-imgix-size-presets',$sizePresets);
+
+        json_response([
+                          'status'=>'ok',
+                          'currentPreset'=>$key,
+                          'presets'=>$this->buildPresetsUI($image_id,$size)
+                      ]);
+
+    }
+
+    /**
+     * Create a new preset
+     */
+    public function newPreset()
+    {
+        $name = esc_html( $_POST['name'] );
+        if (empty($name))
+            json_response([
+                              'status'=>'error',
+                              'error'=>'Seems that you may have forgotten something.'
+                          ]);
+
+        $key=sanitize_title($name);
+        $newKey=$key;
+
+        $presets=get_option('ilab-imgix-presets');
+        if ($presets)
+        {
+            $keyIndex=1;
+            while(isset($presets[$newKey]))
+            {
+                $keyIndex++;
+                $newKey=$key.$keyIndex;
+            }
+        }
+
+        $settings=$_POST['settings'];
+        $size=(isset($_POST['size'])) ? esc_html($_POST['size']) : null;
+        $makeDefault=(isset($_POST['make_default'])) ? ($_POST['make_default']==1) : false;
+
+        $this->doUpdatePresets($newKey,$name,$settings,$size,$makeDefault);
+
+    }
+
+    /**
+     * Save an existing preset
+     */
+    public function savePreset()
+    {
+        $key = esc_html( $_POST['key'] );
+        if (empty($key))
+            json_response([
+                              'status'=>'error',
+                              'error'=>'Seems that you may have forgotten something.'
+                          ]);
+
+        $presets=get_option('ilab-imgix-presets');
+        if (!isset($presets[$key]))
+            json_response([
+                              'status'=>'error',
+                              'error'=>'Seems that you may have forgotten something.'
+                          ]);
+
+        $name=$presets[$key]['title'];
+        $settings=$_POST['settings'];
+        $size=(isset($_POST['size'])) ? esc_html($_POST['size']) : null;
+        $makeDefault=(isset($_POST['make_default'])) ? ($_POST['make_default']==1) : false;
+
+        $this->doUpdatePresets($key,$name,$settings,$size,$makeDefault);
+    }
+
+    /**
+     * Delete an existing preset
+     */
+    public function deletePreset()
+    {
+        $image_id = esc_html( $_POST['image_id'] );
+        $size = esc_html( $_POST['size'] );
+        $key = esc_html( $_POST['key'] );
+        if (empty($key))
+            json_response([
+                              'status'=>'error',
+                              'error'=>'Seems that you may have forgotten something.'
+                          ]);
+
+
+        $presets=get_option('ilab-imgix-presets');
+        if ($presets)
+        {
+            unset($presets[$key]);
+            update_option('ilab-imgix-presets',$presets);
+        }
+
+        $sizePresets=get_option('ilab-imgix-size-presets');
+        if (!$sizePresets)
+            $sizePresets=[];
+
+        foreach($sizePresets as $size=>$preset)
+        {
+            if ($preset==$key)
+            {
+                unset($sizePresets[$size]);
+                break;
+            }
+        }
+
+        update_option('ilab-imgix-size-presets',$sizePresets);
+
+
+        json_response([
+                          'status'=>'ok',
+                          'preset_key'=>$key,
+                          'presets'=>$this->buildPresetsUI($image_id,$size)
+                      ]);
     }
 }

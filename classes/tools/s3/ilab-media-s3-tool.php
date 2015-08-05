@@ -99,9 +99,6 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
             }
         }
 
-        error_log('updateAttachmentMetadata - '.json_encode($data,JSON_PRETTY_PRINT));
-        error_log('updateAttachmentMetadata - '.$id);
-
         return $data;
     }
 
@@ -160,7 +157,6 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
             }
         }
 
-        error_log('deleteAttachment - '.$id);
         return $id;
     }
 

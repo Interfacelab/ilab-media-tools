@@ -10,7 +10,7 @@
     </div>
     <div class="ilab-imgix-media-preview">
         <div class="ilab-imgix-media-preview-inner">
-            {% if ($settings['media_url']) %}
+            {% if (isset($settings['media_url'])) %}
             <img id="imgix-media-preview" src="{{$settings['media_url']}}">
             {% else %}
             <img id="imgix-media-preview">

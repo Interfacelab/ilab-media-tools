@@ -15,6 +15,7 @@
                     {% content editor %}
                 </div>
             </div>
+            {% content bottom-bar %}
         </div>
         <div id="ilab-modal-sidebar">
             {% content sidebar-tabs %}
