@@ -223,19 +223,24 @@ var ILabImageEdit=(function($){
             var selectButton=$(this);
             var param=selectButton.data('param');
 
-            var send_attachment_bkp = wp.media.editor.send.attachment;
+               var uploader=wp.media({
+                title: 'Select Watermark',
+                button: {
+                    text: 'Select Watermark'
+                },
+                multiple: false
+            });
 
-            wp.media.editor.send.attachment = function(props, attachment) {
 
+            uploader.on('select', function() {
+                attachment = uploader.state().get('selection').first().toJSON();
                 $('#imgix-param-'+param).val(attachment.id);
                 $('#imgix-media-preview').attr('src',attachment.url);
 
                 preview();
+            });
 
-                wp.media.editor.send.attachment = send_attachment_bkp;
-            }
-
-            wp.media.editor.open();
+            uploader.open();
 
             return false;
         });
