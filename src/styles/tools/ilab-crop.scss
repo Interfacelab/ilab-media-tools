@@ -1,0 +1,26 @@
+#ilab-crop-preview {
+  overflow: hidden;
+}
+
+.ilab-crop-now-wrapper {
+  margin-top: 12px;
+}
+
+.ilab-modal-sidebar-content-cropper {
+  flex-direction: column !important;
+  padding: 10px 10px 10px 10px;
+
+  overflow:scroll;
+
+  h3 {
+    margin-top:0px;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #888;
+    font-weight: bold;
+  }
+
+  img {
+    margin-bottom: 10px;
+  }
+}

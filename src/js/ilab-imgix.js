@@ -1,6 +1,5 @@
-/**
- * Created by jong on 7/31/15.
- */
+//=require components/ilab-imgix-slider.js
+
 
 /**
  * Image Editing Module
@@ -9,17 +8,28 @@
 var ILabImageEdit=(function($){
     var _settings={};
     var _previewTimeout;
+    var _previewsSuspended;
 
     /**
      * Requests a preview to be generated.
      */
     var preview=function(){
+        if (_previewsSuspended)
+            return;
+
         ILabModal.makeDirty();
 
         clearTimeout(_previewTimeout);
         _previewTimeout=setTimeout(_preview,500);
     };
 
+    /**
+     * Performs the wordpress ajax post
+     * @param action
+     * @param data
+     * @param callback
+     * @private
+     */
     var _postAjax=function(action,data,callback){
         var postData={};
         $('.imgix-param').each(function(){
@@ -64,6 +74,7 @@ var ILabImageEdit=(function($){
 
     /**
      * Performs the actual request for a preview to be generated
+     * @private
      */
     var _preview=function(){
         displayStatus('Building preview ...');
@@ -132,6 +143,7 @@ var ILabImageEdit=(function($){
      * @param settings
      */
     var init=function(settings) {
+        _previewsSuspended=false;
         _settings=settings;
 
         _setupTabs();
@@ -275,10 +287,108 @@ var ILabImageEdit=(function($){
 
         $(document).on('change','.imgix-image-size-select',function(){
             var sizeSelect=$(this);
-            ILabModal.loadURL(sizeSelect.val(),true);
+            ILabModal.loadURL(sizeSelect.val(),true,function(response){
+                bindUI(response);
+            });
+        });
+
+
+        $(document).on('click', '.ilab-modal-editor-tab', function(e) {
+            e.preventDefault();
+
+            var currEl = $(this);
+            ILabModal.loadURL(currEl.data('url'),true,function(response){
+                bindUI(response);
+            });
+
+            return false;
         });
 
         initPresets();
+    };
+
+    /**
+     * Binds the UI to the json response when selecting a tab or changing a preset
+     * @param data
+     */
+    var bindUI=function(data){
+        _previewsSuspended=true;
+        resetAll();
+        _settings.size=data.size;
+        _settings.settings=data.settings;
+
+        var rebind=function(){
+            $('#ilab-imgix-preview-image').off('load',rebind);
+            Object.keys(data.params).forEach(function(key,index){
+                var paramObj=data.params[key];
+                var param=$('#imgix-param-'+key);
+
+                if (data.settings[key])
+                {
+                    var val=data.settings[key];
+
+                    if (!val || (val==''))
+                        return;
+
+                    if (paramObj.type=='slider')
+                    {
+                        $('#imgix-current-value-'+key).text(val);
+                        param.val(val);
+                    }
+                    else if ((paramObj.type=='color') ||  (paramObj.type=='blend-color'))
+                    {
+                        val=val.replace('#','');
+                        if (val.length==8)
+                        {
+                            var alpha=(parseInt('0x'+val.substring(0,2))/255.0)*100.0;
+                            val=val.substring(2);
+
+                            param.val('#'+val);
+                            param.wpColorPicker('color', '#'+val);
+                            $('#imgix-param-alpha-'+key).val(Math.round(alpha));
+                            $('#imgix-param-alpha-'+key).hide().show(0);
+                        }
+                        else
+                        {
+                            param.val('#'+val);
+                            param.wpColorPicker('color', '#'+val);
+                        }
+
+                        if (paramObj.type=='blend-color')
+                            $('#imgix-param-blend-'+key).val(data.settings[paramObj['blend-param']]);
+                    }
+                    else if (paramObj.type=='media-chooser')
+                    {
+                        param.val(val);
+
+                        if (data.settings.media_url && (data.settings.media_url!=''))
+                            $('#imgix-media-preview').attr('src',data.settings.media_url);
+                    }
+                    else if (paramObj.type=='alignment')
+                    {
+                        param.val(val);
+                        $('.imgix-alignment-button').each(function(){
+                            var selectButton=$(this);
+                            selectButton.removeClass('selected-alignment');
+                            if (selectButton.data('param-value')==val)
+                                selectButton.addClass('selected-alignment');
+                        });
+                    }
+
+                }
+            });
+
+            _previewsSuspended=false;
+            ILabModal.makeClean();
+        };
+
+        if (data.src)
+        {
+            $('#ilab-imgix-preview-image').on('load',rebind);
+            $('#ilab-imgix-preview-image').attr('src',data.src);
+        }
+        else
+            rebind();
     };
 
     var initPresets=function(){

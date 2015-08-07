@@ -1,0 +1,173 @@
+#ilab-modal-container {
+  z-index: 160000 !important;
+  background-color: #fcfcfc;
+  position: absolute;
+  left: 30px;
+  top: -1px;
+  right: 30px;
+  bottom: 30px;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+          flex-direction: column;
+  border-radius: 0px; }
+
+.ilab-modal-titlebar {
+  border-bottom: 1px solid #ddd;
+  min-height: 50px;
+  max-height: 50px;
+  display: -webkit-flex;
+  display: flex;
+  box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.15); }
+  .ilab-modal-titlebar h1 {
+    -webkit-flex: 2 100%;
+            flex: 2 100%;
+    display: block;
+    margin: 0px;
+    padding: 0px 16px;
+    font-size: 22px;
+    line-height: 50px; }
+  .ilab-modal-titlebar a {
+    display: block;
+    max-width: 50px;
+    min-width: 50px;
+    border-left: 1px solid #ddd; }
+
+#ilab-modal-window-area {
+  -webkit-flex: 2 100%;
+  flex: 2 100%;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: row;
+  flex-direction: row; }
+
+.ilab-modal-window-content-area {
+  background-color: #fff;
+  -webkit-flex: 2 100%;
+  flex: 2 100%;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column; }
+
+.ilab-modal-editor-container {
+  -webkit-flex: 2 100%;
+  flex: 2 100%;
+  position: relative; }
+
+.ilab-modal-editor-area {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  right: 0px;
+  bottom: 0px;
+  background-image: url(../img/ilab-imgix-edit-bg.png);
+  display: block;
+  margin: 10px; }
+
+.ilab-modal-sidebar {
+  min-width: 350px;
+  max-width: 350px;
+  background-color: #f3f3f3;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  border-left: 3px solid #ddd; }
+
+.ilab-modal-tabs {
+  background: #ddd;
+  display: -webkit-flex;
+  display: flex;
+  min-height: 36px;
+  max-height: 36px; }
+
+.ilab-modal-tab {
+  margin-top: 3px;
+  background-color: #ccc;
+  line-height: 30px;
+  padding: 0px 15px;
+  margin-right: 3px;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #888;
+  font-weight: bold;
+  cursor: pointer !important; }
+
+.ilab-modal-tab.active-tab {
+  background-color: #f3f3f3;
+  color: #777; }
+
+.ilab-modal-sidebar-content {
+  position: relative;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex: 2 100%;
+  flex: 2 100%; }
+
+.ilab-modal-sidebar-actions {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-justify-content: flex-end;
+          justify-content: flex-end;
+  background-color: white;
+  border-top: 1px solid #eee;
+  padding: 11px; }
+
+.ilab-modal-sidebar-actions a {
+  display: block;
+  margin-left: 10px !important; }
+
+a.button-reset {
+  background: #AA0000 !important;
+  border-color: #770000 !important;
+  color: white !important;
+  box-shadow: inset 0 1px 0 #DD0000, 0 1px 0 rgba(0, 0, 0, 0.15) !important; }
+
+.ilab-modal-editor-tabs {
+  display: -webkit-flex;
+  -webkit-flex-direction: row;
+  display: flex;
+  -webkit-flex-direction: row;
+          flex-direction: row;
+  border-bottom: 1px solid #ddd;
+  background: #ddd; }
+
+.ilab-modal-editor-tab {
+  min-height: 32px;
+  max-height: 33px;
+  margin-top: 3px;
+  background-color: #ccc;
+  line-height: 31px;
+  padding: 0px 15px;
+  margin-right: 3px;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #888;
+  font-weight: bold;
+  cursor: pointer !important; }
+
+.ilab-modal-editor-tab.active-tab {
+  background: white;
+  margin-bottom: -1px;
+  margin-top: 2px;
+  border-right: 1px solid #ddd;
+  border-left: 1px solid #ddd;
+  border-top: 1px solid #ddd; }
+
+.ilab-modal-bottom-bar {
+  font-size: 12px !important;
+  display: -webkit-flex !important;
+  display: flex !important;
+  padding: 0px 10px 10px 10px;
+  -webkit-justify-content: flex-end;
+  -webkit-align-items: center; }
+
+.ilab-bottom-bar-seperator {
+  position: relative;
+  width: 1px;
+  height: 20px;
+  background-color: #ccc;
+  margin: 0px 10px 0px 20px !important; }
+
+/*# sourceMappingURL=ilab-modal.min.css.map */

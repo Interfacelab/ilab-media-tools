@@ -63,4 +63,3 @@ jQuery(document).ready(function($){
         return false;
     });
 });
-//# sourceMappingURL=ilab-modal.js.map

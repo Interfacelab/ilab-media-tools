@@ -5,9 +5,9 @@
 {% end block %}
 
 {% block main-tabs %}
-<div id="ilab-modal-editor-tabs">
+<div class="ilab-modal-editor-tabs">
     {% if (count($sizes)>10) %}
-    <div id="imgix-image-size-label">Size:</div>
+    <div class="imgix-image-size-label">Size:</div>
     <select class="imgix-image-size-select">
         <option value="{{$tool->editPageURL($image_id,'full',true) }}" {{(($size=='full')?'selected':'')}}>Source Image</option>
         {% foreach ($sizes as $name => $info) %}
@@ -50,11 +50,11 @@
             <input name="imgix-preset-make-default" id="imgix-preset-make-default" type="checkbox">
             Make Default For Size
         </label>
-        <div class="bottom-bar-seperator"></div>
+        <div class="ilab-bottom-bar-seperator"></div>
     </div>
     <a href="javascript:ILabImageEdit.newPreset()" class="button">New Preset</a>
     <div id="imgix-preset-container">
-        <div class="bottom-bar-seperator"></div>
+        <div class="ilab-bottom-bar-seperator"></div>
         <select id="imgix-presets">
             <option>Preset 1</option>
         </select>

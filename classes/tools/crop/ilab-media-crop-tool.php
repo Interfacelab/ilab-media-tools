@@ -52,13 +52,11 @@ class ILabMediaCropTool extends ILabMediaToolBase
             wp_enqueue_style ( 'media-views' );
 
         wp_enqueue_style( 'wp-pointer' );
-        wp_enqueue_style ( 'ilab-modal-css', ILAB_PUB_CSS_URL . '/ilab-modal.css' );
-        wp_enqueue_style ( 'ilab-crop-css', ILAB_PUB_CSS_URL . '/ilab-crop.css' );
-        wp_enqueue_style ( 'cropper-css', ILAB_PUB_CSS_URL . '/cropper.css' );
+        wp_enqueue_style ( 'ilab-modal-css', ILAB_PUB_CSS_URL . '/ilab-modal.min.css' );
+        wp_enqueue_style ( 'ilab-media-tools-css', ILAB_PUB_CSS_URL . '/ilab-media-tools.min.css' );
         wp_enqueue_script( 'wp-pointer' );
-        wp_enqueue_script ( 'cropper-js', ILAB_PUB_JS_URL. '/cropper.js', ['jquery'], false, true );
-        wp_enqueue_script ( 'ilab-modal-js', ILAB_PUB_JS_URL. '/ilab-modal.js', ['cropper-js'], false, true );
-        wp_enqueue_script ( 'ilab-crop-js', ILAB_PUB_JS_URL. '/ilab-crop.js', ['ilab-modal-js'], false, true );
+        wp_enqueue_script ( 'ilab-modal-js', ILAB_PUB_JS_URL. '/ilab-modal.js', ['jquery'], false, true );
+        wp_enqueue_script ( 'ilab-media-tools-js', ILAB_PUB_JS_URL. '/ilab-media-tools.js', ['ilab-modal-js'], false, true );
     }
 
     /**
@@ -69,7 +67,7 @@ class ILabMediaCropTool extends ILabMediaToolBase
         // TODO: Still need to hook up the edit attachment page
 
         add_filter('media_row_actions',function($actions,$post){
-            $newaction['ilab_crop_image'] = '<a class="ilab-thickbox" href="'.$this->crop_page_url($post->ID).'" title="Crop Image">' . __('Crop Image') . '</a>';
+            $newaction['ilab_crop_image'] = '<a class="ilab-thickbox" href="'.$this->cropPageURL($post->ID).'" title="Crop Image">' . __('Crop Image') . '</a>';
             return array_merge($actions,$newaction);
         },10,2);
 
@@ -81,7 +79,7 @@ class ILabMediaCropTool extends ILabMediaToolBase
             if (!current_user_can('edit_post',$image_id))
                 return $content;
 
-            $content.='<a class="ilab-thickbox" href="'.$this->crop_page_url($image_id,'post-thumbnail').'">'.__('Crop Image').'</a>';
+            $content.='<a class="ilab-thickbox" href="'.$this->cropPageURL($image_id,'post-thumbnail').'">'.__('Crop Image').'</a>';
             return $content;
         },10,2);
 
@@ -99,21 +97,21 @@ class ILabMediaCropTool extends ILabMediaToolBase
                     jQuery(document).ready(function() {
                         attachTemplate=jQuery('#tmpl-image-details');
                         if (attachTemplate)
-                            attachTemplate.text(attachTemplate.text().replace(/(<input type="button" class="replace-attachment button")/,'<a href="<?php echo $this->crop_page_url('{{data.attachment.id}}')?>" class="ilab-thickbox button"><?php echo __('Crop Image') ?></a>&nbsp;$1'));
+                            attachTemplate.text(attachTemplate.text().replace(/(<input type="button" class="replace-attachment button")/,'<a href="<?php echo $this->cropPageURL('{{data.attachment.id}}')?>" class="ilab-thickbox button"><?php echo __('Crop Image') ?></a>&nbsp;$1'));
 
                         attachTemplate=jQuery('#tmpl-attachment-details-two-column');
                         if (attachTemplate)
                         {
-                            attachTemplate.text(attachTemplate.text().replace(/(<a(?:.*)class="(?:.*)edit-imgix(?:.*)"[^>]*[^<]+<\/a>)/,'$1&nbsp;<a href="<?php echo $this->crop_page_url('{{data.id}}')?>" class="ilab-thickbox button"><?php echo __('Crop Image') ?></a>'));
-                            attachTemplate.text(attachTemplate.text().replace(/(<a class="(?:.*)edit-attachment(?:.*)"[^>]+[^<]+<\/a>)/,'$1&nbsp;<a href="<?php echo $this->crop_page_url('{{data.id}}')?>" class="ilab-thickbox button"><?php echo __('Crop Image') ?></a>'));
-                            attachTemplate.text(attachTemplate.text().replace(/(<a class="(?:.*)view-attachment(?:.*)"[^>]+[^<]+<\/a>)/,'$1 | <a class="ilab-thickbox" href="<?php echo $this->crop_page_url('{{data.id}}')?>"><?php echo __('Crop Image') ?></a>'));
+                            attachTemplate.text(attachTemplate.text().replace(/(<a(?:.*)class="(?:.*)edit-imgix(?:.*)"[^>]*[^<]+<\/a>)/,'$1&nbsp;<a href="<?php echo $this->cropPageURL('{{data.id}}')?>" class="ilab-thickbox button"><?php echo __('Crop Image') ?></a>'));
+                            attachTemplate.text(attachTemplate.text().replace(/(<a class="(?:.*)edit-attachment(?:.*)"[^>]+[^<]+<\/a>)/,'$1&nbsp;<a href="<?php echo $this->cropPageURL('{{data.id}}')?>" class="ilab-thickbox button"><?php echo __('Crop Image') ?></a>'));
+                            attachTemplate.text(attachTemplate.text().replace(/(<a class="(?:.*)view-attachment(?:.*)"[^>]+[^<]+<\/a>)/,'$1 | <a class="ilab-thickbox" href="<?php echo $this->cropPageURL('{{data.id}}')?>"><?php echo __('Crop Image') ?></a>'));
                         }
 
                         attachTemplate=jQuery('#tmpl-attachment-details');
                         if (attachTemplate)
                         {
-                            attachTemplate.text(attachTemplate.text().replace(/(<a(?:.*)class="(?:.*)edit-imgix(?:.*)"[^>]*[^<]+<\/a>)/, '$1<br><a class="ilab-thickbox" href="<?php echo $this->crop_page_url('{{data.id}}')?>"><?php echo __('Crop Image') ?></a>'));
-                            attachTemplate.text(attachTemplate.text().replace(/(<a class="(?:.*)edit-attachment(?:.*)"[^>]+[^<]+<\/a>)/, '$1\n<a class="ilab-thickbox" href="<?php echo $this->crop_page_url('{{data.id}}')?>"><?php echo __('Crop Image') ?></a>'));
+                            attachTemplate.text(attachTemplate.text().replace(/(<a(?:.*)class="(?:.*)edit-imgix(?:.*)"[^>]*[^<]+<\/a>)/, '$1<br><a class="ilab-thickbox" href="<?php echo $this->cropPageURL('{{data.id}}')?>"><?php echo __('Crop Image') ?></a>'));
+                            attachTemplate.text(attachTemplate.text().replace(/(<a class="(?:.*)edit-attachment(?:.*)"[^>]+[^<]+<\/a>)/, '$1\n<a class="ilab-thickbox" href="<?php echo $this->cropPageURL('{{data.id}}')?>"><?php echo __('Crop Image') ?></a>'));
                         }
                     });
                 </script>
@@ -128,9 +126,9 @@ class ILabMediaCropTool extends ILabMediaToolBase
      * @param string $size
      * @return string
      */
-    public function crop_page_url($id, $size = 'thumbnail', $partial=false)
+    public function cropPageURL($id, $size = 'thumbnail', $partial=false)
     {
-        $url=admin_url('admin-ajax.php')."?action=ilab_crop_image_page&post=$id&size=$size";
+        $url=relative_admin_url('admin-ajax.php')."?action=ilab_crop_image_page&post=$id&size=$size";
         if ($partial===true)
             $url.='&partial=1';
 
@@ -207,7 +205,7 @@ class ILabMediaCropTool extends ILabMediaToolBase
         ];
 
         if (current_user_can( 'edit_post', $image_id))
-            echo render_view('crop/ilab-crop-ui.php', $data);
+            echo \ILab\Stem\View::render_view('crop/ilab-crop-ui.php', $data);
 
         die;
     }

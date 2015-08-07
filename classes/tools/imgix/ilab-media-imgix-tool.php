@@ -297,13 +297,13 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         else
             wp_enqueue_style ( 'media-views' );
 
-        wp_enqueue_style( 'wp-color-picker' );
-        wp_enqueue_style('wp-pointer');
-        wp_enqueue_style('ilab-modal-css', ILAB_PUB_CSS_URL . '/ilab-modal.css' );
-        wp_enqueue_style('ilab-imgix-css', ILAB_PUB_CSS_URL . '/ilab-imgix.css' );
-        wp_enqueue_script('wp-pointer');
-        wp_enqueue_script('ilab-modal-js', ILAB_PUB_JS_URL. '/ilab-modal.js', ['jquery','wp-color-picker'], false, true );
-        wp_enqueue_script('ilab-imgix-js', ILAB_PUB_JS_URL. '/ilab-imgix.js', ['ilab-modal-js'], false, true );
+        wp_enqueue_style( 'wp-pointer' );
+        wp_enqueue_style ( 'ilab-modal-css', ILAB_PUB_CSS_URL . '/ilab-modal.min.css' );
+        wp_enqueue_style ( 'ilab-media-tools-css', ILAB_PUB_CSS_URL . '/ilab-media-tools.min.css' );
+        wp_enqueue_script( 'wp-pointer' );
+        wp_enqueue_script ( 'ilab-modal-js', ILAB_PUB_JS_URL. '/ilab-modal.js', ['jquery'], false, true );
+        wp_enqueue_script ( 'ilab-media-tools-js', ILAB_PUB_JS_URL. '/ilab-media-tools.js', ['ilab-modal-js'], false, true );
+
     }
 
     /**
@@ -348,7 +348,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
      */
     public function editPageURL($id, $size = 'full', $partial=false, $preset=null)
     {
-        $url=admin_url('admin-ajax.php')."?action=ilab_imgix_edit_page&post=$id";
+        $url=relative_admin_url('admin-ajax.php')."?action=ilab_imgix_edit_page&post=$id";
 
         if ($size!='full')
             $url.="&size=$size";
@@ -434,24 +434,43 @@ class ILabMediaImgixTool extends ILabMediaToolBase
             $imgix_settings['media_url']=wp_get_attachment_url($media_id);
         }
 
-        $data=[
-            'partial'=>$partial,
-            'image_id'=>$image_id,
-            'size'=>$size,
-            'sizes'=>ilab_get_image_sizes(),
-            'meta'=>$meta,
-            'full_width'=>$full_width,
-            'full_height'=>$full_height,
-            'tool'=>$this,
-            'settings'=>$imgix_settings,
-            'src'=>$full_src,
-            'presets'=>$presetsUI,
-            'currentPreset'=>$current_preset,
-            'params'=>$this->toolInfo['settings']['params']
-        ];
-
         if (current_user_can( 'edit_post', $image_id))
-            echo \ILab\Stem\View::render_view('imgix/ilab-imgix-ui.php', $data);
+        {
+            if (!$partial)
+                echo \ILab\Stem\View::render_view('imgix/ilab-imgix-ui.php', [
+                    'partial'=>$partial,
+                    'image_id'=>$image_id,
+                    'size'=>$size,
+                    'sizes'=>ilab_get_image_sizes(),
+                    'meta'=>$meta,
+                    'full_width'=>$full_width,
+                    'full_height'=>$full_height,
+                    'tool'=>$this,
+                    'settings'=>$imgix_settings,
+                    'src'=>$full_src,
+                    'presets'=>$presetsUI,
+                    'currentPreset'=>$current_preset,
+                    'params'=>$this->toolInfo['settings']['params']
+                ]);
+            else
+            {
+                $params=[];
+                foreach($this->toolInfo['settings']['params'] as $paramCategory => $paramCategoryInfo)
+                    foreach($paramCategoryInfo as $paramGroup => $paramGroupInfo)
+                        foreach($paramGroupInfo as $param => $paramInfo)
+                            $params[$param]=$paramInfo;
+
+                json_response([
+                                  'image_id'=>$image_id,
+                                  'size'=>$size,
+                                  'settings'=>$imgix_settings,
+                                  'src'=>$full_src,
+                                  'presets'=>$presetsUI,
+                                  'currentPreset'=>$current_preset,
+                                  'params'=>$params
+                              ]);
+            }
+        }
 
         die;
     }

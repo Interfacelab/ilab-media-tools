@@ -1,0 +1,33 @@
+{
+  "dependencies": {
+    "ilab-modal.js": {
+      "files": "js/ilab-modal.js"
+    },
+    "ilab-media-tools.js": {
+      "files": [
+        "js/cropper.js",
+        "js/ilab-crop.js",
+        "js/ilab-imgix.js"
+      ],
+      "main": true
+    },
+    "ilab-modal.min.css": {
+      "files": "styles/ilab-modal.scss",
+      "main": true
+    },
+    "ilab-media-tools.min.css": {
+      "files": [
+        "styles/cropper.css",
+        "styles/ilab-media-tools.scss"
+      ],
+      "main": true
+    }
+  },
+  "paths": {
+    "source": "src/",
+    "dist": "public/"
+  },
+  "config": {
+    "devUrl": "http://interfacelab.dev"
+  }
+}

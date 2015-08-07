@@ -41,3 +41,9 @@ function ilab_get_image_sizes($size=null)
 
     return $sizes;
 }
+
+function relative_admin_url($path = '', $scheme = 'admin' ) {
+    $url=get_admin_url( null, $path, $scheme );
+    $site=home_url('','admin');
+    return str_replace($site,'',$url);
+}
