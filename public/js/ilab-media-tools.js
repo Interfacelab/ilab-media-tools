@@ -2213,15 +2213,315 @@ var ILabCrop=(function(){
  * Created by jong on 8/8/15.
  */
 
-/**
- * Hello
- */
+var ImgixComponents=(function(){
+    var byteToHex=function(byte) {
+        var hexChar = ["0", "1", "2", "3", "4", "5", "6", "7","8", "9", "A", "B", "C", "D", "E", "F"];
+        return hexChar[(byte >> 4) & 0x0f] + hexChar[byte & 0x0f];
+    };
 
-function daguq()
-{
-    
-}
+    return {
+        utilities: {
+          byteToHex:byteToHex
+      }
+    };
+})();
 
+(function($){
+    ImgixComponents.ImgixSlider=function(delegate, container)
+    {
+        this.delegate=delegate;
+        this.container=container;
+        this.valueLabel=container.find('.ilab-imgix-param-title-right > h3');
+        this.slider=container.find('.imgix-param');
+        this.resetButton=container.find('.imgix-param-reset');
+
+        this.defaultValue=container.data('default-value');
+        this.param=container.data('param');
+
+        var sliderRef=this;
+
+        this.resetButton.on('click',sliderRef.reset);
+
+        this.slider.on('input',function(){
+            sliderRef.valueLabel.text(sliderRef.slider.val());
+        });
+
+        this.slider.on('change',function(){
+            sliderRef.valueLabel.text(sliderRef.slider.val());
+            sliderRef.delegate.preview();
+        });
+    };
+
+    ImgixComponents.ImgixSlider.prototype.destroy=function() {
+        this.slider.off('input');
+        this.slider.off('change');
+        this.resetButton.off('click');
+    };
+
+    ImgixComponents.ImgixSlider.prototype.reset=function(data) {
+        var val;
+
+        if (data && data.hasOwnProperty(this.param))
+            val=data[this.param];
+        else
+            val=this.defaultValue;
+
+        this.valueLabel.text(val);
+        this.slider.val(val);
+        this.slider.hide().show(0);
+
+        this.delegate.preview();
+    };
+
+    ImgixComponents.ImgixSlider.prototype.saveValue=function(data) {
+        if (this.slider.val()!=this.defaultValue)
+            data[this.param]=this.slider.val();
+
+        return data;
+    };
+
+}(jQuery));
+
+(function($){
+
+    ImgixComponents.ImgixColor=function(delegate, container)
+    {
+        this.delegate=delegate;
+        this.container=container;
+        this.colorPicker=container.find('.imgix-param-color');
+        this.alphaSlider=container.find('.imgix-param-alpha');
+        this.type=container.data('param-type');
+        this.resetButton=container.find('.imgix-param-reset');
+        this.param=container.data('param');
+        this.defaultValue=container.data('default-value');
+
+        var colorPickerRef=this;
+
+        if (this.type=='blend-color') {
+            this.blendParam=container.data('blend-param');
+            this.blendSelect = container.find('.imgix-param-blend');
+
+            var currentBlend=container.data('blend-value');
+            this.blendSelect.val(currentBlend);
+
+            this.blendSelect.on('change',function(){
+                colorPickerRef.delegate.preview();
+            });
+        }
+
+        this.colorPicker.wpColorPicker({
+            palettes: false,
+            change: function(event, ui) {
+                colorPickerRef.delegate.preview();
+            }
+        });
+
+        this.alphaSlider.on('change',function(){
+            colorPickerRef.delegate.preview();
+        });
+
+        this.resetButton.on('click',colorPickerRef.reset);
+    };
+
+    ImgixComponents.ImgixColor.prototype.destroy=function() {
+        this.alphaSlider.off('change');
+        if (this.type=='blend-color') {
+            this.blendSelect.off('change');
+        }
+        this.resetButton.off('click');
+    };
+
+    ImgixComponents.ImgixColor.prototype.reset=function(data) {
+        var blend='none';
+        var val;
+
+        if (data && data.hasOwnProperty(this.blendParam))
+        {
+            blend=data[this.blendParam];
+        }
+
+        if (data && data.hasOwnProperty(this.param))
+        {
+            val=data[this.param];
+        }
+        else
+            val=this.defaultValue;
+
+        val=val.replace('#','');
+        if (val.length==8)
+        {
+            var alpha=(parseInt('0x'+val.substring(0,2))/255.0)*100.0;
+            val=val.substring(2);
+
+            this.alphaSlider.val(Math.round(alpha));
+            this.alphaSlider.hide().show(0);
+        }
+
+        this.colorPicker.val('#'+val);
+        this.colorPicker.wpColorPicker('color', '#'+val);
+
+        if (this.type=='blend-color') {
+            this.blendSelect.val(blend);
+        }
+
+        this.delegate.preview();
+    };
+
+    ImgixComponents.ImgixColor.prototype.saveValue=function(data) {
+        if (this.alphaSlider.val()>0) {
+            data[this.param] = '#' + ImgixComponents.utilities.byteToHex(Math.round((parseFloat(this.alphaSlider.val()) / 100.0) * 255.0)) + this.colorPicker.val().replace('#', '');
+
+            if (this.type == 'blend-color') {
+                data[this.blendParam] = this.blendSelect.val();
+            }
+        }
+
+        return data;
+    };
+
+}(jQuery));
+
+(function($){
+
+    ImgixComponents.ImgixAlignment=function(delegate, container)
+    {
+        this.delegate=delegate;
+        this.container=container;
+        this.alignmentParam=container.find('.imgix-param');
+        this.resetButton=container.find('.imgix-param-reset');
+        this.defaultValue=container.data('default-value');
+        this.param=container.data('param');
+
+        var alignmentRef=this;
+
+        this.resetButton.on('click',alignmentRef.reset);
+        container.find('.imgix-alignment-button').on('click',function(){
+            var button=$(this);
+            alignmentRef.container.find('.imgix-alignment-button').each(function(){
+                $(this).removeClass('selected-alignment');
+            });
+
+            button.addClass('selected-alignment');
+            alignmentRef.alignmentParam.val(button.data('param-value'));
+            alignmentRef.delegate.preview();
+        });
+    };
+
+    ImgixComponents.ImgixAlignment.prototype.destroy=function() {
+        this.resetButton.off('click');
+        this.container.find('.imgix-alignment-button').off('click');
+    };
+
+    ImgixComponents.ImgixAlignment.prototype.reset=function(data) {
+        var val;
+
+        if (data && data.hasOwnProperty(this.param))
+            val=data[this.param];
+        else
+            val=this.defaultValue;
+
+        this.container.find('.imgix-alignment-button').each(function(){
+            var button=$(this);
+            if (button.data('param-value')==val)
+                button.addClass('selected-alignment');
+            else
+                button.removeClass('selected-alignment');
+        });
+
+        this.alignmentParam.val(val);
+        this.delegate.preview();
+    };
+
+    ImgixComponents.ImgixAlignment.prototype.saveValue=function(data) {
+        if (this.alignmentParam.val()!=this.defaultValue)
+            data[this.param]=this.alignmentParam.val();
+
+        return data;
+    };
+}(jQuery));
+
+(function($){
+
+    ImgixComponents.ImgixMediaChooser=function(delegate, container)
+    {
+        this.delegate=delegate;
+        this.container=container;
+        this.preview=container.find('.imgix-media-preview');
+        this.mediaInput=container.find('.imgix-param');
+        this.selectButton=container.find('.imgix-media-button');
+        this.resetButton=container.find('.imgix-param-reset');
+
+        this.defaultValue=container.data('default-value');
+        this.param=container.data('param');
+
+        this.uploader=wp.media({
+            title: 'Select Watermark',
+            button: {
+                text: 'Select Watermark'
+            },
+            multiple: false
+        });
+
+        var mediaRef=this;
+
+        this.resetButton.on('click',mediaRef.reset);
+
+        this.uploader.on('select', function() {
+            attachment = mediaRef.uploader.state().get('selection').first().toJSON();
+            mediaRef.mediaInput.val(attachment.id);
+            mediaRef.preview.attr('src',attachment.url);
+
+            mediaRef.delegate.preview();
+        });
+
+        this.selectButton.on('click',function(e){
+            e.preventDefault();
+            mediaRef.uploader.open();
+            return false;
+        });
+
+    };
+
+    ImgixComponents.ImgixMediaChooser.prototype.destroy=function() {
+        this.selectButton.off('click');
+        this.uploader.off('select');
+        this.resetButton.off('click');
+    };
+
+    ImgixComponents.ImgixMediaChooser.prototype.reset=function(data) {
+        var val;
+
+        if (data && data.hasOwnProperty(this.param))
+        {
+            val=data[this.param];
+            this.mediaInput.val(val);
+        }
+        else
+            this.mediaInput.val('');
+
+        if (data && data.hasOwnProperty(this.param+'_url'))
+        {
+            this.preview.attr('src',data[this.param+'_url']);
+        }
+        else
+        {
+            this.preview.removeAttr('src').replaceWith(this.preview.clone());
+            this.preview=this.container.find('.imgix-media-preview');
+        }
+
+        this.delegate.preview();
+    };
+
+    ImgixComponents.ImgixMediaChooser.prototype.saveValue=function(data) {
+        var val=this.mediaInput.val();
+
+        if (val && val!='')
+            data[this.param]=val;
+
+        return data;
+    };
+
+}(jQuery));
 
 /**
  * Image Editing Module
@@ -2231,6 +2531,7 @@ var ILabImageEdit=(function($){
     var _settings={};
     var _previewTimeout;
     var _previewsSuspended;
+    var _parameters=[];
 
     /**
      * Requests a preview to be generated.
@@ -2254,37 +2555,11 @@ var ILabImageEdit=(function($){
      */
     var _postAjax=function(action,data,callback){
         var postData={};
-        $('.imgix-param').each(function(){
-            var param=$(this);
-            var paramType=param.data('param-type');
-            var val=param.val();
-
-            if ((paramType=='color') || (paramType=='blend-color'))
-            {
-                var paramAlpha=$('#imgix-param-alpha-'+param.attr('name'));
-                var alpha=parseInt((paramAlpha.val()/100.0)*255);
-                if (alpha==0)
-                    return;
-
-                val=val.substring(1);
-                var hexChar = ["0", "1", "2", "3", "4", "5", "6", "7","8", "9", "A", "B", "C", "D", "E", "F"];
-                val='#'+hexChar[(alpha >> 4) & 0x0f] + hexChar[alpha & 0x0f]+val;
-            }
-
-            if (paramType=='blend-color')
-            {
-                var paramBlend=$('#imgix-param-blend-'+param.attr('name'));
-                var paramBlendParam=paramBlend.data('blend-param');
-                var blendVal=paramBlend.val();
-                if (blendVal!='none')
-                {
-                    postData[paramBlendParam]=blendVal;
-                }
-            }
-
-            if (val!=param.data('default-value'))
-                postData[param.attr('name')]=val;
+        _parameters.forEach(function(value,index){
+            postData=value.saveValue(postData);
         });
+
+        console.log(postData);
 
         data['image_id'] = _settings.image_id;
         data['action'] = action;
@@ -2370,124 +2645,19 @@ var ILabImageEdit=(function($){
 
         _setupTabs();
 
-        $('.imgix-param-color').wpColorPicker({
-           palettes: false,
-            change: function(event, ui) {
-                preview();
-            }
-        });
+        var self=this;
 
-        $('.imgix-param').each(function(){
-            var param=$(this);
-            var paramIsColor=((param.data('param-type')=='color') || (param.data('param-type')=='blend-color'));
-            var paramValueDisplay=$('#imgix-current-value-'+param.attr('name'));
-
-            paramValueDisplay.text(param.val());
-            param.on('change',function(e){
-                param.hide().show(0);
-                preview();
-                if (paramValueDisplay)
-                    paramValueDisplay.text(param.val());
-            });
-            param.on('input',function(e){
-                if (paramIsColor)
-                    return;
-
-                if (paramValueDisplay)
-                    paramValueDisplay.text(param.val());
-            });
-        });
-
-        $('.imgix-param-alpha').on('change',function(){
-            preview();
-        });
-
-        $('.imgix-param-blend').on('change',function(){
-            preview();
-        });
-
-        $('.imgix-param-reset').on('click',function(){
-            var paramName=$(this).data('param');
-            var paramValueDisplay=$('#imgix-current-value-'+paramName);
-            var param=$('#imgix-param-'+paramName);
-            var paramType=param.data('param-type');
-
-            if (paramType=='slider')
-            {
-                param.val(param.data('default-value'));
-                paramValueDisplay.text(param.data('default-value'));
-                param.hide().show(0);
-            }
-            else if (paramType=='color')
-            {
-                param.val('#FF0000');
-                param.wpColorPicker('color', '#FF0000');
-                $('#imgix-param-alpha-'+paramName).val(0);
-                $('#imgix-param-alpha-'+paramName).hide().show(0);
-            }
-            else if (paramType=='blend-color')
-            {
-                param.val('#FF0000');
-                param.wpColorPicker('color', '#FF0000');
-                $('#imgix-param-alpha-'+paramName).val(0);
-                $('#imgix-param-alpha-'+paramName).hide().show(0);
-                $('#imgix-param-blend-'+paramName).val('none');
-            }
-            else if (paramType=='alignment')
-            {
-                param.val('bottom,right');
-                $('.imgix-alignment-button').each(function(){
-                    var selectButton=$(this);
-                    selectButton.removeClass('selected-alignment');
-                    if (selectButton.data('param-value')=='bottom,right')
-                        selectButton.addClass('selected-alignment');
-                });
-            }
-            else if (paramType=='media-chooser')
-            {
-                $('#imgix-param-'+paramName).val('');
-                $image=$('#imgix-media-preview');
-                $image.removeAttr('src').replaceWith($image.clone());
-            }
-
-            preview();
-        });
-
-        $('.imgix-media-button').on('click',function(){
-            var selectButton=$(this);
-            var param=selectButton.data('param');
-
-               var uploader=wp.media({
-                title: 'Select Watermark',
-                button: {
-                    text: 'Select Watermark'
-                },
-                multiple: false
-            });
-
-
-            uploader.on('select', function() {
-                attachment = uploader.state().get('selection').first().toJSON();
-                $('#imgix-param-'+param).val(attachment.id);
-                $('#imgix-media-preview').attr('src',attachment.url);
-
-                preview();
-            });
-
-            uploader.open();
-
-            return false;
-        });
-
-        $('.imgix-alignment-button').on('click',function(){
-            var selectButton=$(this);
-            var param=selectButton.data('param');
-            $('.imgix-alignment-button').each(function(){
-                $(this).removeClass('selected-alignment');
-            });
-            selectButton.addClass('selected-alignment');
-            $('#imgix-param-'+param).val(selectButton.data('param-value'));
-            preview();
+        $('.ilab-imgix-parameter').each(function(){
+            var container=$(this);
+            var type=container.data('param-type');
+            if (type=='slider')
+                _parameters.push(new ImgixComponents.ImgixSlider(self,container));
+            else if ((type=='color') || (type=='blend-color'))
+                _parameters.push(new ImgixComponents.ImgixColor(self,container));
+            else if (type=='media-chooser')
+                _parameters.push(new ImgixComponents.ImgixMediaChooser(self,container));
+            else if (type=='alignment')
+                _parameters.push(new ImgixComponents.ImgixAlignment(self,container));
         });
 
         $('.ilab-imgix-pill').on('click',function(){
@@ -2507,24 +2677,33 @@ var ILabImageEdit=(function($){
             preview();
         });
 
-        $(document).on('change','.imgix-image-size-select',function(){
-            var sizeSelect=$(this);
-            ILabModal.loadURL(sizeSelect.val(),true,function(response){
-                bindUI(response);
-            });
+        $('.ilab-modal-editor-tabs').ilabTabs({
+            currentValue: _settings.size,
+            tabSelected:function(tab){
+                ILabModal.loadURL(tab.data('url'),true,function(response){
+                    bindUI(response);
+                });
+            }
         });
 
-
-        $(document).on('click', '.ilab-modal-editor-tab', function(e) {
-            e.preventDefault();
-
-            var currEl = $(this);
-            ILabModal.loadURL(currEl.data('url'),true,function(response){
-                bindUI(response);
-            });
-
-            return false;
-        });
+        //$(document).on('change','.imgix-image-size-select',function(){
+        //    var sizeSelect=$(this);
+        //    ILabModal.loadURL(sizeSelect.val(),true,function(response){
+        //        bindUI(response);
+        //    });
+        //});
+        //
+        //
+        //$(document).on('click', '.ilab-modal-editor-tab', function(e) {
+        //    e.preventDefault();
+        //
+        //    var currEl = $(this);
+        //    ILabModal.loadURL(currEl.data('url'),true,function(response){
+        //        bindUI(response);
+        //    });
+        //
+        //    return false;
+        //});
 
         initPresets();
     };
@@ -2541,63 +2720,8 @@ var ILabImageEdit=(function($){
 
         var rebind=function(){
             $('#ilab-imgix-preview-image').off('load',rebind);
-            Object.keys(data.params).forEach(function(key,index){
-                var paramObj=data.params[key];
-                var param=$('#imgix-param-'+key);
-
-                if (data.settings[key])
-                {
-                    var val=data.settings[key];
-
-                    if (!val || (val==''))
-                        return;
-
-                    if (paramObj.type=='slider')
-                    {
-                        $('#imgix-current-value-'+key).text(val);
-                        param.val(val);
-                    }
-                    else if ((paramObj.type=='color') ||  (paramObj.type=='blend-color'))
-                    {
-                        val=val.replace('#','');
-                        if (val.length==8)
-                        {
-                            var alpha=(parseInt('0x'+val.substring(0,2))/255.0)*100.0;
-                            val=val.substring(2);
-
-                            param.val('#'+val);
-                            param.wpColorPicker('color', '#'+val);
-                            $('#imgix-param-alpha-'+key).val(Math.round(alpha));
-                            $('#imgix-param-alpha-'+key).hide().show(0);
-                        }
-                        else
-                        {
-                            param.val('#'+val);
-                            param.wpColorPicker('color', '#'+val);
-                        }
-
-                        if (paramObj.type=='blend-color')
-                            $('#imgix-param-blend-'+key).val(data.settings[paramObj['blend-param']]);
-                    }
-                    else if (paramObj.type=='media-chooser')
-                    {
-                        param.val(val);
-
-                        if (data.settings.media_url && (data.settings.media_url!=''))
-                            $('#imgix-media-preview').attr('src',data.settings.media_url);
-                    }
-                    else if (paramObj.type=='alignment')
-                    {
-                        param.val(val);
-                        $('.imgix-alignment-button').each(function(){
-                            var selectButton=$(this);
-                            selectButton.removeClass('selected-alignment');
-                            if (selectButton.data('param-value')==val)
-                                selectButton.addClass('selected-alignment');
-                        });
-                    }
-
-                }
+            _parameters.forEach(function(value,index){
+               value.reset(data.settings);
             });
 
             _previewsSuspended=false;
@@ -2645,8 +2769,6 @@ var ILabImageEdit=(function($){
         _postAjax('ilab_imgix_save', {}, function(response) {
             hideStatus();
             ILabModal.makeClean();
-
-            jQuery('.ilab-modal-sidebar-actions .spinner').removeClass('is-active');
         });
 
     };
@@ -2655,7 +2777,9 @@ var ILabImageEdit=(function($){
      * Reset all of the values
      */
     var resetAll=function(){
-        $('.imgix-param-reset').click();
+        _parameters.forEach(function(value,index){
+            value.reset();
+        });
     };
 
     var newPreset=function(){
@@ -2740,7 +2864,8 @@ var ILabImageEdit=(function($){
         savePreset:savePreset,
         deletePreset:deletePreset,
         displayStatus:displayStatus,
-        hideStatus:hideStatus
+        hideStatus:hideStatus,
+        preview:preview
     }
 })(jQuery);
 //# sourceMappingURL=ilab-media-tools.js.map

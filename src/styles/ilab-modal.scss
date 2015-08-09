@@ -1,3 +1,5 @@
+@import "bourbon/bourbon";
+
 #ilab-modal-container {
   z-index: 160000 !important;
   background-color: rgb(252, 252, 252);
@@ -93,6 +95,9 @@
 }
 
 .ilab-modal-tab {
+  min-width:40px;
+  white-space: nowrap;
+  text-align:center;
   margin-top: 3px;
   background-color: #ccc;
   line-height: 30px;
@@ -149,6 +154,9 @@ a.button-reset {
 }
 
 .ilab-modal-editor-tab {
+  white-space: nowrap;
+  min-width: 50px;
+  text-align: center;
   min-height: 32px;
   max-height: 33px;
   margin-top: 3px;
@@ -188,3 +196,24 @@ a.button-reset {
   background-color: #ccc;
   margin: 0px 10px 0px 20px !important;
 }
+
+
+.ilab-modal-tabs-select-label {
+
+  margin-top: 3px;
+  line-height: 32px;
+  padding: 0px 5px 0px 15px;
+  margin-right: 3px;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #888;
+  font-weight: bold;
+  cursor: pointer !important;
+}
+
+.ilab-modal-tabs-select {
+  margin-top: 4px;
+  line-height: 32px;
+  font-size: 11px;
+}
+

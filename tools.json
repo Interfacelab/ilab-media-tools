@@ -261,7 +261,14 @@
           "Watermark Media": {
             "media": {
               "title": "Watermark Image",
-              "type": "media-chooser"
+              "type": "media-chooser",
+              "imgix-param":"mark",
+              "dependents":[
+                "markalign",
+                "markalpha",
+                "markpad",
+                "markscale"
+              ]
             }
           },
           "Watermark Settings":{

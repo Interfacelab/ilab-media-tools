@@ -8,6 +8,8 @@ class ILabMediaImgixTool extends ILabMediaToolBase
     protected $signingKey;
     protected $imageQuality;
     protected $autoFormat;
+    protected $paramPropsByType;
+    protected $paramProps;
 
     public function __construct($toolName, $toolInfo, $toolManager)
     {
@@ -31,6 +33,26 @@ class ILabMediaImgixTool extends ILabMediaToolBase
     {
         if (!$this->enabled())
             return;
+
+        $this->paramProps=[];
+        $this->paramPropsByType=[];
+        if (isset($this->toolInfo['settings']['params']))
+        {
+            foreach($this->toolInfo['settings']['params'] as $paramCategory => $paramCategoryInfo)
+                foreach($paramCategoryInfo as $paramGroup => $paramGroupInfo)
+                    foreach($paramGroupInfo as $paramKey => $paramInfo)
+                    {
+                        $this->paramProps[$paramKey]=$paramInfo;
+
+                        if (!isset($this->paramPropsByType[$paramInfo['type']]))
+                            $paramType=[];
+                        else
+                            $paramType=$this->paramPropsByType[$paramInfo['type']];
+
+                        $paramType[$paramKey]=$paramInfo;
+                        $this->paramPropsByType[$paramInfo['type']]=$paramType;
+                    }
+        }
 
         $this->imgixDomains=[];
         $domains=get_option('ilab-media-imgix-domains');
@@ -106,30 +128,22 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         if ($this->imageQuality)
             $params['q']=$this->imageQuality;
 
-        if (isset($params['media']) && !empty($params['media']))
+        foreach($this->paramPropsByType['media-chooser'] as $key=>$info)
         {
-            $media_id=$params['media'];
-            unset($params['media']);
-            $markMeta=wp_get_attachment_metadata($media_id);
-            $params['mark']='/'.$markMeta['file'];
-        }
-
-        if (isset($params['mark']))
-        {
-            if (($params['mark']=='/') || ($params['mark']=='') || (isset($params['markscale']) && ($params['markscale']==0)))
+            if (isset($params[$key]) && !empty($params[$key]))
             {
-                unset($params['mark']);
-                unset($params['markalign']);
-                unset($params['markalpha']);
-                unset($params['markscale']);
+                $media_id=$params[$key];
+                unset($params[$key]);
+                $markMeta=wp_get_attachment_metadata($media_id);
+                $params[$info['imgix-param']]='/'.$markMeta['file'];
             }
-        }
-        else
-        {
-            unset($params['mark']);
-            unset($params['markalign']);
-            unset($params['markalpha']);
-            unset($params['markscale']);
+            else
+            {
+                unset($params[$key]);
+                if (isset($info['dependents']))
+                    foreach($info['dependents'] as $depKey)
+                        unset($params[$depKey]);
+            }
         }
 
         if (isset($params['border-width']) && isset($params['border-color']))
@@ -428,10 +442,13 @@ class ILabMediaImgixTool extends ILabMediaToolBase
                 $imgix_settings=$meta['imgix-params'];
         }
 
-        if (isset($imgix_settings['media']))
+        foreach($this->paramPropsByType['media-chooser'] as $key=>$info)
         {
-            $media_id=$imgix_settings['media'];
-            $imgix_settings['media_url']=wp_get_attachment_url($media_id);
+            if (isset($imgix_settings[$key]) && !empty($imgix_settings[$key]))
+            {
+                $media_id=$imgix_settings[$key];
+                $imgix_settings[$key.'_url']=wp_get_attachment_url($media_id);
+            }
         }
 
         if (current_user_can( 'edit_post', $image_id))
@@ -450,16 +467,11 @@ class ILabMediaImgixTool extends ILabMediaToolBase
                     'src'=>$full_src,
                     'presets'=>$presetsUI,
                     'currentPreset'=>$current_preset,
-                    'params'=>$this->toolInfo['settings']['params']
+                    'params'=>$this->toolInfo['settings']['params'],
+                    'paramProps'=>$this->paramProps
                 ]);
             else
             {
-                $params=[];
-                foreach($this->toolInfo['settings']['params'] as $paramCategory => $paramCategoryInfo)
-                    foreach($paramCategoryInfo as $paramGroup => $paramGroupInfo)
-                        foreach($paramGroupInfo as $param => $paramInfo)
-                            $params[$param]=$paramInfo;
-
                 json_response([
                                   'image_id'=>$image_id,
                                   'size'=>$size,
@@ -467,7 +479,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
                                   'src'=>$full_src,
                                   'presets'=>$presetsUI,
                                   'currentPreset'=>$current_preset,
-                                  'params'=>$params
+                                  'paramProps'=>$this->paramProps
                               ]);
             }
         }

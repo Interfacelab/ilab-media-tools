@@ -39,6 +39,16 @@ function imgixCurrentAlphaValue($param,$current,$default)
     return $default;
 }
 
+function imgixCurrentMediaSrcValue($param,$current)
+{
+    if (isset($current[$param.'_url']))
+    {
+        return $current[$param.'_url'];
+    }
+
+    return '';
+}
+
 function imgixIsSelected($param,$current,$value,$defaultValue,$selectedOutput,$unselectedOutput='')
 {
     if (isset($current[$param]))

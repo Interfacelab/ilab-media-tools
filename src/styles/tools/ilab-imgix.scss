@@ -341,6 +341,7 @@
 }
 
 .ilab-imgix-pill {
+  white-space: nowrap;
   line-height:30px;
   font-size: 10px;
 
@@ -450,26 +451,6 @@
 {
   font-size: 13px;
 }
-
-.imgix-image-size-label {
-
-  margin-top: 3px;
-  line-height: 32px;
-  padding: 0px 5px 0px 15px;
-  margin-right: 3px;
-  font-size: 11px;
-  text-transform: uppercase;
-  color: #888;
-  font-weight: bold;
-  cursor: pointer !important;
-}
-
-.imgix-image-size-select {
-  margin-top: 4px;
-  line-height: 32px;
-  font-size: 11px;
-}
-
 
 .is-hidden {
   display:none;

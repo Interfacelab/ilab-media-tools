@@ -1,12 +1,20 @@
 {
   "dependencies": {
     "ilab-modal.js": {
-      "files": "js/ilab-modal.js"
+      "files": [
+        "js/ilab-modal-tabs.js",
+        "js/ilab-modal.js"
+      ]
     },
     "ilab-media-tools.js": {
       "files": [
         "js/cropper.js",
         "js/ilab-crop.js",
+        "js/components/imgix-component.js",
+        "js/components/imgix-slider.js",
+        "js/components/imgix-color.js",
+        "js/components/imgix-alignment.js",
+        "js/components/imgix-media-chooser.js",
         "js/ilab-imgix.js"
       ],
       "main": true

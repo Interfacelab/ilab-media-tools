@@ -6,20 +6,17 @@
 
 {% block main-tabs %}
 <div class="ilab-modal-editor-tabs">
-    {% if (count($sizes)>10) %}
-    <div class="imgix-image-size-label">Size:</div>
-    <select class="imgix-image-size-select">
-        <option value="{{$tool->editPageURL($image_id,'full',true) }}" {{(($size=='full')?'selected':'')}}>Source Image</option>
+    <div class="ilab-modal-tabs-select-label">Size:</div>
+    <select class="ilab-modal-tabs-select">
+        <option value="full" data-url="{{$tool->editPageURL($image_id,'full',true) }}" {{(($size=='full')?'selected':'')}}>Source Image</option>
         {% foreach ($sizes as $name => $info) %}
-        <option value="{{$tool->editPageURL($image_id,$name,true) }}" {{(($size==$name)?'selected':'')}}>{{ ucwords(str_replace('_', ' ', str_replace('-', ' ', $name))) }}</option>
+        <option value="{{$name}}" data-url="{{$tool->editPageURL($image_id,$name,true) }}" {{(($size==$name)?'selected':'')}}>{{ ucwords(str_replace('_', ' ', str_replace('-', ' ', $name))) }}</option>
         {% endforeach %}
     </select>
-    {% else %}
-    <div data-url="{{$tool->editPageURL($image_id,'full',true) }}"  class="ilab-modal-editor-tab {{(($size=='full')?'active-tab':'')}}">Source Image</div>
+    <div data-url="{{$tool->editPageURL($image_id,'full',true) }}" data-value="full" class="ilab-modal-editor-tab {{(($size=='full')?'active-tab':'')}}">Source Image</div>
     {% foreach ($sizes as $name => $info) %}
-    <div data-url="{{$tool->editPageURL($image_id,$name,true) }}" class="ilab-modal-editor-tab {{(($size==$name)?'active-tab':'')}}">{{ ucwords(str_replace('_', ' ', str_replace('-', ' ', $name))) }}</div>
+    <div data-url="{{$tool->editPageURL($image_id,$name,true) }}" data-value="{{$name}}" class="ilab-modal-editor-tab {{(($size==$name)?'active-tab':'')}}">{{ ucwords(str_replace('_', ' ', str_replace('-', ' ', $name))) }}</div>
     {% endforeach %}
-    {% endif %}
 </div>
 {% end block %}
 
