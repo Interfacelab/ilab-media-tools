@@ -21,66 +21,53 @@
 {% end block %}
 
 {% block editor %}
-<img id="ilab-imgix-preview-image" src="{{ $src }}" />
-<div id="ilab-preview-wait-modal" class="is-hidden">
+<img class="ilab-imgix-preview-image" src="{{ $src }}" />
+<div class="ilab-preview-wait-modal is-hidden">
     <h3>Building Preview</h3>
     <span class="spinner is-active"></span>
 </div>
 {% endblock %}
 
-{% block sidebar-tabs %}
-<div class="ilab-modal-tabs">
-    {% for each($params as $paramSection => $paramSectionInfo) %}
-    <div class="ilab-modal-tab" data-target="ilab-imgix-params-section-{{$paramSection}}">{{__(ucwords(str_replace('-', ' ', $paramSection)))}}</div>
-    {% end for each %}
-</div>
-{% endblock %}
-
 {% block bottom-bar %}
-<div class="ilab-modal-bottom-bar">
-    <div id="imgix-status-container" class="is-hidden">
-        <span class="spinner is-active"></span>
-        <span id="imgix-status-label">Saving ...</span>
-    </div>
-    <div id="imgix-preset-make-default-container">
-        <label for="imgix-preset-make-default">
-            <input name="imgix-preset-make-default" id="imgix-preset-make-default" type="checkbox">
-            Make Default For Size
-        </label>
-        <div class="ilab-bottom-bar-seperator"></div>
-    </div>
-    <a href="javascript:ILabImageEdit.newPreset()" class="button">New Preset</a>
-    <div id="imgix-preset-container">
-        <div class="ilab-bottom-bar-seperator"></div>
-        <select id="imgix-presets">
-            <option>Preset 1</option>
-        </select>
-        <a href="javascript:ILabImageEdit.savePreset()" class="button button-primary">Save Preset</a>
-        <a href="javascript:ILabImageEdit.deletePreset()" class="button button-reset">Delete Preset</a>
-    </div>
+<div class="imgix-preset-make-default-container">
+    <label for="imgix-preset-make-default">
+        <input name="imgix-preset-make-default" class="imgix-preset-make-default" type="checkbox">
+        Make Default For Size
+    </label>
+    <div class="ilab-bottom-bar-seperator"></div>
+</div>
+<a href="#" class="button imgix-new-preset-button">New Preset</a>
+<div class="imgix-preset-container">
+    <div class="ilab-bottom-bar-seperator"></div>
+    <select class="imgix-presets">
+        <option>Preset 1</option>
+    </select>
+    <a href="#" class="button button-primary imgix-save-preset-button">Save Preset</a>
+    <a href="#" class="button button-reset imgix-delete-preset-button">Delete Preset</a>
 </div>
 {% end block %}
 
 {% block sidebar-content %}
+<div class="ilab-sidebar-tabs">
+    {% for each($params as $paramSection => $paramSectionInfo) %}
+    <div class="ilab-sidebar-tab" data-target="ilab-imgix-params-section-{{$paramSection}}">{{__(ucwords(str_replace('-', ' ', $paramSection)))}}</div>
+    {% end for each %}
+</div>
 <div class="ilab-modal-sidebar-content">
     {% for each($params as $paramSection => $paramSectionInfo) %}
-    <div id="ilab-imgix-params-section-{{$paramSection}}" class="ilab-imgix-parameters-container is-hidden">
-        {% if ($paramSection=='adjust') %}
-        <div class="ilab-modal-pillbox">
-            <input type="hidden" data-param-type="hidden" data-default-value="0" class="imgix-param" name="enhance" id="imgix-param-enhance" value="{{imgixCurrentValue('enhance',$settings,0)}}">
-            <input type="hidden" data-param-type="hidden" data-default-value="0" class="imgix-param" name="redeye" id="imgix-param-redeye" value="{{imgixCurrentValue('redeye',$settings,0)}}">
-            <a data-param="enhance" id="imgix-pill-enhance" class="ilab-imgix-pill ilab-imgix-pill-enhance {{imgixIsSelected('enhance',$settings,1,0,'pill-selected')}}" href="#">Auto Enhance</a>
-            <a data-param="redeye" id="imgix-pill-redeye" class="ilab-imgix-pill ilab-imgix-pill-redeye {{imgixIsSelected('redeye',$settings,1,0,'pill-selected')}}" href="#">Remove Red Eye</a>
-        </div>
-        {% endif %}
+    <div class="ilab-imgix-params-section-{{$paramSection}} ilab-imgix-parameters-container is-hidden">
         {% for each($paramSectionInfo as $group => $groupParams) %}
+        {% if (strpos($group,'--')!==0) %}
         <h4>{{$group}}</h4>
+        {% endif %}
         <div>
             {% foreach($groupParams as $param => $paramInfo) %}
                 {% if ($paramInfo['type']=='slider') %}
                     {% include imgix/editors/imgix-slider.php %}
                 {% elseif ($paramInfo['type']=='color') %}
                     {% include imgix/editors/imgix-color.php %}
+                {% elseif ($paramInfo['type']=='pillbox') %}
+                    {% include imgix/editors/imgix-pillbox.php %}
                 {% elseif ($paramInfo['type']=='blend-color') %}
                     {% include imgix/editors/imgix-blend-color.php %}
                 {% elseif ($paramInfo['type']=='media-chooser') %}
@@ -98,21 +85,19 @@
 
 {% block sidebar-actions %}
 <div class="ilab-modal-sidebar-actions">
-    <a href="javascript:ILabImageEdit.resetAll();"
-       class="button media-button button-primary button-reset">
+    <a href="#" class="button media-button button-primary button-reset imgix-button-reset-all">
         {{__('Reset All')}}
     </a>
-    <a href="javascript:ILabImageEdit.apply();"
-       class="button media-button button-primary media-button-select">
+    <a href="#" class="button media-button button-primary media-button-select imgix-button-save-adjustments">
         {{__('Save Adjustments')}}
     </a>
-    <span class="spinner is-hidden"></span>
 </div>
 {% endblock %}
 
 {% block script %}
 <script>
-    ILabImageEdit.init({
+    new ILabImageEdit(jQuery, {
+        modal_id:'{{$modal_id}}',
         image_id:{{$image_id}},
         size:"{{$size}}",
         currentPreset:"{{$currentPreset}}",

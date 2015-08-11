@@ -11,7 +11,10 @@
 
         var alignmentRef=this;
 
-        this.resetButton.on('click',alignmentRef.reset);
+        this.resetButton.on('click',function(){
+            alignmentRef.reset();
+        });
+
         container.find('.imgix-alignment-button').on('click',function(){
             var button=$(this);
             alignmentRef.container.find('.imgix-alignment-button').each(function(){
@@ -35,6 +38,9 @@
         if (data && data.hasOwnProperty(this.param))
             val=data[this.param];
         else
+            val=this.defaultValue;
+
+        if (val=='')
             val=this.defaultValue;
 
         this.container.find('.imgix-alignment-button').each(function(){

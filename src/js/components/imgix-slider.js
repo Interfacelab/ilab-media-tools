@@ -13,7 +13,9 @@
 
         var sliderRef=this;
 
-        this.resetButton.on('click',sliderRef.reset);
+        this.resetButton.on('click',function(){
+            sliderRef.reset();
+        });
 
         this.slider.on('input',function(){
             sliderRef.valueLabel.text(sliderRef.slider.val());

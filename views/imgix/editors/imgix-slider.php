@@ -4,7 +4,7 @@
             <h3>{{__($paramInfo['title'])}}</h3>
         </div>
         <div class="ilab-imgix-param-title-right">
-            <h3 style="font-style:italic">12</h3>
+            <h3 style="font-style:italic">{{imgixCurrentValue($param,$settings,$paramInfo['default'])}}</h3>
         </div>
     </div>
     <input class="imgix-param" type="range" min="{{$paramInfo['min']}}" max="{{$paramInfo['max']}}" value="{{imgixCurrentValue($param,$settings,$paramInfo['default'])}}" />

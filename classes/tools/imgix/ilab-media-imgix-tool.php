@@ -110,20 +110,21 @@ class ILabMediaImgixTool extends ILabMediaToolBase
     private function buildImgixParams($params)
     {
         if ($this->autoFormat)
-            $auto=['format'];
+            $auto='format';
         else
-            $auto=[];
+            $auto=null;
 
-        if (isset($params['enhance']))
-            $auto[]='enhance';
-
-        if (isset($params['redeye']))
-            $auto[]='redeye';
+        if (($auto!=null) && isset($params['auto']))
+        {
+            $params['auto']=$params['auto'].','.$auto;
+        }
+        else if ($auto!=null)
+        {
+            $params['auto']=$auto;
+        }
 
         unset($params['enhance']);
         unset($params['redeye']);
-
-        $params['auto']=implode(',',$auto);
 
         if ($this->imageQuality)
             $params['q']=$this->imageQuality;
@@ -362,7 +363,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
      */
     public function editPageURL($id, $size = 'full', $partial=false, $preset=null)
     {
-        $url=relative_admin_url('admin-ajax.php')."?action=ilab_imgix_edit_page&post=$id";
+        $url=relative_admin_url('admin-ajax.php')."?action=ilab_imgix_edit_page&image_id=$id";
 
         if ($size!='full')
             $url.="&size=$size";
@@ -380,17 +381,14 @@ class ILabMediaImgixTool extends ILabMediaToolBase
     /**
      * Render the edit ui
      */
-    public function displayEditUI()
+    public function displayEditUI($is_partial=0)
     {
-        $image_id = esc_html($_GET['post']);
-        $current_preset=(isset($_GET['preset'])) ? esc_html($_GET['preset']) : null;
+        $image_id = esc_html(parse_req('image_id'));
+        $current_preset=esc_html(parse_req('preset'));
 
-        $partial=(isset($_GET['partial']) && ($_GET['partial']==1));
+        $partial=parse_req('partial',$is_partial);
 
-        if (isset($_GET['size']))
-            $size=esc_html($_GET['size']);
-        else
-            $size='full';
+        $size=esc_html(parse_req('size','full'));
 
         $meta = wp_get_attachment_metadata($image_id);
 
@@ -457,6 +455,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
                 echo \ILab\Stem\View::render_view('imgix/ilab-imgix-ui.php', [
                     'partial'=>$partial,
                     'image_id'=>$image_id,
+                    'modal_id'=>gen_uuid(8),
                     'size'=>$size,
                     'sizes'=>ilab_get_image_sizes(),
                     'meta'=>$meta,
@@ -473,6 +472,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
             else
             {
                 json_response([
+                                  'status'=>'ok',
                                   'image_id'=>$image_id,
                                   'size'=>$size,
                                   'settings'=>$imgix_settings,
@@ -570,11 +570,22 @@ class ILabMediaImgixTool extends ILabMediaToolBase
                 }
             }
 
+            $psettings=$pinfo['settings'];
+            foreach($this->paramPropsByType['media-chooser'] as $mkey => $minfo)
+            {
+                if (isset($psettings[$mkey]))
+                {
+                    if (!empty($psettings[$mkey]))
+                    {
+                        $psettings[$mkey.'_url']=wp_get_attachment_url($psettings[$mkey]);
+                    }
+                }
+            }
+
             $presetsUI[$pkey]=[
                 'title'=>$pinfo['title'],
-                'url'=>$this->editPageURL($image_id,$size,true,$pkey),
                 'default_for'=>$default_for,
-                'settings'=>$pinfo['settings']
+                'settings'=>$psettings
             ];
         }
 
@@ -726,11 +737,13 @@ class ILabMediaImgixTool extends ILabMediaToolBase
 
         update_option('ilab-imgix-size-presets',$sizePresets);
 
-
-        json_response([
-                          'status'=>'ok',
-                          'preset_key'=>$key,
-                          'presets'=>$this->buildPresetsUI($image_id,$size)
-                      ]);
+        return $this->displayEditUI(1);
+//
+//
+//        json_response([
+//                          'status'=>'ok',
+//                          'preset_key'=>$key,
+//                          'presets'=>$this->buildPresetsUI($image_id,$size)
+//                      ]);
     }
 }

@@ -36,7 +36,9 @@
             colorPickerRef.delegate.preview();
         });
 
-        this.resetButton.on('click',colorPickerRef.reset);
+        this.resetButton.on('click',function(){
+            colorPickerRef.reset();
+        });
     };
 
     ImgixComponents.ImgixColor.prototype.destroy=function() {
@@ -88,7 +90,9 @@
             data[this.param] = '#' + ImgixComponents.utilities.byteToHex(Math.round((parseFloat(this.alphaSlider.val()) / 100.0) * 255.0)) + this.colorPicker.val().replace('#', '');
 
             if (this.type == 'blend-color') {
-                data[this.blendParam] = this.blendSelect.val();
+                if (this.blendSelect.val()!='none') {
+                    data[this.blendParam] = this.blendSelect.val();
+                }
             }
         }
 

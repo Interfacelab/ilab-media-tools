@@ -1,6 +1,12 @@
 @import "bourbon/bourbon";
 
-#ilab-modal-container {
+.ilab-modal-backdrop {
+  position: absolute;
+  left:0px; top:0px; right:0px; bottom:0px;
+  z-index: 160000 !important;
+}
+
+.ilab-modal-container {
   z-index: 160000 !important;
   background-color: rgb(252, 252, 252);
   position: absolute;
@@ -86,7 +92,7 @@
   border-left:3px solid #ddd;
 }
 
-.ilab-modal-tabs {
+.ilab-sidebar-tabs {
   background: #ddd;
   display: -webkit-flex;
   display: flex;
@@ -94,7 +100,7 @@
   max-height: 36px;
 }
 
-.ilab-modal-tab {
+.ilab-sidebar-tab {
   min-width:40px;
   white-space: nowrap;
   text-align:center;
@@ -110,7 +116,7 @@
   cursor: pointer !important;
 }
 
-.ilab-modal-tab.active-tab {
+.ilab-sidebar-tab.active-tab {
   background-color: rgb(243, 243, 243);
   color: #777;
 }
@@ -217,3 +223,55 @@ a.button-reset {
   font-size: 11px;
 }
 
+.ilab-status-container {
+  display: -webkit-flex;
+  display: flex;
+  flex:1;
+  -webkit-flex:1;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+}
+
+.ilab-status-container.is-hidden {
+  display: none;
+}
+
+.ilab-status-container .spinner {
+  margin:0px 8px 0px 0px;
+}
+
+.ilab-status-label
+{
+  font-size: 13px;
+}
+
+
+.ilab-modal-pillbox {
+  padding: 10px 0px 20px 0px;
+  text-align: center;
+  margin-bottom: 10px !important;
+}
+
+.ilab-modal-pill {
+  white-space: nowrap;
+  line-height:30px;
+  font-size: 10px;
+
+  padding: 10px 14px 10px 35px;
+  background-color: #eaeaea;
+  text-transform: uppercase;
+  font-weight: bold;
+  color: #444;
+  text-decoration: none;
+  border-radius: 8px;
+
+  margin:3px;
+}
+
+
+.ilab-modal-pill.pill-selected {
+  background-color: #ccc;
+  box-shadow: inset 1px 1px 1px rgba(0,0,0,0.25);
+  color: white;
+
+}

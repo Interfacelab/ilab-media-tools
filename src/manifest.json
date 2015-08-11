@@ -15,6 +15,9 @@
         "js/components/imgix-color.js",
         "js/components/imgix-alignment.js",
         "js/components/imgix-media-chooser.js",
+        "js/components/imgix-pillbox.js",
+        "js/ilab-imgix-presets.js",
+        "js/ilab-sidebar-tabs.js",
         "js/ilab-imgix.js"
       ],
       "main": true

@@ -13,7 +13,7 @@ class ILabMediaToolsManager
 
     public function __construct()
     {
-        $toolList=json_decode(file_get_contents(ILAB_TOOLS_DIR.'/tools.json'),true);
+        $toolList=ejson_decode_file(ILAB_TOOLS_DIR.'/tools.json',true);
 
         $this->tools=[];
 

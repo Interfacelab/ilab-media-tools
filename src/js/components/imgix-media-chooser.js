@@ -22,7 +22,9 @@
 
         var mediaRef=this;
 
-        this.resetButton.on('click',mediaRef.reset);
+        this.resetButton.on('click',function(){
+            mediaRef.reset();
+        });
 
         this.uploader.on('select', function() {
             attachment = mediaRef.uploader.state().get('selection').first().toJSON();

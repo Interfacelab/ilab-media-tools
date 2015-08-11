@@ -1,4 +1,8 @@
+/**
+ * Configuration for ILab Media Tools
+ */
 {
+  /** Crop Tool */
   "crop": {
     "title":"Image Crop",
     "description":"Provides an easy to use tool for manually cropping images for all image sizes.",
@@ -25,6 +29,7 @@
     }
   },
 
+  /** Imgix Tool */
   "imgix": {
     "title":"Imgix Support",
     "description":"Serves images through imgix.com",
@@ -72,6 +77,21 @@
       },
       "params":{
         "adjust": {
+          "--Auto":{
+            "auto":{
+              "type":"pillbox",
+              "options": {
+                "enhance": {
+                  "title": "Auto Enhance",
+                  "default": 0
+                },
+                "redeye": {
+                  "title": "Remove Red Eye",
+                  "default": 0
+                }
+              }
+            }
+          },
           "Luminosity Controls":{
             "bri":{
               "title":"Brightness",

@@ -118,7 +118,8 @@ var ILabModal=(function(){
     var _data={};
 
     var cancel=function(){
-        jQuery('#ilab-modal-container').remove();
+        jQuery('.ilab-modal-container').remove();
+        jQuery('.ilab-modal-backdrop').remove();
     };
 
     var makeDirty=function(){
