@@ -38,9 +38,8 @@ var enabled = {
 };
 
 var preprocessContext={
-    production: argv.production,
-    development: !argv.production,
-    protools: argv.protools
+    environment: (argv.production) ? "production":"dev",
+    toolMode: (argv.basic) ? "pro" : "basic"
 };
 
 var writeToManifest = function(directory) {
@@ -54,7 +53,7 @@ var jsTasks = function(filename) {
         .pipe(function() {
             return gulpif(enabled.maps, sourcemaps.init());
         })
-        .pipe(preprocess,preprocessContext)
+        .pipe(preprocess,{ extension: 'js', context: preprocessContext })
         .pipe(include)
         .pipe(concat, filename)
         .pipe(function(){
@@ -72,12 +71,11 @@ var jsTasks = function(filename) {
 };
 
 var cssTasks = function(filename) {
-    console.log(filename);
     return lazypipe()
         .pipe(function() {
             return gulpif(!enabled.failStyleTask, plumber());
         })
-        .pipe(preprocess,preprocessContext)
+        .pipe(preprocess,{ extension: 'css', context: preprocessContext })
         .pipe(function() {
             return gulpif(enabled.maps, sourcemaps.init());
         })
@@ -111,13 +109,19 @@ var cssTasks = function(filename) {
 };
 
 gulp.task('php', function() {
-    return 
-        gulp.src('{helpers,classes,views}/**/*.php')
-        .pipe(preprocess(preprocessContext))
-        .pipe(gulp.dest('..'));
+        return gulp.src(['{helpers,classes,views}/**/*.php', '*.php'], {base: '.'})
+            .pipe(preprocess({ extension: 'html', context: preprocessContext }))
+            .pipe(preprocess({ extension: 'js', context: preprocessContext }))
+            .pipe(gulp.dest('..'));
 });
 
-gulp.task('styles', function() {
+gulp.task('tools', function() {
+        return gulp.src('tools.json', {base: '.'})
+            .pipe(preprocess({ extension: 'js', context: preprocessContext }))
+            .pipe(gulp.dest('..'));
+});
+
+gulp.task('css', function() {
     var merged = merge();
     manifest.forEachDependency('css', function(dep) {
         console.log(dep);
@@ -135,7 +139,7 @@ gulp.task('styles', function() {
         .pipe(writeToManifest('css'));
 });
 
-gulp.task('scripts', function() {
+gulp.task('js', function() {
     var merged = merge();
     manifest.forEachDependency('js', function(dep) {
         merged.add(
@@ -158,14 +162,19 @@ gulp.task('watch', function() {
             next();
         }
     });
+    
+    gulp.watch([path.source + '{helpers,classes,views}/**/*.php', path.source + '*.php'], ['php'])
+    gulp.watch([path.source + '/tools.json'], ['tools'])
     gulp.watch([path.source + '/styles/**/*'], ['styles']);
     gulp.watch([path.source + '/js/**/*'], ['scripts']);
     gulp.watch(['bower.json', 'src/manifest.json'], ['build']);
 });
 
 gulp.task('build', function(callback) {
-    runSequence('styles',
-        'scripts',
+    runSequence('css',
+        'js',
+        'php',
+        'tools',
         callback);
 });
 
