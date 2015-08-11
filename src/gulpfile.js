@@ -18,8 +18,9 @@ var sass         = require('gulp-sass');
 var sourcemaps   = require('gulp-sourcemaps');
 var include      = require('gulp-include');
 var uglify       = require('gulp-uglify');
+var preprocess   = require('gulp-preprocess');
 
-var manifest = require('asset-builder')('./src/manifest.json');
+var manifest = require('asset-builder')('manifest.json');
 
 var path = manifest.paths;
 
@@ -36,6 +37,12 @@ var enabled = {
     uglify: argv.production
 };
 
+var preprocessContext={
+    production: argv.production,
+    development: !argv.production,
+    protools: argv.protools
+};
+
 var writeToManifest = function(directory) {
     return lazypipe()
         .pipe(gulp.dest, path.dist + directory)
@@ -47,6 +54,7 @@ var jsTasks = function(filename) {
         .pipe(function() {
             return gulpif(enabled.maps, sourcemaps.init());
         })
+        .pipe(preprocess,preprocessContext)
         .pipe(include)
         .pipe(concat, filename)
         .pipe(function(){
@@ -58,7 +66,7 @@ var jsTasks = function(filename) {
         })
         .pipe(function() {
             return gulpif(enabled.maps, sourcemaps.write('.', {
-                sourceRoot: 'src/js/'
+                sourceRoot: 'js/'
             }));
         })();
 };
@@ -69,6 +77,7 @@ var cssTasks = function(filename) {
         .pipe(function() {
             return gulpif(!enabled.failStyleTask, plumber());
         })
+        .pipe(preprocess,preprocessContext)
         .pipe(function() {
             return gulpif(enabled.maps, sourcemaps.init());
         })
@@ -96,10 +105,17 @@ var cssTasks = function(filename) {
         })
         .pipe(function() {
             return gulpif(enabled.maps, sourcemaps.write('.', {
-                sourceRoot: 'src/styles'
+                sourceRoot: 'styles/'
             }));
         })();
 };
+
+gulp.task('php', function() {
+    return 
+        gulp.src('{helpers,classes,views}/**/*.php')
+        .pipe(preprocess(preprocessContext))
+        .pipe(gulp.dest('..'));
+});
 
 gulp.task('styles', function() {
     var merged = merge();

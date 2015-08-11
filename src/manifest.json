@@ -35,8 +35,8 @@
     }
   },
   "paths": {
-    "source": "src/",
-    "dist": "public/"
+    "source": "",
+    "dist": "../public/"
   },
   "config": {
     "devUrl": "http://interfacelab.dev"
