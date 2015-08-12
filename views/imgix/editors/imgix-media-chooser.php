@@ -10,11 +10,13 @@
     </div>
     <div class="imgix-media-preview">
         <div class="imgix-media-preview-inner">
-            {% if (imgixCurrentMediaSrcValue($param,$settings)) %}
-            <img class="imgix-media-preview" src="{{imgixCurrentMediaSrcValue($param,$settings)}}">
-            {% else %}
-            <img class="imgix-media-preview">
-            {% endif %}
+            <div class="imgix-media-preview">
+                {% if (imgixCurrentMediaSrcValue($param,$settings)) %}
+                <img src="{{imgixCurrentMediaSrcValue($param,$settings)}}">
+                {% else %}
+                <img>
+                {% endif %}
+            </div>
         </div>
     </div>
     <a class="imgix-param-reset" href="#">{{__('Remove')}}</a>

@@ -1,6 +1,3 @@
-@import "bourbon/bourbon";
-@import "ilab-mixins";
-
 .ilabm-backdrop {
   position: absolute;
   left:0px; top:0px; right:0px; bottom:0px;
@@ -17,8 +14,8 @@
   bottom: 30px;
   border-radius: 0px;
 
-  @include display(flex);
-  @include flex-direction(column);
+  display: flex;
+  flex-direction: column;
 }
 
 .ilabm-titlebar {
@@ -27,10 +24,10 @@
   max-height: 50px;
   box-shadow: 0px 0px 4px rgba(0,0,0,0.15);
 
-  @include display(flex);
+  display: flex;
 
   h1 {
-    @include flex(2 100%);
+    flex: 2 100%;
     display:block;
     margin: 0px;
     padding: 0px 16px;
@@ -47,20 +44,20 @@
 }
 
 .ilabm-window-area {
-  @include flex(2 100%);
-  @include display(flex);
-  @include flex-direction(row);
+  flex: 2 100%;
+  display: flex;
+  flex-direction: row;
 }
 
 .ilabm-window-area-content {
   background-color: #fff;
-  @include flex(2 100%);
-  @include display(flex);
-  @include flex-direction(column);
+  flex: 2 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .ilabm-editor-container {
-  @include flex(2 100%);
+  flex: 2 100%;
   position: relative;
 }
 
@@ -79,20 +76,20 @@
   min-width: 350px;
   max-width: 350px;
   background-color: rgb(243, 243, 243);
-  @include display(flex);
-  @include flex-direction(column);
+  display: flex;
+  flex-direction: column;
   border-left:3px solid #ddd;
 }
 
 .ilabm-sidebar-content {
   position: relative;
-  @include display(flex);
-  @include flex(2 100%);
+  display: flex;
+  flex: 2 100%;
 }
 
 .ilabm-sidebar-tabs {
   background: #ddd;
-  @include display(flex);
+  display: flex;
   min-height: 36px;
   max-height: 36px;
 
@@ -119,8 +116,8 @@
 }
 
 .ilabm-sidebar-actions {
-  @include display(flex);
-  @include justify-content(flex-end);
+  display: flex;
+  justify-content: flex-end;
   background-color: white;
   border-top: 1px solid #eee;
   padding: 11px;
@@ -139,8 +136,8 @@ a.button-reset {
 }
 
 .ilabm-editor-tabs {
-  @include display(flex);
-  @include flex-direction(row);
+  display: flex;
+  flex-direction: row;
   border-bottom: 1px solid #ddd;
   background: #ddd;
 
@@ -194,9 +191,9 @@ a.button-reset {
 
 
 .ilabm-status-container {
-  @include display(flex);
-  @include flex(1);
-  @include justify-content(flex-start);
+  display: flex;
+  flex: 1;
+  justify-content: flex-start;
 
   .is-hidden {
     display: none;
@@ -263,9 +260,9 @@ a.button-reset {
 .ilabm-bottom-bar {
   font-size: 12px !important;
   padding: 0px 10px 10px 10px;
-  @include display(flex !important);
-  @include justify-content(flex-end);
-  @include align-items(center);
+  display: flex !important;
+  justify-content: flex-end;
+  align-items: center;
 
   .ilabm-bottom-bar-seperator {
     position: relative;

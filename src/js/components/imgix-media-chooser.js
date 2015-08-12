@@ -4,7 +4,7 @@
     {
         this.delegate=delegate;
         this.container=container;
-        this.preview=container.find('.imgix-media-preview');
+        this.preview=container.find('.imgix-media-preview img');
         this.mediaInput=container.find('.imgix-param');
         this.selectButton=container.find('.imgix-media-button');
         this.resetButton=container.find('.imgix-param-reset');
@@ -66,7 +66,7 @@
         else
         {
             this.preview.removeAttr('src').replaceWith(this.preview.clone());
-            this.preview=this.container.find('.imgix-media-preview');
+            this.preview=this.container.find('.imgix-media-preview img');
         }
 
         this.delegate.preview();

@@ -88,6 +88,11 @@ var cssTasks = function(filename) {
             }));
         })
         .pipe(concat, filename)
+        .pipe(autoprefixer, {
+            browsers: [
+                '> 5%'
+            ]
+        })
         .pipe(function(){
             return gulpif(enabled.uglify,minifyCss({
                 advanced: false,
