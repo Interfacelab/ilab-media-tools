@@ -429,7 +429,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
             {
                 if ($presets && $sizePresets && isset($sizePresets[$size]) && isset($presets[$sizePresets[$size]]))
                 {
-                    $imgix_settings=$presets[$sizePresets[$size]];
+                    $imgix_settings=$presets[$sizePresets[$size]]['settings'];
 
                     if (!$current_preset)
                         $current_preset=$sizePresets[$size];

@@ -7,8 +7,8 @@ var ILabModal=(function(){
     var _data={};
 
     var cancel=function(){
-        jQuery('.ilab-modal-container').remove();
-        jQuery('.ilab-modal-backdrop').remove();
+        jQuery('.ilabm-container').remove();
+        jQuery('.ilabm-backdrop').remove();
     };
 
     var makeDirty=function(){
@@ -35,9 +35,9 @@ var ILabModal=(function(){
         jQuery.get(url, function(data) {
             if (partial) {
                 partialCallback(data);
-                //jQuery('#ilab-modal-container').remove();
+                //jQuery('#ilabm-container').remove();
                 //jQuery('body').append(data);
-                //jQuery('#ilab-modal-window-area').unbind().html('').append(data);
+                //jQuery('#ilabm-window-area').unbind().html('').append(data);
             } else {
                 jQuery('body').append(data);
             }

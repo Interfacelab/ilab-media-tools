@@ -5,9 +5,9 @@
 
         return this.each(function(){
             var container=$(this);
-            var label=container.find('.ilab-modal-tabs-select-label');
-            var select=container.find('.ilab-modal-tabs-select');
-            var tabs=container.find('.ilab-modal-editor-tab');
+            var label=container.find('.ilabm-tabs-select-label');
+            var select=container.find('.ilabm-tabs-select');
+            var tabs=container.find('.ilabm-editor-tab');
 
             var minWidth=0;
             var tabFont,tabMarginLeft,tabMarginRight,tabPaddingLeft,tabPaddingRight=null;

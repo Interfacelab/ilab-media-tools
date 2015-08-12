@@ -1,11 +1,11 @@
-<div class="ilab-imgix-parameter" data-default-value="bottom,right" data-param="{{$param}}" data-param-type="{{$paramInfo['type']}}">
-    <div class="ilab-imgix-param-title ilab-imgix-media-param-title">
-        <div class="ilab-imgix-param-title-left">
+<div class="imgix-parameter" data-default-value="bottom,right" data-param="{{$param}}" data-param-type="{{$paramInfo['type']}}">
+    <div class="imgix-param-title imgix-media-param-title">
+        <div class="imgix-param-title-left">
             <h3>{{__($paramInfo['title'])}}</h3>
         </div>
-        <div class="ilab-imgix-param-title-right"></div>
+        <div class="imgix-param-title-right"></div>
     </div>
-    <div class="ilab-imgix-alignment-container">
+    <div class="imgix-alignment-container">
         <input type="hidden" class="imgix-param">
         <a href="#" class="imgix-alignment-button {{imgixIsSelected($param,$settings,'top,left','bottom,right','selected-alignment')}}" data-param-value="top,left"><img src="{{ILAB_PUB_IMG_URL}}/wm-align-top-left.png"></a>
         <a href="#" class="imgix-alignment-button {{imgixIsSelected($param,$settings,'top,center','bottom,right','selected-alignment')}}" data-param-value="top,center"><img src="{{ILAB_PUB_IMG_URL}}/wm-align-top-center.png"></a>

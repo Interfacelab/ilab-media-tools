@@ -1,0 +1,26 @@
+@mixin display-important($value) {
+  // flex | inline-flex
+  @if $value == "flex" {
+    // 2009
+    display: -webkit-box !important;
+    display: -moz-box !important;
+    display: box !important;
+
+    // 2012
+    display: -webkit-flex !important;
+    display: -moz-flex !important;
+    display: -ms-flexbox !important; // 2011 (IE 10)
+    display: flex !important;
+  } @else if $value == "inline-flex" {
+    display: -webkit-inline-box !important;
+    display: -moz-inline-box !important;
+    display: inline-box !important;
+
+    display: -webkit-inline-flex !important;
+    display: -moz-inline-flex !important;
+    display: -ms-inline-flexbox !important;
+    display: inline-flex !important;
+  } @else {
+    display: $value;
+  }
+}

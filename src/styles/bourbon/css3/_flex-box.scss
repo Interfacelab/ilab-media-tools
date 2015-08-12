@@ -64,27 +64,30 @@
 // 2011 - display (flexbox | inline-flexbox)
 // 2012 - display (flex | inline-flex)
 @mixin display($value) {
-// flex | inline-flex
-  @if $value == "flex" {
+  $str_value: #{$value};
+  $is_important: if(str_index($str_value,"!important"),!important,null);
+
+  // flex | inline-flex
+  @if str_index($str_value,"flex")==1 {
     // 2009
-    display: -webkit-box;
-    display: -moz-box;
-    display: box;
+    display: -webkit-box $is_important;
+    display: -moz-box $is_important;
+    display: box  $is_important;
 
     // 2012
-    display: -webkit-flex;
-    display: -moz-flex;
-    display: -ms-flexbox; // 2011 (IE 10)
-    display: flex;
-  } @else if $value == "inline-flex" {
-    display: -webkit-inline-box;
-    display: -moz-inline-box;
-    display: inline-box;
+    display: -webkit-flex $is_important;
+    display: -moz-flex $is_important;
+    display: -ms-flexbox $is_important;
+    display: flex $is_important;
+  } @else if str_index($str_value,"inline-flex")==1 {
+    display: -webkit-inline-box $is_important;
+    display: -moz-inline-box $is_important;
+    display: inline-box $is_important;
 
-    display: -webkit-inline-flex;
-    display: -moz-inline-flex;
-    display: -ms-inline-flexbox;
-    display: inline-flex;
+    display: -webkit-inline-flex $is_important;
+    display: -moz-inline-flex $is_important;
+    display: -ms-inline-flexbox $is_important;
+    display: inline-flex $is_important;
   } @else {
     display: $value;
   }

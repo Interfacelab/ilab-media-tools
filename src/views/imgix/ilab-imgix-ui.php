@@ -5,24 +5,24 @@
 {% end block %}
 
 {% block main-tabs %}
-<div class="ilab-modal-editor-tabs">
-    <div class="ilab-modal-tabs-select-label">Size:</div>
-    <select class="ilab-modal-tabs-select">
+<div class="ilabm-editor-tabs">
+    <div class="ilabm-tabs-select-label">Size:</div>
+    <select class="ilabm-tabs-select">
         <option value="full" data-url="{{$tool->editPageURL($image_id,'full',true) }}" {{(($size=='full')?'selected':'')}}>Source Image</option>
         {% foreach ($sizes as $name => $info) %}
         <option value="{{$name}}" data-url="{{$tool->editPageURL($image_id,$name,true) }}" {{(($size==$name)?'selected':'')}}>{{ ucwords(str_replace('_', ' ', str_replace('-', ' ', $name))) }}</option>
         {% endforeach %}
     </select>
-    <div data-url="{{$tool->editPageURL($image_id,'full',true) }}" data-value="full" class="ilab-modal-editor-tab {{(($size=='full')?'active-tab':'')}}">Source Image</div>
+    <div data-url="{{$tool->editPageURL($image_id,'full',true) }}" data-value="full" class="ilabm-editor-tab {{(($size=='full')?'active-tab':'')}}">Source Image</div>
     {% foreach ($sizes as $name => $info) %}
-    <div data-url="{{$tool->editPageURL($image_id,$name,true) }}" data-value="{{$name}}" class="ilab-modal-editor-tab {{(($size==$name)?'active-tab':'')}}">{{ ucwords(str_replace('_', ' ', str_replace('-', ' ', $name))) }}</div>
+    <div data-url="{{$tool->editPageURL($image_id,$name,true) }}" data-value="{{$name}}" class="ilabm-editor-tab {{(($size==$name)?'active-tab':'')}}">{{ ucwords(str_replace('_', ' ', str_replace('-', ' ', $name))) }}</div>
     {% endforeach %}
 </div>
 {% end block %}
 
 {% block editor %}
-<img class="ilab-imgix-preview-image" src="{{ $src }}" />
-<div class="ilab-preview-wait-modal is-hidden">
+<img class="imgix-preview-image" src="{{ $src }}" />
+<div class="ilabm-preview-wait-modal is-hidden">
     <h3>Building Preview</h3>
     <span class="spinner is-active"></span>
 </div>
@@ -34,11 +34,11 @@
         <input name="imgix-preset-make-default" class="imgix-preset-make-default" type="checkbox">
         Make Default For Size
     </label>
-    <div class="ilab-bottom-bar-seperator"></div>
+    <div class="ilabm-bottom-bar-seperator"></div>
 </div>
 <a href="#" class="button imgix-new-preset-button">New Preset</a>
 <div class="imgix-preset-container">
-    <div class="ilab-bottom-bar-seperator"></div>
+    <div class="ilabm-bottom-bar-seperator"></div>
     <select class="imgix-presets">
         <option>Preset 1</option>
     </select>
@@ -48,14 +48,14 @@
 {% end block %}
 
 {% block sidebar-content %}
-<div class="ilab-sidebar-tabs">
+<div class="ilabm-sidebar-tabs">
     {% for each($params as $paramSection => $paramSectionInfo) %}
-    <div class="ilab-sidebar-tab" data-target="ilab-imgix-params-section-{{$paramSection}}">{{__(ucwords(str_replace('-', ' ', $paramSection)))}}</div>
+    <div class="ilabm-sidebar-tab" data-target="imgix-params-section-{{$paramSection}}">{{__(ucwords(str_replace('-', ' ', $paramSection)))}}</div>
     {% end for each %}
 </div>
-<div class="ilab-modal-sidebar-content">
+<div class="ilabm-sidebar-content">
     {% for each($params as $paramSection => $paramSectionInfo) %}
-    <div class="ilab-imgix-params-section-{{$paramSection}} ilab-imgix-parameters-container is-hidden">
+    <div class="imgix-params-section-{{$paramSection}} imgix-parameters-container is-hidden">
         {% for each($paramSectionInfo as $group => $groupParams) %}
         {% if (strpos($group,'--')!==0) %}
         <h4>{{$group}}</h4>
@@ -84,7 +84,7 @@
 {% endblock %}
 
 {% block sidebar-actions %}
-<div class="ilab-modal-sidebar-actions">
+<div class="ilabm-sidebar-actions">
     <a href="#" class="button media-button button-primary button-reset imgix-button-reset-all">
         {{__('Reset All')}}
     </a>

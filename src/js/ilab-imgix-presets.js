@@ -5,7 +5,7 @@
 var ILabImgixPresets=function($,delegate,container) {
 
     this.delegate=delegate;
-    this.container=container.find('.ilab-modal-bottom-bar');
+    this.container=container.find('.ilabm-bottom-bar');
     this.presetSelect=this.container.find('.imgix-presets');
     this.presetContainer=this.container.find('.imgix-preset-container');
     this.presetDefaultCheckbox=this.container.find('.imgix-preset-make-default');

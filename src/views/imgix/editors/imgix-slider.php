@@ -1,9 +1,9 @@
-<div data-default-value="{{$paramInfo['default']}}" data-param="{{$param}}" data-param-type="{{$paramInfo['type']}}" class="ilab-imgix-parameter">
-    <div class="ilab-imgix-param-title">
-        <div class="ilab-imgix-param-title-left">
+<div data-default-value="{{$paramInfo['default']}}" data-param="{{$param}}" data-param-type="{{$paramInfo['type']}}" class="imgix-parameter">
+    <div class="imgix-param-title">
+        <div class="imgix-param-title-left">
             <h3>{{__($paramInfo['title'])}}</h3>
         </div>
-        <div class="ilab-imgix-param-title-right">
+        <div class="imgix-param-title-right">
             <h3 style="font-style:italic">{{imgixCurrentValue($param,$settings,$paramInfo['default'])}}</h3>
         </div>
     </div>

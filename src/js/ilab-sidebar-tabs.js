@@ -4,7 +4,7 @@
         var settings= $.extend({},options);
 
         var firstTab=false;
-        return this.find('.ilab-sidebar-tab').each(function(){
+        return this.find('.ilabm-sidebar-tab').each(function(){
             var tab=$(this);
             var target=settings.container.find('.'+tab.data('target'));
 
@@ -19,7 +19,7 @@
             tab.on('click',function(e){
                 e.preventDefault();
 
-                settings.container.find(".ilab-sidebar-tab").each(function() {
+                settings.container.find(".ilabm-sidebar-tab").each(function() {
                     var otherTab = $(this);
                     var tabTarget = settings.container.find('.' + otherTab.data('target'));
 

@@ -88,12 +88,6 @@ var cssTasks = function(filename) {
             }));
         })
         .pipe(concat, filename)
-        .pipe(autoprefixer, {
-            browsers: [
-                'last 1 versions',
-                'ie 9'
-            ]
-        })
         .pipe(function(){
             return gulpif(enabled.uglify,minifyCss({
                 advanced: false,
@@ -153,7 +147,7 @@ gulp.task('js', function() {
 
 gulp.task('watch', function() {
     browserSync.init({
-        files: ['{helpers,classes,views}/**/*.php', '*.php'],
+        files: ['../{helpers,classes,views}/**/*.php', '../*.php', '../tools.json', '../css/**/*.css', '../css/*.css', '../js/*.js', 'manifest.json'],
         proxy: config.devUrl,
         host: "192.168.1.8",
 	open:"external",
@@ -164,10 +158,10 @@ gulp.task('watch', function() {
     });
     
     gulp.watch([path.source + '{helpers,classes,views}/**/*.php', path.source + '*.php'], ['php'])
-    gulp.watch([path.source + '/tools.json'], ['tools'])
-    gulp.watch([path.source + '/styles/**/*'], ['styles']);
-    gulp.watch([path.source + '/js/**/*'], ['scripts']);
-    gulp.watch(['bower.json', 'src/manifest.json'], ['build']);
+    gulp.watch([path.source + 'tools.json'], ['tools'])
+    gulp.watch([path.source + 'styles/**/*.scss', path.source + '*.scss'], ['css']);
+    gulp.watch([path.source + 'js/**/*.js', path.source + '*.js'], ['js']);
+    gulp.watch(['bower.json', 'manifest.json'], ['build']);
 });
 
 gulp.task('build', function(callback) {

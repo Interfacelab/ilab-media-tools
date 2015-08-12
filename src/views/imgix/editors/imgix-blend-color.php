@@ -1,9 +1,9 @@
-<div class="ilab-imgix-parameter" data-default-value="#FF0000" data-param="{{$param}}" data-param-type="{{$paramInfo['type']}}" data-blend-param="{{$paramInfo['blend-param']}}" data-blend-value="{{(isset($settings[$paramInfo['blend-param']]) ? $settings[$paramInfo['blend-param']] : 'none')}}">
-    <div class="ilab-imgix-param-title ilab-imgix-param-title-colortype">
-        <div class="ilab-imgix-param-title-left">
+<div class="imgix-parameter" data-default-value="#FF0000" data-param="{{$param}}" data-param-type="{{$paramInfo['type']}}" data-blend-param="{{$paramInfo['blend-param']}}" data-blend-value="{{(isset($settings[$paramInfo['blend-param']]) ? $settings[$paramInfo['blend-param']] : 'none')}}">
+    <div class="imgix-param-title imgix-param-title-colortype">
+        <div class="imgix-param-title-left">
             <h3>{{__($paramInfo['title'])}}</h3>
         </div>
-        <div class="ilab-imgix-param-title-right">
+        <div class="imgix-param-title-right">
             <input class="imgix-param imgix-param-color" type="text" value="{{imgixCurrentColorValue($param,$settings,'#FF0000')}}">
         </div>
     </div>

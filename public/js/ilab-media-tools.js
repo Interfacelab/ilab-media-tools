@@ -2231,7 +2231,7 @@ var ImgixComponents=(function(){
     {
         this.delegate=delegate;
         this.container=container;
-        this.valueLabel=container.find('.ilab-imgix-param-title-right > h3');
+        this.valueLabel=container.find('.imgix-param-title-right > h3');
         this.slider=container.find('.imgix-param');
         this.resetButton=container.find('.imgix-param-reset');
 
@@ -2545,7 +2545,7 @@ var ImgixComponents=(function(){
         this.container=container;
         this.param=container.data('param');
         this.values=container.data('param-values').split(',');
-        this.buttons=container.find('.ilab-modal-pill');
+        this.buttons=container.find('.ilabm-pill');
         this.inputs={};
 
         var pillboxRef=this;
@@ -2595,7 +2595,7 @@ var ImgixComponents=(function(){
 
             val.forEach(function (key, index) {
                 pillboxRef.inputs[key].val(1);
-                pillboxRef.container.find('ilab-imgix-pill-' + key).addClass('pill-selected');
+                pillboxRef.container.find('imgix-pill-' + key).addClass('pill-selected');
             });
         }
 
@@ -2626,7 +2626,7 @@ var ImgixComponents=(function(){
 var ILabImgixPresets=function($,delegate,container) {
 
     this.delegate=delegate;
-    this.container=container.find('.ilab-modal-bottom-bar');
+    this.container=container.find('.ilabm-bottom-bar');
     this.presetSelect=this.container.find('.imgix-presets');
     this.presetContainer=this.container.find('.imgix-preset-container');
     this.presetDefaultCheckbox=this.container.find('.imgix-preset-make-default');
@@ -2774,7 +2774,7 @@ var ILabImgixPresets=function($,delegate,container) {
         var settings= $.extend({},options);
 
         var firstTab=false;
-        return this.find('.ilab-sidebar-tab').each(function(){
+        return this.find('.ilabm-sidebar-tab').each(function(){
             var tab=$(this);
             var target=settings.container.find('.'+tab.data('target'));
 
@@ -2789,7 +2789,7 @@ var ILabImgixPresets=function($,delegate,container) {
             tab.on('click',function(e){
                 e.preventDefault();
 
-                settings.container.find(".ilab-sidebar-tab").each(function() {
+                settings.container.find(".ilabm-sidebar-tab").each(function() {
                     var otherTab = $(this);
                     var tabTarget = settings.container.find('.' + otherTab.data('target'));
 
@@ -2822,9 +2822,9 @@ var ILabImageEdit=function($, settings){
 
     this.settings=settings;
 
-    this.modalContainer=$('#ilab-modal-container-'+settings.modal_id);
-    this.waitModal=this.modalContainer.find('.ilab-preview-wait-modal');
-    this.previewImage=this.modalContainer.find('.ilab-imgix-preview-image');
+    this.modalContainer=$('#ilabm-container-'+settings.modal_id);
+    this.waitModal=this.modalContainer.find('.ilabm-preview-wait-modal');
+    this.previewImage=this.modalContainer.find('.imgix-preview-image');
 
     this.presets=new ILabImgixPresets($,this,this.modalContainer);
 
@@ -2835,7 +2835,7 @@ var ILabImageEdit=function($, settings){
         self.apply();
     });
 
-    this.modalContainer.find('.ilab-imgix-parameter').each(function(){
+    this.modalContainer.find('.imgix-parameter').each(function(){
         var container=$(this);
         var type=container.data('param-type');
         if (type=='slider')
@@ -2850,7 +2850,7 @@ var ILabImageEdit=function($, settings){
             self.parameters.push(new ImgixComponents.ImgixAlignment(self,container));
     });
 
-    this.modalContainer.on('click','.ilab-imgix-pill',function(){
+    this.modalContainer.on('click','.imgix-pill',function(){
         var paramName=$(this).data('param');
         var param=self.modalContainer.find('#imgix-param-'+paramName);
         if (param.val()==1)
@@ -2867,7 +2867,7 @@ var ILabImageEdit=function($, settings){
         self.preview();
     });
 
-    this.modalContainer.find('.ilab-modal-editor-tabs').ilabTabs({
+    this.modalContainer.find('.ilabm-editor-tabs').ilabTabs({
         currentValue: self.settings.size,
         tabSelected:function(tab){
             ILabModal.loadURL(tab.data('url'),true,function(response){
@@ -2877,7 +2877,7 @@ var ILabImageEdit=function($, settings){
         }
     });
 
-    this.modalContainer.find(".ilab-sidebar-tabs").ilabSidebarTabs({
+    this.modalContainer.find(".ilabm-sidebar-tabs").ilabSidebarTabs({
         delegate: this,
         container: this.modalContainer
     });

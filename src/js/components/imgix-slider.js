@@ -4,7 +4,7 @@
     {
         this.delegate=delegate;
         this.container=container;
-        this.valueLabel=container.find('.ilab-imgix-param-title-right > h3');
+        this.valueLabel=container.find('.imgix-param-title-right > h3');
         this.slider=container.find('.imgix-param');
         this.resetButton=container.find('.imgix-param-reset');
 

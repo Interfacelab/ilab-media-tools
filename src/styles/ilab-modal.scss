@@ -1,12 +1,13 @@
 @import "bourbon/bourbon";
+@import "ilab-mixins";
 
-.ilab-modal-backdrop {
+.ilabm-backdrop {
   position: absolute;
   left:0px; top:0px; right:0px; bottom:0px;
   z-index: 160000 !important;
 }
 
-.ilab-modal-container {
+.ilabm-container {
   z-index: 160000 !important;
   background-color: rgb(252, 252, 252);
   position: absolute;
@@ -14,21 +15,23 @@
   top: -1px;
   right: 30px;
   bottom: 30px;
-  display: flex;
-  flex-direction: column;
   border-radius: 0px;
+
+  @include display(flex);
+  @include flex-direction(column);
 }
 
-.ilab-modal-titlebar {
+.ilabm-titlebar {
   border-bottom: 1px solid #ddd;
   min-height: 50px;
   max-height: 50px;
-  display: flex;
   box-shadow: 0px 0px 4px rgba(0,0,0,0.15);
 
+  @include display(flex);
+
   h1 {
-    flex: 2 100%;
-    display: block;
+    @include flex(2 100%);
+    display:block;
     margin: 0px;
     padding: 0px 16px;
     font-size: 22px;
@@ -43,34 +46,25 @@
   }
 }
 
-#ilab-modal-window-area {
-  -webkit-flex:2 100%;
-  flex: 2 100%;
-  display: -webkit-flex;
-  display: flex;
-  -webkit-flex-direction: row;
-  flex-direction: row;
+.ilabm-window-area {
+  @include flex(2 100%);
+  @include display(flex);
+  @include flex-direction(row);
 }
 
-.ilab-modal-window-content-area {
+.ilabm-window-area-content {
   background-color: #fff;
-  -webkit-flex:2 100%;
-  flex: 2 100%;
-
-  display:-webkit-flex;
-  display:flex;
-
-  -webkit-flex-direction: column;
-  flex-direction: column;
+  @include flex(2 100%);
+  @include display(flex);
+  @include flex-direction(column);
 }
 
-.ilab-modal-editor-container {
-  -webkit-flex:2 100%;
-  flex: 2 100%;
+.ilabm-editor-container {
+  @include flex(2 100%);
   position: relative;
 }
 
-.ilab-modal-editor-area {
+.ilabm-editor-area {
   position: absolute;
   left: 0px;
   top: 0px;
@@ -81,66 +75,60 @@
   margin: 10px;
 }
 
-.ilab-modal-sidebar {
+.ilabm-sidebar {
   min-width: 350px;
   max-width: 350px;
   background-color: rgb(243, 243, 243);
-  display: -webkit-flex;
-  display: flex;
-  -webkit-flex-direction: column;
-  flex-direction: column;
+  @include display(flex);
+  @include flex-direction(column);
   border-left:3px solid #ddd;
 }
 
-.ilab-sidebar-tabs {
+.ilabm-sidebar-content {
+  position: relative;
+  @include display(flex);
+  @include flex(2 100%);
+}
+
+.ilabm-sidebar-tabs {
   background: #ddd;
-  display: -webkit-flex;
-  display: flex;
+  @include display(flex);
   min-height: 36px;
   max-height: 36px;
+
+  .ilabm-sidebar-tab {
+    min-width:40px;
+    white-space: nowrap;
+    text-align:center;
+    margin-top: 3px;
+    background-color: #ccc;
+    line-height: 30px;
+    padding: 0px 15px;
+    margin-right: 3px;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #888;
+    font-weight: bold;
+    cursor: pointer !important;
+  }
+
+  .active-tab {
+    background-color: rgb(243, 243, 243);
+    color: #777;
+  }
 }
 
-.ilab-sidebar-tab {
-  min-width:40px;
-  white-space: nowrap;
-  text-align:center;
-  margin-top: 3px;
-  background-color: #ccc;
-  line-height: 30px;
-  padding: 0px 15px;
-  margin-right: 3px;
-  font-size: 11px;
-  text-transform: uppercase;
-  color: #888;
-  font-weight: bold;
-  cursor: pointer !important;
-}
-
-.ilab-sidebar-tab.active-tab {
-  background-color: rgb(243, 243, 243);
-  color: #777;
-}
-
-.ilab-modal-sidebar-content {
-  position: relative;
-  display: -webkit-flex;
-  display: flex;
-  -webkit-flex:2 100%;
-  flex: 2 100%;
-}
-
-.ilab-modal-sidebar-actions {
-  display: flex;
-  justify-content: flex-end;
+.ilabm-sidebar-actions {
+  @include display(flex);
+  @include justify-content(flex-end);
   background-color: white;
   border-top: 1px solid #eee;
   padding: 11px;
-}
 
-.ilab-modal-sidebar-actions a {
-  display: block;
-
-  margin-left: 10px !important;
+  a {
+    display: block;
+    margin-left: 10px !important;
+  }
 }
 
 a.button-reset {
@@ -150,128 +138,158 @@ a.button-reset {
   box-shadow: inset 0 1px 0 #DD0000, 0 1px 0 rgba(0, 0, 0, 0.15) !important;
 }
 
-.ilab-modal-editor-tabs {
-  display:-webkit-flex;
-  -webkit-flex-direction: row;
-  display:flex;
-  flex-direction: row;
+.ilabm-editor-tabs {
+  @include display(flex);
+  @include flex-direction(row);
   border-bottom: 1px solid #ddd;
   background: #ddd;
+
+  .ilabm-editor-tab {
+    white-space: nowrap;
+    min-width: 50px;
+    text-align: center;
+    min-height: 32px;
+    max-height: 33px;
+    margin-top: 3px;
+    background-color: #ccc;
+    line-height: 31px;
+    padding: 0px 15px;
+    margin-right: 3px;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #888;
+    font-weight: bold;
+    cursor: pointer !important;
+  }
+
+  .active-tab {
+    background: white;
+    margin-bottom:-1px;
+    margin-top: 2px;
+    border-right:1px solid #ddd;
+    border-left:1px solid #ddd;
+    border-top:1px solid #ddd;
+  }
+
+  .ilabm-tabs-select-label {
+    margin-top: 3px;
+    line-height: 32px;
+    padding: 0px 5px 0px 15px;
+    margin-right: 3px;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #888;
+    font-weight: bold;
+    cursor: pointer !important;
+  }
+
+  .ilabm-tabs-select {
+    margin-top: 4px;
+    line-height: 32px;
+    font-size: 11px;
+  }
 }
 
-.ilab-modal-editor-tab {
-  white-space: nowrap;
-  min-width: 50px;
-  text-align: center;
-  min-height: 32px;
-  max-height: 33px;
-  margin-top: 3px;
-  background-color: #ccc;
-  line-height: 31px;
-  padding: 0px 15px;
-  margin-right: 3px;
-  font-size: 11px;
-  text-transform: uppercase;
-  color: #888;
-  font-weight: bold;
-  cursor: pointer !important;
+
+
+
+.ilabm-status-container {
+  @include display(flex);
+  @include flex(1);
+  @include justify-content(flex-start);
+
+  .is-hidden {
+    display: none;
+  }
+
+  .spinner {
+    margin:0px 8px 0px 0px;
+  }
 }
 
-.ilab-modal-editor-tab.active-tab {
-  background: white;
-  margin-bottom:-1px;
-  margin-top: 2px;
-  border-right:1px solid #ddd;
-  border-left:1px solid #ddd;
-  border-top:1px solid #ddd;
-}
-
-.ilab-modal-bottom-bar {
-  font-size: 12px !important;
-  display: flex !important;
-  padding: 0px 10px 10px 10px;
-  -webkit-justify-content: flex-end;
-  -webkit-align-items: center;
-}
-
-
-.ilab-bottom-bar-seperator {
-  position: relative;
-  width:1px;
-  height:20px;
-  background-color: #ccc;
-  margin: 0px 10px 0px 20px !important;
-}
-
-
-.ilab-modal-tabs-select-label {
-
-  margin-top: 3px;
-  line-height: 32px;
-  padding: 0px 5px 0px 15px;
-  margin-right: 3px;
-  font-size: 11px;
-  text-transform: uppercase;
-  color: #888;
-  font-weight: bold;
-  cursor: pointer !important;
-}
-
-.ilab-modal-tabs-select {
-  margin-top: 4px;
-  line-height: 32px;
-  font-size: 11px;
-}
-
-.ilab-status-container {
-  display: -webkit-flex;
-  display: flex;
-  flex:1;
-  -webkit-flex:1;
-  -webkit-justify-content: flex-start;
-  justify-content: flex-start;
-}
-
-.ilab-status-container.is-hidden {
-  display: none;
-}
-
-.ilab-status-container .spinner {
-  margin:0px 8px 0px 0px;
-}
-
-.ilab-status-label
-{
+.ilabm-status-label {
   font-size: 13px;
 }
 
-
-.ilab-modal-pillbox {
+.ilabm-pillbox {
   padding: 10px 0px 20px 0px;
   text-align: center;
   margin-bottom: 10px !important;
+
+  .ilabm-pill {
+    white-space: nowrap;
+    line-height:30px;
+    font-size: 10px;
+    padding: 10px 14px 10px 35px;
+    background-color: #eaeaea;
+    text-transform: uppercase;
+    font-weight: bold;
+    color: #444;
+    text-decoration: none;
+    border-radius: 8px;
+    margin:3px;
+  }
+
+  .pill-selected {
+    background-color: #ccc;
+    box-shadow: inset 1px 1px 1px rgba(0,0,0,0.25);
+    color: white;
+  }
 }
 
-.ilab-modal-pill {
-  white-space: nowrap;
-  line-height:30px;
-  font-size: 10px;
 
-  padding: 10px 14px 10px 35px;
-  background-color: #eaeaea;
-  text-transform: uppercase;
-  font-weight: bold;
-  color: #444;
-  text-decoration: none;
-  border-radius: 8px;
+.ilabm-preview-wait-modal {
+  position:absolute;
+  box-shadow: 0px 0px 10px 1px rgba(0,0,0,0.75);
+  text-align:center;
+  padding: 20px 40px;
+  border-radius: 10px;
+  background-color: rgba(255,255,255,0.66);
+  left:50%;
+  top:50%;
+  margin-left:-60px;
+  margin-top:-32px;
 
-  margin:3px;
+  h3 {
+    text-transform: uppercase;
+    font-size: 13px;
+  }
+
+  span.spinner {
+    float: none !important;
+  }
 }
 
+.ilabm-bottom-bar {
+  font-size: 12px !important;
+  padding: 0px 10px 10px 10px;
+  @include display(flex !important);
+  @include justify-content(flex-end);
+  @include align-items(center);
 
-.ilab-modal-pill.pill-selected {
-  background-color: #ccc;
-  box-shadow: inset 1px 1px 1px rgba(0,0,0,0.25);
-  color: white;
+  .ilabm-bottom-bar-seperator {
+    position: relative;
+    width:1px;
+    height:20px;
+    background-color: #ccc;
+    margin: 0px 10px 0px 20px !important;
+  }
 
+  a {
+    margin-left: 10px !important;
+  }
+
+  select {
+    font-size: 13px !important;
+    min-width: 140px;
+    margin-left: 10px !important;
+  }
+
+  label {
+    font-size: 13px !important;
+  }
+}
+
+.is-hidden {
+  display:none;
 }

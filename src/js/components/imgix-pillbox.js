@@ -6,7 +6,7 @@
         this.container=container;
         this.param=container.data('param');
         this.values=container.data('param-values').split(',');
-        this.buttons=container.find('.ilab-modal-pill');
+        this.buttons=container.find('.ilabm-pill');
         this.inputs={};
 
         var pillboxRef=this;
@@ -56,7 +56,7 @@
 
             val.forEach(function (key, index) {
                 pillboxRef.inputs[key].val(1);
-                pillboxRef.container.find('ilab-imgix-pill-' + key).addClass('pill-selected');
+                pillboxRef.container.find('imgix-pill-' + key).addClass('pill-selected');
             });
         }
 
