@@ -269,7 +269,8 @@ a.button-reset {
           justify-content: flex-end;
   -webkit-box-align: center;
   -webkit-align-items: center;
-          align-items: center; }
+          align-items: center;
+  min-height: 20px; }
   .ilabm-bottom-bar .ilabm-bottom-bar-seperator {
     position: relative;
     width: 1px;

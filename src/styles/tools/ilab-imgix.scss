@@ -88,6 +88,7 @@
   flex: 1 50%;
   padding-left: 40px;
   text-align:right;
+  position: relative;
 
   .wp-picker-container {
     position: relative;
@@ -327,3 +328,18 @@
   display: none;
 }
 
+
+.imgix-param-label
+{
+  font-style:italic;
+}
+
+.imgix-label-editor {
+  position: absolute;
+  right: -4px;
+  top: 0px;
+  width: 40px;
+  font-size: 11px;
+  padding: 1px;
+  text-align: right;
+}

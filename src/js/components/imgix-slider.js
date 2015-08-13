@@ -13,6 +13,20 @@
 
         var sliderRef=this;
 
+        this.container.find('.imgix-param-label').imgixLabel({
+            currentValue:function(){
+                return sliderRef.slider.val();
+            },
+            changed:function(newVal){
+                if (newVal==sliderRef.slider.val())
+                    return;
+
+                sliderRef.slider.val(newVal);
+                sliderRef.slider.hide().show(0);
+                sliderRef.delegate.preview();
+            }
+        });
+
         this.resetButton.on('click',function(){
             sliderRef.reset();
         });

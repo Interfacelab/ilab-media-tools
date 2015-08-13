@@ -120,6 +120,16 @@ gulp.task('tools', function() {
             .pipe(gulp.dest('..'));
 });
 
+gulp.task('cropper-js', function() {
+        return gulp.src(['vendor/cropper/dist/*.js','vendor/cropper/dist/*.js.map'], {base: '.'})
+            .pipe(gulp.dest('../public/js/'));
+});
+
+gulp.task('cropper-css', function() {
+        return gulp.src(['vendor/cropper/dist/*.css','vendor/cropper/dist/*.css.map'], {base: '.'})
+            .pipe(gulp.dest('../public/css/'));
+});
+
 gulp.task('css', function() {
     var merged = merge();
     manifest.forEachDependency('css', function(dep) {
@@ -152,7 +162,17 @@ gulp.task('js', function() {
 
 gulp.task('watch', function() {
     browserSync.init({
-        files: ['../{helpers,classes,views}/**/*.php', '../*.php', '../tools.json', '../css/**/*.css', '../css/*.css', '../js/*.js', 'manifest.json'],
+        files: [
+            '../{helpers,classes,views}/**/*.php', 
+            '../*.php', 
+            '../tools.json', 
+            '../css/**/*.css', 
+            '../css/*.css', 
+            '../js/*.js', 
+            'manifest.json',
+            '../js/vendor/cropper/dist/*.js', 
+            '../css/vendor/cropper/dist/*.css'
+        ],
         proxy: config.devUrl,
         host: "192.168.1.8",
 	open:"external",
@@ -165,7 +185,9 @@ gulp.task('watch', function() {
     gulp.watch([path.source + '{helpers,classes,views}/**/*.php', path.source + '*.php'], ['php'])
     gulp.watch([path.source + 'tools.json'], ['tools'])
     gulp.watch([path.source + 'styles/**/*.scss', path.source + '*.scss'], ['css']);
-    gulp.watch([path.source + 'js/**/*.js', path.source + '*.js'], ['js']);
+    gulp.watch([path.source + 'js/**/*.js', path.source + 'js/*.js'], ['js']);
+    gulp.watch([path.source + 'vendor/cropper/dist/*.js'], ['cropper-js']);
+    gulp.watch([path.source + 'vendor/cropper/dist/*.css'], ['cropper-css']);
     gulp.watch(['bower.json', 'manifest.json'], ['build']);
 });
 
@@ -174,6 +196,8 @@ gulp.task('build', function(callback) {
         'js',
         'php',
         'tools',
+        'cropper-css',
+        'cropper-js',
         callback);
 });
 

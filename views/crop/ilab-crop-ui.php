@@ -5,59 +5,53 @@
 {% end block %}
 
 {% block main-tabs %}
-<div id="ilabm-editor-tabs">
-    {% if (count($sizes)>10) %}
-    <div id="imgix-image-size-label">Size:</div>
-    <select class="imgix-image-size-select">
+<div class="ilabm-editor-tabs">
+    <div class="ilabm-tabs-select-label">Size:</div>
+    <select class="ilabm-tabs-select">
         {% foreach ($sizes as $name => $info) %}
         {% if ($info['crop']==1) %}
-        <option value="{{$tool->cropPageURL($image_id,$name,true) }}" {{(($size==$name)?'selected':'')}}>{{ ucwords(str_replace('_', ' ', str_replace('-', ' ', $name))) }}</option>
+        <option value="{{$name}}" data-url="{{$tool->cropPageURL($image_id,$name,true) }}" {{(($size==$name)?'selected':'')}}>{{ ucwords(str_replace('_', ' ', str_replace('-', ' ', $name))) }}</option>
         {% endif %}
         {% endforeach %}
     </select>
-    {% else %}
     {% foreach ($sizes as $name => $info) %}
-    <div data-url="{{$tool->editPageURL($image_id,$name,true) }}" class="ilabm-editor-tab {{(($size==$name)?'active-tab':'')}}">{{ ucwords(str_replace('_', ' ', str_replace('-', ' ', $name))) }}</div>
-    {% endforeach %}
+    {% if ($info['crop']==1) %}
+    <div data-url="{{$tool->cropPageURL($image_id,$name,true) }}" data-value="{{$name}}" class="ilabm-editor-tab {{(($size==$name)?'active-tab':'')}}">{{ ucwords(str_replace('_', ' ', str_replace('-', ' ', $name))) }}</div>
     {% endif %}
+    {% endforeach %}
 </div>
 {% end block %}
 
 {% block editor %}
-<img id="ilab-cropper" src="{{ $src }}" />
+<img class="ilabc-cropper" src="{{ $src }}" />
 {% endblock %}
-
-{% block bottom-bar %}
-<div class="ilabm-bottom-bar">
-    <div id="imgix-status-container" class="is-hidden">
-        <span class="spinner is-active"></span>
-        <span id="imgix-status-label">Saving ...</span>
-    </div>
-</div>
-{% end block %}
 
 {% block sidebar-content %}
 <div class="ilabm-sidebar-content ilabm-sidebar-content-cropper">
     {% if ($crop_exists) %}
-    <h3>{{ __('Current')}} {{(ucwords(str_replace('-', ' ', $size)))}} ({{$cropped_width}} x {{$cropped_height}})</h3>
-    <img id="ilab-current-crop-img" src="{{$cropped_src}}" style="width: 100%; height: auto;" />
+    <h3 class="ilabc-crop-size-title">{{ __('Current')}} {{(ucwords(str_replace('-', ' ', $size)))}} ({{$cropped_width}} x {{$cropped_height}})</h3>
+    <div class="ilabc-current-crop-container">
+        <img class="ilab-current-crop-img" src="{{$cropped_src}}" />
+    </div>
     {% else %}
-    <h3>{{ __('Current')}} {{(ucwords(str_replace('-', ' ', $size)))}} ({{$crop_width}} x {{$crop_height}})</h3>
-    <img id="ilab-current-crop-img" style="width: 100%; height: auto;" />
+    <h3 class="ilabc-crop-size-title">{{ __('Current')}} {{(ucwords(str_replace('-', ' ', $size)))}} ({{$crop_width}} x {{$crop_height}})</h3>
+    <div class="ilabc-current-crop-container">
+        <img class="ilab-current-crop-img" />
+    </div>
     <div class="ilab-not-existing-crop">
         <div class="message error">
             <p>{{ __('Crop not generated yet, use the crop button here below to generate it')}}</p>
         </div>
     </div>
     {% endif %}
-    <h3 id="ilab-crop-preview-title">{{ __( 'Crop preview') }}</h3>
-    <div id="ilab-crop-preview"></div>
+    <h3 class="ilab-crop-preview-title">{{ __( 'Crop preview') }}</h3>
+    <div class="ilab-crop-preview"></div>
 </div>
 {% endblock %}
 
 {% block sidebar-actions %}
 <div class="ilabm-sidebar-actions">
-    <a href="javascript:ILabCrop.crop();" class="button media-button button-primary">
+    <a href="#" class="button media-button button-primary ilabc-button-crop">
         {{__('Crop Image')}}
     </a>
 </div>
@@ -65,7 +59,8 @@
 
 {% block script %}
 <script>
-    ILabCrop.init({
+    new ILabCrop(jQuery,{
+        modal_id:'{{$modal_id}}',
         image_id:{{$image_id}},
         size:'{{ $size}}',
         min_width:{{$crop_width}},

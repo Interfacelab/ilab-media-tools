@@ -106,7 +106,6 @@ var ILabImageEdit=function($, settings){
         self.waitModal.removeClass('is-hidden');
 
         self.postAjax('ilab_imgix_preview',{},function(response) {
-            self.hideStatus();
             if (response.status=='ok')
             {
                 if (self.settings.debug)
@@ -114,6 +113,7 @@ var ILabImageEdit=function($, settings){
 
                 self.previewImage.on('load',function(){
                     self.waitModal.addClass('is-hidden');
+                    self.hideStatus();
                 });
 
                 self.previewImage.attr('src',response.src);
@@ -121,6 +121,7 @@ var ILabImageEdit=function($, settings){
             else
             {
                 self.waitModal.addClass('is-hidden');
+                self.hideStatus();
             }
         });
     }
@@ -207,12 +208,12 @@ var ILabImageEdit=function($, settings){
     };
 
     this.displayStatus=function(message){
-        self.modalContainer.find('#imgix-status-label').text(message);
-        self.modalContainer.find('#imgix-status-container').removeClass('is-hidden');
+        self.modalContainer.find('.ilabm-status-label').text(message);
+        self.modalContainer.find('.ilabm-status-container').removeClass('is-hidden');
     };
 
     this.hideStatus=function(){
-        self.modalContainer.find('#imgix-status-container').addClass('is-hidden');
+        self.modalContainer.find('.ilabm-status-container').addClass('is-hidden');
     };
 };
 

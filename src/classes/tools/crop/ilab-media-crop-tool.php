@@ -52,11 +52,13 @@ class ILabMediaCropTool extends ILabMediaToolBase
             wp_enqueue_style ( 'media-views' );
 
         wp_enqueue_style( 'wp-pointer' );
+        wp_enqueue_style ( 'ilab-cropper-css', ILAB_PUB_CSS_URL . '/vendor/cropper/dist/cropper.css' );
         wp_enqueue_style ( 'ilab-modal-css', ILAB_PUB_CSS_URL . '/ilab-modal.min.css' );
         wp_enqueue_style ( 'ilab-media-tools-css', ILAB_PUB_CSS_URL . '/ilab-media-tools.min.css' );
         wp_enqueue_script( 'wp-pointer' );
         wp_enqueue_script ( 'ilab-modal-js', ILAB_PUB_JS_URL. '/ilab-modal.js', ['jquery'], false, true );
-        wp_enqueue_script ( 'ilab-media-tools-js', ILAB_PUB_JS_URL. '/ilab-media-tools.js', ['ilab-modal-js'], false, true );
+        wp_enqueue_script ( 'ilab-cropper-js', ILAB_PUB_JS_URL. '/vendor/cropper/dist/cropper.js', ['ilab-modal-js'], false, true );
+        wp_enqueue_script ( 'ilab-media-tools-js', ILAB_PUB_JS_URL. '/ilab-media-tools.js', ['ilab-cropper-js'], false, true );
     }
 
     /**
@@ -164,6 +166,12 @@ class ILabMediaCropTool extends ILabMediaToolBase
         if ($crop_attrs)
             list($cropped_src,$cropped_width,$cropped_height,$cropped_cropped)=$crop_attrs;
 
+        if (!$cropped_src)
+        {
+            $forcedCropAttrs = wp_get_attachment_image_src($image_id, $size);
+            $cropped_src=$forcedCropAttrs[0];
+        }
+
         $partial = isset($_GET['partial']) && ($_GET['partial'] == '1');
 
         $prev_crop_x=null;
@@ -182,6 +190,8 @@ class ILabMediaCropTool extends ILabMediaToolBase
         $data=[
             'partial'=>$partial,
             'image_id'=>$image_id,
+            'modal_id'=>gen_uuid(8),
+            'size'=>$size,
             'sizes'=>$sizes,
             'meta'=>$meta,
             'full_width'=>$full_width,
@@ -205,7 +215,29 @@ class ILabMediaCropTool extends ILabMediaToolBase
         ];
 
         if (current_user_can( 'edit_post', $image_id))
-            echo \ILab\Stem\View::render_view('crop/ilab-crop-ui.php', $data);
+        {
+            if (!$partial)
+                echo \ILab\Stem\View::render_view('crop/ilab-crop-ui.php', $data);
+            else
+            {
+                json_response([
+                                  'status'=>'ok',
+                                  'image_id'=>$image_id,
+                                  'size'=>$size,
+                                  'size_title'=>(ucwords(str_replace('-', ' ', $size))),
+                                  'min_width'=>$crop_width,
+                                  'min_height'=>$crop_height,
+                                  'aspect_ratio'=>$ratio,
+                                  'prev_crop_x'=>($prev_crop_x!==null) ? (int)$prev_crop_x : null,
+                                  'prev_crop_y'=>($prev_crop_y!==null) ? (int)$prev_crop_y : null,
+                                  'prev_crop_width'=>($prev_crop_w!==null) ? (int)$prev_crop_w : null,
+                                  'prev_crop_height'=>($prev_crop_h!==null) ? (int)$prev_crop_h : null,
+                                  'cropped_src'=>$cropped_src,
+                                  'cropped_width'=>$cropped_width,
+                                  'cropped_height'=>$cropped_height
+                              ]);
+            }
+        }
 
         die;
     }

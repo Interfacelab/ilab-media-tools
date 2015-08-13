@@ -8,9 +8,9 @@
     },
     "ilab-media-tools.js": {
       "files": [
-        "js/cropper.js",
         "js/ilab-crop.js",
         "js/components/imgix-component.js",
+        "js/components/imgix-label.js",
         "js/components/imgix-slider.js",
         "js/components/imgix-color.js",
         "js/components/imgix-alignment.js",
@@ -23,15 +23,12 @@
       "main": true
     },
     "ilab-modal.min.css": {
-      "files": "styles/ilab-modal.scss",
-      "main": true
+      "files": "styles/ilab-modal.scss"
     },
     "ilab-media-tools.min.css": {
       "files": [
-        "styles/cropper.css",
         "styles/ilab-media-tools.scss"
-      ],
-      "main": true
+      ]
     }
   },
   "paths": {
