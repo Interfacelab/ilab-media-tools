@@ -186,6 +186,23 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
             $cdn=get_option('ilab-media-s3-cdn-base', getenv('ILAB_AWS_S3_CDN_BASE'));
             return $cdn.'/'.$meta['file'];
         }
+        else
+        {
+            $s3_info=get_metadata('post',$post_id,'amazonS3_info',true);
+            if ($s3_info)
+            {
+                $meta['s3']=[
+                    'bucket'=>$s3_info['bucket'],
+                    'region'=>$s3_info['region'],
+                    'key'=>$s3_info['key']
+                ];
+
+                wp_update_attachment_metadata($post_id,$meta);
+
+                $cdn=get_option('ilab-media-s3-cdn-base', getenv('ILAB_AWS_S3_CDN_BASE'));
+                return $cdn.'/'.$meta['file'];
+            }
+        }
 
         return $url;
     }
