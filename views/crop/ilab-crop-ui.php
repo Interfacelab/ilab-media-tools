@@ -9,13 +9,13 @@
     <div class="ilabm-tabs-select-label">Size:</div>
     <select class="ilabm-tabs-select">
         {% foreach ($sizes as $name => $info) %}
-        {% if ($info['crop']==1) %}
+        {% if ((strpos($name,'__')!==0) && ($info['crop']==1)) %}
         <option value="{{$name}}" data-url="{{$tool->cropPageURL($image_id,$name,true) }}" {{(($size==$name)?'selected':'')}}>{{ ucwords(str_replace('_', ' ', str_replace('-', ' ', $name))) }}</option>
         {% endif %}
         {% endforeach %}
     </select>
     {% foreach ($sizes as $name => $info) %}
-    {% if ($info['crop']==1) %}
+    {% if ((strpos($name,'__')!==0) && ($info['crop']==1)) %}
     <div data-url="{{$tool->cropPageURL($image_id,$name,true) }}" data-value="{{$name}}" class="ilabm-editor-tab {{(($size==$name)?'active-tab':'')}}">{{ ucwords(str_replace('_', ' ', str_replace('-', ' ', $name))) }}</div>
     {% endif %}
     {% endforeach %}
