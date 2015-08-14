@@ -195,7 +195,6 @@ class ILabMediaImgixTool extends ILabMediaToolBase
 
             $params=$this->buildImgixParams($params,$mimetype);
 
-            if ($meta['content-'])
 
             $result=[
                 $imgix->createURL(urlencode($meta['file']),($skipParams) ? [] : $params),

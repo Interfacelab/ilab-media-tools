@@ -94,9 +94,31 @@ class ILabMediaCropTool extends ILabMediaToolBase
                 $result=ob_get_clean();
                 echo $result;
 
+
+                $sizes=ilab_get_image_sizes();
+                $sizeKeys=array_keys($sizes);
+
                 ?>
                 <script>
                     jQuery(document).ready(function() {
+                        jQuery('input[type="button"]')
+                            .filter(function() {
+                                return this.id.match(/imgedit-open-btn-[0-9]+/);
+                            })
+                            .each(function(){
+                                var image_id=this.id.match(/imgedit-open-btn-([0-9]+)/)[1];
+                                var button=jQuery('<input type="button" class="button" style="margin-left:5px;" value="Crop Image">');
+                                jQuery(this).after(button);
+
+                                button.on('click',function(e){
+                                    e.preventDefault();
+
+                                    ILabModal.loadURL("<?php echo relative_admin_url('admin-ajax.php')?>?action=ilab_crop_image_page&size=<?php echo $sizeKeys[0]?>&post="+image_id,false,null);
+
+                                    return false;
+                                });
+                            });
+
                         attachTemplate=jQuery('#tmpl-image-details');
                         if (attachTemplate)
                             attachTemplate.text(attachTemplate.text().replace(/(<input type="button" class="replace-attachment button")/,'<a href="<?php echo $this->cropPageURL('{{data.attachment.id}}')?>" class="ilab-thickbox button"><?php echo __('Crop Image') ?></a>&nbsp;$1'));
