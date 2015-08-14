@@ -36,6 +36,6 @@
     "dist": "../public/"
   },
   "config": {
-    "devUrl": "http://interfacelab.dev"
+    "devUrl": "http://milkmade.dev"
   }
 }

@@ -169,7 +169,12 @@ class ILabMediaCropTool extends ILabMediaToolBase
         if (!$cropped_src)
         {
             $forcedCropAttrs = wp_get_attachment_image_src($image_id, $size);
-            $cropped_src=$forcedCropAttrs[0];
+            if ($forcedCropAttrs && (count($forcedCropAttrs) > 2))
+            {
+                $cropped_src = $forcedCropAttrs[0];
+                $cropped_width = $forcedCropAttrs[1];
+                $cropped_height = $forcedCropAttrs[2];
+            }
         }
 
         $partial = isset($_GET['partial']) && ($_GET['partial'] == '1');
@@ -199,7 +204,7 @@ class ILabMediaCropTool extends ILabMediaToolBase
             'orientation'=>$orientation,
             'crop_width'=>$crop_width,
             'crop_height'=>$crop_height,
-            'crop_exists'=>$crop_exists,
+            'crop_exists'=>($cropped_src!=null),
             'crop_attrs'=>$crop_attrs,
             'ratio'=>$ratio,
             'tool'=>$this,

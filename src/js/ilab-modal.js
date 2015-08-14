@@ -7,7 +7,6 @@ var ILabModal=(function(){
     var _data={};
 
     var cancel=function(){
-        jQuery('.ilabm-container').remove();
         jQuery('.ilabm-backdrop').remove();
     };
 

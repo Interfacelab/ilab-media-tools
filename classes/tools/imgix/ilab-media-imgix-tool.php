@@ -107,9 +107,9 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         return $url;
     }
 
-    private function buildImgixParams($params)
+    private function buildImgixParams($params,$mimetype='')
     {
-        if ($this->autoFormat)
+        if ($this->autoFormat && ($mimetype!='image/gif'))
             $auto='format';
         else
             $auto=null;
@@ -174,6 +174,8 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         if (is_array($size))
             return false;
 
+        $mimetype=get_post_mime_type($id);
+
         $meta=wp_get_attachment_metadata($id);
 
         $imgix=new Imgix\UrlBuilder($this->imgixDomains);
@@ -191,7 +193,9 @@ class ILabMediaImgixTool extends ILabMediaToolBase
                     $params=[];
             }
 
-            $params=$this->buildImgixParams($params);
+            $params=$this->buildImgixParams($params,$mimetype);
+
+            if ($meta['content-'])
 
             $result=[
                 $imgix->createURL(urlencode($meta['file']),($skipParams) ? [] : $params),
@@ -262,7 +266,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
             $params['fit']='scale';
         }
 
-        $params=$this->buildImgixParams($params);
+        $params=$this->buildImgixParams($params,$mimetype);
 
         $result=[
             $imgix->createURL(urlencode($meta['file']),$params),
@@ -339,6 +343,24 @@ class ILabMediaImgixTool extends ILabMediaToolBase
                 ?>
                 <script>
                     jQuery(document).ready(function() {
+                        jQuery('input[type="button"]')
+                            .filter(function() {
+                                return this.id.match(/imgedit-open-btn-[0-9]+/);
+                            })
+                            .each(function(){
+                                var image_id=this.id.match(/imgedit-open-btn-([0-9]+)/)[1];
+                                var button=jQuery(this);
+                                button.off('click');
+                                button.attr('onclick',null);
+                                button.on('click',function(e){
+                                    e.preventDefault();
+
+                                    ILabModal.loadURL("<?php echo relative_admin_url('admin-ajax.php')?>?action=ilab_imgix_edit_page&image_id="+image_id,false,null);
+
+                                    return false;
+                                });
+                        });
+
                         attachTemplate=jQuery('#tmpl-attachment-details-two-column');
                         if (attachTemplate)
                         {
