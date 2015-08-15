@@ -473,7 +473,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         if (current_user_can( 'edit_post', $image_id))
         {
             if (!$partial)
-                echo \ILab\Stem\View::render_view('imgix/ilab-imgix-ui.php', [
+                echo \ILab\Stem\Core\View::render_view('imgix/ilab-imgix-ui.php', [
                     'partial'=>$partial,
                     'image_id'=>$image_id,
                     'modal_id'=>gen_uuid(8),
