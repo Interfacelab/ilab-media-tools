@@ -1,4 +1,7 @@
 <?php
+
+if (!defined('ABSPATH')) { header('Location: /'); die; }
+
 function imgixCurrentValue($param,$current,$default)
 {
     if (isset($current[$param]))

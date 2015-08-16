@@ -1,10 +1,5 @@
 <?php
-namespace ILab\Stem\Core;
-
-if (class_exists('ILab\Stem\Core\View'))
-    return;
-
-class View {
+class ILabMediaToolView {
     protected $currentBlocks;
     protected $currentData;
 

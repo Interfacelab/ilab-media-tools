@@ -4,9 +4,5 @@
     "aws/aws-sdk-php": "^3.2",
     "imgix/imgix-php": "^1.0"
   },
-  "autoload": {
-    "psr-4": {
-      "ILab\\Stem\\": "vendor\\ilab\\stem\\src"
-    }
-  }
+  "autoload": {}
 }

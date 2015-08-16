@@ -1,5 +1,7 @@
 <?php
 
+if (!defined('ABSPATH')) { header('Location: /'); die; }
+
 ///**
 // * Brute force debug tool
 // * @param $what

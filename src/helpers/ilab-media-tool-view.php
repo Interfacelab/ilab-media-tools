@@ -1,4 +1,7 @@
 <?php
+
+if (!defined('ABSPATH')) { header('Location: /'); die; }
+
 /**
  * Created by PhpStorm.
  * User: jong

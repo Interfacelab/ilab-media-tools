@@ -1,4 +1,7 @@
 <?php
+
+if (!defined('ABSPATH')) { header('Location: /'); die; }
+
 require_once(ILAB_CLASSES_DIR.'/ilab-media-tool-base.php');
 require_once(ILAB_VENDOR_DIR.'/autoload.php');
 
@@ -473,7 +476,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         if (current_user_can( 'edit_post', $image_id))
         {
             if (!$partial)
-                echo \ILab\Stem\Core\View::render_view('imgix/ilab-imgix-ui.php', [
+                echo ILabMediaToolView::render_view('imgix/ilab-imgix-ui.php', [
                     'partial'=>$partial,
                     'image_id'=>$image_id,
                     'modal_id'=>gen_uuid(8),

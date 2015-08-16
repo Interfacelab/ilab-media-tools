@@ -1,4 +1,6 @@
 <?php
+if (!defined('ABSPATH')) { header('Location: /'); die; }
+
 require_once(ILAB_CLASSES_DIR.'/ilab-media-tool-base.php');
 
 class ILabMediaCropTool extends ILabMediaToolBase
@@ -244,7 +246,7 @@ class ILabMediaCropTool extends ILabMediaToolBase
         if (current_user_can( 'edit_post', $image_id))
         {
             if (!$partial)
-                echo \ILab\Stem\Core\View::render_view('crop/ilab-crop-ui.php', $data);
+                echo ILabMediaToolView::render_view('crop/ilab-crop-ui.php', $data);
             else
             {
                 json_response([

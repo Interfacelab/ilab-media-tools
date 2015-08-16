@@ -1,5 +1,7 @@
 <?php
 
+if (!defined('ABSPATH')) { header('Location: /'); die; }
+
 /**
  * Class ILabMediaToolsManager
  *

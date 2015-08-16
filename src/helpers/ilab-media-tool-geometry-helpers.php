@@ -1,5 +1,7 @@
 <?php
 
+if (!defined('ABSPATH')) { header('Location: /'); die; }
+
 function sizeToFitSize($innerWidth, $innerHeight, $outerWidth, $outerHeight)
 {
     if ($innerWidth <= 0 || $innerHeight <= 0)
