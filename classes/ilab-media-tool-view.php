@@ -1,4 +1,4 @@
-<?php
+    <?php
 class ILabMediaToolView {
     protected $currentBlocks;
     protected $currentData;
@@ -36,7 +36,7 @@ class ILabMediaToolView {
         {
             $template=$extendMatches[1];
 
-            $this->parent=new View(ILAB_VIEW_DIR.'/'.$template);
+            $this->parent=new ILabMediaToolView(ILAB_VIEW_DIR.'/'.$template);
 
             $contents=preg_replace('#{%\s*extends\s+([/aA-zZ0-9-_.]+)\s*%}#','',$contents);
         }
@@ -111,7 +111,7 @@ class ILabMediaToolView {
     }
 
     public static function render_view($view, $data) {
-        $view=new View(ILAB_VIEW_DIR.'/'.$view);
+        $view=new ILabMediaToolView(ILAB_VIEW_DIR.'/'.$view);
         return $view->render($data);
     }
 }

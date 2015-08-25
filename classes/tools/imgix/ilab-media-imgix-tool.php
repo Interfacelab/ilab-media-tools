@@ -3,6 +3,7 @@
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
 require_once(ILAB_CLASSES_DIR.'/ilab-media-tool-base.php');
+require_once(ILAB_CLASSES_DIR.'/ilab-media-tool-view.php');
 require_once(ILAB_VENDOR_DIR.'/autoload.php');
 
 class ILabMediaImgixTool extends ILabMediaToolBase
@@ -86,6 +87,8 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         add_action('wp_ajax_ilab_imgix_save_preset',[$this,'savePreset']);
         add_action('wp_ajax_ilab_imgix_delete_preset',[$this,'deletePreset']);
 
+        add_filter('imgix_build_gif_mpeg4',[$this,'gifToMpeg4'],10,3);
+        add_filter('imgix_build_gif_jpeg',[$this,'gifToJpeg'],10,3);
     }
 
     public function registerSettings()
@@ -172,7 +175,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         return $params;
     }
 
-    private function buildImgixImage($id,$size, $params=null, $skipParams=false)
+    private function buildImgixImage($id,$size, $params=null, $skipParams=false, $addParams=null)
     {
         if (is_array($size))
             return false;
@@ -267,6 +270,9 @@ class ILabMediaImgixTool extends ILabMediaToolBase
             $params['h']=$newSize[1];
             $params['fit']='scale';
         }
+
+        if ($addParams)
+            $params=array_merge($params, $addParams);
 
         $params=$this->buildImgixParams($params,$mimetype);
 
@@ -769,5 +775,15 @@ class ILabMediaImgixTool extends ILabMediaToolBase
 //                          'preset_key'=>$key,
 //                          'presets'=>$this->buildPresetsUI($image_id,$size)
 //                      ]);
+    }
+
+    public function gifToMpeg4($value, $image_id, $size) {
+        $result=$this->buildImgixImage($image_id,$size, null, false, ['fm'=>'mp4']);
+        return $result;
+    }
+
+    public function gifToJpeg($value, $image_id, $size) {
+        $result=$this->buildImgixImage($image_id,$size, null, false, ['fm'=>'jpg']);
+        return $result;
     }
 }
