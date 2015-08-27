@@ -1,4 +1,4 @@
-    <?php
+<?php
 class ILabMediaToolView {
     protected $currentBlocks;
     protected $currentData;
