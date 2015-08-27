@@ -184,6 +184,9 @@ class ILabMediaImgixTool extends ILabMediaToolBase
 
         $meta=wp_get_attachment_metadata($id);
 
+        if (!isset($meta['file']))
+            return false;
+
         $imgix=new Imgix\UrlBuilder($this->imgixDomains);
 
         if ($this->signingKey)
