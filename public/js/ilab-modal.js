@@ -2,6 +2,7 @@
 
     $.fn.ilabTabs=function(options){
         var settings= $.extend({},options);
+        var sizeCanvas=null;
 
         return this.each(function(){
             var container=$(this);
@@ -15,7 +16,7 @@
             var getTextWidth=function(text, font) {
                 // re-use canvas object for better performance
 
-                var canvas = this.canvas || (this.canvas = document.createElement("canvas"));
+                var canvas = sizeCanvas || (sizeCanvas = document.createElement("canvas"));
                 var context = canvas.getContext("2d");
                 context.font = font;
                 var metrics = context.measureText(text);
