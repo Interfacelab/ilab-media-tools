@@ -87,8 +87,14 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         add_action('wp_ajax_ilab_imgix_save_preset',[$this,'savePreset']);
         add_action('wp_ajax_ilab_imgix_delete_preset',[$this,'deletePreset']);
 
-        add_filter('imgix_build_gif_mpeg4',[$this,'gifToMpeg4'],10,3);
-        add_filter('imgix_build_gif_jpeg',[$this,'gifToJpeg'],10,3);
+        add_filter( 'wp_image_editors', function($editors)
+        {
+            require_once('ilab-media-imgix-editor.php');
+
+            array_unshift($editors,'ILabImgixImageEditor');
+            return $editors;
+        });
+
     }
 
     public function registerSettings()
@@ -175,7 +181,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         return $params;
     }
 
-    private function buildImgixImage($id,$size, $params=null, $skipParams=false, $addParams=null)
+    private function buildImgixImage($id,$size, $params=null, $skipParams=false)
     {
         if (is_array($size))
             return false;
@@ -183,9 +189,6 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         $mimetype=get_post_mime_type($id);
 
         $meta=wp_get_attachment_metadata($id);
-
-        if (!isset($meta['file']))
-            return false;
 
         $imgix=new Imgix\UrlBuilder($this->imgixDomains);
 
@@ -273,9 +276,6 @@ class ILabMediaImgixTool extends ILabMediaToolBase
             $params['h']=$newSize[1];
             $params['fit']='scale';
         }
-
-        if ($addParams)
-            $params=array_merge($params, $addParams);
 
         $params=$this->buildImgixParams($params,$mimetype);
 
@@ -778,15 +778,5 @@ class ILabMediaImgixTool extends ILabMediaToolBase
 //                          'preset_key'=>$key,
 //                          'presets'=>$this->buildPresetsUI($image_id,$size)
 //                      ]);
-    }
-
-    public function gifToMpeg4($value, $image_id, $size) {
-        $result=$this->buildImgixImage($image_id,$size, null, false, ['fm'=>'mp4']);
-        return $result;
-    }
-
-    public function gifToJpeg($value, $image_id, $size) {
-        $result=$this->buildImgixImage($image_id,$size, null, false, ['fm'=>'jpg']);
-        return $result;
     }
 }

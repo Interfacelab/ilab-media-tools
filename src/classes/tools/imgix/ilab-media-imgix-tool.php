@@ -3,6 +3,7 @@
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
 require_once(ILAB_CLASSES_DIR.'/ilab-media-tool-base.php');
+require_once(ILAB_CLASSES_DIR.'/ilab-media-tool-view.php');
 require_once(ILAB_VENDOR_DIR.'/autoload.php');
 
 class ILabMediaImgixTool extends ILabMediaToolBase
@@ -85,6 +86,14 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         add_action('wp_ajax_ilab_imgix_new_preset',[$this,'newPreset']);
         add_action('wp_ajax_ilab_imgix_save_preset',[$this,'savePreset']);
         add_action('wp_ajax_ilab_imgix_delete_preset',[$this,'deletePreset']);
+
+        add_filter( 'wp_image_editors', function($editors)
+        {
+            require_once('ilab-media-imgix-editor.php');
+
+            array_unshift($editors,'ILabImgixImageEditor');
+            return $editors;
+        });
 
     }
 
