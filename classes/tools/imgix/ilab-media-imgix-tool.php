@@ -209,7 +209,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
 
 
             $result=[
-                $imgix->createURL(urlencode($meta['file']),($skipParams) ? [] : $params),
+                $imgix->createURL(str_replace('%2F','/',urlencode($meta['file'])),($skipParams) ? [] : $params),
                 $meta['width'],
                 $meta['height'],
                 false
