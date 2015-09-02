@@ -32,7 +32,7 @@ class ILabMediaToolsManager
         }
 
         add_action('admin_menu', function(){
-            add_menu_page('Settings', 'ILab Media Tools', 'manage_options', 'media-tools-top', [$this,'renderSettings']);
+            add_menu_page('Settings', 'ILab Media Tools', 'manage_options', 'media-tools-top', [$this,'renderSettings'],'dashicons-image-crop');
             add_submenu_page( 'media-tools-top', 'ILab Tools', 'Tools', 'manage_options', 'media-tools-top', [$this,'renderSettings']);
 
             add_settings_section('ilab-media-tools','Enabled Tools',[$this,'renderSettingsSection'],'media-tools-top');
