@@ -95,6 +95,17 @@ class ILabMediaImgixTool extends ILabMediaToolBase
             return $editors;
         });
 
+        add_filter('imgix_build_gif_mpeg4',[$this,'buildMpeg4'],0,3);
+        add_filter('imgix_build_gif_jpeg',[$this,'buildGifJpeg'],0,3);
+
+    }
+
+    public function buildMpeg4($value, $postId, $size) {
+        return $this->buildImgixImage($postId,$size,null,false,['fmt'=>'mp4']);
+    }
+
+    public function buildGifJpeg($value, $postId, $size) {
+        return $this->buildImgixImage($postId,$size,null,false,['fmt'=>'pjpg']);
     }
 
     public function registerSettings()
@@ -121,10 +132,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
 
     private function buildImgixParams($params,$mimetype='')
     {
-        if ($this->autoFormat && ($mimetype!='image/gif'))
-            $auto='format';
-        else
-            $auto=null;
+        $auto=null;
 
         if (($auto!=null) && isset($params['auto']))
         {
@@ -181,7 +189,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         return $params;
     }
 
-    private function buildImgixImage($id,$size, $params=null, $skipParams=false)
+    private function buildImgixImage($id,$size, $params=null, $skipParams=false, $mergeParams=null)
     {
         if (is_array($size))
             return false;
@@ -268,6 +276,19 @@ class ILabMediaImgixTool extends ILabMediaToolBase
                     $params['rect']=implode(',',$metaSize['crop']);
                 }
             }
+
+            // we don't want to scale animated gifs AT ALL on the front end
+            if (($mimetype=='image/gif') && (!is_admin())) {
+                $imageW=$meta['width'];
+                $imageH=$meta['height'];
+
+                $pw=$params['w'];
+                $ph=$params['h'];
+
+                $newSize=sizeToFitSize($pw,$ph,$imageW,$imageH,false);
+                $params['w']=$newSize[0];
+                $params['h']=$newSize[1];
+            }
         }
         else
         {
@@ -275,6 +296,14 @@ class ILabMediaImgixTool extends ILabMediaToolBase
             $params['w']=$newSize[0];
             $params['h']=$newSize[1];
             $params['fit']='scale';
+        }
+
+        if ($mergeParams && is_array($mergeParams))
+            $params=array_merge($params, $mergeParams);
+
+        if (!isset($params['fmt'])) {
+            if ($mimetype!='image/gif')
+                $params['fmt']='pjpg';
         }
 
         $params=$this->buildImgixParams($params,$mimetype);
@@ -370,7 +399,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
 
                                     return false;
                                 });
-                        });
+                            });
 
                         attachTemplate=jQuery('#tmpl-attachment-details-two-column');
                         if (attachTemplate)
