@@ -63,7 +63,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         $domain_lines=explode("\n",$domains);
         foreach($domain_lines as $d)
             if (!empty($d))
-                $this->imgixDomains[]=$d;
+                $this->imgixDomains[]=trim($d);
 
         $this->signingKey=get_option('ilab-media-imgix-signing-key');
 
@@ -285,9 +285,12 @@ class ILabMediaImgixTool extends ILabMediaToolBase
                 $pw=$params['w'];
                 $ph=$params['h'];
 
-                $newSize=sizeToFitSize($pw,$ph,$imageW,$imageH,false);
-                $params['w']=$newSize[0];
-                $params['h']=$newSize[1];
+                if (($pw>$imageW) || ($ph>$imageH))
+                {
+                    $newSize=sizeToFitSize($pw,$ph,$imageW,$imageH,false);
+                    $params['w']=$newSize[0];
+                    $params['h']=$newSize[1];
+                }
             }
         }
         else

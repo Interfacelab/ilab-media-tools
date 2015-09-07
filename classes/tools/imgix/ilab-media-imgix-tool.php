@@ -63,7 +63,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         $domain_lines=explode("\n",$domains);
         foreach($domain_lines as $d)
             if (!empty($d))
-                $this->imgixDomains[]=$d;
+                $this->imgixDomains[]=trim($d);
 
         $this->signingKey=get_option('ilab-media-imgix-signing-key');
 
