@@ -305,7 +305,9 @@ class ILabMediaImgixTool extends ILabMediaToolBase
             $params=array_merge($params, $mergeParams);
 
         if (!isset($params['fmt'])) {
-            if ($mimetype!='image/gif')
+            if ($mimetype=='image/gif')
+                $params['fmt']='gif';
+            else
                 $params['fmt']='pjpg';
         }
 
