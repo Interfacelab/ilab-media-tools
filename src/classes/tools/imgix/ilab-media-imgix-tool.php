@@ -118,6 +118,9 @@ class ILabMediaImgixTool extends ILabMediaToolBase
 
     function prepareAttachmentForJS( $response, $attachment, $meta )
     {
+        if (!$response || empty($response) || !isset($response['sizes']))
+            return $response;
+
         foreach($response['sizes'] as $key => $sizeInfo)
             $response['sizes'][$key]['url']=$this->buildImgixImage($response['id'],$key)[0];
 
@@ -197,6 +200,9 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         $mimetype=get_post_mime_type($id);
 
         $meta=wp_get_attachment_metadata($id);
+        if (!$meta || empty($meta))
+            return false;
+
 
         $imgix=new Imgix\UrlBuilder($this->imgixDomains);
 
@@ -215,6 +221,10 @@ class ILabMediaImgixTool extends ILabMediaToolBase
 
             $params=$this->buildImgixParams($params,$mimetype);
 
+            if (!isset($meta['file'])) {
+                $cat='cool';
+                return null;
+            }
 
             $result=[
                 $imgix->createURL(str_replace('%2F','/',urlencode($meta['file'])),($skipParams) ? [] : $params),
