@@ -204,7 +204,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
             return false;
 
 
-        $imgix=new Imgix\UrlBuilder($this->imgixDomains);
+        $imgix=new Imgix\UrlBuilder($this->imgixDomains,true);
 
         if ($this->signingKey)
             $imgix->setSignKey($this->signingKey);
