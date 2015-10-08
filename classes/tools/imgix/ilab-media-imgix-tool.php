@@ -192,10 +192,37 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         return $params;
     }
 
+    private function buildSizedImgixImage($id,$size) {
+        $meta=wp_get_attachment_metadata($id);
+        if (!$meta || empty($meta))
+            return false;
+
+        $imgix=new Imgix\UrlBuilder($this->imgixDomains,true);
+
+        if ($this->signingKey)
+            $imgix->setSignKey($this->signingKey);
+
+        $params=[
+            'fit'=>'crop',
+            'w'=>$size[0],
+            'h'=>$size[1],
+            'fm'=>'jpg'
+        ];
+
+        $result=[
+            $imgix->createURL(str_replace('%2F','/',urlencode($meta['file'])),$params),
+            $size[0],
+            $size[1]
+        ];
+
+        return $result;
+    }
+
     private function buildImgixImage($id,$size, $params=null, $skipParams=false, $mergeParams=null)
     {
-        if (is_array($size))
-            return false;
+        if (is_array($size)) {
+            return $this->buildSizedImgixImage($id,$size);
+        }
 
         $mimetype=get_post_mime_type($id);
 
