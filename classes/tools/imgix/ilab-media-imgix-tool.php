@@ -230,7 +230,6 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         if (!$meta || empty($meta))
             return false;
 
-
         $imgix=new Imgix\UrlBuilder($this->imgixDomains,true);
 
         if ($this->signingKey)
