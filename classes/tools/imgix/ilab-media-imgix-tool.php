@@ -342,7 +342,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
 
         if (!isset($params['fm'])) {
             if ($mimetype=='image/gif')
-                $params['fm']='pjpg';
+                $params['fm']='gif';
             else
                 $params['fm']='pjpg';
 

@@ -230,7 +230,6 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         if (!$meta || empty($meta))
             return false;
 
-
         $imgix=new Imgix\UrlBuilder($this->imgixDomains,true);
 
         if ($this->signingKey)
@@ -341,11 +340,12 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         if ($mergeParams && is_array($mergeParams))
             $params=array_merge($params, $mergeParams);
 
-        if (!isset($params['fmt'])) {
+        if (!isset($params['fm'])) {
             if ($mimetype=='image/gif')
-                $params['fmt']='gif';
+                $params['fm']='gif';
             else
-                $params['fmt']='pjpg';
+                $params['fm']='pjpg';
+
         }
 
         $params=$this->buildImgixParams($params,$mimetype);
