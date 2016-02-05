@@ -87,6 +87,8 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         add_action('wp_ajax_ilab_imgix_save_preset',[$this,'savePreset']);
         add_action('wp_ajax_ilab_imgix_delete_preset',[$this,'deletePreset']);
 
+        add_filter( 'wp_calculate_image_srcset_meta', '__return_null' );
+
         add_filter( 'wp_image_editors', function($editors)
         {
             require_once('ilab-media-imgix-editor.php');
