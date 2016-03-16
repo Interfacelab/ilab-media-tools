@@ -14,6 +14,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
     protected $autoFormat;
     protected $paramPropsByType;
     protected $paramProps;
+    protected $useHTTPS;
 
     public function __construct($toolName, $toolInfo, $toolManager)
     {
@@ -64,6 +65,8 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         foreach($domain_lines as $d)
             if (!empty($d))
                 $this->imgixDomains[]=trim($d);
+
+        $this->useHTTPS=get_option('ilab-media-imgix-use-https',true);
 
         $this->signingKey=get_option('ilab-media-imgix-signing-key');
 
@@ -199,7 +202,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         if (!$meta || empty($meta))
             return false;
 
-        $imgix=new Imgix\UrlBuilder($this->imgixDomains,true);
+        $imgix=new Imgix\UrlBuilder($this->imgixDomains,$this->useHTTPS);
 
         if ($this->signingKey)
             $imgix->setSignKey($this->signingKey);
@@ -232,7 +235,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         if (!$meta || empty($meta))
             return false;
 
-        $imgix=new Imgix\UrlBuilder($this->imgixDomains,true);
+        $imgix=new Imgix\UrlBuilder($this->imgixDomains,$this->useHTTPS);
 
         if ($this->signingKey)
             $imgix->setSignKey($this->signingKey);

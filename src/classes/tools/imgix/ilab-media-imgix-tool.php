@@ -14,6 +14,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
     protected $autoFormat;
     protected $paramPropsByType;
     protected $paramProps;
+    protected $useHTTPS;
 
     public function __construct($toolName, $toolInfo, $toolManager)
     {
@@ -65,6 +66,8 @@ class ILabMediaImgixTool extends ILabMediaToolBase
             if (!empty($d))
                 $this->imgixDomains[]=trim($d);
 
+        $this->useHTTPS=get_option('ilab-media-imgix-use-https',true);
+
         $this->signingKey=get_option('ilab-media-imgix-signing-key');
 
         $this->imageQuality=get_option('ilab-media-imgix-default-quality');
@@ -86,7 +89,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         add_action('wp_ajax_ilab_imgix_new_preset',[$this,'newPreset']);
         add_action('wp_ajax_ilab_imgix_save_preset',[$this,'savePreset']);
         add_action('wp_ajax_ilab_imgix_delete_preset',[$this,'deletePreset']);
-        
+
         add_filter( 'wp_calculate_image_srcset_meta', '__return_null' );
 
         add_filter( 'wp_image_editors', function($editors)
@@ -199,7 +202,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         if (!$meta || empty($meta))
             return false;
 
-        $imgix=new Imgix\UrlBuilder($this->imgixDomains,true);
+        $imgix=new Imgix\UrlBuilder($this->imgixDomains,$this->useHTTPS);
 
         if ($this->signingKey)
             $imgix->setSignKey($this->signingKey);
@@ -232,7 +235,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         if (!$meta || empty($meta))
             return false;
 
-        $imgix=new Imgix\UrlBuilder($this->imgixDomains,true);
+        $imgix=new Imgix\UrlBuilder($this->imgixDomains,$this->useHTTPS);
 
         if ($this->signingKey)
             $imgix->setSignKey($this->signingKey);

@@ -56,6 +56,11 @@
               "title": "Imgix Signing Key",
               "description": "Optional signing key to create secure URLs.  <strong>Recommended</strong>.  For information on setting it up, refer to the <a href='https://www.imgix.com/docs/tutorials/securing-images' target='_blank'>imgix documentation</a>.",
               "type": "password"
+            },
+            "ilab-media-imgix-use-https": {
+              "title": "Use HTTPS",
+              "description": "Use HTTPS for image URLs",
+              "type": "checkbox"
             }
           }
         },
