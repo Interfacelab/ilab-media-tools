@@ -14,6 +14,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
     protected $autoFormat;
     protected $paramPropsByType;
     protected $paramProps;
+    protected $noGifSizes;
 
     public function __construct($toolName, $toolInfo, $toolManager)
     {
@@ -58,6 +59,13 @@ class ILabMediaImgixTool extends ILabMediaToolBase
                     }
         }
 
+        $this->noGifSizes=[];
+        $noGifSizes=get_option('ilab-media-imgix-no-gif-sizes');
+        $noGifSizesArray=explode("\n",$noGifSizes);
+        foreach($noGifSizesArray as $gs)
+            if (!empty($gs))
+                $this->noGifSizes[]=trim($gs);
+
         $this->imgixDomains=[];
         $domains=get_option('ilab-media-imgix-domains');
         $domain_lines=explode("\n",$domains);
@@ -86,7 +94,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         add_action('wp_ajax_ilab_imgix_new_preset',[$this,'newPreset']);
         add_action('wp_ajax_ilab_imgix_save_preset',[$this,'savePreset']);
         add_action('wp_ajax_ilab_imgix_delete_preset',[$this,'deletePreset']);
-        
+
         add_filter( 'wp_calculate_image_srcset_meta', '__return_null' );
 
         add_filter( 'wp_image_editors', function($editors)
@@ -343,7 +351,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
             $params=array_merge($params, $mergeParams);
 
         if (!isset($params['fm'])) {
-            if ($mimetype=='image/gif')
+            if (($mimetype=='image/gif') && (!in_array($size,$this->noGifSizes)))
                 $params['fm']='gif';
             else
                 $params['fm']='pjpg';

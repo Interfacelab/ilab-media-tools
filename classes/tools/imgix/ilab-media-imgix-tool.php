@@ -14,6 +14,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
     protected $autoFormat;
     protected $paramPropsByType;
     protected $paramProps;
+    protected $noGifSizes;
 
     public function __construct($toolName, $toolInfo, $toolManager)
     {
@@ -57,6 +58,13 @@ class ILabMediaImgixTool extends ILabMediaToolBase
                         $this->paramPropsByType[$paramInfo['type']]=$paramType;
                     }
         }
+
+        $this->noGifSizes=[];
+        $noGifSizes=get_option('ilab-media-imgix-no-gif-sizes');
+        $noGifSizesArray=explode("\n",$noGifSizes);
+        foreach($noGifSizesArray as $gs)
+            if (!empty($gs))
+                $this->noGifSizes[]=trim($gs);
 
         $this->imgixDomains=[];
         $domains=get_option('ilab-media-imgix-domains');
@@ -343,7 +351,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
             $params=array_merge($params, $mergeParams);
 
         if (!isset($params['fm'])) {
-            if ($mimetype=='image/gif')
+            if (($mimetype=='image/gif') && (!in_array($size,$this->noGifSizes)))
                 $params['fm']='gif';
             else
                 $params['fm']='pjpg';

@@ -73,6 +73,17 @@
               "type": "checkbox"
             }
           }
+        },
+        "ilab-media-imgix-gif-settings":{
+          "title":"Imgix GIF Settings",
+          "description":"Controls how animated gifs appear on the site.",
+          "options": {
+            "ilab-media-imgix-no-gif-sizes": {
+              "title": "Disallow Animated GIFs for Sizes",
+              "description":"List the sizes that aren't allowed to have animated GIFs.  These sizes will display jpegs instead.",
+              "type": "text-area"
+            }
+          }
         }
       },
       "params":{
