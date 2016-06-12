@@ -83,7 +83,7 @@ class ILabMediaCropTool extends ILabMediaToolBase
             if (!current_user_can('edit_post',$image_id))
                 return $content;
 
-            $content.='<a class="ilab-thickbox" href="'.$this->cropPageURL($image_id,'post-thumbnail').'">'.__('Crop Image').'</a>';
+            $content.='<a class="ilab-thickbox" href="'.$this->cropPageURL($image_id).'">'.__('Crop Image').'</a>';
             return $content;
         },10,2);
 
