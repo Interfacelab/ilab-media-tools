@@ -128,6 +128,7 @@ class ILabMediaCropTool extends ILabMediaToolBase
                         attachTemplate=jQuery('#tmpl-attachment-details-two-column');
                         if (attachTemplate)
                         {
+                            attachTemplate.text(attachTemplate.text().replace(/(<button(?:.*)class="(?:.*)edit-attachment(?:.*)"[^>]*[^<]+<\/button>)/,'$1&nbsp;<a href="<?php echo $this->cropPageURL('{{data.id}}')?>" class="ilab-thickbox button"><?php echo __('Crop Image') ?></a>'));
                             attachTemplate.text(attachTemplate.text().replace(/(<a(?:.*)class="(?:.*)edit-imgix(?:.*)"[^>]*[^<]+<\/a>)/,'$1&nbsp;<a href="<?php echo $this->cropPageURL('{{data.id}}')?>" class="ilab-thickbox button"><?php echo __('Crop Image') ?></a>'));
                             attachTemplate.text(attachTemplate.text().replace(/(<a class="(?:.*)edit-attachment(?:.*)"[^>]+[^<]+<\/a>)/,'$1&nbsp;<a href="<?php echo $this->cropPageURL('{{data.id}}')?>" class="ilab-thickbox button"><?php echo __('Crop Image') ?></a>'));
                             attachTemplate.text(attachTemplate.text().replace(/(<a class="(?:.*)view-attachment(?:.*)"[^>]+[^<]+<\/a>)/,'$1 | <a class="ilab-thickbox" href="<?php echo $this->cropPageURL('{{data.id}}')?>"><?php echo __('Crop Image') ?></a>'));

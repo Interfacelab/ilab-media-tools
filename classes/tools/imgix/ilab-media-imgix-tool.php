@@ -142,8 +142,11 @@ class ILabMediaImgixTool extends ILabMediaToolBase
 
     public function getAttachmentURL($url, $post_id)
     {
-        $url=$this->buildImgixImage($post_id,'full')[0];
-        return $url;
+        $new_url=$this->buildImgixImage($post_id,'full')[0];
+        if (!$new_url)
+            return $url;
+
+        return $new_url;
     }
 
     private function buildImgixParams($params,$mimetype='')
@@ -354,11 +357,15 @@ class ILabMediaImgixTool extends ILabMediaToolBase
             $params=array_merge($params, $mergeParams);
 
         if (!isset($params['fm'])) {
-            if (($mimetype=='image/gif') && (!in_array($size,$this->noGifSizes)))
+            if ($mimetype=='image/gif')
                 $params['fm']='gif';
-            else
-                $params['fm']='pjpg';
-
+            else {
+                if ((!$this->autoFormat) && ($mimetype=='image/png')) {
+                    $params['fm']='png';
+                } else {
+                    $params['fm']='pjpg';
+                }
+            }
         }
 
         $params=$this->buildImgixParams($params,$mimetype);
@@ -427,6 +434,10 @@ class ILabMediaImgixTool extends ILabMediaToolBase
      */
     private function hookupUI()
     {
+        add_filter('media_row_actions',function($actions,$post){
+            $newaction['ilab_edit_image'] = '<a class="ilab-thickbox" href="'.$this->editPageURL($post->ID).'" title="Edit Image">' . __('Edit Image') . '</a>';
+            return array_merge($actions,$newaction);
+        },10,2);
 
         add_action( 'wp_enqueue_media', function () {
             remove_action('admin_footer', 'wp_print_media_templates');
@@ -437,9 +448,11 @@ class ILabMediaImgixTool extends ILabMediaToolBase
                 $result=ob_get_clean();
                 echo $result;
 
+
                 ?>
                 <script>
                     jQuery(document).ready(function() {
+
                         jQuery('input[type="button"]')
                             .filter(function() {
                                 return this.id.match(/imgedit-open-btn-[0-9]+/);
@@ -457,6 +470,21 @@ class ILabMediaImgixTool extends ILabMediaToolBase
                                     return false;
                                 });
                         });
+
+                        jQuery(document).on('click','.ilab-edit-attachment', function(e){
+                            var button=jQuery(this);
+                            var image_id=button.data('id');
+                            e.preventDefault();
+
+                            ILabModal.loadURL("<?php echo relative_admin_url('admin-ajax.php')?>?action=ilab_imgix_edit_page&image_id="+image_id,false,null);
+
+                            return false;
+                        });
+
+                        attachTemplate = jQuery('#tmpl-attachment-details-two-column');
+                        if (attachTemplate) {
+                            attachTemplate.text(attachTemplate.text().replace('<button type="button" class="button edit-attachment"><?php _e( 'Edit Image' ); ?></button>','<button type="button" data-id="{{data.id}}" class="button ilab-edit-attachment"><?php _e( 'Edit Image' ); ?></button>'));
+                        }
 
                         attachTemplate=jQuery('#tmpl-attachment-details-two-column');
                         if (attachTemplate)
@@ -857,12 +885,5 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         update_option('ilab-imgix-size-presets',$sizePresets);
 
         return $this->displayEditUI(1);
-//
-//
-//        json_response([
-//                          'status'=>'ok',
-//                          'preset_key'=>$key,
-//                          'presets'=>$this->buildPresetsUI($image_id,$size)
-//                      ]);
     }
 }

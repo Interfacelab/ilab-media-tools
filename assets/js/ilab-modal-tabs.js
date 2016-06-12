@@ -25,7 +25,7 @@
 
             tabs.each(function(){
                 var tab=$(this);
-                if (tabFont==null) {
+                if (tabFont===null) {
 
                     tabFont = tab.css('font');
                     tabMarginLeft=parseInt(tab.css('margin-left'));

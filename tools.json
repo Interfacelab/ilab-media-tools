@@ -4,20 +4,20 @@
 {
   /** Crop Tool */
   "crop": {
-    "title":"Image Crop",
-    "description":"Provides an easy to use tool for manually cropping images for all image sizes.",
+    "title": "Image Crop",
+    "description": "Provides an easy to use tool for manually cropping images for all image sizes.",
     "source": "ilab-media-crop-tool.php",
     "class": "ILabMediaCropTool",
-    "dependencies":[],
-    "settings":{
-      "title":"Crop Settings",
-      "menu":"Crop Settings",
-      "options-page":"media-tools-crop",
-      "options-group":"ilab-media-crop",
-      "groups":{
-        "ilab-media-crop-settings":{
-          "title":"Crop Settings",
-          "description":"Put your crop settings here",
+    "dependencies": [],
+    "settings": {
+      "title": "Crop Settings",
+      "menu": "Crop Settings",
+      "options-page": "media-tools-crop",
+      "options-group": "ilab-media-crop",
+      "groups": {
+        "ilab-media-crop-settings": {
+          "title": "Crop Settings",
+          "description": "Put your crop settings here",
           "options": {
             "ilab-media-crop-quality": {
               "title": "Crop Quality",
@@ -28,28 +28,32 @@
       }
     }
   },
-
   /** Imgix Tool */
   "imgix": {
-    "title":"Imgix Support",
-    "description":"Serves images through imgix.com",
+    "title": "Imgix Support",
+    "description": "Serves images through imgix.com",
     "source": "ilab-media-imgix-tool.php",
     "class": "ILabMediaImgixTool",
-    "dependencies":["crop","s3"],
-    "helpers":["ilab-imgix-helpers.php"],
-    "settings":{
-      "title":"Imgix Settings",
-      "menu":"Imgix Settings",
-      "options-page":"media-tools-imgix",
-      "options-group":"ilab-media-imgix",
-      "groups":{
-        "ilab-media-imgix-settings":{
-          "title":"Imgix Settings",
-          "description":"Required settings for imgix integration to work.",
+    "dependencies": [
+      "crop",
+      "s3"
+    ],
+    "helpers": [
+      "ilab-imgix-helpers.php"
+    ],
+    "settings": {
+      "title": "Imgix Settings",
+      "menu": "Imgix Settings",
+      "options-page": "media-tools-imgix",
+      "options-group": "ilab-media-imgix",
+      "groups": {
+        "ilab-media-imgix-settings": {
+          "title": "Imgix Settings",
+          "description": "Required settings for imgix integration to work.",
           "options": {
             "ilab-media-imgix-domains": {
               "title": "Imgix Domains",
-              "description":"List of your source domains.  For more information, please read the <a href='https://www.imgix.com/docs/tutorials/creating-sources' target='_blank'>imgix documentation</a>",
+              "description": "List of your source domains.  For more information, please read the <a href='https://www.imgix.com/docs/tutorials/creating-sources' target='_blank'>imgix documentation</a>",
               "type": "text-area"
             },
             "ilab-media-imgix-signing-key": {
@@ -64,9 +68,9 @@
             }
           }
         },
-        "ilab-media-imgix-image-settings":{
-          "title":"Imgix Image Settings",
-          "description":"Put your imgix image settings here",
+        "ilab-media-imgix-image-settings": {
+          "title": "Imgix Image Settings",
+          "description": "Put your imgix image settings here",
           "options": {
             "ilab-media-imgix-default-quality": {
               "title": "Lossy Image Quality",
@@ -74,28 +78,28 @@
             },
             "ilab-media-imgix-auto-format": {
               "title": "Auto Format",
-              "description":"Allows imgix to choose the most appropriate file format to deliver your image based on the requesting web browser.",
+              "description": "Allows imgix to choose the most appropriate file format to deliver your image based on the requesting web browser.",
               "type": "checkbox"
             }
           }
         },
-        "ilab-media-imgix-gif-settings":{
-          "title":"Imgix GIF Settings",
-          "description":"Controls how animated gifs appear on the site.",
+        "ilab-media-imgix-gif-settings": {
+          "title": "Imgix GIF Settings",
+          "description": "Controls how animated gifs appear on the site.",
           "options": {
             "ilab-media-imgix-no-gif-sizes": {
               "title": "Disallow Animated GIFs for Sizes",
-              "description":"List the sizes that aren't allowed to have animated GIFs.  These sizes will display jpegs instead.",
+              "description": "List the sizes that aren't allowed to have animated GIFs.  These sizes will display jpegs instead.",
               "type": "text-area"
             }
           }
         }
       },
-      "params":{
+      "params": {
         "adjust": {
-          "--Auto":{
-            "auto":{
-              "type":"pillbox",
+          "--Auto": {
+            "auto": {
+              "type": "pillbox",
               "options": {
                 "enhance": {
                   "title": "Auto Enhance",
@@ -108,104 +112,104 @@
               }
             }
           },
-          "Luminosity Controls":{
-            "bri":{
-              "title":"Brightness",
-              "type":"slider",
-              "min":-100,
-              "max":100,
+          "Luminosity Controls": {
+            "bri": {
+              "title": "Brightness",
+              "type": "slider",
+              "min": -100,
+              "max": 100,
               "default": 0
             },
-            "con":{
-              "title":"Contrast",
-              "type":"slider",
-              "min":-100,
-              "max":100,
+            "con": {
+              "title": "Contrast",
+              "type": "slider",
+              "min": -100,
+              "max": 100,
               "default": 0
             },
-            "exp":{
-              "title":"Exposure",
-              "type":"slider",
-              "min":-100,
-              "max":100,
+            "exp": {
+              "title": "Exposure",
+              "type": "slider",
+              "min": -100,
+              "max": 100,
               "default": 0
             },
-            "gam":{
-              "title":"Gamma",
-              "type":"slider",
-              "min":-100,
-              "max":100,
+            "gam": {
+              "title": "Gamma",
+              "type": "slider",
+              "min": -100,
+              "max": 100,
               "default": 0
             },
-            "high":{
-              "title":"Highlight",
-              "type":"slider",
-              "min":-100,
-              "max":100,
+            "high": {
+              "title": "Highlight",
+              "type": "slider",
+              "min": -100,
+              "max": 100,
               "default": 0
             },
-            "shad":{
-              "title":"Shadow",
-              "type":"slider",
-              "min":-100,
-              "max":100,
+            "shad": {
+              "title": "Shadow",
+              "type": "slider",
+              "min": -100,
+              "max": 100,
               "default": 0
             }
           },
           "Color Controls": {
-            "hue":{
-              "title":"Hue",
-              "type":"slider",
-              "min":-359,
-              "max":359,
+            "hue": {
+              "title": "Hue",
+              "type": "slider",
+              "min": -359,
+              "max": 359,
               "default": 0
             },
-            "sat":{
-              "title":"Saturation",
-              "type":"slider",
-              "min":-100,
-              "max":100,
+            "sat": {
+              "title": "Saturation",
+              "type": "slider",
+              "min": -100,
+              "max": 100,
               "default": 0
             },
-            "vib":{
-              "title":"Vibrancy",
-              "type":"slider",
-              "min":-100,
-              "max":100,
+            "vib": {
+              "title": "Vibrancy",
+              "type": "slider",
+              "min": -100,
+              "max": 100,
               "default": 0
             }
           },
           "Noise/Sharpen/Blur": {
-            "sharp":{
-              "title":"Sharpen",
-              "type":"slider",
-              "min":0,
-              "max":100,
+            "sharp": {
+              "title": "Sharpen",
+              "type": "slider",
+              "min": 0,
+              "max": 100,
               "default": 0
             },
-            "nr":{
-              "title":"Noise Reduction",
-              "type":"slider",
-              "min":-100,
-              "max":100,
+            "nr": {
+              "title": "Noise Reduction",
+              "type": "slider",
+              "min": -100,
+              "max": 100,
               "default": 0
             },
-            "nrs":{
-              "title":"Noise Reduction Sharpen Bound",
-              "type":"slider",
-              "min":-100,
-              "max":100,
+            "nrs": {
+              "title": "Noise Reduction Sharpen Bound",
+              "type": "slider",
+              "min": -100,
+              "max": 100,
               "default": 0
             },
-            "blur":{
-              "title":"Blur",
-              "type":"slider",
-              "min":0,
-              "max":2000,
+            "blur": {
+              "title": "Blur",
+              "type": "slider",
+              "min": 0,
+              "max": 2000,
               "default": 0
             }
           },
-          "Transform":{
+          "Transform": {
             "rot": {
               "title": "Rotation",
               "type": "slider",
@@ -215,91 +219,91 @@
             }
           }
         },
-        "stylize":{
-          "Stylize":{
-            "blend":{
-              "title":"Tint",
-              "type":"blend-color",
+        "stylize": {
+          "Stylize": {
+            "blend": {
+              "title": "Tint",
+              "type": "blend-color",
               "blend-param": "bm",
-              "blends":{
-                "none":"Normal",
-                "color":"Color",
-                "burn":"Burn",
-                "dodge":"Dodge",
-                "darken":"Darken",
-                "difference":"Difference",
-                "exclusion":"Exclusion",
-                "hardlight":"Hard Light",
-                "hue":"Hue",
-                "lighten":"Lighten",
-                "luminosity":"Luminosity",
-                "multiply":"Multiply",
-                "overlay":"Overlay",
-                "saturation":"Saturation",
-                "screen":"Screen",
-                "softlight":"Soft Light"
+              "blends": {
+                "none": "Normal",
+                "color": "Color",
+                "burn": "Burn",
+                "dodge": "Dodge",
+                "darken": "Darken",
+                "difference": "Difference",
+                "exclusion": "Exclusion",
+                "hardlight": "Hard Light",
+                "hue": "Hue",
+                "lighten": "Lighten",
+                "luminosity": "Luminosity",
+                "multiply": "Multiply",
+                "overlay": "Overlay",
+                "saturation": "Saturation",
+                "screen": "Screen",
+                "softlight": "Soft Light"
               }
             },
-            "htn":{
-              "title":"Halftone",
-              "type":"slider",
-              "min":0,
-              "max":100,
+            "htn": {
+              "title": "Halftone",
+              "type": "slider",
+              "min": 0,
+              "max": 100,
               "default": 0
             },
-            "px":{
-              "title":"Pixellate",
-              "type":"slider",
-              "min":0,
-              "max":100,
+            "px": {
+              "title": "Pixellate",
+              "type": "slider",
+              "min": 0,
+              "max": 100,
               "default": 0
             },
-            "mono":{
-              "title":"Monochrome",
-              "type":"color"
+            "mono": {
+              "title": "Monochrome",
+              "type": "color"
             },
-            "sepia":{
-              "title":"Sepia",
-              "type":"slider",
-              "min":0,
-              "max":100,
-              "default": 0
-            }
-          },
-          "Border":{
-            "border-color":{
-              "title":"Border Color",
-              "type":"color"
-            },
-            "border-width":{
-              "title":"Border Width",
-              "type":"slider",
-              "min":0,
-              "max":100,
+            "sepia": {
+              "title": "Sepia",
+              "type": "slider",
+              "min": 0,
+              "max": 100,
               "default": 0
             }
           },
-          "Padding":{
-            "padding-color":{
-              "title":"Padding Color",
-              "type":"color"
+          "Border": {
+            "border-color": {
+              "title": "Border Color",
+              "type": "color"
             },
-            "padding-width":{
-              "title":"Padding Width",
-              "type":"slider",
-              "min":0,
-              "max":100,
+            "border-width": {
+              "title": "Border Width",
+              "type": "slider",
+              "min": 0,
+              "max": 100,
+              "default": 0
+            }
+          },
+          "Padding": {
+            "padding-color": {
+              "title": "Padding Color",
+              "type": "color"
+            },
+            "padding-width": {
+              "title": "Padding Width",
+              "type": "slider",
+              "min": 0,
+              "max": 100,
               "default": 0
             }
           }
         },
-        "watermark":{
+        "watermark": {
           "Watermark Media": {
             "media": {
               "title": "Watermark Image",
               "type": "media-chooser",
-              "imgix-param":"mark",
-              "dependents":[
+              "imgix-param": "mark",
+              "dependents": [
                 "markalign",
                 "markalpha",
                 "markpad",
@@ -307,30 +311,30 @@
               ]
             }
           },
-          "Watermark Settings":{
-            "markalign":{
-              "title":"Watermark Alignment",
-              "type":"alignment"
+          "Watermark Settings": {
+            "markalign": {
+              "title": "Watermark Alignment",
+              "type": "alignment"
             },
-            "markalpha":{
-              "title":"Watermark Alpha",
-              "type":"slider",
-              "min":0,
-              "max":100,
+            "markalpha": {
+              "title": "Watermark Alpha",
+              "type": "slider",
+              "min": 0,
+              "max": 100,
               "default": 100
             },
-            "markpad":{
-              "title":"Watermark Padding",
-              "type":"slider",
-              "min":0,
-              "max":100,
+            "markpad": {
+              "title": "Watermark Padding",
+              "type": "slider",
+              "min": 0,
+              "max": 100,
               "default": 0
             },
-            "markscale":{
-              "title":"Watermark Scale",
-              "type":"slider",
-              "min":0,
-              "max":200,
+            "markscale": {
+              "title": "Watermark Scale",
+              "type": "slider",
+              "min": 0,
+              "max": 200,
               "default": 100
             }
           }
@@ -338,22 +342,21 @@
       }
     }
   },
-
   "s3": {
-    "title":"S3",
-    "description":"Automatically uploads media to Amazon S3.",
+    "title": "S3",
+    "description": "Automatically uploads media to Amazon S3.",
     "source": "ilab-media-s3-tool.php",
     "class": "ILabMediaS3Tool",
-    "dependencies":[],
-    "settings":{
-      "title":"S3 Settings",
-      "menu":"S3 Settings",
-      "options-page":"media-tools-s3",
-      "options-group":"ilab-media-s3",
-      "groups":{
-        "ilab-media-s3-aws-settings":{
-          "title":"AWS Settings",
-          "description":"To get S3 working, you'll have to supply your AWS credentials.  However, the better way of doing it would be to place that information in a .env file, instead of storing it in the database.",
+    "dependencies": [],
+    "settings": {
+      "title": "S3 Settings",
+      "menu": "S3 Settings",
+      "options-page": "media-tools-s3",
+      "options-group": "ilab-media-s3",
+      "groups": {
+        "ilab-media-s3-aws-settings": {
+          "title": "AWS Settings",
+          "description": "To get S3 working, you'll have to supply your AWS credentials.  However, the better way of doing it would be to place that information in a .env file, instead of storing it in the database.",
           "options": {
             "ilab-media-s3-access-key": {
               "title": "AWS Access Key",
@@ -383,6 +386,10 @@
           "options": {
             "ilab-media-s3-cdn-base": {
               "title": "CDN Base URL",
+              "type": "text-field"
+            },
+            "ilab-doc-s3-cdn-base": {
+              "title": "Document CDN Base URL",
               "type": "text-field"
             }
           }

@@ -65,12 +65,12 @@ var ILabCrop=function($,settings){
         this.cropper.cropper('destroy');
         this.cropper.off('built.cropper');
 
-        if (settings.hasOwnProperty('cropped_src') && settings.cropped_src!=null)
+        if (settings.hasOwnProperty('cropped_src') && settings.cropped_src !== null)
         {
             this.modalContainer.find('.ilab-current-crop-img').attr('src',settings.cropped_src);
         }
 
-        if (settings.hasOwnProperty('size_title') && (settings.size_title!=null))
+        if (settings.hasOwnProperty('size_title') && (settings.size_title !== null))
         {
             this.modalContainer.find('.ilabc-crop-size-title').text("Current "+settings.size_title+" ("+settings.min_width+" x "+settings.min_height+")");
         }
@@ -79,7 +79,7 @@ var ILabCrop=function($,settings){
         {
             this.updatePreviewWidth();
 
-            if ((typeof settings.prev_crop_x !== 'undefined') && (settings.prev_crop_x!=null)) {
+            if ((typeof settings.prev_crop_x !== 'undefined') && (settings.prev_crop_x !== null)) {
                 this.cropperData = {
                     x : settings.prev_crop_x,
                     y : settings.prev_crop_y,
