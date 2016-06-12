@@ -28,7 +28,7 @@
     },
     "ilab-media-tools.min.css": {
       "files": [
-        "vendor/cropper/dist/cropper.csss",
+        "vendor/cropper/dist/cropper.css",
         "styles/ilab-media-tools.scss"
       ]
     }

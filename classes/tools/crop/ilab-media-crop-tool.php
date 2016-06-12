@@ -56,13 +56,11 @@ class ILabMediaCropTool extends ILabMediaToolBase
             wp_enqueue_style ( 'media-views' );
 
         wp_enqueue_style( 'wp-pointer' );
-        wp_enqueue_style ( 'ilab-cropper-css', ILAB_PUB_CSS_URL . '/vendor/cropper/dist/cropper.css' );
         wp_enqueue_style ( 'ilab-modal-css', ILAB_PUB_CSS_URL . '/ilab-modal.min.css' );
         wp_enqueue_style ( 'ilab-media-tools-css', ILAB_PUB_CSS_URL . '/ilab-media-tools.min.css' );
         wp_enqueue_script( 'wp-pointer' );
         wp_enqueue_script ( 'ilab-modal-js', ILAB_PUB_JS_URL. '/ilab-modal.js', ['jquery'], false, true );
-        wp_enqueue_script ( 'ilab-cropper-js', ILAB_PUB_JS_URL. '/vendor/cropper/dist/cropper.js', ['ilab-modal-js'], false, true );
-        wp_enqueue_script ( 'ilab-media-tools-js', ILAB_PUB_JS_URL. '/ilab-media-tools.js', ['ilab-cropper-js'], false, true );
+        wp_enqueue_script ( 'ilab-media-tools-js', ILAB_PUB_JS_URL. '/ilab-media-tools.js', ['jquery'], false, true );
     }
 
     /**

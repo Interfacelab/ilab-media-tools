@@ -94,6 +94,7 @@ var ILabCrop=function($,settings){
             }).on('crop.cropper',function(e){
                 //console.log(e.x, e.y, e.width, e.height);
             }).cropper({
+                viewMode: 1,
                 aspectRatio : settings.aspect_ratio,
                 minWidth : settings.min_width,
                 minHeight : settings.min_height,
@@ -105,6 +106,7 @@ var ILabCrop=function($,settings){
                 movable: false,
                 data : this.cropperData,
                 checkImageOrigin: false,
+                checkCrossOrigin: false,
                 responsive: true,
                 preview: '#ilabm-container-'+this.modal_id+' .ilab-crop-preview'
             });
