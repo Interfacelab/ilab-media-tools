@@ -8,6 +8,7 @@
     },
     "ilab-media-tools.js": {
       "files": [
+        "vendor/cropper/dist/cropper.js",
         "js/ilab-crop.js",
         "js/components/imgix-component.js",
         "js/components/imgix-label.js",
@@ -27,6 +28,7 @@
     },
     "ilab-media-tools.min.css": {
       "files": [
+        "vendor/cropper/dist/cropper.csss",
         "styles/ilab-media-tools.scss"
       ]
     }
@@ -36,6 +38,6 @@
     "dist": "../public/"
   },
   "config": {
-    "devUrl": "http://milkmade.dev"
+    "devUrl": "http://dev.interfacelab.io"
   }
 }

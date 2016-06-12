@@ -100,13 +100,13 @@
 
 {% block script %}
 <script>
-    new ILabImageEdit(jQuery, {
-        modal_id:'{{$modal_id}}',
-        image_id:{{$image_id}},
-        size:"{{$size}}",
-        currentPreset:"{{$currentPreset}}",
-        presets:{{json_encode($presets,JSON_FORCE_OBJECT | JSON_PRETTY_PRINT)}},
-        settings:{{json_encode($settings,JSON_FORCE_OBJECT | JSON_PRETTY_PRINT)}}
-    });
+        new ILabImageEdit(jQuery, {
+            modal_id:'{{$modal_id}}',
+            image_id:{{$image_id}},
+            size:"{{$size}}",
+            currentPreset:"{{$currentPreset}}",
+            presets:{{json_encode($presets,JSON_FORCE_OBJECT | JSON_PRETTY_PRINT)}},
+            settings:{{json_encode($settings,JSON_FORCE_OBJECT | JSON_PRETTY_PRINT)}}
+        });
 </script>
 {% endblock %}
