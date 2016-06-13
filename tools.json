@@ -361,22 +361,26 @@
             "ilab-media-s3-access-key": {
               "title": "AWS Access Key",
               "description": "If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_AWS_S3_ACCESS_KEY</strong>",
-              "type": "text-field"
+              "type": "text-field",
+              "watch": true
             },
             "ilab-media-s3-secret": {
               "title": "AWS Secret",
               "description": "If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_AWS_S3_ACCESS_SECRET</strong>",
-              "type": "password"
+              "type": "password",
+              "watch": true
             },
             "ilab-media-s3-bucket": {
               "title": "AWS Bucket",
               "description": "If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_AWS_S3_BUCKET</strong>",
-              "type": "text-field"
+              "type": "text-field",
+              "watch": true
             },
             "ilab-media-s3-region": {
               "title": "AWS Region",
               "description": "If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_AWS_S3_REGION</strong>",
-              "type": "text-field"
+              "type": "text-field",
+              "watch": true
             }
           }
         },

@@ -10,6 +10,8 @@ abstract class ILabMediaToolBase {
     private $adminNotices;
     protected $settingSections;
 
+    private $settingsChanged = false;
+
     /**
      * Name of the tool
      * @var string
@@ -72,7 +74,6 @@ abstract class ILabMediaToolBase {
      */
     public function setup()
     {
-
     }
 
     /**
@@ -141,6 +142,12 @@ abstract class ILabMediaToolBase {
                 foreach($groupInfo['options'] as $option => $optionInfo)
                 {
                     $this->registerSetting($option);
+                    if (isset($optionInfo['watch']) && $optionInfo['watch']) {
+                        add_action("update_option_$option", function ($setting, $oldValue=null, $newValue=null) {
+                            set_transient("settings_changed_".$this->toolName, true);
+                        }, 10, 3);
+                    }
+
                     if (isset($optionInfo['type']))
                     {
                         switch($optionInfo['type'])
@@ -192,6 +199,7 @@ abstract class ILabMediaToolBase {
      */
     public function renderSettings()
     {
+
         echo render_view('base/ilab-settings.php',[
             'title'=>$this->toolInfo['title'],
             'group'=>$this->options_group,
@@ -297,5 +305,15 @@ abstract class ILabMediaToolBase {
         echo "<input type=\"number\" min=\"0\" step=\"1\" name=\"{$args['option']}\" value=\"$value\">";
         if ($args['description'])
             echo "<p class='description'>".$args['description']."</p>";
+    }
+
+    public function haveSettingsChanged() {
+        if (get_transient("settings_changed_".$this->toolName)) {
+            delete_transient("settings_changed_".$this->toolName);
+
+            return true;
+        }
+
+        return false;
     }
 }

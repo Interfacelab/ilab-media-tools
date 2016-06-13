@@ -7,11 +7,14 @@ require_once(ILAB_CLASSES_DIR.'/ilab-media-tool-base.php');
 
 class ILabMediaS3Tool extends ILabMediaToolBase {
 
-    private $key;
-    private $secret;
-    private $region;
-    private $bucket;
-    private $docCdn;
+    private $key = null;
+    private $secret = null;
+    private $region = null;
+    private $bucket = null;
+    private $docCdn = null;
+    private $cdn = null;
+
+    private $settingsError = false;
 
     public function __construct($toolName, $toolInfo, $toolManager)
     {
@@ -21,7 +24,23 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
         $this->key = get_option('ilab-media-s3-access-key', getenv('ILAB_AWS_S3_ACCESS_KEY'));
         $this->secret = get_option('ilab-media-s3-secret', getenv('ILAB_AWS_S3_ACCESS_SECRET'));
         $this->region=get_option('ilab-media-s3-region', getenv('ILAB_AWS_S3_REGION'));
-        $this->docCdn = get_option('ilab-doc-s3-cdn-base');
+
+        $this->cdn = get_option('ilab-media-s3-cdn-base', getenv('ILAB_AWS_S3_CDN_BASE'));
+        if (!$this->cdn && $this->bucket && $this->region)  {
+            $this->cdn = "https://s3-{$this->region}.amazonaws.com/{$this->bucket}";
+        }
+
+        $this->docCdn = get_option('ilab-doc-s3-cdn-base', $this->cdn);
+
+        $this->settingsError = get_option('ilab-s3-settings-error', false);
+
+        if ($this->haveSettingsChanged()) {
+            $this->settingsChanged();
+        }
+
+        if ($this->settingsError) {
+            $this->displayAdminNotice('error', 'Your AWS S3 settings are incorrect or the bucket does not exist.  Please verify your settings and update them.');
+        }
     }
 
     public function enabled()
@@ -30,17 +49,15 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 
         if ($enabled)
         {
-            if (!($this->key && $this->secret && $this->bucket && $this->region))
+            if (!($this->key && $this->secret && $this->bucket && $this->region && $this->cdn))
             {
                 $this->displayAdminNotice('error',"To start using S3, you will need to <a href='admin.php?page={$this->options_page}'>supply your AWS credentials.</a>.");
                 return false;
             }
 
-            if (!get_option('ilab-media-s3-cdn-base', getenv('ILAB_AWS_S3_CDN_BASE')))
-            {
-                $this->displayAdminNotice('error',"To start using S3, you will need to <a href='admin.php?page={$this->options_page}'>set up CDN information.</a>.");
+            if ($this->settingsError)
                 return false;
-            }
+
         }
 
         return $enabled;
@@ -48,6 +65,8 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 
     public function setup()
     {
+        parent::setup();
+
         if ($this->enabled())
         {
             add_filter('wp_update_attachment_metadata', [$this, 'updateAttachmentMetadata'], 1000, 2);
@@ -55,7 +74,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
             add_filter('wp_handle_upload', [$this, 'handleUpload'], 10000);
         }
 
-        if (get_option('ilab-media-s3-cdn-base', getenv('ILAB_AWS_S3_CDN_BASE')))
+        if ($this->cdn)
             add_filter('wp_get_attachment_url', [$this, 'getAttachmentURL'], 1000, 2 );
     }
 
@@ -227,15 +246,11 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
     public function getAttachmentURL($url, $post_id)
     {
         $meta=wp_get_attachment_metadata($post_id);
-        if (isset($meta['s3']))
-        {
-            $cdn=get_option('ilab-media-s3-cdn-base', getenv('ILAB_AWS_S3_CDN_BASE'));
-            return $cdn.'/'.$meta['file'];
+        if (isset($meta['s3'])) {
+            return $this->cdn.'/'.$meta['file'];
         }
-        else if (isset($meta['amazonS3_info']))
-        {
-            $cdn=get_option('ilab-media-s3-cdn-base', getenv('ILAB_AWS_S3_CDN_BASE'));
-            return $cdn.'/'.$meta['file'];
+        else if (isset($meta['amazonS3_info'])) {
+            return $this->cdn.'/'.$meta['file'];
         }
         else if (!$meta) {
             $post = \WP_Post::get_instance($post_id);
@@ -244,5 +259,18 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
         }
 
         return $url;
+    }
+
+    public function settingsChanged() {
+        delete_option('ilab-s3-settings-error');
+        $this->settingsError = false;
+
+        if ($this->enabled()) {
+            $s3 = $this->s3Client(true);
+            if ($s3 == null) {
+                $this->settingsError = true;
+                update_option('ilab-s3-settings-error', true);
+            }
+        }
     }
 }
