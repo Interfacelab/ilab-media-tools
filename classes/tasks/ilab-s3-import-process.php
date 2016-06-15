@@ -14,13 +14,11 @@ class ILABS3ImportProcess extends WP_Background_Process {
 		$index = $item['index'];
 		$post_id = $item['post'];
 
-		error_log('processing '.$index);
 		update_option('ilab_s3_import_current', $index+1);
 
 		$data = wp_get_attachment_metadata($post_id);
 
 		$s3tool = ILabMediaToolsManager::instance()->tools['s3'];
-
 		$s3tool->updateAttachmentMetadata($data, $post_id);
 		wp_update_attachment_metadata($post_id, $data);
 
@@ -28,12 +26,10 @@ class ILABS3ImportProcess extends WP_Background_Process {
 	}
 
 	public function dispatch() {
-		error_log('dispatch');
 		parent::dispatch();
 	}
 
 	protected function complete() {
-		error_log('complete');
 		update_option('ilab_s3_import_status', false);
 		delete_option('ilab_s3_import_total_count');
 		delete_option('ilab_s3_import_current');
