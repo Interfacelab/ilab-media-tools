@@ -34,6 +34,9 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
             $this->cdn = "https://s3-{$this->region}.amazonaws.com/{$this->bucket}";
         }
 
+        if ($this->cdn)
+            $this->cdn=trim($this->cdn,'/');
+
         $this->docCdn = get_option('ilab-doc-s3-cdn-base', $this->cdn);
 
         $this->settingsError = get_option('ilab-s3-settings-error', false);

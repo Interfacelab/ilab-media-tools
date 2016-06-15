@@ -42,6 +42,8 @@ abstract class ILabMediaToolBase {
      */
     protected $options_group;
 
+    private $select_options = [];
+
     /**
      * Creates a new instance.  Subclasses should do any setup dependent on being enabled in setup()
      * @param $toolName
@@ -166,6 +168,9 @@ abstract class ILabMediaToolBase {
                                 break;
                             case 'number':
                                 $this->registerNumberFieldSetting($option,$optionInfo['title'],$group,(isset($optionInfo['description']) ? $optionInfo['description'] : null));
+                                break;
+                            case 'select':
+                                $this->registerSelectSetting($option,$optionInfo['options'],$optionInfo['title'],$group,(isset($optionInfo['description']) ? $optionInfo['description'] : null));
                                 break;
                         }
                     }
@@ -303,6 +308,34 @@ abstract class ILabMediaToolBase {
     {
         $value=get_option($args['option']);
         echo "<input type=\"number\" min=\"0\" step=\"1\" name=\"{$args['option']}\" value=\"$value\">";
+        if ($args['description'])
+            echo "<p class='description'>".$args['description']."</p>";
+    }
+
+    protected function registerSelectSetting($option_name,$options,$title,$settings_slug,$description=null)
+    {
+        $this->select_options[$option_name] = $options;
+        add_settings_field($option_name,$title,[$this,'renderSelectSetting'],$this->options_page,$settings_slug,['option'=>$option_name,'description'=>$description]);
+    }
+
+    public function renderSelectSetting($args)
+    {
+        $option = $args['option'];
+        $options = $this->select_options[$option];
+
+        $value=get_option($args['option']);
+
+        echo "<select name=\"{$option}\">\n";
+        foreach($options as $val => $name) {
+            $opt = "\t<option value=\"{$val}\"";
+            if ($val == $value)
+                $opt .= " selected";
+            $opt .= ">{$name}</option>\n";
+
+            echo $opt;
+        }
+        echo "</select>\n";
+
         if ($args['description'])
             echo "<p class='description'>".$args['description']."</p>";
     }
