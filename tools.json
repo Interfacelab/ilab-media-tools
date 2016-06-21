@@ -375,30 +375,28 @@
               "description": "If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_AWS_S3_BUCKET</strong>",
               "type": "text-field",
               "watch": true
+            }
+          }
+        },
+        "ilab-media-s3-upload-handling-settings": {
+          "title": "Media File Handling",
+          "description": "The following options control how the S3 tool handles uploads.",
+          "options": {
+            "ilab-media-s3-delete-uploads": {
+              "title": "Delete Uploaded Files",
+              "description": "Deletes uploaded files from the WordPress server after they've been uploaded to S3.",
+              "type": "checkbox"
             },
-            "ilab-media-s3-region": {
-              "title": "AWS Region",
-              "description": "If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_AWS_S3_REGION</strong>",
-              "type": "select",
-              "options": {
-                "us-east-1": "US East (N. Virginia)",
-                "us-west-1": "US West (N. California)",
-                "us-west-2": "US West (Oregon)",
-                "eu-west-1": "EU (Ireland)",
-                "eu-central-1": "EU (Frankfurt)",
-                "ap-northeast-1": "Asia Pacific (Tokyo)",
-                "ap-northeast-2": "Asia Pacific (Seoul)",
-                "ap-southeast-1": "Asia Pacific (Singapore)",
-                "ap-southeast-2": "Asia Pacific (Sydney)",
-                "sa-east-1": "South America (São Paulo)"
-              },
-              "watch": true
+            "ilab-media-s3-delete-from-s3": {
+              "title": "Delete From S3",
+              "description": "When you delete from the media library, turning this on will also delete the file from S3.",
+              "type": "checkbox"
             }
           }
         },
         "ilab-media-s3-cdn-settings": {
           "title": "CDN Settings",
-          "description": "Put your CDN settings here",
+          "description": "If you are using CloudFront, Fastly or another CDN, enter the CDN domain here.  If you are using Imgix, the <b>CDN Base URL</b> setting is ignored, but the <b>Document CDN Base URL</b> is not.  If both are left blank, Media Tools will use the S3 URL's.",
           "options": {
             "ilab-media-s3-cdn-base": {
               "title": "CDN Base URL",

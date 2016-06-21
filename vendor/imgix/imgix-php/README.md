@@ -7,21 +7,19 @@ distributed image processing service. More information can be found at
 [http://www.imgix.com](http://www.imgix.com).
 
 
-Dependencies
-------------
+## Dependencies
 
-The library itself has no external dependencies. Although if you want to run tests you'll need PHPUnit.
+The tests have a few external dependencies. To install those:
 
 ```bash
 phpunit --bootstrap src/autoload.php tests/tests.php
 ```
 
-Installation
-------------
+## Installation
 
 ### Standalone
 
-Just copy the files to your project, and include the `src/autoload.php` file.
+Just copy the files to your project, and include the `src/autoload.php` file. We recommend using Composer if at all possible.
 
 ### Using Composer
 
@@ -37,8 +35,7 @@ Define the following requirement in your `composer.json` file:
 
 And include the global `vendor/autoload.php` autoloader.
 
-Basic Usage
------------
+## Basic Usage
 
 To begin creating imgix URLs programmatically, simply add the php files to your project (an example autoloader is also provided). The URL builder can be reused to create URLs for any
 images on the domains it is provided.
@@ -68,9 +65,7 @@ echo $builder->createURL("bridge.png", $params);
 // https://demos.imgix.net/bridge.png?h=100&w=100
 ```
 
-
-Signed URLs
------------
+## Signed URLs
 
 To produce a signed URL, you must enable secure URLs on your source and then
 provide your signature key to the URL builder.
@@ -87,9 +82,7 @@ echo $builder->createURL("bridge.png", $params);
 // http://demos.imgix.net/bridge.png?h=100&w=100&s=bb8f3a2ab832e35997456823272103a4
 ```
 
-
-Domain Sharded URLs
--------------------
+## Domain Sharded URLs
 
 Domain sharding enables you to spread image requests across multiple domains.
 This allows you to bypass the requests-per-host limits of browsers. We

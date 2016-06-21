@@ -6,28 +6,28 @@ class UrlHelperTest extends PHPUnit_Framework_TestCase {
 
     public function testHelperBuildSignedURLWithHashMapParams() {
         $params = array("w" => 500);
-        $uh = new URLHelper("securejackangers.imgix.net", "chester.png", "http", "Q61NvXIy", $params);
+        $uh = new URLHelper("imgix-library-secure-test-source.imgix.net", "dog.jpg", "http", "EHFQXiZhxP4wA2c4", $params);
 
-        $this->assertEquals("http://securejackangers.imgix.net/chester.png?w=500&s=0ddf97bf1a266a1da6c30c6ce327f917", $uh->getURL());
+        $this->assertEquals("http://imgix-library-secure-test-source.imgix.net/dog.jpg?w=500&s=e4eb402d12bbdf267bf0fc5588170d56", $uh->getURL());
     }
 
     public function testHelperBuildSignedURLWithHashMapAndNoParams() {
         $params = array();
-        $uh = new URLHelper("securejackangers.imgix.net", "chester.png", "http", "Q61NvXIy", $params);
+        $uh = new URLHelper("imgix-library-secure-test-source.imgix.net", "dog.jpg", "http", "EHFQXiZhxP4wA2c4", $params);
 
-        $this->assertEquals("http://securejackangers.imgix.net/chester.png?&s=711dfe95b041008a3c6f460a40052282", $uh->getURL());
+        $this->assertEquals("http://imgix-library-secure-test-source.imgix.net/dog.jpg?s=2b0bc99b1042e3c1c9aae6598acc3def", $uh->getURL());
     }
 
     public function testHelperBuildSignedURLWithHashSetterParams() {
-        $uh = new URLHelper("securejackangers.imgix.net", "chester.png", "http", "Q61NvXIy");
+        $uh = new URLHelper("imgix-library-secure-test-source.imgix.net", "dog.jpg", "http", "EHFQXiZhxP4wA2c4");
         $uh->setParameter("w", 500);
-        $this->assertEquals("http://securejackangers.imgix.net/chester.png?w=500&s=0ddf97bf1a266a1da6c30c6ce327f917", $uh->getURL());
+        $this->assertEquals("http://imgix-library-secure-test-source.imgix.net/dog.jpg?w=500&s=e4eb402d12bbdf267bf0fc5588170d56", $uh->getURL());
     }
 
     public function testHelperBuildSignedURLWithHashSetterParamsHttps() {
-        $uh = new URLHelper("securejackangers.imgix.net", "chester.png", "https", "Q61NvXIy");
+        $uh = new URLHelper("imgix-library-secure-test-source.imgix.net", "dog.jpg", "https", "EHFQXiZhxP4wA2c4");
         $uh->setParameter("w", 500);
-        $this->assertEquals("https://securejackangers.imgix.net/chester.png?w=500&s=0ddf97bf1a266a1da6c30c6ce327f917", $uh->getURL());
+        $this->assertEquals("https://imgix-library-secure-test-source.imgix.net/dog.jpg?w=500&s=e4eb402d12bbdf267bf0fc5588170d56", $uh->getURL());
     }
 }
 

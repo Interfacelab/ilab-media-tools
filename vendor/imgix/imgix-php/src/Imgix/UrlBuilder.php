@@ -4,7 +4,7 @@ namespace Imgix;
 
 class UrlBuilder {
 
-    private $currentVersion = "1.0.6";
+    private $currentVersion = "1.1.0";
     private $domains;
     private $useHttps;
     private $signKey;
@@ -25,12 +25,12 @@ class UrlBuilder {
 
         $this->useHttps = $useHttps;
         $this->signKey = $signKey;
-        $this->shardStratgy = $shardStrategy;
+        $this->shardStrategy = $shardStrategy;
         $this->includeLibraryParam = $includeLibraryParam;
     }
 
     public function setShardStrategy($start) {
-        $this->shardStratgy = $start;
+        $this->shardStrategy = $start;
     }
 
     public function setSignKey($key) {
@@ -44,10 +44,10 @@ class UrlBuilder {
     public function createURL($path, $params=array()) {
         $scheme = $this->useHttps ? "https" : "http";
 
-        if ($this->shardStratgy === ShardStrategy::CRC) {
+        if ($this->shardStrategy === ShardStrategy::CRC) {
             $index = self::unsigned_crc32($path) % sizeof($this->domains);
             $domain = $this->domains[$index];
-        } else if ($this->shardStratgy === ShardStrategy::CYCLE) {
+        } else if ($this->shardStrategy === ShardStrategy::CYCLE) {
             $this->shardCycleNextIndex = ($this->shardCycleNextIndex + 1) % sizeof($this->domains);
             $domain = $this->domains[$this->shardCycleNextIndex];
         } else {

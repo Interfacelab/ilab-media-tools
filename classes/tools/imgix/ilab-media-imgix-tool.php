@@ -97,9 +97,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         add_action('wp_ajax_ilab_imgix_new_preset',[$this,'newPreset']);
         add_action('wp_ajax_ilab_imgix_save_preset',[$this,'savePreset']);
         add_action('wp_ajax_ilab_imgix_delete_preset',[$this,'deletePreset']);
-
-        add_filter( 'wp_calculate_image_srcset_meta', '__return_null' );
-
+        
         add_filter( 'wp_image_editors', function($editors)
         {
             require_once('ilab-media-imgix-editor.php');
@@ -294,7 +292,9 @@ class ILabMediaImgixTool extends ILabMediaToolBase
             {
                 $params=$meta['imgix-size-params'][$size];
             }
-            else // see if a preset has been globally assigned to a size and use that
+
+
+            if (!$params || (count($params)==0)) // see if a preset has been globally assigned to a size and use that
             {
                 $presets=get_option('ilab-imgix-presets');
                 $sizePresets=get_option('ilab-imgix-size-presets');
@@ -304,7 +304,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
             }
 
             // still no parameters?  use any that may have been assigned to the full size image
-            if ((!$params) && (isset($meta['imgix-params'])))
+            if ((!$params || (count($params)==0)) && (isset($meta['imgix-params'])))
                 $params=$meta['imgix-params'];
             else if (!$params) // too bad so sad
                 $params=[];

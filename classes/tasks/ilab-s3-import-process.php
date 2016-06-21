@@ -19,7 +19,7 @@ class ILABS3ImportProcess extends WP_Background_Process {
 		$data = wp_get_attachment_metadata($post_id);
 
 		$s3tool = ILabMediaToolsManager::instance()->tools['s3'];
-		$s3tool->updateAttachmentMetadata($data, $post_id);
+		$data = $s3tool->updateAttachmentMetadata($data, $post_id);
 		wp_update_attachment_metadata($post_id, $data);
 
 		return false;

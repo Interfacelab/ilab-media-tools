@@ -61,12 +61,36 @@ class UrlBuilderTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals("http://demos.imgix.net/bridge.png?h=100&w=100&s=bb8f3a2ab832e35997456823272103a4", $url);
     }
 
+    public function testParamKeysAreEscaped() {
+        $builder = new UrlBuilder("demo.imgix.net", true, "", ShardStrategy::CRC, false);
+        $params = array("hello world" => "interesting");
+        $url = $builder->createURL("demo.png", $params);
+
+        $this->assertEquals("https://demo.imgix.net/demo.png?hello%20world=interesting", $url);
+    }
+
+    public function testParamValuesAreEscaped() {
+        $builder = new UrlBuilder("demo.imgix.net", true, "", ShardStrategy::CRC, false);
+        $params = array("hello_world" => '/foo"><script>alert("hacked")</script><');
+        $url = $builder->createURL("demo.png", $params);
+
+        $this->assertEquals("https://demo.imgix.net/demo.png?hello_world=%2Ffoo%22%3E%3Cscript%3Ealert%28%22hacked%22%29%3C%2Fscript%3E%3C", $url);
+    }
+
+    public function testBase64ParamVariantsAreBase64Encoded() {
+        $builder = new UrlBuilder("demo.imgix.net", true, "", ShardStrategy::CRC, false);
+        $params = array("txt64" => 'I cannøt belîév∑ it wors! 😱');
+        $url = $builder->createURL("~text", $params);
+
+        $this->assertEquals("https://demo.imgix.net/~text?txt64=SSBjYW5uw7h0IGJlbMOuw6l24oiRIGl0IHdvcu-jv3MhIPCfmLE", $url);
+    }
+
     public function testWithFullyQualifiedUrl() {
         $builder = new UrlBuilder("demos.imgix.net", true, "", ShardStrategy::CRC, false);
         $builder->setSignKey("test1234");
         $url = $builder->createUrl("http://media.giphy.com/media/jCMq0p94fgBIk/giphy.gif");
 
-        $this->assertEquals("https://demos.imgix.net/http%3A%2F%2Fmedia.giphy.com%2Fmedia%2FjCMq0p94fgBIk%2Fgiphy.gif?&s=ffc3359566fe1dc6445ad17d17b98951", $url);
+        $this->assertEquals("https://demos.imgix.net/http%3A%2F%2Fmedia.giphy.com%2Fmedia%2FjCMq0p94fgBIk%2Fgiphy.gif?s=54c35ea3a066357b06bc553ee9975ec9", $url);
     }
 
     public function testWithFullyQualifiedUrlWithSpaces() {
@@ -74,7 +98,7 @@ class UrlBuilderTest extends PHPUnit_Framework_TestCase {
         $builder->setSignKey("test1234");
         $url = $builder->createUrl("https://my-demo-site.com/files/133467012/avatar icon.png");
 
-        $this->assertEquals("https://demos.imgix.net/https%3A%2F%2Fmy-demo-site.com%2Ffiles%2F133467012%2Favatar+icon.png?&s=f6a4e1504af365564014564f1d7e13de", $url);
+        $this->assertEquals("https://demos.imgix.net/https%3A%2F%2Fmy-demo-site.com%2Ffiles%2F133467012%2Favatar+icon.png?s=1f65f21dab7da2d3c104dfaf898ce8cc", $url);
     }
 
     public function testWithFullyQualifiedUrlWithParams() {
@@ -82,7 +106,7 @@ class UrlBuilderTest extends PHPUnit_Framework_TestCase {
         $builder->setSignKey("test1234");
         $url = $builder->createUrl("https://my-demo-site.com/files/133467012/avatar icon.png?some=chill&params=1");
 
-        $this->assertEquals("https://demos.imgix.net/https%3A%2F%2Fmy-demo-site.com%2Ffiles%2F133467012%2Favatar+icon.png%3Fsome%3Dchill%26params%3D1?&s=259b9ca6206721752ad7a3ce50f08dd2", $url);
+        $this->assertEquals("https://demos.imgix.net/https%3A%2F%2Fmy-demo-site.com%2Ffiles%2F133467012%2Favatar+icon.png%3Fsome%3Dchill%26params%3D1?s=970429e4d150c4609142f4c0a86089c9", $url);
     }
 
     public function testInclusionOfLibraryVersionParam() {

@@ -35,25 +35,33 @@ class UrlHelper {
 
     public function getURL() {
         $queryPairs = array();
-        
+
         if ($this->params) {
             ksort($this->params);
-            
-            foreach ($this->params as $k => $v) {
-                $queryPairs[] = $k . "=" . self::encodeURIComponent($v);
+
+            foreach ($this->params as $key => $val) {
+                if (substr($key, -2) == '64') {
+                    $encodedVal = self::base64url_encode($val);
+                } else {
+                    $encodedVal = rawurlencode($val);
+                }
+
+                $queryPairs[] = rawurlencode($key) . "=" . $encodedVal;
             }
         }
 
         $query = join("&", $queryPairs);
+        if ($query) {
+            $query = '?' . $query;
+        }
 
         if ($this->signKey) {
-            $delim = "?";
-            $toSign = $this->signKey . $this->path . $delim . $query;
+            $toSign = $this->signKey . $this->path . $query;
             $sig = md5($toSign);
             if ($query) {
                 $query .= "&s=" . $sig;
             } else {
-                $query = "s=" . $sig;
+                $query = "?s=" . $sig;
             }
         }
 
@@ -62,18 +70,13 @@ class UrlHelper {
         return self::joinURL($url_parts);
     }
 
-    public static function encodeURIComponent($str) {
-        $revert = array('%21'=>'!', '%2A'=>'*', '%27'=>"'", '%28'=>'(', '%29'=>')');
-        return strtr(rawurlencode($str), $revert);
+    private static function base64url_encode($data) {
+      return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
     }
 
-    public static function joinURL($parts) {
+    private static function joinURL($parts) {
+        $url = $parts['scheme'] . '://' . $parts['host'] . $parts['path'] . $parts['query'];
 
-        // imgix idiosyncracy for signing URLs when only the signature exists. Our query string must begin with '?&s='
-        if (substr($parts['query'], 0, 2) === "s=") {
-            $parts['query'] = "&" . $parts['query'];
-        }
-
-        return http_build_url($parts);
+        return $url;
     }
 }

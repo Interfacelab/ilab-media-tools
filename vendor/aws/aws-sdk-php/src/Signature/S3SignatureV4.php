@@ -9,6 +9,8 @@ use Psr\Http\Message\RequestInterface;
  */
 class S3SignatureV4 extends SignatureV4
 {
+    const UNSIGNED_PAYLOAD = 'UNSIGNED-PAYLOAD';
+    
     /**
      * Always add a x-amz-content-sha-256 for data integrity.
      */
@@ -27,12 +29,30 @@ class S3SignatureV4 extends SignatureV4
     }
 
     /**
+     * Always add a x-amz-content-sha-256 for data integrity.
+     */
+    public function presign(
+        RequestInterface $request,
+        CredentialsInterface $credentials,
+        $expires
+    ) {
+        if (!$request->hasHeader('x-amz-content-sha256')) {
+            $request = $request->withHeader(
+                'X-Amz-Content-Sha256',
+                $this->getPresignedPayload($request)
+            );
+        }
+
+        return parent::presign($request, $credentials, $expires);
+    }
+
+    /**
      * Override used to allow pre-signed URLs to be created for an
      * in-determinate request payload.
      */
     protected function getPresignedPayload(RequestInterface $request)
     {
-        return 'UNSIGNED-PAYLOAD';
+        return self::UNSIGNED_PAYLOAD;
     }
 
     /**

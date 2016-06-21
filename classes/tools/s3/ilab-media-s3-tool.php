@@ -11,12 +11,15 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 
     private $key = null;
     private $secret = null;
-    private $region = null;
     private $bucket = null;
     private $docCdn = null;
     private $cdn = null;
+    private $deleteOnUpload = false;
+    private $deleteFromS3 = false;
 
     private $settingsError = false;
+
+    private $uploadedDocs = [];
 
     public function __construct($toolName, $toolInfo, $toolManager)
     {
@@ -27,15 +30,12 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
         $this->bucket=get_option('ilab-media-s3-bucket', getenv('ILAB_AWS_S3_BUCKET'));
         $this->key = get_option('ilab-media-s3-access-key', getenv('ILAB_AWS_S3_ACCESS_KEY'));
         $this->secret = get_option('ilab-media-s3-secret', getenv('ILAB_AWS_S3_ACCESS_SECRET'));
-        $this->region=get_option('ilab-media-s3-region', getenv('ILAB_AWS_S3_REGION'));
+        $this->deleteOnUpload = get_option('ilab-media-s3-delete-uploads', false);
+        $this->deleteFromS3 = get_option('ilab-media-s3-delete-from-s3', false);
 
         $this->cdn = get_option('ilab-media-s3-cdn-base', getenv('ILAB_AWS_S3_CDN_BASE'));
-        if (!$this->cdn && $this->bucket && $this->region)  {
-            $this->cdn = "https://s3-{$this->region}.amazonaws.com/{$this->bucket}";
-        }
-
         if ($this->cdn)
-            $this->cdn=trim($this->cdn,'/');
+            $this->cdn=rtrim($this->cdn,'/');
 
         $this->docCdn = get_option('ilab-doc-s3-cdn-base', $this->cdn);
 
@@ -63,7 +63,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
     }
 
     public function s3enabled() {
-        if (!($this->key && $this->secret && $this->bucket && $this->region && $this->cdn))
+        if (!($this->key && $this->secret && $this->bucket))
         {
             $this->displayAdminNotice('error',"To start using S3, you will need to <a href='admin.php?page={$this->options_page}'>supply your AWS credentials.</a>.");
             return false;
@@ -89,15 +89,22 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
     {
         parent::setup();
 
-        if ($this->enabled())
-        {
+        if ($this->enabled()) {
             add_filter('wp_update_attachment_metadata', [$this, 'updateAttachmentMetadata'], 1000, 2);
             add_filter('delete_attachment', [$this, 'deleteAttachment'], 1000);
             add_filter('wp_handle_upload', [$this, 'handleUpload'], 10000);
+            add_action('add_attachment',function($post_id){
+                $post = get_post($post_id);
+                $file = get_post_meta( $post_id, '_wp_attached_file', true );
+                if (isset($this->uploadedDocs[$file])) {
+                    add_post_meta($post_id, 'ilab_s3_info', $this->uploadedDocs[$file]);
+                }
+            }, 10000);
+
+            add_filter('wp_calculate_image_srcset',[$this,'calculateSrcSet'], 10000, 5);
         }
 
-        if ($this->cdn)
-            add_filter('wp_get_attachment_url', [$this, 'getAttachmentURL'], 1000, 2 );
+        add_filter('wp_get_attachment_url', [$this, 'getAttachmentURL'], 1000, 2 );
     }
 
 
@@ -106,9 +113,8 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
         if (!$this->s3enabled())
             return null;
 
-        $s3=new Aws\S3\S3Client([
+        $s3=new Aws\S3\S3MultiRegionClient([
                                     'version' => 'latest',
-                                    'region'  => $this->region,
                                     'credentials' => [
                                         'key'    => $this->key,
                                         'secret' => $this->secret
@@ -136,19 +142,24 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
         $s3=$this->s3Client(true);
         if ($s3)
         {
-            $upload_info=wp_upload_dir();
-            $upload_path=$upload_info['basedir'];
-            $path_base=pathinfo($data['file'])['dirname'];
+            if (!isset($data['s3'])) {
+                $upload_info=wp_upload_dir();
+                $upload_path=$upload_info['basedir'];
+                $path_base=pathinfo($data['file'])['dirname'];
 
-            $data=$this->process_file($s3,$upload_path,$data['file'],$data);
+                $data=$this->process_file($s3,$upload_path,$data['file'],$data);
+            }
 
-            foreach($data['sizes'] as $key => $size)
-            {
-                if (!is_array($size))
-                    continue;
+            if (isset($data['sizes'])) {
+                foreach($data['sizes'] as $key => $size)
+                {
+                    if (!is_array($size))
+                        continue;
 
-                $file=$path_base.'/'.$size['file'];
-                $data['sizes'][$key]=$this->process_file($s3,$upload_path,$file,$size);
+                    $file=$path_base.'/'.$size['file'];
+                    $data['sizes'][$key]=$this->process_file($s3,$upload_path,$file,$size);
+                }
+
             }
         }
 
@@ -156,9 +167,6 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
     }
 
     public function handleUpload($upload, $context='upload') {
-        if (!$this->docCdn)
-            return $upload;
-
         if (!isset($upload['file']))
             return $upload;
 
@@ -177,8 +185,13 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 
             $upload = $this->process_file($s3, $upload_path, $file, $upload);
             if (isset($upload['s3'])) {
-                $upload['url'] = trim($this->docCdn, '/').'/'.$file;
+                if ($this->docCdn)
+                    $upload['url'] = trim($this->docCdn, '/').'/'.$file;
+                else if (isset($upload['s3']['url']))
+                    $upload['url'] = $upload['s3']['url'];
             }
+
+            $this->uploadedDocs[$file] = $upload;
         }
 
         return $upload;
@@ -202,8 +215,10 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
         $file=fopen($upload_path.'/'.$filename,'r');
         try
         {
-            $s3->upload($this->bucket,$filename,$file,'public-read');
+            $result = $s3->upload($this->bucket,$filename,$file,'public-read');
+
             $data['s3']=[
+              'url' => $result->get('ObjectURL') ,
               'bucket'=>$this->bucket,
               'key'=>$filename
             ];
@@ -211,6 +226,12 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
         catch (\Aws\Exception\AwsException $ex)
         {
             error_log($ex->getMessage());
+        }
+
+        fclose($file);
+
+        if ($this->deleteOnUpload) {
+            unlink($upload_path.'/'.$filename);
         }
 
         return $data;
@@ -223,22 +244,38 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
      */
     public function deleteAttachment($id)
     {
+        if (!$this->deleteFromS3)
+            return $id;
+
         $s3=$this->s3Client(true);
         if ($s3)
         {
             $data=wp_get_attachment_metadata($id);
 
-            $path_base=pathinfo($data['file'])['dirname'];
+            if (!isset($data['file'])) {
+                $file = get_attached_file($id);
+                if ($file) {
+                    $pi = pathinfo($file);
+                    $upload_info=wp_upload_dir();
+                    $upload_path=$upload_info['basedir'];
 
-            $this->delete_file($s3,$data['file']);
+                    $file = trim(str_replace($upload_path,'',$pi['dirname']),'/').'/'.$pi['basename'];
 
-            if (isset($data['sizes'])) {
-                foreach($data['sizes'] as $key => $size) {
-                    $file=$path_base.'/'.$size['file'];
-                    try {
-                        $this->delete_file($s3,$file);
-                    } catch (\Exception $ex) {
-                        error_log($ex->getMessage());
+                    $this->delete_file($s3, $file);
+                }
+            } else {
+                $path_base=pathinfo($data['file'])['dirname'];
+
+                $this->delete_file($s3,$data['file']);
+
+                if (isset($data['sizes'])) {
+                    foreach($data['sizes'] as $key => $size) {
+                        $file=$path_base.'/'.$size['file'];
+                        try {
+                            $this->delete_file($s3,$file);
+                        } catch (\Exception $ex) {
+                            error_log($ex->getMessage());
+                        }
                     }
                 }
             }
@@ -265,22 +302,70 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
         }
     }
 
+    private function getAttachmentURLFromMeta($meta) {
+        if (isset($meta['s3']) && $this->cdn) {
+            return $this->cdn.'/'.$meta['s3']['key'];
+        }
+        else if (isset($meta['s3']) && isset($meta['s3']['url'])) {
+            return $meta['s3']['url'];
+        }
+        else if (isset($meta['amazonS3_info']) && $this->cdn) {
+            return $this->cdn.'/'.$meta['file'];
+        }
+
+        return null;
+    }
+
     public function getAttachmentURL($url, $post_id)
     {
         $meta=wp_get_attachment_metadata($post_id);
-        if (isset($meta['s3'])) {
-            return $this->cdn.'/'.$meta['file'];
-        }
-        else if (isset($meta['amazonS3_info'])) {
-            return $this->cdn.'/'.$meta['file'];
-        }
-        else if (!$meta) {
-            $post = \WP_Post::get_instance($post_id);
-            if (strpos($post->guid, $this->docCdn) === 0)
-                return $post->guid;
+
+        $new_url = null;
+        if ($meta)
+            $new_url = $this->getAttachmentURLFromMeta($meta);
+
+        if (!$new_url) {
+            $meta = get_post_meta($post_id, 'ilab_s3_info', true);
+            if ($meta) {
+                $new_url = $this->getAttachmentURLFromMeta($meta);
+            }
+            else if (!$meta && $this->docCdn) {
+                $post = \WP_Post::get_instance($post_id);
+                if ($post && (strpos($post->guid, $this->docCdn) === 0))
+                    $new_url = $post->guid;
+            }
         }
 
-        return $url;
+        return $new_url ?: $url;
+    }
+
+
+    public function calculateSrcSet($sources, $size_array, $image_src, $image_meta, $attachment_id) {
+        foreach($image_meta['sizes'] as $sizeName => $sizeData) {
+            $width = $sizeData['width'];
+            if (isset($sources[$width])) {
+                $src = wp_get_attachment_image_src($attachment_id, $sizeName);
+
+                if (is_array($src))
+                    $sources[$width]['url'] = $src[0];
+                else
+                    unset($sources[$width]);
+            }
+        }
+
+        if (isset($image_meta['width'])) {
+            $width = $image_meta['width'];
+            if (isset($sources[$width])) {
+                $src = wp_get_attachment_image_src($attachment_id, 'full');
+
+                if (is_array($src))
+                    $sources[$width]['url'] = $src[0];
+                else
+                    unset($sources[$width]);
+            }
+        }
+
+        return $sources;
     }
 
     public function settingsChanged() {
@@ -297,7 +382,6 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
     }
 
     public function renderImporter() {
-
         $status = get_option('ilab_s3_import_status', false);
         $total = get_option('ilab_s3_import_total_count', 0);
         $current = get_option('ilab_s3_import_current', 1);

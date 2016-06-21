@@ -6,11 +6,15 @@ use Aws\Api\ApiProvider;
 use Aws\Api\Service;
 use Aws\Credentials\Credentials;
 use Aws\Credentials\CredentialsInterface;
+use Aws\Endpoint\Partition;
+use Aws\Endpoint\PartitionEndpointProvider;
+use Aws\Endpoint\PartitionProviderInterface;
 use Aws\Signature\SignatureProvider;
 use Aws\Endpoint\EndpointProvider;
 use Aws\Credentials\CredentialProvider;
 use GuzzleHttp\Promise;
 use InvalidArgumentException as IAE;
+use Psr\Http\Message\RequestInterface;
 
 /**
  * @internal Resolves a hash of client arguments to construct a client.
@@ -56,6 +60,7 @@ class ClientResolver
             'type'  => 'value',
             'valid' => ['string'],
             'doc'   => 'The full URI of the webservice. This is only required when connecting to a custom endpoint (e.g., a local version of S3).',
+            'fn'    => [__CLASS__, '_apply_endpoint'],
         ],
         'region' => [
             'type'     => 'value',
@@ -95,6 +100,18 @@ class ClientResolver
             'doc'     => 'A string representing a custom signature version to use with a service (e.g., v4). Note that per/operation signature version MAY override this requested signature version.',
             'default' => [__CLASS__, '_default_signature_version'],
         ],
+        'signing_name' => [
+            'type'    => 'config',
+            'valid'   => ['string'],
+            'doc'     => 'A string representing a custom service name to be used when calculating a request signature.',
+            'default' => [__CLASS__, '_default_signing_name'],
+        ],
+        'signing_region' => [
+            'type'    => 'config',
+            'valid'   => ['string'],
+            'doc'     => 'A string representing a custom region name to be used when calculating a request signature.',
+            'default' => [__CLASS__, '_default_signing_region'],
+        ],
         'profile' => [
             'type'  => 'config',
             'valid' => ['string'],
@@ -103,10 +120,17 @@ class ClientResolver
         ],
         'credentials' => [
             'type'    => 'value',
-            'valid'   => ['Aws\Credentials\CredentialsInterface', 'array', 'bool', 'callable'],
+            'valid'   => [CredentialsInterface::class, CacheInterface::class, 'array', 'bool', 'callable'],
             'doc'     => 'Specifies the credentials used to sign requests. Provide an Aws\Credentials\CredentialsInterface object, an associative array of "key", "secret", and an optional "token" key, `false` to use null credentials, or a callable credentials provider used to create credentials or return null. See Aws\\Credentials\\CredentialProvider for a list of built-in credentials providers. If no credentials are provided, the SDK will attempt to load them from the environment.',
             'fn'      => [__CLASS__, '_apply_credentials'],
             'default' => [CredentialProvider::class, 'defaultProvider'],
+        ],
+        'stats' => [
+            'type'  => 'value',
+            'valid' => ['bool', 'array'],
+            'default' => false,
+            'doc'   => 'Set to true to gather transfer statistics on requests sent. Alternatively, you can provide an associative array with the following keys: retries: (bool) Set to false to disable reporting on retries attempted; http: (bool) Set to true to enable collecting statistics from lower level HTTP adapters (e.g., values returned in GuzzleHttp\TransferStats). HTTP handlers must support an http_stats_receiver option for this to have an effect; timer: (bool) Set to true to enable a command timer that reports the total wall clock time spent on an operation in seconds.',
+            'fn'    => [__CLASS__, '_apply_stats'],
         ],
         'retries' => [
             'type'    => 'value',
@@ -117,9 +141,9 @@ class ClientResolver
         ],
         'validate' => [
             'type'    => 'value',
-            'valid'   => ['bool'],
+            'valid'   => ['bool', 'array'],
             'default' => true,
-            'doc'     => 'Set to false to disable client-side parameter validation.',
+            'doc'     => 'Set to false to disable client-side parameter validation. Set to true to utilize default validation constraints. Set to an associative array of validation options to enable specific validation constraints.',
             'fn'      => [__CLASS__, '_apply_validate'],
         ],
         'debug' => [
@@ -146,7 +170,14 @@ class ClientResolver
             'doc'      => 'A handler that accepts a command object, request object and returns a promise that is fulfilled with an Aws\ResultInterface object or rejected with an Aws\Exception\AwsException. A handler does not accept a next handler as it is terminal and expected to fulfill a command. If no handler is provided, a default Guzzle handler will be utilized.',
             'fn'       => [__CLASS__, '_apply_handler'],
             'default'  => [__CLASS__, '_default_handler']
-        ]
+        ],
+        'ua_append' => [
+            'type'     => 'value',
+            'valid'    => ['string', 'array'],
+            'doc'      => 'Provide a string or array of strings to send in the User-Agent header.',
+            'fn'       => [__CLASS__, '_apply_user_agent'],
+            'default'  => [],
+        ],
     ];
 
     /**
@@ -293,7 +324,7 @@ class ClientResolver
             . "provided for \"{$name}\". Expected {$expected}, but got "
             . describe_type($provided) . "\n\n"
             . $this->getArgMessage($name);
-        throw new \InvalidArgumentException($msg);
+        throw new IAE($msg);
     }
 
     /**
@@ -323,7 +354,10 @@ class ClientResolver
     {
         if ($value) {
             $decider = RetryMiddleware::createDefaultDecider($value);
-            $list->appendSign(Middleware::retry($decider), 'retry');
+            $list->appendSign(
+                Middleware::retry($decider, null, $args['stats']['retries']),
+                'retry'
+            );
         }
     }
 
@@ -350,6 +384,8 @@ class ClientResolver
                 new Credentials('', '')
             );
             $args['config']['signature_version'] = 'anonymous';
+        } elseif ($value instanceof CacheInterface) {
+            $args['credentials'] = CredentialProvider::defaultProvider($args);
         } else {
             throw new IAE('Credentials must be an instance of '
                 . 'Aws\Credentials\CredentialsInterface, an associative '
@@ -391,6 +427,12 @@ class ClientResolver
             if (isset($result['signatureVersion'])) {
                 $args['config']['signature_version'] = $result['signatureVersion'];
             }
+            if (isset($result['signingRegion'])) {
+                $args['config']['signing_region'] = $result['signingRegion'];
+            }
+            if (isset($result['signingName'])) {
+                $args['config']['signing_name'] = $result['signingName'];
+            }
         }
     }
 
@@ -401,6 +443,24 @@ class ClientResolver
         }
     }
 
+    public static function _apply_stats($value, array &$args, HandlerList $list)
+    {
+        // Create an array of stat collectors that are disabled (set to false)
+        // by default. If the user has passed in true, enable all stat
+        // collectors.
+        $defaults = array_fill_keys(
+            ['http', 'retries', 'timer'],
+            $value === true
+        );
+        $args['stats'] = is_array($value)
+            ? array_replace($defaults, $value)
+            : $defaults;
+
+        if ($args['stats']['timer']) {
+            $list->prependInit(Middleware::timer(), 'timer');
+        }
+    }
+
     public static function _apply_profile($_, array &$args)
     {
         $args['credentials'] = CredentialProvider::ini($args['profile']);
@@ -408,12 +468,17 @@ class ClientResolver
 
     public static function _apply_validate($value, array &$args, HandlerList $list)
     {
-        if ($value === true) {
-            $list->appendValidate(
-                Middleware::validation($args['api'], new Validator()),
-                'validation'
-            );
+        if ($value === false) {
+            return;
         }
+
+        $validator = $value === true
+            ? new Validator()
+            : new Validator($value);
+        $list->appendValidate(
+            Middleware::validation($args['api'], $validator),
+            'validation'
+        );
     }
 
     public static function _apply_handler($value, array &$args, HandlerList $list)
@@ -427,7 +492,8 @@ class ClientResolver
             default_http_handler(),
             $args['parser'],
             $args['error_parser'],
-            $args['exception_class']
+            $args['exception_class'],
+            $args['stats']['http']
         );
     }
 
@@ -437,13 +503,54 @@ class ClientResolver
             $value,
             $args['parser'],
             $args['error_parser'],
-            $args['exception_class']
+            $args['exception_class'],
+            $args['stats']['http']
         );
     }
 
-    public static function _default_endpoint_provider()
+    public static function _apply_user_agent($value, array &$args, HandlerList $list)
     {
-        return EndpointProvider::defaultProvider();
+        if (!is_array($value)) {
+            $value = [$value];
+        }
+
+        $value = array_map('strval', $value);
+
+        array_unshift($value, 'aws-sdk-php/' . Sdk::VERSION);
+        $args['ua_append'] = $value;
+
+        $list->appendBuild(static function (callable $handler) use ($value) {
+            return function (
+                CommandInterface $command,
+                RequestInterface $request
+            ) use ($handler, $value) {
+                return $handler($command, $request->withHeader(
+                    'User-Agent',
+                    implode(' ', array_merge(
+                        $value,
+                        $request->getHeader('User-Agent')
+                    ))
+                ));
+            };
+        });
+    }
+
+    public static function _apply_endpoint($value, array &$args, HandlerList $list)
+    {
+        $parts = parse_url($value);
+        if (empty($parts['scheme']) || empty($parts['host'])) {
+            throw new IAE(
+                'Endpoints must be full URIs and include a scheme and host'
+            );
+        }
+
+        $args['endpoint'] = $value;
+    }
+
+    public static function _default_endpoint_provider(array $args)
+    {
+        return PartitionEndpointProvider::defaultProvider()
+            ->getPartition($args['region'], $args['service']);
     }
 
     public static function _default_signature_provider()
@@ -453,9 +560,62 @@ class ClientResolver
 
     public static function _default_signature_version(array &$args)
     {
-        return isset($args['config']['signature_version'])
-            ? $args['config']['signature_version']
+        if (isset($args['config']['signature_version'])) {
+            return $args['config']['signature_version'];
+        }
+
+        $args['__partition_result'] = isset($args['__partition_result'])
+            ? isset($args['__partition_result'])
+            : call_user_func(PartitionEndpointProvider::defaultProvider(), [
+                'service' => $args['service'],
+                'region' => $args['region'],
+            ]);
+
+        return isset($args['__partition_result']['signatureVersion'])
+            ? $args['__partition_result']['signatureVersion']
             : $args['api']->getSignatureVersion();
+    }
+
+    public static function _default_signing_name(array &$args)
+    {
+        if (isset($args['config']['signing_name'])) {
+            return $args['config']['signing_name'];
+        }
+
+        $args['__partition_result'] = isset($args['__partition_result'])
+            ? isset($args['__partition_result'])
+            : call_user_func(PartitionEndpointProvider::defaultProvider(), [
+                'service' => $args['service'],
+                'region' => $args['region'],
+            ]);
+
+        if (isset($args['__partition_result']['signingName'])) {
+            return $args['__partition_result']['signingName'];
+        }
+
+        if ($signingName = $args['api']->getSigningName()) {
+            return $signingName;
+        }
+
+        return $args['service'];
+    }
+
+    public static function _default_signing_region(array &$args)
+    {
+        if (isset($args['config']['signing_region'])) {
+            return $args['config']['signing_region'];
+        }
+
+        $args['__partition_result'] = isset($args['__partition_result'])
+            ? isset($args['__partition_result'])
+            : call_user_func(PartitionEndpointProvider::defaultProvider(), [
+                'service' => $args['service'],
+                'region' => $args['region'],
+            ]);
+
+        return isset($args['__partition_result']['signingRegion'])
+            ? $args['__partition_result']['signingRegion']
+            : $args['region'];
     }
 
     public static function _missing_version(array $args)

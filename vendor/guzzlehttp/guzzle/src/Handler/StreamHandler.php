@@ -7,7 +7,9 @@ use GuzzleHttp\Promise\FulfilledPromise;
 use GuzzleHttp\Promise\RejectedPromise;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Psr7;
+use GuzzleHttp\TransferStats;
 use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 
 /**
@@ -32,11 +34,24 @@ class StreamHandler
             usleep($options['delay'] * 1000);
         }
 
+        $startTime = isset($options['on_stats']) ? microtime(true) : null;
+
         try {
             // Does not support the expect header.
             $request = $request->withoutHeader('Expect');
-            $stream = $this->createStream($request, $options);
-            return $this->createResponse($request, $options, $stream);
+
+            // Append a content-length header if body size is zero to match
+            // cURL's behavior.
+            if (0 === $request->getBody()->getSize()) {
+                $request = $request->withHeader('Content-Length', 0);
+            }
+
+            return $this->createResponse(
+                $request,
+                $options,
+                $this->createStream($request, $options),
+                $startTime
+            );
         } catch (\InvalidArgumentException $e) {
             throw $e;
         } catch (\Exception $e) {
@@ -49,16 +64,37 @@ class StreamHandler
             ) {
                 $e = new ConnectException($e->getMessage(), $request, $e);
             }
-            return new RejectedPromise(
-                RequestException::wrapException($request, $e)
+            $e = RequestException::wrapException($request, $e);
+            $this->invokeStats($options, $request, $startTime, null, $e);
+
+            return new RejectedPromise($e);
+        }
+    }
+
+    private function invokeStats(
+        array $options,
+        RequestInterface $request,
+        $startTime,
+        ResponseInterface $response = null,
+        $error = null
+    ) {
+        if (isset($options['on_stats'])) {
+            $stats = new TransferStats(
+                $request,
+                $response,
+                microtime(true) - $startTime,
+                $error,
+                []
             );
+            call_user_func($options['on_stats'], $stats);
         }
     }
 
     private function createResponse(
         RequestInterface $request,
         array $options,
-        $stream
+        $stream,
+        $startTime
     ) {
         $hdrs = $this->lastHeaders;
         $this->lastHeaders = [];
@@ -86,6 +122,8 @@ class StreamHandler
             $this->drain($stream, $sink);
         }
 
+        $this->invokeStats($options, $request, $startTime, $response, null);
+
         return new FulfilledPromise($response);
     }
 
@@ -100,7 +138,7 @@ class StreamHandler
             : fopen('php://temp', 'r+');
 
         return is_string($sink)
-            ? new Psr7\Stream(Psr7\try_fopen($sink, 'r+'))
+            ? new Psr7\LazyOpenStream($sink, 'w+')
             : Psr7\stream_for($sink);
     }
 
@@ -115,10 +153,15 @@ class StreamHandler
                     $stream = new Psr7\InflateStream(
                         Psr7\stream_for($stream)
                     );
+                    $headers['x-encoded-content-encoding']
+                        = $headers[$normalizedKeys['content-encoding']];
                     // Remove content-encoding header
                     unset($headers[$normalizedKeys['content-encoding']]);
                     // Fix content-length header
                     if (isset($normalizedKeys['content-length'])) {
+                        $headers['x-encoded-content-length']
+                            = $headers[$normalizedKeys['content-length']];
+
                         $length = (int) $stream->getSize();
                         if ($length == 0) {
                             unset($headers[$normalizedKeys['content-length']]);
@@ -289,7 +332,14 @@ class StreamHandler
         } else {
             $scheme = $request->getUri()->getScheme();
             if (isset($value[$scheme])) {
-                $options['http']['proxy'] = $value[$scheme];
+                if (!isset($value['no'])
+                    || !\GuzzleHttp\is_host_in_noproxy(
+                        $request->getUri()->getHost(),
+                        $value['no']
+                    )
+                ) {
+                    $options['http']['proxy'] = $value[$scheme];
+                }
             }
         }
     }
@@ -314,12 +364,14 @@ class StreamHandler
             }
         } elseif ($value === false) {
             $options['ssl']['verify_peer'] = false;
+            $options['ssl']['verify_peer_name'] = false;
             return;
         } else {
             throw new \InvalidArgumentException('Invalid verify request option');
         }
 
         $options['ssl']['verify_peer'] = true;
+        $options['ssl']['verify_peer_name'] = true;
         $options['ssl']['allow_self_signed'] = false;
     }
 

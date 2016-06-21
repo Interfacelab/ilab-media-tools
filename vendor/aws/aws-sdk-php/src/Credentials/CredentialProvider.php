@@ -2,6 +2,7 @@
 namespace Aws\Credentials;
 
 use Aws;
+use Aws\CacheInterface;
 use Aws\Exception\CredentialsException;
 use GuzzleHttp\Promise;
 
@@ -29,7 +30,7 @@ use GuzzleHttp\Promise;
  * $a = CredentialProvider::ini(null, '/path/to/file.ini');
  * // Then try an INI file at this location.
  * $b = CredentialProvider::ini(null, '/path/to/other-file.ini');
- * // Then try loading from envrionment variables.
+ * // Then try loading from environment variables.
  * $c = CredentialProvider::env();
  * // Combine the three providers together.
  * $composed = CredentialProvider::chain($a, $b, $c);
@@ -61,11 +62,21 @@ class CredentialProvider
      */
     public static function defaultProvider(array $config = [])
     {
+        $instanceProfileProvider = self::instanceProfile($config);
+        if (isset($config['credentials'])
+            && $config['credentials'] instanceof CacheInterface
+        ) {
+            $instanceProfileProvider = self::cache(
+                $instanceProfileProvider,
+                $config['credentials']
+            );
+        }
+
         return self::memoize(
             self::chain(
                 self::env(),
                 self::ini(),
-                self::instanceProfile($config)
+                $instanceProfileProvider
             )
         );
     }
@@ -157,6 +168,49 @@ class CredentialProvider
     }
 
     /**
+     * Wraps a credential provider and saves provided credentials in an
+     * instance of Aws\CacheInterface. Forwards calls when no credentials found
+     * in cache and updates cache with the results.
+     *
+     * Defaults to using a simple file-based cache when none provided.
+     *
+     * @param callable $provider Credentials provider function to wrap
+     * @param CacheInterface $cache (optional) Cache to store credentials
+     * @param string|null $cacheKey (optional) Cache key to use
+     *
+     * @return callable
+     */
+    public static function cache(
+        callable $provider,
+        CacheInterface $cache,
+        $cacheKey = null
+    ) {
+        $cacheKey = $cacheKey ?: 'aws_cached_credentials';
+
+        return function () use ($provider, $cache, $cacheKey) {
+            $found = $cache->get($cacheKey);
+            if ($found instanceof CredentialsInterface && !$found->isExpired()) {
+                return Promise\promise_for($found);
+            }
+
+            return $provider()
+                ->then(function (CredentialsInterface $creds) use (
+                    $cache,
+                    $cacheKey
+                ) {
+                    $cache->set(
+                        $cacheKey,
+                        $creds,
+                        null === $creds->getExpiration() ?
+                            0 : $creds->getExpiration() - time()
+                    );
+
+                    return $creds;
+                });
+        };
+    }
+
+    /**
      * Provider that creates credentials from environment variables
      * AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and AWS_SESSION_TOKEN.
      *
@@ -227,13 +281,18 @@ class CredentialProvider
                     . "'$profile' ($filename)");
             }
 
+            if (empty($data[$profile]['aws_session_token'])) {
+                $data[$profile]['aws_session_token']
+                    = isset($data[$profile]['aws_security_token'])
+                        ? $data[$profile]['aws_security_token']
+                        : null;
+            }
+
             return Promise\promise_for(
                 new Credentials(
                     $data[$profile]['aws_access_key_id'],
                     $data[$profile]['aws_secret_access_key'],
-                    isset($data[$profile]['aws_security_token'])
-                        ? $data[$profile]['aws_security_token']
-                        : null
+                    $data[$profile]['aws_session_token']
                 )
             );
         };

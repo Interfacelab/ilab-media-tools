@@ -155,7 +155,7 @@ abstract class ILabMediaToolBase {
                         switch($optionInfo['type'])
                         {
                             case 'text-field':
-                                $this->registerTextFieldSetting($option,$optionInfo['title'],$group,(isset($optionInfo['description']) ? $optionInfo['description'] : null));
+                                $this->registerTextFieldSetting($option,$optionInfo['title'],$group,(isset($optionInfo['description']) ? $optionInfo['description'] : null), (isset($optionInfo['placeholder']) ? $optionInfo['placeholder'] : null));
                                 break;
                             case 'text-area':
                                 $this->registerTextAreaFieldSetting($option,$optionInfo['title'],$group,(isset($optionInfo['description']) ? $optionInfo['description'] : null));
@@ -242,16 +242,16 @@ abstract class ILabMediaToolBase {
         echo $settingSection['description'];
     }
 
-    protected function registerTextFieldSetting($option_name,$title,$settings_slug,$description=null)
+    protected function registerTextFieldSetting($option_name,$title,$settings_slug,$description=null,$placeholder=null)
     {
-        add_settings_field($option_name,$title,[$this,'renderTextFieldSetting'],$this->options_page,$settings_slug,['option'=>$option_name,'description'=>$description]);
+        add_settings_field($option_name,$title,[$this,'renderTextFieldSetting'],$this->options_page,$settings_slug,['option'=>$option_name,'description'=>$description, 'placeholder' => $placeholder]);
 
     }
 
     public function renderTextFieldSetting($args)
     {
         $value=get_option($args['option']);
-        echo "<input size='40' type=\"text\" name=\"{$args['option']}\" value=\"$value\">";
+        echo "<input size='40' type=\"text\" name=\"{$args['option']}\" value=\"$value\" placeholder=\"{$args['placeholder']}\">";
         if ($args['description'])
             echo "<p class='description'>".$args['description']."</p>";
     }
@@ -265,7 +265,7 @@ abstract class ILabMediaToolBase {
     public function renderPasswordFieldSetting($args)
     {
         $value=get_option($args['option']);
-        echo "<input size='40' type=\"password\" name=\"{$args['option']}\" value=\"$value\">";
+        echo "<input size='40' type=\"password\" name=\"{$args['option']}\" value=\"$value\" autocomplete=\"off\">";
         if ($args['description'])
             echo "<p class='description'>".$args['description']."</p>";
     }
