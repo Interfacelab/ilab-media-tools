@@ -341,6 +341,9 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 
 
     public function calculateSrcSet($sources, $size_array, $image_src, $image_meta, $attachment_id) {
+        if (!apply_filters('ilab_s3_can_calculate_srcset', true))
+            return $sources;
+
         foreach($image_meta['sizes'] as $sizeName => $sizeData) {
             $width = $sizeData['width'];
             if (isset($sources[$width])) {

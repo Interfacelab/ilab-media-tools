@@ -109,6 +109,13 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         add_filter('imgix_build_gif_mpeg4',[$this,'buildMpeg4'],0,3);
         add_filter('imgix_build_gif_jpeg',[$this,'buildGifJpeg'],0,3);
 
+        add_filter('ilab_imgix_enabled',function(){
+            return true;
+        });
+
+        do_action('ilab_imgix_setup');
+
+        add_filter('imgix_build_srcset_url',[$this,'buildSrcSetURL'],0,3);
     }
 
     public function buildMpeg4($value, $postId, $size) {
@@ -232,7 +239,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         return $result;
     }
 
-    private function buildImgixImage($id,$size, $params=null, $skipParams=false, $mergeParams=null)
+    private function buildImgixImage($id,$size, $params=null, $skipParams=false, $mergeParams=null, $newSize=null)
     {
         if (is_array($size)) {
             return $this->buildSizedImgixImage($id,$size);
@@ -249,7 +256,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         if ($this->signingKey)
             $imgix->setSignKey($this->signingKey);
 
-        if ($size=='full')
+        if ($size=='full' && !$newSize)
         {
             if (!$params)
             {
@@ -272,10 +279,15 @@ class ILabMediaImgixTool extends ILabMediaToolBase
                 $meta['height'],
                 false
             ];
+
             return $result;
         }
 
-        $sizeInfo=ilab_get_image_sizes($size);
+        if ($newSize)
+            $sizeInfo = $newSize;
+        else
+            $sizeInfo=ilab_get_image_sizes($size);
+
         if (!$sizeInfo)
             return false;
 
@@ -367,6 +379,9 @@ class ILabMediaImgixTool extends ILabMediaToolBase
                 }
             }
         }
+
+        if ($size && !is_array($size))
+            $params['wpsize'] = $size;
 
         $params=$this->buildImgixParams($params,$mimetype);
 
@@ -885,5 +900,9 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         update_option('ilab-imgix-size-presets',$sizePresets);
 
         return $this->displayEditUI(1);
+    }
+
+    public function buildSrcSetURL($post_id, $parentSize, $newSize) {
+        return $this->buildImgixImage($post_id, $parentSize, null, false, null, $newSize);
     }
 }
