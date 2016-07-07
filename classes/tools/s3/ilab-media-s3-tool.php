@@ -148,19 +148,20 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
                 $path_base=pathinfo($data['file'])['dirname'];
 
                 $data=$this->process_file($s3,$upload_path,$data['file'],$data);
-            }
 
-            if (isset($data['sizes'])) {
-                foreach($data['sizes'] as $key => $size)
-                {
-                    if (!is_array($size))
-                        continue;
+                if (isset($data['sizes'])) {
+                    foreach($data['sizes'] as $key => $size)
+                    {
+                        if (!is_array($size))
+                            continue;
 
-                    $file=$path_base.'/'.$size['file'];
-                    $data['sizes'][$key]=$this->process_file($s3,$upload_path,$file,$size);
+                        $file=$path_base.'/'.$size['file'];
+                        $data['sizes'][$key]=$this->process_file($s3,$upload_path,$file,$size);
+                    }
                 }
-
             }
+
+
         }
 
         return $data;
