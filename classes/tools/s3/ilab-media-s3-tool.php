@@ -93,6 +93,13 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
             add_filter('wp_update_attachment_metadata', [$this, 'updateAttachmentMetadata'], 1000, 2);
             add_filter('delete_attachment', [$this, 'deleteAttachment'], 1000);
             add_filter('wp_handle_upload', [$this, 'handleUpload'], 10000);
+            add_filter('ilab-s3-process-crop', [$this, 'processCrop'], 10000, 3);
+            add_filter('ilab-s3-process-file-name', function($filename) {
+                if (strpos($filename,'/'.$this->bucket) === 0)
+                    return str_replace('/'.$this->bucket, '', $filename);
+
+                return $filename;
+            }, 10000, 1);
             add_action('add_attachment',function($post_id){
                 $post = get_post($post_id);
                 $file = get_post_meta( $post_id, '_wp_attached_file', true );
@@ -164,6 +171,18 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
         }
 
         return $data;
+    }
+
+    public function processCrop($size, $file, $sizeMeta) {
+        $upload_info=wp_upload_dir();
+        $upload_path=$upload_info['basedir'];
+
+        $s3=$this->s3Client(true);
+        if ($s3) {
+            $sizeMeta = $this->process_file($s3, $upload_path, trim($upload_info['subdir'],'/').'/'.$file, $size);
+        }
+        
+        return $sizeMeta;
     }
 
     public function handleUpload($upload, $context='upload') {

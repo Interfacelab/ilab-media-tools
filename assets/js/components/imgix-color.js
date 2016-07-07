@@ -53,12 +53,14 @@
         var blend='none';
         var val;
 
-        if (data && data.hasOwnProperty(this.blendParam))
+        console.log(data);
+
+        if ((data !== undefined) && data.hasOwnProperty(this.blendParam))
         {
             blend=data[this.blendParam];
         }
 
-        if (data && data.hasOwnProperty(this.param))
+        if ((data !== undefined) && data.hasOwnProperty(this.param))
         {
             val=data[this.param];
         }
@@ -72,6 +74,9 @@
             val=val.substring(2);
 
             this.alphaSlider.val(Math.round(alpha));
+            this.alphaSlider.hide().show(0);
+        } else {
+            this.alphaSlider.val(0);
             this.alphaSlider.hide().show(0);
         }
 
