@@ -1,5 +1,23 @@
 <?php
 
+// Copyright (c) 2016 Interfacelab LLC. All rights reserved.
+//
+// Released under the GPLv3 license
+// http://www.gnu.org/licenses/gpl-3.0.html
+//
+// **********************************************************************
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+// **********************************************************************
+
+/**
+ * Class ILabImgixImageEditor
+ * 
+ * Replaces WordPress's WP_Image_Editor with one that supports all of the features
+ * of Imgix.
+ * 
+ */
 class ILabImgixImageEditor extends WP_Image_Editor
 {
     protected $currentSize;

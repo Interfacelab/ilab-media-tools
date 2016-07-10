@@ -1,5 +1,16 @@
 <?php
 
+// Copyright (c) 2016 Interfacelab LLC. All rights reserved.
+//
+// Released under the GPLv3 license
+// http://www.gnu.org/licenses/gpl-3.0.html
+//
+// **********************************************************************
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+// **********************************************************************
+
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
 require_once('wp-background-process.php');
@@ -7,6 +18,11 @@ require_once('wp-background-process.php');
 require_once(ILAB_CLASSES_DIR.'/ilab-media-tools-manager.php');
 require_once(ILAB_CLASSES_DIR.'/tools/s3/ilab-media-s3-tool.php');
 
+/**
+ * Class ILABS3ImportProcess
+ *
+ * Background processing job for importing existing media to S3
+ */
 class ILABS3ImportProcess extends WP_Background_Process {
 	protected $action = 'ilab_s3_import_process';
 

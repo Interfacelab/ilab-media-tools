@@ -1,10 +1,26 @@
 <?php
+
+// Copyright (c) 2016 Interfacelab LLC. All rights reserved.
+//
+// Released under the GPLv3 license
+// http://www.gnu.org/licenses/gpl-3.0.html
+//
+// **********************************************************************
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+// **********************************************************************
+
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
 require_once(ILAB_CLASSES_DIR.'/ilab-media-tool-base.php');
 require_once(ILAB_CLASSES_DIR.'/ilab-media-tool-view.php');
 
-
+/**
+ * Class ILabMediaCropTool
+ *
+ * Crop tool
+ */
 class ILabMediaCropTool extends ILabMediaToolBase
 {
     public function __construct($toolName, $toolInfo, $toolManager)
@@ -12,11 +28,14 @@ class ILabMediaCropTool extends ILabMediaToolBase
         parent::__construct($toolName, $toolInfo, $toolManager);
     }
 
+    /**
+     * Setup the plugin
+     */
     public function setup()
     {
         if ($this->enabled())
         {
-            $this->hookup_ui();
+            $this->hookupUI();
 
             add_action('admin_enqueue_scripts', [$this,'enqueueTheGoods']);
             add_action('wp_ajax_ilab_crop_image_page',[$this,'displayCropUI']);
@@ -73,7 +92,7 @@ class ILabMediaCropTool extends ILabMediaToolBase
     /**
      * Hook up the "Crop Image" links/buttons in the admin ui
      */
-    private function hookup_ui()
+    private function hookupUI()
     {
         // TODO: Still need to hook up the edit attachment page
 
@@ -377,6 +396,6 @@ class ILabMediaCropTool extends ILabMediaToolBase
             'src'=>$full_src,
             'width'=>$full_width,
             'height'=>$full_height
-                      ]);
+        ]);
     }
 }
