@@ -155,7 +155,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
                 $upload_path=$upload_info['basedir'];
                 $path_base=pathinfo($data['file'])['dirname'];
 
-                $data=$this->process_file($s3,$upload_path,$data['file'],$data);
+                $data=$this->processFile($s3,$upload_path,$data['file'],$data);
 
                 if (isset($data['sizes'])) {
                     foreach($data['sizes'] as $key => $size)
@@ -164,7 +164,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
                             continue;
 
                         $file=$path_base.'/'.$size['file'];
-                        $data['sizes'][$key]=$this->process_file($s3,$upload_path,$file,$size);
+                        $data['sizes'][$key]=$this->processFile($s3,$upload_path,$file,$size);
                     }
                 }
             }
@@ -181,7 +181,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 
         $s3=$this->s3Client(true);
         if ($s3) {
-            $sizeMeta = $this->process_file($s3, $upload_path, trim($upload_info['subdir'],'/').'/'.$file, $size);
+            $sizeMeta = $this->processFile($s3, $upload_path, trim($upload_info['subdir'],'/').'/'.$file, $size);
         }
         
         return $sizeMeta;
@@ -204,7 +204,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 
             $file = trim(str_replace($upload_path,'',$pi['dirname']),'/').'/'.$pi['basename'];
 
-            $upload = $this->process_file($s3, $upload_path, $file, $upload);
+            $upload = $this->processFile($s3, $upload_path, $file, $upload);
             if (isset($upload['s3'])) {
                 if ($this->docCdn)
                     $upload['url'] = trim($this->docCdn, '/').'/'.$file;
@@ -218,7 +218,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
         return $upload;
     }
 
-    private function process_file($s3,$upload_path,$filename,$data)
+    private function processFile($s3,$upload_path,$filename,$data)
     {
         if (!file_exists($upload_path.'/'.$filename))
             return $data;
