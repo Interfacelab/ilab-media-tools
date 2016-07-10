@@ -2,7 +2,6 @@
 
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
-require_once(ILAB_VENDOR_DIR.'/autoload.php');
 require_once(ILAB_CLASSES_DIR.'/ilab-media-tool-base.php');
 require_once(ILAB_CLASSES_DIR.'/tasks/ilab-s3-import-process.php');
 
@@ -94,7 +93,9 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
             add_filter('delete_attachment', [$this, 'deleteAttachment'], 1000);
             add_filter('wp_handle_upload', [$this, 'handleUpload'], 10000);
             add_filter('ilab-s3-process-crop', [$this, 'processCrop'], 10000, 3);
-            add_filter('ilab-s3-process-file-name', function($filename) {
+            add_filter('get_attached_file', [$this, 'getAttachedFile'], 10000, 2);
+
+                add_filter('ilab-s3-process-file-name', function($filename) {
                 if (strpos($filename,'/'.$this->bucket) === 0)
                     return str_replace('/'.$this->bucket, '', $filename);
 
@@ -322,15 +323,24 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
         }
     }
 
+    private function getOffloadS3URL($info) {
+
+        if (!is_array($info) && (count($info)<1))
+            return null;
+
+        $region = $info[0]['region'];
+        $bucket = $info[0]['bucket'];
+        $file = $info[0]['key'];
+
+        return "http://s3-$region.amazonaws.com/$bucket/$file";
+    }
+
     private function getAttachmentURLFromMeta($meta) {
         if (isset($meta['s3']) && $this->cdn) {
             return $this->cdn.'/'.$meta['s3']['key'];
         }
         else if (isset($meta['s3']) && isset($meta['s3']['url'])) {
             return $meta['s3']['url'];
-        }
-        else if (isset($meta['amazonS3_info']) && $this->cdn) {
-            return $this->cdn.'/'.$meta['file'];
         }
 
         return null;
@@ -349,7 +359,16 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
             if ($meta) {
                 $new_url = $this->getAttachmentURLFromMeta($meta);
             }
-            else if (!$meta && $this->docCdn) {
+
+            if (!$new_url) {
+                $meta = get_post_meta($post_id, 'amazonS3_info');
+
+                if ($meta) {
+                    $new_url = $this->getOffloadS3URL($meta);
+                }
+            }
+
+            if (!$meta && $this->docCdn) {
                 $post = \WP_Post::get_instance($post_id);
                 if ($post && (strpos($post->guid, $this->docCdn) === 0))
                     $new_url = $post->guid;
@@ -474,5 +493,32 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
         header('Content-type: application/json');
         echo '{"status":"running"}';
         die;
+    }
+
+    public function getAttachedFile($file, $attachment_id) {
+        if (!file_exists($file)) {
+            $meta=wp_get_attachment_metadata($attachment_id);
+
+            $new_url = null;
+            if ($meta)
+                $new_url = $this->getAttachmentURLFromMeta($meta);
+
+            if (!$new_url) {
+                $meta = get_post_meta($attachment_id, 'ilab_s3_info', true);
+                if ($meta) {
+                    $new_url = $this->getAttachmentURLFromMeta($meta);
+                }
+                else if (!$meta && $this->docCdn) {
+                    $post = \WP_Post::get_instance($attachment_id);
+                    if ($post && (strpos($post->guid, $this->docCdn) === 0))
+                        $new_url = $post->guid;
+                }
+            }
+
+            if ($new_url)
+                return $new_url;
+        }
+
+        return $file;
     }
 }
