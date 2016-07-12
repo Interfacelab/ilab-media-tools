@@ -5,7 +5,7 @@ Requires at least: 4.4
 Tested up to: 4.5
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 0.91
+Stable tag: 1.0.3
 
 Set of tools for enhancing media in WordPress.  Includes image cropper, host media from S3 or CDN, integrate with Imgix
 and an advanced image editor.
@@ -15,17 +15,17 @@ and an advanced image editor.
 
 ILAB Media Tools are a suite of tools designed to enhance media handling in WordPress in a number of ways.
 
-##### Image Cropping
+= Image Cropping =
 ILAB Media Tools ships with the most advanced image cropping tool
 available for WordPress, based on Chen Fengyuan's amazing Cropper
 plugin for jQuery.
 
-##### Upload to S3
+= Upload to S3 =
 Automatically copy media uploads to S3 and hosts your media directly
 from S3 or CloudFront.  Additionally, easily import your existing
 media library to Amazon S3 with the push of a button.
 
-##### Integrate with Imgix
+= Integrate with Imgix =
 [Imgix](https://imgix.com) will radically change the way that you build
 your WordPress sites and themes.  This plugin is the best integration
 available for WordPress.  Upload your images to S3 with our S3 tool
@@ -33,7 +33,7 @@ and then host the media with Imgix, providing you with real-time image
 processing and automatic format delivery.  Forget ImageMagick, Imgix
 is light years ahead in quality and speed.
 
-##### Advanced Image Editing
+= Advanced Image Editing =
 When integrating with [Imgix](https://imgix.com), ILAB Media Tools provides the most
 advanced WordPress image editor.  Alter contrast, saturation, vibrancy
 and over 30 other image editing operations - in real time right inside
@@ -48,6 +48,9 @@ the WordPress admin interface!  Completely non-destructive!
 * Advanced image editing with saturation, contrast, auto-correct,
   sharpen, blur and more (only when integrated with Imgix)
 
+For more info (grab popcorn, it's kind of long!):
+
+https://www.youtube.com/watch?v=rOmziu30nPI
 
 == Installation ==
 
@@ -94,5 +97,14 @@ No, I'm just one very enthusiastic customer.
 
 == Changelog ==
 
-= 1.0 =
+= 1.0.3 =
+* Fix for generating Imgix URLs for dynamically sized images.
+
+= 1.0.2 =
+* Correct versioning
+
+= 1.0.1 =
+* Update readme.txt
+
+= 1.0.0 =
 * First release
