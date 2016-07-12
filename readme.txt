@@ -5,7 +5,7 @@ Requires at least: 4.4
 Tested up to: 4.5
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 
 Set of tools for enhancing media in WordPress.  Includes image cropper, host media from S3 or CDN, integrate with Imgix
 and an advanced image editor.
@@ -14,6 +14,8 @@ and an advanced image editor.
 == Description ==
 
 ILAB Media Tools are a suite of tools designed to enhance media handling in WordPress in a number of ways.
+
+**NOTE**: This plugin requires PHP 5.5x or higher (PHP 7.x preferred)
 
 = Image Cropping =
 ILAB Media Tools ships with the most advanced image cropping tool
@@ -96,6 +98,9 @@ No, I'm just one very enthusiastic customer.
 5. Imgix settings.
 
 == Changelog ==
+
+= 1.0.4 =
+* Updated readme.txt to indicate PHP version
 
 = 1.0.3 =
 * Fix for generating Imgix URLs for dynamically sized images.
