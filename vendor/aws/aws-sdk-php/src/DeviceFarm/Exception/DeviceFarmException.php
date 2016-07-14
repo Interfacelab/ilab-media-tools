@@ -1,7 +1,7 @@
 <?php
-namespace Aws\DeviceFarm\Exception;
+namespace ILAB_Aws\DeviceFarm\Exception;
 
-use Aws\Exception\AwsException;
+use ILAB_Aws\Exception\AwsException;
 
 /**
  * Represents an error interacting with the Amazon DeviceFarm service.

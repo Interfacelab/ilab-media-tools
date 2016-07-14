@@ -1,10 +1,10 @@
 <?php
-namespace Aws;
+namespace ILAB_Aws;
 
-use Aws\Api\ApiProvider;
-use Aws\Api\DocModel;
-use Aws\Api\Service;
-use Aws\Signature\SignatureProvider;
+use ILAB_Aws\Api\ApiProvider;
+use ILAB_Aws\Api\DocModel;
+use ILAB_Aws\Api\Service;
+use ILAB_Aws\Signature\SignatureProvider;
 use GuzzleHttp\Psr7\Uri;
 
 /**
@@ -245,14 +245,14 @@ class AwsClient implements AwsClientInterface
         $klass = get_class($this);
 
         if ($klass === __CLASS__) {
-            return ['', 'Aws\Exception\AwsException'];
+            return ['', 'ILAB_Aws\Exception\AwsException'];
         }
 
         $service = substr($klass, strrpos($klass, '\\') + 1, -6);
 
         return [
             strtolower($service),
-            "Aws\\{$service}\\Exception\\{$service}Exception"
+            "ILAB_Aws\\{$service}\\Exception\\{$service}Exception"
         ];
     }
 

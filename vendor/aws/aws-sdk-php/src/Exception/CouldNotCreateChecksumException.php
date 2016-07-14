@@ -1,5 +1,5 @@
 <?php
-namespace Aws\Exception;
+namespace ILAB_Aws\Exception;
 
 class CouldNotCreateChecksumException extends \RuntimeException
 {

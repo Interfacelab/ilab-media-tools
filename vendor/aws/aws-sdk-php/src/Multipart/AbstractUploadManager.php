@@ -1,13 +1,13 @@
 <?php
-namespace Aws\Multipart;
+namespace ILAB_Aws\Multipart;
 
-use Aws\AwsClientInterface as Client;
-use Aws\CommandInterface;
-use Aws\CommandPool;
-use Aws\Exception\AwsException;
-use Aws\Exception\MultipartUploadException;
-use Aws\Result;
-use Aws\ResultInterface;
+use ILAB_Aws\AwsClientInterface as Client;
+use ILAB_Aws\CommandInterface;
+use ILAB_Aws\CommandPool;
+use ILAB_Aws\Exception\AwsException;
+use ILAB_Aws\Exception\MultipartUploadException;
+use ILAB_Aws\Result;
+use ILAB_Aws\ResultInterface;
 use GuzzleHttp\Promise;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Psr7;

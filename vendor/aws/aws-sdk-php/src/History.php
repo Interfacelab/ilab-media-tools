@@ -1,8 +1,8 @@
 <?php
-namespace Aws;
+namespace ILAB_Aws;
 
 use Psr\Http\Message\RequestInterface;
-use Aws\Exception\AwsException;
+use ILAB_Aws\Exception\AwsException;
 
 /**
  * Represents a history container that is required when using the history

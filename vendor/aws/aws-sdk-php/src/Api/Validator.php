@@ -1,5 +1,5 @@
 <?php
-namespace Aws\Api;
+namespace ILAB_Aws\Api;
 
 use Aws;
 

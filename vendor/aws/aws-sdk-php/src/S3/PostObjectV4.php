@@ -1,12 +1,12 @@
 <?php
-namespace Aws\S3;
+namespace ILAB_Aws\S3;
 
-use Aws\Credentials\CredentialsInterface;
+use ILAB_Aws\Credentials\CredentialsInterface;
 use GuzzleHttp\Psr7\Uri;
-use Aws\Signature\SignatureTrait;
-use Aws\Common\Enum\DateFormat;
-use Aws\Signature\SignatureV4 as SignatureV4;
-use Aws\Api\TimestampShape as TimestampShape;
+use ILAB_Aws\Signature\SignatureTrait;
+use ILAB_Aws\Common\Enum\DateFormat;
+use ILAB_Aws\Signature\SignatureV4 as SignatureV4;
+use ILAB_Aws\Api\TimestampShape as TimestampShape;
 
 /**
  * Encapsulates the logic for getting the data for an S3 object POST upload form

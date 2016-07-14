@@ -1,5 +1,5 @@
 <?php
-namespace Aws;
+namespace ILAB_Aws;
 
 use JmesPath\Env as JmesPath;
 

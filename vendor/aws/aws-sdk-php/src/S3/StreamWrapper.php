@@ -1,10 +1,10 @@
 <?php
-namespace Aws\S3;
+namespace ILAB_Aws\S3;
 
-use Aws\CacheInterface;
-use Aws\LruArrayCache;
-use Aws\Result;
-use Aws\S3\Exception\S3Exception;
+use ILAB_Aws\CacheInterface;
+use ILAB_Aws\LruArrayCache;
+use ILAB_Aws\Result;
+use ILAB_Aws\S3\Exception\S3Exception;
 use GuzzleHttp\Psr7;
 use GuzzleHttp\Psr7\Stream;
 use GuzzleHttp\Psr7\CachingStream;
@@ -408,7 +408,7 @@ class StreamWrapper
 
         // Filter our "/" keys added by the console as directories, and ensure
         // that if a filter function is provided that it passes the filter.
-        $this->objectIterator = \Aws\flatmap(
+        $this->objectIterator = \ILAB_Aws\flatmap(
             $this->getClient()->getPaginator('ListObjects', $op),
             function (Result $result) use ($filterFn) {
                 $contentsAndPrefixes = $result->search('[Contents[], CommonPrefixes[]][]');

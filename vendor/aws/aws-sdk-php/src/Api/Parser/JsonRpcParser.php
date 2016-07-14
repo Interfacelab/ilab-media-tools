@@ -1,9 +1,9 @@
 <?php
-namespace Aws\Api\Parser;
+namespace ILAB_Aws\Api\Parser;
 
-use Aws\Api\Service;
-use Aws\Result;
-use Aws\CommandInterface;
+use ILAB_Aws\Api\Service;
+use ILAB_Aws\Result;
+use ILAB_Aws\CommandInterface;
 use Psr\Http\Message\ResponseInterface;
 
 /**

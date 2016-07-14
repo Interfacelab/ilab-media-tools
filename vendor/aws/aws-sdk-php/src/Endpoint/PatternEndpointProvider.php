@@ -1,5 +1,5 @@
 <?php
-namespace Aws\Endpoint;
+namespace ILAB_Aws\Endpoint;
 
 /**
  * Provides endpoints based on an endpoint pattern configuration array.

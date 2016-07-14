@@ -1,5 +1,5 @@
 <?php
-namespace Aws\Multipart;
+namespace ILAB_Aws\Multipart;
 
 /**
  * Representation of the multipart upload.

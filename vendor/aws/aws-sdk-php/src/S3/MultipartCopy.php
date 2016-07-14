@@ -1,8 +1,8 @@
 <?php
-namespace Aws\S3;
+namespace ILAB_Aws\S3;
 
-use Aws\Multipart\AbstractUploadManager;
-use Aws\ResultInterface;
+use ILAB_Aws\Multipart\AbstractUploadManager;
+use ILAB_Aws\ResultInterface;
 use GuzzleHttp\Psr7;
 
 class MultipartCopy extends AbstractUploadManager

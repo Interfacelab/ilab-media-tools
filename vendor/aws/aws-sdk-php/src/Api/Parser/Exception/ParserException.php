@@ -1,4 +1,4 @@
 <?php
-namespace Aws\Api\Parser\Exception;
+namespace ILAB_Aws\Api\Parser\Exception;
 
 class ParserException extends \RuntimeException {}

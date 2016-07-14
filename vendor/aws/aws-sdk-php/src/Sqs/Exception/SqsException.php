@@ -1,7 +1,7 @@
 <?php
-namespace Aws\Sqs\Exception;
+namespace ILAB_Aws\Sqs\Exception;
 
-use Aws\Exception\AwsException;
+use ILAB_Aws\Exception\AwsException;
 
 /**
  * Represents an error interacting with the Amazon Simple Queue Service.

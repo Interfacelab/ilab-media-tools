@@ -1,7 +1,7 @@
 <?php
-namespace Aws\DataPipeline\Exception;
+namespace ILAB_Aws\DataPipeline\Exception;
 
-use Aws\Exception\AwsException;
+use ILAB_Aws\Exception\AwsException;
 
 /**
  * Represents an error interacting with the AWS Data Pipeline service.

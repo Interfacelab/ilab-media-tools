@@ -1,26 +1,26 @@
 <?php
-namespace Aws\Sts;
+namespace ILAB_Aws\Sts;
 
-use Aws\AwsClient;
-use Aws\Result;
-use Aws\Credentials\Credentials;
+use ILAB_Aws\AwsClient;
+use ILAB_Aws\Result;
+use ILAB_Aws\Credentials\Credentials;
 
 /**
  * This client is used to interact with the **AWS Security Token Service (AWS STS)**.
  *
- * @method \Aws\Result assumeRole(array $args = [])
+ * @method \ILAB_Aws\Result assumeRole(array $args = [])
  * @method \GuzzleHttp\Promise\Promise assumeRoleAsync(array $args = [])
- * @method \Aws\Result assumeRoleWithSAML(array $args = [])
+ * @method \ILAB_Aws\Result assumeRoleWithSAML(array $args = [])
  * @method \GuzzleHttp\Promise\Promise assumeRoleWithSAMLAsync(array $args = [])
- * @method \Aws\Result assumeRoleWithWebIdentity(array $args = [])
+ * @method \ILAB_Aws\Result assumeRoleWithWebIdentity(array $args = [])
  * @method \GuzzleHttp\Promise\Promise assumeRoleWithWebIdentityAsync(array $args = [])
- * @method \Aws\Result decodeAuthorizationMessage(array $args = [])
+ * @method \ILAB_Aws\Result decodeAuthorizationMessage(array $args = [])
  * @method \GuzzleHttp\Promise\Promise decodeAuthorizationMessageAsync(array $args = [])
- * @method \Aws\Result getCallerIdentity(array $args = [])
+ * @method \ILAB_Aws\Result getCallerIdentity(array $args = [])
  * @method \GuzzleHttp\Promise\Promise getCallerIdentityAsync(array $args = [])
- * @method \Aws\Result getFederationToken(array $args = [])
+ * @method \ILAB_Aws\Result getFederationToken(array $args = [])
  * @method \GuzzleHttp\Promise\Promise getFederationTokenAsync(array $args = [])
- * @method \Aws\Result getSessionToken(array $args = [])
+ * @method \ILAB_Aws\Result getSessionToken(array $args = [])
  * @method \GuzzleHttp\Promise\Promise getSessionTokenAsync(array $args = [])
  */
 class StsClient extends AwsClient

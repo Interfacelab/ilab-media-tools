@@ -1,5 +1,5 @@
 <?php
-namespace Aws\Credentials;
+namespace ILAB_Aws\Credentials;
 
 /**
  * Basic implementation of the AWS Credentials interface that allows callers to

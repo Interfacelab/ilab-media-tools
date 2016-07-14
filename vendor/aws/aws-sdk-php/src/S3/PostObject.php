@@ -1,7 +1,7 @@
 <?php
-namespace Aws\S3;
+namespace ILAB_Aws\S3;
 
-use Aws\Credentials\CredentialsInterface;
+use ILAB_Aws\Credentials\CredentialsInterface;
 use GuzzleHttp\Psr7\Uri;
 
 /**

@@ -1,8 +1,8 @@
 <?php
-namespace Aws;
+namespace ILAB_Aws;
 
-use Aws\Endpoint\PartitionEndpointProvider;
-use Aws\Endpoint\PartitionInterface;
+use ILAB_Aws\Endpoint\PartitionEndpointProvider;
+use ILAB_Aws\Endpoint\PartitionInterface;
 use GuzzleHttp\Promise\FulfilledPromise;
 
 class MultiRegionClient implements AwsClientInterface
@@ -39,7 +39,7 @@ class MultiRegionClient implements AwsClientInterface
                 'internal' => true,
                 'default' => function (array $args) {
                     $namespace = manifest($args['service'])['namespace'];
-                    $klass = "Aws\\{$namespace}\\{$namespace}Client";
+                    $klass = "ILAB_Aws\\{$namespace}\\{$namespace}Client";
                     $region = isset($args['region']) ? $args['region'] : null;
 
                     return function (array $args) use ($klass, $region) {

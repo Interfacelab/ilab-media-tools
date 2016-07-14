@@ -1,9 +1,9 @@
 <?php
-namespace Aws\Api\Parser;
+namespace ILAB_Aws\Api\Parser;
 
-use Aws\Api\Service;
-use Aws\CommandInterface;
-use Aws\ResultInterface;
+use ILAB_Aws\Api\Service;
+use ILAB_Aws\CommandInterface;
+use ILAB_Aws\ResultInterface;
 use Psr\Http\Message\ResponseInterface;
 
 /**
@@ -11,7 +11,7 @@ use Psr\Http\Message\ResponseInterface;
  */
 abstract class AbstractParser
 {
-    /** @var \Aws\Api\Service Representation of the service API*/
+    /** @var \ILAB_Aws\Api\Service Representation of the service API*/
     protected $api;
 
     /**

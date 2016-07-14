@@ -1,7 +1,7 @@
 <?php
-namespace Aws;
+namespace ILAB_Aws;
 
-use Aws\Exception\AwsException;
+use ILAB_Aws\Exception\AwsException;
 use GuzzleHttp\Promise;
 use GuzzleHttp\Promise\PromisorInterface;
 use GuzzleHttp\Promise\RejectedPromise;

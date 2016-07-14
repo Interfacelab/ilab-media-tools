@@ -1,5 +1,5 @@
 <?php
-namespace Aws;
+namespace ILAB_Aws;
 
 use Psr\Http\Message\RequestInterface;
 use GuzzleHttp\ClientInterface;
@@ -104,7 +104,7 @@ function partition($iterable, $size)
  *
  *     $a = function ($x, $y) { return null; };
  *     $b = function ($x, $y) { return $x + $y; };
- *     $fn = \Aws\or_chain($a, $b);
+ *     $fn = \ILAB_Aws\or_chain($a, $b);
  *     echo $fn(1, 2); // 3
  *
  * @return callable
@@ -264,9 +264,9 @@ function default_http_handler()
 {
     $version = (string) ClientInterface::VERSION;
     if ($version[0] === '5') {
-        return new \Aws\Handler\GuzzleV5\GuzzleHandler();
+        return new \ILAB_Aws\Handler\GuzzleV5\GuzzleHandler();
     } elseif ($version[0] === '6') {
-        return new \Aws\Handler\GuzzleV6\GuzzleHandler();
+        return new \ILAB_Aws\Handler\GuzzleV6\GuzzleHandler();
     } else {
         throw new \RuntimeException('Unknown Guzzle version: ' . $version);
     }

@@ -4,5 +4,8 @@
     "aws/aws-sdk-php": "^3.2",
     "imgix/imgix-php": "^1.0"
   },
-  "autoload": {}
+  "autoload": {
+    "psr-4": {
+      "ILAB_Aws\\" : "vendor/aws/aws-sdk-php/src"
+    }}
 }

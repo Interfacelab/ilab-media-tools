@@ -1,7 +1,7 @@
 <?php
-namespace Aws\Firehose\Exception;
+namespace ILAB_Aws\Firehose\Exception;
 
-use Aws\Exception\AwsException;
+use ILAB_Aws\Exception\AwsException;
 
 /**
  * Represents an error interacting with the **Amazon Kinesis Firehose** service.

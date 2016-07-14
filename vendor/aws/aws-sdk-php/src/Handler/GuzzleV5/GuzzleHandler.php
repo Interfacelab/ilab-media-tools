@@ -1,7 +1,7 @@
 <?php
-namespace Aws\Handler\GuzzleV5;
+namespace ILAB_Aws\Handler\GuzzleV5;
 
-use Aws\Sdk;
+use ILAB_Aws\Sdk;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;

@@ -1,5 +1,5 @@
 <?php
-namespace Aws\Api;
+namespace ILAB_Aws\Api;
 
 /**
  * Base class representing a modeled shape.
@@ -18,19 +18,19 @@ class Shape extends AbstractModel
     public static function create(array $definition, ShapeMap $shapeMap)
     {
         static $map = [
-            'structure' => 'Aws\Api\StructureShape',
-            'map'       => 'Aws\Api\MapShape',
-            'list'      => 'Aws\Api\ListShape',
-            'timestamp' => 'Aws\Api\TimestampShape',
-            'integer'   => 'Aws\Api\Shape',
-            'double'    => 'Aws\Api\Shape',
-            'float'     => 'Aws\Api\Shape',
-            'long'      => 'Aws\Api\Shape',
-            'string'    => 'Aws\Api\Shape',
-            'byte'      => 'Aws\Api\Shape',
-            'character' => 'Aws\Api\Shape',
-            'blob'      => 'Aws\Api\Shape',
-            'boolean'   => 'Aws\Api\Shape'
+            'structure' => 'ILAB_Aws\Api\StructureShape',
+            'map'       => 'ILAB_Aws\Api\MapShape',
+            'list'      => 'ILAB_Aws\Api\ListShape',
+            'timestamp' => 'ILAB_Aws\Api\TimestampShape',
+            'integer'   => 'ILAB_Aws\Api\Shape',
+            'double'    => 'ILAB_Aws\Api\Shape',
+            'float'     => 'ILAB_Aws\Api\Shape',
+            'long'      => 'ILAB_Aws\Api\Shape',
+            'string'    => 'ILAB_Aws\Api\Shape',
+            'byte'      => 'ILAB_Aws\Api\Shape',
+            'character' => 'ILAB_Aws\Api\Shape',
+            'blob'      => 'ILAB_Aws\Api\Shape',
+            'boolean'   => 'ILAB_Aws\Api\Shape'
         ];
 
         if (isset($definition['shape'])) {

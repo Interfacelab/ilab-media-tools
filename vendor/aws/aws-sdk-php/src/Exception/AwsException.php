@@ -1,10 +1,10 @@
 <?php
-namespace Aws\Exception;
+namespace ILAB_Aws\Exception;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\RequestInterface;
-use Aws\CommandInterface;
-use Aws\ResultInterface;
+use ILAB_Aws\CommandInterface;
+use ILAB_Aws\ResultInterface;
 
 /**
  * Represents an AWS exception that is thrown when a command fails.

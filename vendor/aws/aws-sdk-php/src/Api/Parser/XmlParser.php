@@ -1,11 +1,11 @@
 <?php
-namespace Aws\Api\Parser;
+namespace ILAB_Aws\Api\Parser;
 
-use Aws\Api\DateTimeResult;
-use Aws\Api\ListShape;
-use Aws\Api\MapShape;
-use Aws\Api\Shape;
-use Aws\Api\StructureShape;
+use ILAB_Aws\Api\DateTimeResult;
+use ILAB_Aws\Api\ListShape;
+use ILAB_Aws\Api\MapShape;
+use ILAB_Aws\Api\Shape;
+use ILAB_Aws\Api\StructureShape;
 
 /**
  * @internal Implements standard XML parsing for REST-XML and Query protocols.

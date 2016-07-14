@@ -1,7 +1,7 @@
 <?php
-namespace Aws\Signature;
+namespace ILAB_Aws\Signature;
 
-use Aws\Credentials\CredentialsInterface;
+use ILAB_Aws\Credentials\CredentialsInterface;
 use Psr\Http\Message\RequestInterface;
 
 /**

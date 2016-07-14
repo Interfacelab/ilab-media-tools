@@ -1,5 +1,5 @@
 <?php
-namespace Aws\Api;
+namespace ILAB_Aws\Api;
 
 /**
  * Encapsulates the documentation strings for a given service-version and

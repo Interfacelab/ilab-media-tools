@@ -1,5 +1,5 @@
 <?php
-namespace Aws;
+namespace ILAB_Aws;
 
 /**
  * Builds a single handler function from zero or more middleware functions and

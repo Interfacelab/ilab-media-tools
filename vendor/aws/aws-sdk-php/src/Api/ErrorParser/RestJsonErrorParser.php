@@ -1,5 +1,5 @@
 <?php
-namespace Aws\Api\ErrorParser;
+namespace ILAB_Aws\Api\ErrorParser;
 
 use Psr\Http\Message\ResponseInterface;
 

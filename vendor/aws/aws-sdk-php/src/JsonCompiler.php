@@ -1,5 +1,5 @@
 <?php
-namespace Aws;
+namespace ILAB_Aws;
 
 /**
  * Loads JSON files and compiles them into PHP arrays.

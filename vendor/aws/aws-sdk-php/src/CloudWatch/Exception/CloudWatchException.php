@@ -1,7 +1,7 @@
 <?php
-namespace Aws\CloudWatch\Exception;
+namespace ILAB_Aws\CloudWatch\Exception;
 
-use Aws\Exception\AwsException;
+use ILAB_Aws\Exception\AwsException;
 
 /**
  * Represents an error interacting with the Amazon CloudWatch service.

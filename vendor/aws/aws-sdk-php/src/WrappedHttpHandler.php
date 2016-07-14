@@ -1,7 +1,7 @@
 <?php
-namespace Aws;
+namespace ILAB_Aws;
 
-use Aws\Api\Parser\Exception\ParserException;
+use ILAB_Aws\Api\Parser\Exception\ParserException;
 use GuzzleHttp\Promise;
 use GuzzleHttp\Promise\FulfilledPromise;
 use Psr\Http\Message\RequestInterface;
@@ -48,7 +48,7 @@ class WrappedHttpHandler
         callable $httpHandler,
         callable $parser,
         callable $errorParser,
-        $exceptionClass = 'Aws\Exception\AwsException',
+        $exceptionClass = 'ILAB_Aws\Exception\AwsException',
         $collectStats = false
     ) {
         $this->httpHandler = $httpHandler;

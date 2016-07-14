@@ -1,5 +1,5 @@
 <?php
-namespace Aws\Endpoint;
+namespace ILAB_Aws\Endpoint;
 
 use InvalidArgumentException as Iae;
 

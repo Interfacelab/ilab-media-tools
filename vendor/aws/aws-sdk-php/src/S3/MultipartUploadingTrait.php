@@ -1,9 +1,9 @@
 <?php
-namespace Aws\S3;
+namespace ILAB_Aws\S3;
 
-use Aws\CommandInterface;
-use Aws\Multipart\UploadState;
-use Aws\ResultInterface;
+use ILAB_Aws\CommandInterface;
+use ILAB_Aws\Multipart\UploadState;
+use ILAB_Aws\ResultInterface;
 
 trait MultipartUploadingTrait
 {

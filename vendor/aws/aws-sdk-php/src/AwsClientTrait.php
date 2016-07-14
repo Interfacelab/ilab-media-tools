@@ -1,13 +1,13 @@
 <?php
-namespace Aws;
+namespace ILAB_Aws;
 
-use Aws\Api\Service;
+use ILAB_Aws\Api\Service;
 use GuzzleHttp\Promise\Promise;
 
 /**
  * A trait providing generic functionality for interacting with Amazon Web
  * Services. This is meant to be used in classes implementing
- * \Aws\AwsClientInterface
+ * \ILAB_Aws\AwsClientInterface
  */
 trait AwsClientTrait
 {

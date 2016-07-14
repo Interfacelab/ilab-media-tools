@@ -1,8 +1,8 @@
 <?php
-namespace Aws\Api\Parser;
+namespace ILAB_Aws\Api\Parser;
 
-use Aws\Api\Service;
-use Aws\Api\StructureShape;
+use ILAB_Aws\Api\Service;
+use ILAB_Aws\Api\StructureShape;
 use Psr\Http\Message\ResponseInterface;
 
 /**

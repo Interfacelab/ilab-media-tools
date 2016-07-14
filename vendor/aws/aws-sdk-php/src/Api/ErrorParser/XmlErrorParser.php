@@ -1,7 +1,7 @@
 <?php
-namespace Aws\Api\ErrorParser;
+namespace ILAB_Aws\Api\ErrorParser;
 
-use Aws\Api\Parser\PayloadParserTrait;
+use ILAB_Aws\Api\Parser\PayloadParserTrait;
 use Psr\Http\Message\ResponseInterface;
 
 /**

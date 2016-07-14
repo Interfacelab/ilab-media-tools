@@ -1,5 +1,5 @@
 <?php
-namespace Aws;
+namespace ILAB_Aws;
 
 use Psr\Cache\CacheItemPoolInterface;
 

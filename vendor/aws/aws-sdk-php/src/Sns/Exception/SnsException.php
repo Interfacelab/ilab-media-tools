@@ -1,7 +1,7 @@
 <?php
-namespace Aws\Sns\Exception;
+namespace ILAB_Aws\Sns\Exception;
 
-use Aws\Exception\AwsException;
+use ILAB_Aws\Exception\AwsException;
 
 /**
  * Represents an error interacting with the Amazon Simple Notification Service.

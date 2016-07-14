@@ -1,5 +1,5 @@
 <?php
-namespace Aws\CloudFront;
+namespace ILAB_Aws\CloudFront;
 
 use GuzzleHttp\Psr7;
 use GuzzleHttp\Psr7\Uri;

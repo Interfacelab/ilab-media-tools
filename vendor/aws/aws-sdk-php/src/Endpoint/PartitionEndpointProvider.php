@@ -1,5 +1,5 @@
 <?php
-namespace Aws\Endpoint;
+namespace ILAB_Aws\Endpoint;
 
 class PartitionEndpointProvider
 {
@@ -70,7 +70,7 @@ class PartitionEndpointProvider
      */
     public static function defaultProvider()
     {
-        $data = \Aws\load_compiled_json(__DIR__ . '/../data/endpoints.json');
+        $data = \ILAB_Aws\load_compiled_json(__DIR__ . '/../data/endpoints.json');
 
         return new self($data['partitions']);
     }

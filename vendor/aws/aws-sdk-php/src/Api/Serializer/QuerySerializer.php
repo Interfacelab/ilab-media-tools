@@ -1,8 +1,8 @@
 <?php
-namespace Aws\Api\Serializer;
+namespace ILAB_Aws\Api\Serializer;
 
-use Aws\Api\Service;
-use Aws\CommandInterface;
+use ILAB_Aws\Api\Service;
+use ILAB_Aws\CommandInterface;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Message\RequestInterface;
 

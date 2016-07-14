@@ -1,18 +1,18 @@
 <?php
-namespace Aws\Credentials;
+namespace ILAB_Aws\Credentials;
 
 use Aws;
-use Aws\CacheInterface;
-use Aws\Exception\CredentialsException;
+use ILAB_Aws\CacheInterface;
+use ILAB_Aws\Exception\CredentialsException;
 use GuzzleHttp\Promise;
 
 /**
  * Credential providers are functions that accept no arguments and return a
- * promise that is fulfilled with an {@see \Aws\Credentials\CredentialsInterface}
- * or rejected with an {@see \Aws\Exception\CredentialsException}.
+ * promise that is fulfilled with an {@see \ILAB_Aws\Credentials\CredentialsInterface}
+ * or rejected with an {@see \ILAB_Aws\Exception\CredentialsException}.
  *
  * <code>
- * use Aws\Credentials\CredentialProvider;
+ * use ILAB_Aws\Credentials\CredentialProvider;
  * $provider = CredentialProvider::defaultProvider();
  * // Returns a CredentialsInterface or throws.
  * $creds = $provider()->wait();

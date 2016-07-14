@@ -1,7 +1,7 @@
 <?php
-namespace Aws\Api;
+namespace ILAB_Aws\Api;
 
-use Aws\Exception\UnresolvedApiException;
+use ILAB_Aws\Exception\UnresolvedApiException;
 
 /**
  * API providers.
@@ -15,7 +15,7 @@ use Aws\Exception\UnresolvedApiException;
  * API data is not created, then the resolve() method will throw a
  * {@see Aws\Exception\UnresolvedApiException}.
  *
- *     use Aws\Api\ApiProvider;
+ *     use ILAB_Aws\Api\ApiProvider;
  *     $provider = ApiProvider::defaultProvider();
  *     // Returns an array or NULL.
  *     $data = $provider('api', 's3', '2006-03-01');
@@ -30,7 +30,7 @@ use Aws\Exception\UnresolvedApiException;
  *     $a = ApiProvider::filesystem(sys_get_temp_dir() . '/aws-beta-models');
  *     $b = ApiProvider::manifest();
  *
- *     $c = \Aws\or_chain($a, $b);
+ *     $c = \ILAB_Aws\or_chain($a, $b);
  *     $data = $c('api', 'betaservice', '2015-08-08'); // $a handles this.
  *     $data = $c('api', 's3', '2006-03-01');          // $b handles this.
  *     $data = $c('api', 'invalid', '2014-12-15');     // Neither handles this.
@@ -94,7 +94,7 @@ class ApiProvider
      */
     public static function defaultProvider()
     {
-        return new self(__DIR__ . '/../data', \Aws\manifest());
+        return new self(__DIR__ . '/../data', \ILAB_Aws\manifest());
     }
 
     /**
@@ -195,7 +195,7 @@ class ApiProvider
         $path = "{$this->modelsDir}/{$service}/{$version}/{$type}.json";
 
         try {
-            return \Aws\load_compiled_json($path);
+            return \ILAB_Aws\load_compiled_json($path);
         } catch (\InvalidArgumentException $e) {
             return null;
         }

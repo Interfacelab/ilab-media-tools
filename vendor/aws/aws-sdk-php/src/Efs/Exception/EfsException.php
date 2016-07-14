@@ -1,7 +1,7 @@
 <?php
-namespace Aws\Efs\Exception;
+namespace ILAB_Aws\Efs\Exception;
 
-use Aws\Exception\AwsException;
+use ILAB_Aws\Exception\AwsException;
 
 /**
  * Amazon EFS exception.

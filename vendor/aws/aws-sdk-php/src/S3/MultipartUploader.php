@@ -1,10 +1,10 @@
 <?php
-namespace Aws\S3;
+namespace ILAB_Aws\S3;
 
-use Aws\HashingStream;
-use Aws\Multipart\AbstractUploader;
-use Aws\PhpHash;
-use Aws\ResultInterface;
+use ILAB_Aws\HashingStream;
+use ILAB_Aws\Multipart\AbstractUploader;
+use ILAB_Aws\PhpHash;
+use ILAB_Aws\ResultInterface;
 use GuzzleHttp\Psr7;
 use Psr\Http\Message\StreamInterface as Stream;
 

@@ -1,7 +1,7 @@
 <?php
-namespace Aws\GameLift\Exception;
+namespace ILAB_Aws\GameLift\Exception;
 
-use Aws\Exception\AwsException;
+use ILAB_Aws\Exception\AwsException;
 
 /**
  * Represents an error interacting with the **Amazon GameLift** service.

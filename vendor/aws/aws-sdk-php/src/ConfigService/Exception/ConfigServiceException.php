@@ -1,7 +1,7 @@
 <?php
-namespace Aws\ConfigService\Exception;
+namespace ILAB_Aws\ConfigService\Exception;
 
-use Aws\Exception\AwsException;
+use ILAB_Aws\Exception\AwsException;
 
 /**
  * Represents an error interacting with the AWS Config service.

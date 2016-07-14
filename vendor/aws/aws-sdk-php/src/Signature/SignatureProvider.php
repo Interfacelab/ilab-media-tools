@@ -1,7 +1,7 @@
 <?php
-namespace Aws\Signature;
+namespace ILAB_Aws\Signature;
 
-use Aws\Exception\UnresolvedSignatureException;
+use ILAB_Aws\Exception\UnresolvedSignatureException;
 
 /**
  * Signature providers.
@@ -15,7 +15,7 @@ use Aws\Exception\UnresolvedSignatureException;
  * is created. If a signature object is not created, then the resolve()
  * function will throw a {@see Aws\Exception\UnresolvedSignatureException}.
  *
- *     use Aws\Signature\SignatureProvider;
+ *     use ILAB_Aws\Signature\SignatureProvider;
  *     $provider = SignatureProvider::defaultProvider();
  *     // Returns a SignatureInterface or NULL.
  *     $signer = $provider('v4', 's3', 'us-west-2');
@@ -33,7 +33,7 @@ use Aws\Exception\UnresolvedSignatureException;
  *             return new MyFooSignature();
  *         }
  *     };
- *     $c = \Aws\or_chain($a, $b);
+ *     $c = \ILAB_Aws\or_chain($a, $b);
  *     $signer = $c('v4', 'abc', '123');     // $a handles this.
  *     $signer = $c('foo', 'abc', '123');    // $b handles this.
  *     $nullValue = $c('???', 'abc', '123'); // Neither can handle this.

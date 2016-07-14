@@ -1,18 +1,18 @@
 <?php
-namespace Aws\S3;
+namespace ILAB_Aws\S3;
 
-use Aws\Api\ApiProvider;
-use Aws\Api\DocModel;
-use Aws\Api\Service;
-use Aws\AwsClient;
-use Aws\ClientResolver;
-use Aws\Command;
-use Aws\Exception\AwsException;
-use Aws\HandlerList;
-use Aws\Middleware;
-use Aws\RetryMiddleware;
-use Aws\ResultInterface;
-use Aws\CommandInterface;
+use ILAB_Aws\Api\ApiProvider;
+use ILAB_Aws\Api\DocModel;
+use ILAB_Aws\Api\Service;
+use ILAB_Aws\AwsClient;
+use ILAB_Aws\ClientResolver;
+use ILAB_Aws\Command;
+use ILAB_Aws\Exception\AwsException;
+use ILAB_Aws\HandlerList;
+use ILAB_Aws\Middleware;
+use ILAB_Aws\RetryMiddleware;
+use ILAB_Aws\ResultInterface;
+use ILAB_Aws\CommandInterface;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Promise;
 use GuzzleHttp\Psr7;
@@ -21,123 +21,123 @@ use Psr\Http\Message\RequestInterface;
 /**
  * Client used to interact with **Amazon Simple Storage Service (Amazon S3)**.
  *
- * @method \Aws\Result abortMultipartUpload(array $args = [])
+ * @method \ILAB_Aws\Result abortMultipartUpload(array $args = [])
  * @method \GuzzleHttp\Promise\Promise abortMultipartUploadAsync(array $args = [])
- * @method \Aws\Result completeMultipartUpload(array $args = [])
+ * @method \ILAB_Aws\Result completeMultipartUpload(array $args = [])
  * @method \GuzzleHttp\Promise\Promise completeMultipartUploadAsync(array $args = [])
- * @method \Aws\Result copyObject(array $args = [])
+ * @method \ILAB_Aws\Result copyObject(array $args = [])
  * @method \GuzzleHttp\Promise\Promise copyObjectAsync(array $args = [])
- * @method \Aws\Result createBucket(array $args = [])
+ * @method \ILAB_Aws\Result createBucket(array $args = [])
  * @method \GuzzleHttp\Promise\Promise createBucketAsync(array $args = [])
- * @method \Aws\Result createMultipartUpload(array $args = [])
+ * @method \ILAB_Aws\Result createMultipartUpload(array $args = [])
  * @method \GuzzleHttp\Promise\Promise createMultipartUploadAsync(array $args = [])
- * @method \Aws\Result deleteBucket(array $args = [])
+ * @method \ILAB_Aws\Result deleteBucket(array $args = [])
  * @method \GuzzleHttp\Promise\Promise deleteBucketAsync(array $args = [])
- * @method \Aws\Result deleteBucketCors(array $args = [])
+ * @method \ILAB_Aws\Result deleteBucketCors(array $args = [])
  * @method \GuzzleHttp\Promise\Promise deleteBucketCorsAsync(array $args = [])
- * @method \Aws\Result deleteBucketLifecycle(array $args = [])
+ * @method \ILAB_Aws\Result deleteBucketLifecycle(array $args = [])
  * @method \GuzzleHttp\Promise\Promise deleteBucketLifecycleAsync(array $args = [])
- * @method \Aws\Result deleteBucketPolicy(array $args = [])
+ * @method \ILAB_Aws\Result deleteBucketPolicy(array $args = [])
  * @method \GuzzleHttp\Promise\Promise deleteBucketPolicyAsync(array $args = [])
- * @method \Aws\Result deleteBucketReplication(array $args = [])
+ * @method \ILAB_Aws\Result deleteBucketReplication(array $args = [])
  * @method \GuzzleHttp\Promise\Promise deleteBucketReplicationAsync(array $args = [])
- * @method \Aws\Result deleteBucketTagging(array $args = [])
+ * @method \ILAB_Aws\Result deleteBucketTagging(array $args = [])
  * @method \GuzzleHttp\Promise\Promise deleteBucketTaggingAsync(array $args = [])
- * @method \Aws\Result deleteBucketWebsite(array $args = [])
+ * @method \ILAB_Aws\Result deleteBucketWebsite(array $args = [])
  * @method \GuzzleHttp\Promise\Promise deleteBucketWebsiteAsync(array $args = [])
- * @method \Aws\Result deleteObject(array $args = [])
+ * @method \ILAB_Aws\Result deleteObject(array $args = [])
  * @method \GuzzleHttp\Promise\Promise deleteObjectAsync(array $args = [])
- * @method \Aws\Result deleteObjects(array $args = [])
+ * @method \ILAB_Aws\Result deleteObjects(array $args = [])
  * @method \GuzzleHttp\Promise\Promise deleteObjectsAsync(array $args = [])
- * @method \Aws\Result getBucketAccelerateConfiguration(array $args = [])
+ * @method \ILAB_Aws\Result getBucketAccelerateConfiguration(array $args = [])
  * @method \GuzzleHttp\Promise\Promise getBucketAccelerateConfigurationAsync(array $args = [])
- * @method \Aws\Result getBucketAcl(array $args = [])
+ * @method \ILAB_Aws\Result getBucketAcl(array $args = [])
  * @method \GuzzleHttp\Promise\Promise getBucketAclAsync(array $args = [])
- * @method \Aws\Result getBucketCors(array $args = [])
+ * @method \ILAB_Aws\Result getBucketCors(array $args = [])
  * @method \GuzzleHttp\Promise\Promise getBucketCorsAsync(array $args = [])
- * @method \Aws\Result getBucketLifecycle(array $args = [])
+ * @method \ILAB_Aws\Result getBucketLifecycle(array $args = [])
  * @method \GuzzleHttp\Promise\Promise getBucketLifecycleAsync(array $args = [])
- * @method \Aws\Result getBucketLifecycleConfiguration(array $args = [])
+ * @method \ILAB_Aws\Result getBucketLifecycleConfiguration(array $args = [])
  * @method \GuzzleHttp\Promise\Promise getBucketLifecycleConfigurationAsync(array $args = [])
- * @method \Aws\Result getBucketLocation(array $args = [])
+ * @method \ILAB_Aws\Result getBucketLocation(array $args = [])
  * @method \GuzzleHttp\Promise\Promise getBucketLocationAsync(array $args = [])
- * @method \Aws\Result getBucketLogging(array $args = [])
+ * @method \ILAB_Aws\Result getBucketLogging(array $args = [])
  * @method \GuzzleHttp\Promise\Promise getBucketLoggingAsync(array $args = [])
- * @method \Aws\Result getBucketNotification(array $args = [])
+ * @method \ILAB_Aws\Result getBucketNotification(array $args = [])
  * @method \GuzzleHttp\Promise\Promise getBucketNotificationAsync(array $args = [])
- * @method \Aws\Result getBucketNotificationConfiguration(array $args = [])
+ * @method \ILAB_Aws\Result getBucketNotificationConfiguration(array $args = [])
  * @method \GuzzleHttp\Promise\Promise getBucketNotificationConfigurationAsync(array $args = [])
- * @method \Aws\Result getBucketPolicy(array $args = [])
+ * @method \ILAB_Aws\Result getBucketPolicy(array $args = [])
  * @method \GuzzleHttp\Promise\Promise getBucketPolicyAsync(array $args = [])
- * @method \Aws\Result getBucketReplication(array $args = [])
+ * @method \ILAB_Aws\Result getBucketReplication(array $args = [])
  * @method \GuzzleHttp\Promise\Promise getBucketReplicationAsync(array $args = [])
- * @method \Aws\Result getBucketRequestPayment(array $args = [])
+ * @method \ILAB_Aws\Result getBucketRequestPayment(array $args = [])
  * @method \GuzzleHttp\Promise\Promise getBucketRequestPaymentAsync(array $args = [])
- * @method \Aws\Result getBucketTagging(array $args = [])
+ * @method \ILAB_Aws\Result getBucketTagging(array $args = [])
  * @method \GuzzleHttp\Promise\Promise getBucketTaggingAsync(array $args = [])
- * @method \Aws\Result getBucketVersioning(array $args = [])
+ * @method \ILAB_Aws\Result getBucketVersioning(array $args = [])
  * @method \GuzzleHttp\Promise\Promise getBucketVersioningAsync(array $args = [])
- * @method \Aws\Result getBucketWebsite(array $args = [])
+ * @method \ILAB_Aws\Result getBucketWebsite(array $args = [])
  * @method \GuzzleHttp\Promise\Promise getBucketWebsiteAsync(array $args = [])
- * @method \Aws\Result getObject(array $args = [])
+ * @method \ILAB_Aws\Result getObject(array $args = [])
  * @method \GuzzleHttp\Promise\Promise getObjectAsync(array $args = [])
- * @method \Aws\Result getObjectAcl(array $args = [])
+ * @method \ILAB_Aws\Result getObjectAcl(array $args = [])
  * @method \GuzzleHttp\Promise\Promise getObjectAclAsync(array $args = [])
- * @method \Aws\Result getObjectTorrent(array $args = [])
+ * @method \ILAB_Aws\Result getObjectTorrent(array $args = [])
  * @method \GuzzleHttp\Promise\Promise getObjectTorrentAsync(array $args = [])
- * @method \Aws\Result headBucket(array $args = [])
+ * @method \ILAB_Aws\Result headBucket(array $args = [])
  * @method \GuzzleHttp\Promise\Promise headBucketAsync(array $args = [])
- * @method \Aws\Result headObject(array $args = [])
+ * @method \ILAB_Aws\Result headObject(array $args = [])
  * @method \GuzzleHttp\Promise\Promise headObjectAsync(array $args = [])
- * @method \Aws\Result listBuckets(array $args = [])
+ * @method \ILAB_Aws\Result listBuckets(array $args = [])
  * @method \GuzzleHttp\Promise\Promise listBucketsAsync(array $args = [])
- * @method \Aws\Result listMultipartUploads(array $args = [])
+ * @method \ILAB_Aws\Result listMultipartUploads(array $args = [])
  * @method \GuzzleHttp\Promise\Promise listMultipartUploadsAsync(array $args = [])
- * @method \Aws\Result listObjectVersions(array $args = [])
+ * @method \ILAB_Aws\Result listObjectVersions(array $args = [])
  * @method \GuzzleHttp\Promise\Promise listObjectVersionsAsync(array $args = [])
- * @method \Aws\Result listObjects(array $args = [])
+ * @method \ILAB_Aws\Result listObjects(array $args = [])
  * @method \GuzzleHttp\Promise\Promise listObjectsAsync(array $args = [])
- * @method \Aws\Result listObjectsV2(array $args = [])
+ * @method \ILAB_Aws\Result listObjectsV2(array $args = [])
  * @method \GuzzleHttp\Promise\Promise listObjectsV2Async(array $args = [])
- * @method \Aws\Result listParts(array $args = [])
+ * @method \ILAB_Aws\Result listParts(array $args = [])
  * @method \GuzzleHttp\Promise\Promise listPartsAsync(array $args = [])
- * @method \Aws\Result putBucketAccelerateConfiguration(array $args = [])
+ * @method \ILAB_Aws\Result putBucketAccelerateConfiguration(array $args = [])
  * @method \GuzzleHttp\Promise\Promise putBucketAccelerateConfigurationAsync(array $args = [])
- * @method \Aws\Result putBucketAcl(array $args = [])
+ * @method \ILAB_Aws\Result putBucketAcl(array $args = [])
  * @method \GuzzleHttp\Promise\Promise putBucketAclAsync(array $args = [])
- * @method \Aws\Result putBucketCors(array $args = [])
+ * @method \ILAB_Aws\Result putBucketCors(array $args = [])
  * @method \GuzzleHttp\Promise\Promise putBucketCorsAsync(array $args = [])
- * @method \Aws\Result putBucketLifecycle(array $args = [])
+ * @method \ILAB_Aws\Result putBucketLifecycle(array $args = [])
  * @method \GuzzleHttp\Promise\Promise putBucketLifecycleAsync(array $args = [])
- * @method \Aws\Result putBucketLifecycleConfiguration(array $args = [])
+ * @method \ILAB_Aws\Result putBucketLifecycleConfiguration(array $args = [])
  * @method \GuzzleHttp\Promise\Promise putBucketLifecycleConfigurationAsync(array $args = [])
- * @method \Aws\Result putBucketLogging(array $args = [])
+ * @method \ILAB_Aws\Result putBucketLogging(array $args = [])
  * @method \GuzzleHttp\Promise\Promise putBucketLoggingAsync(array $args = [])
- * @method \Aws\Result putBucketNotification(array $args = [])
+ * @method \ILAB_Aws\Result putBucketNotification(array $args = [])
  * @method \GuzzleHttp\Promise\Promise putBucketNotificationAsync(array $args = [])
- * @method \Aws\Result putBucketNotificationConfiguration(array $args = [])
+ * @method \ILAB_Aws\Result putBucketNotificationConfiguration(array $args = [])
  * @method \GuzzleHttp\Promise\Promise putBucketNotificationConfigurationAsync(array $args = [])
- * @method \Aws\Result putBucketPolicy(array $args = [])
+ * @method \ILAB_Aws\Result putBucketPolicy(array $args = [])
  * @method \GuzzleHttp\Promise\Promise putBucketPolicyAsync(array $args = [])
- * @method \Aws\Result putBucketReplication(array $args = [])
+ * @method \ILAB_Aws\Result putBucketReplication(array $args = [])
  * @method \GuzzleHttp\Promise\Promise putBucketReplicationAsync(array $args = [])
- * @method \Aws\Result putBucketRequestPayment(array $args = [])
+ * @method \ILAB_Aws\Result putBucketRequestPayment(array $args = [])
  * @method \GuzzleHttp\Promise\Promise putBucketRequestPaymentAsync(array $args = [])
- * @method \Aws\Result putBucketTagging(array $args = [])
+ * @method \ILAB_Aws\Result putBucketTagging(array $args = [])
  * @method \GuzzleHttp\Promise\Promise putBucketTaggingAsync(array $args = [])
- * @method \Aws\Result putBucketVersioning(array $args = [])
+ * @method \ILAB_Aws\Result putBucketVersioning(array $args = [])
  * @method \GuzzleHttp\Promise\Promise putBucketVersioningAsync(array $args = [])
- * @method \Aws\Result putBucketWebsite(array $args = [])
+ * @method \ILAB_Aws\Result putBucketWebsite(array $args = [])
  * @method \GuzzleHttp\Promise\Promise putBucketWebsiteAsync(array $args = [])
- * @method \Aws\Result putObject(array $args = [])
+ * @method \ILAB_Aws\Result putObject(array $args = [])
  * @method \GuzzleHttp\Promise\Promise putObjectAsync(array $args = [])
- * @method \Aws\Result putObjectAcl(array $args = [])
+ * @method \ILAB_Aws\Result putObjectAcl(array $args = [])
  * @method \GuzzleHttp\Promise\Promise putObjectAclAsync(array $args = [])
- * @method \Aws\Result restoreObject(array $args = [])
+ * @method \ILAB_Aws\Result restoreObject(array $args = [])
  * @method \GuzzleHttp\Promise\Promise restoreObjectAsync(array $args = [])
- * @method \Aws\Result uploadPart(array $args = [])
+ * @method \ILAB_Aws\Result uploadPart(array $args = [])
  * @method \GuzzleHttp\Promise\Promise uploadPartAsync(array $args = [])
- * @method \Aws\Result uploadPartCopy(array $args = [])
+ * @method \ILAB_Aws\Result uploadPartCopy(array $args = [])
  * @method \GuzzleHttp\Promise\Promise uploadPartCopyAsync(array $args = [])
  */
 class S3Client extends AwsClient implements S3ClientInterface
@@ -249,7 +249,7 @@ class S3Client extends AwsClient implements S3ClientInterface
         $command = clone $command;
         $command->getHandlerList()->remove('signer');
 
-        /** @var \Aws\Signature\SignatureInterface $signer */
+        /** @var \ILAB_Aws\Signature\SignatureInterface $signer */
         $signer = call_user_func(
             $this->getSignatureProvider(),
             $this->getConfig('signature_version'),
@@ -258,7 +258,7 @@ class S3Client extends AwsClient implements S3ClientInterface
         );
 
         return $signer->presign(
-            \Aws\serialize($command),
+            \ILAB_Aws\serialize($command),
             $this->getCredentials()->wait(),
             $expires
         );
@@ -271,7 +271,7 @@ class S3Client extends AwsClient implements S3ClientInterface
             'Key'    => $key
         ]);
 
-        return (string) \Aws\serialize($command)->getUri();
+        return (string) \ILAB_Aws\serialize($command)->getUri();
     }
 
     /**

@@ -1,5 +1,5 @@
 <?php
-namespace Aws;
+namespace ILAB_Aws;
 
 use GuzzleHttp\Promise\PromisorInterface;
 use GuzzleHttp\Promise\EachPromise;
@@ -82,7 +82,7 @@ class CommandPool implements PromisorInterface
      * @param array              $config   Configuration options.
      *
      * @return array
-     * @see \Aws\CommandPool::__construct for available configuration options.
+     * @see \ILAB_Aws\CommandPool::__construct for available configuration options.
      */
     public static function batch(
         AwsClientInterface $client,

@@ -1,7 +1,7 @@
 <?php
-namespace Aws\Exception;
+namespace ILAB_Aws\Exception;
 
-use Aws\Multipart\UploadState;
+use ILAB_Aws\Multipart\UploadState;
 
 class MultipartUploadException extends \RuntimeException
 {

@@ -1,7 +1,7 @@
 <?php
-namespace Aws\Api\Parser;
+namespace ILAB_Aws\Api\Parser;
 
-use Aws\Api\Parser\Exception\ParserException;
+use ILAB_Aws\Api\Parser\Exception\ParserException;
 
 trait PayloadParserTrait
 {

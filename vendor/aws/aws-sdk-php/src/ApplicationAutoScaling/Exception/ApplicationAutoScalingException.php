@@ -1,7 +1,7 @@
 <?php
-namespace Aws\ApplicationAutoScaling\Exception;
+namespace ILAB_Aws\ApplicationAutoScaling\Exception;
 
-use Aws\Exception\AwsException;
+use ILAB_Aws\Exception\AwsException;
 
 /**
  * Represents an error interacting with the **Application Auto Scaling** service.

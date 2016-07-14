@@ -1,7 +1,7 @@
 <?php
-namespace Aws\DynamoDbStreams\Exception;
+namespace ILAB_Aws\DynamoDbStreams\Exception;
 
-use Aws\Exception\AwsException;
+use ILAB_Aws\Exception\AwsException;
 
 /**
  * Represents an error interacting with the Amazon DynamoDB Streams service.

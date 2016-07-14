@@ -1,8 +1,8 @@
 <?php
-namespace Aws\Api\Parser;
+namespace ILAB_Aws\Api\Parser;
 
-use Aws\CommandInterface;
-use Aws\Exception\AwsException;
+use ILAB_Aws\CommandInterface;
+use ILAB_Aws\Exception\AwsException;
 use Psr\Http\Message\ResponseInterface;
 use GuzzleHttp\Psr7;
 

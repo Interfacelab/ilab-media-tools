@@ -1,8 +1,8 @@
 <?php
-namespace Aws\S3;
+namespace ILAB_Aws\S3;
 
 use Aws;
-use Aws\CommandInterface;
+use ILAB_Aws\CommandInterface;
 use GuzzleHttp\Promise;
 use GuzzleHttp\Psr7;
 use GuzzleHttp\Promise\PromisorInterface;
@@ -252,7 +252,7 @@ class Transfer implements PromisorInterface
     private function createUploadPromise()
     {
         // Map each file into a promise that performs the actual transfer.
-        $files = \Aws\map($this->getUploadsIterator(), function ($file) {
+        $files = \ILAB_Aws\map($this->getUploadsIterator(), function ($file) {
             return (filesize($file) >= $this->mupThreshold)
                 ? $this->uploadMultipart($file)
                 : $this->upload($file);

@@ -1,10 +1,10 @@
 <?php
-namespace Aws;
+namespace ILAB_Aws;
 
-use Aws\Api\Service;
-use Aws\Api\Validator;
-use Aws\Credentials\CredentialsInterface;
-use Aws\Exception\AwsException;
+use ILAB_Aws\Api\Service;
+use ILAB_Aws\Api\Validator;
+use ILAB_Aws\Credentials\CredentialsInterface;
+use ILAB_Aws\Exception\AwsException;
 use GuzzleHttp\Promise;
 use GuzzleHttp\Psr7;
 use GuzzleHttp\Psr7\LazyOpenStream;

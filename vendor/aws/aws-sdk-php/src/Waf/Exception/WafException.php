@@ -1,7 +1,7 @@
 <?php
-namespace Aws\Waf\Exception;
+namespace ILAB_Aws\Waf\Exception;
 
-use Aws\Exception\AwsException;
+use ILAB_Aws\Exception\AwsException;
 
 /**
  * Represents an error interacting with the **AWS WAF** service.

@@ -1,7 +1,7 @@
 <?php
-namespace Aws\Inspector\Exception;
+namespace ILAB_Aws\Inspector\Exception;
 
-use Aws\Exception\AwsException;
+use ILAB_Aws\Exception\AwsException;
 
 /**
  * Represents an error interacting with the **Amazon Inspector** service.

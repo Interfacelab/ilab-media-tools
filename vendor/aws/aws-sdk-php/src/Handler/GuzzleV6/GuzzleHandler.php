@@ -1,7 +1,7 @@
 <?php
-namespace Aws\Handler\GuzzleV6;
+namespace ILAB_Aws\Handler\GuzzleV6;
 
-use Aws\Sdk;
+use ILAB_Aws\Sdk;
 use Exception;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\RequestException;

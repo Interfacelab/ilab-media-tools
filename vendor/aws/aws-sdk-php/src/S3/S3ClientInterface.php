@@ -1,9 +1,9 @@
 <?php
-namespace Aws\S3;
+namespace ILAB_Aws\S3;
 
-use Aws\AwsClientInterface;
-use Aws\CommandInterface;
-use Aws\ResultInterface;
+use ILAB_Aws\AwsClientInterface;
+use ILAB_Aws\CommandInterface;
+use ILAB_Aws\ResultInterface;
 use GuzzleHttp\Promise\PromiseInterface;
 use Psr\Http\Message\RequestInterface;
 
@@ -29,7 +29,7 @@ interface S3ClientInterface extends AwsClientInterface
      *
      * The URL returned by this method is not signed nor does it ensure the the
      * bucket and key given to the method exist. If you need a signed URL, then
-     * use the {@see \Aws\S3\S3Client::createPresignedRequest} method and get
+     * use the {@see \ILAB_Aws\S3\S3Client::createPresignedRequest} method and get
      * the URI of the signed request.
      *
      * @param string $bucket  The name of the bucket where the object is located

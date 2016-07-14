@@ -1,9 +1,9 @@
 <?php
-namespace Aws\S3;
+namespace ILAB_Aws\S3;
 
-use Aws\Exception\MultipartUploadException;
-use Aws\Result;
-use Aws\S3\Exception\S3Exception;
+use ILAB_Aws\Exception\MultipartUploadException;
+use ILAB_Aws\Result;
+use ILAB_Aws\S3\Exception\S3Exception;
 use GuzzleHttp\Promise\PromisorInterface;
 use InvalidArgumentException;
 

@@ -1,7 +1,7 @@
 <?php
-namespace Aws\CloudWatchLogs\Exception;
+namespace ILAB_Aws\CloudWatchLogs\Exception;
 
-use Aws\Exception\AwsException;
+use ILAB_Aws\Exception\AwsException;
 
 /**
  * Represents an error interacting with the Amazon CloudWatch Logs service.

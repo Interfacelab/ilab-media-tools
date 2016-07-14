@@ -1,7 +1,7 @@
 <?php
-namespace Aws\Endpoint;
+namespace ILAB_Aws\Endpoint;
 
-use Aws\Exception\UnresolvedEndpointException;
+use ILAB_Aws\Exception\UnresolvedEndpointException;
 
 /**
  * Endpoint providers.
@@ -17,7 +17,7 @@ use Aws\Exception\UnresolvedEndpointException;
  * created. If an endpoint hash is not created, then the resolve() function
  * will throw an {@see Aws\Exception\UnresolvedEndpointException}.
  *
- *     use Aws\Endpoint\EndpointProvider;
+ *     use ILAB_Aws\Endpoint\EndpointProvider;
  *     $provider = EndpointProvider::defaultProvider();
  *     // Returns an array or NULL.
  *     $endpoint = $provider(['service' => 'ec2', 'region' => 'us-west-2']);
@@ -38,7 +38,7 @@ use Aws\Exception\UnresolvedEndpointException;
  *         }
  *     };
  *     $b = EndpointProvider::defaultProvider();
- *     $c = \Aws\or_chain($a, $b);
+ *     $c = \ILAB_Aws\or_chain($a, $b);
  *     $config = ['service' => 'ec2', 'region' => 'my-test-region'];
  *     $res = $c($config);  // $a handles this.
  *     $config['region'] = 'us-west-2';
@@ -72,7 +72,7 @@ class EndpointProvider
     /**
      * Creates and returns the default SDK endpoint provider.
      *
-     * @deprecated Use an instance of \Aws\Endpoint\Partition instead.
+     * @deprecated Use an instance of \ILAB_Aws\Endpoint\Partition instead.
      *
      * @return callable
      */

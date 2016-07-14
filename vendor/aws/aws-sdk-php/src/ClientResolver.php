@@ -1,17 +1,17 @@
 <?php
-namespace Aws;
+namespace ILAB_Aws;
 
-use Aws\Api\Validator;
-use Aws\Api\ApiProvider;
-use Aws\Api\Service;
-use Aws\Credentials\Credentials;
-use Aws\Credentials\CredentialsInterface;
-use Aws\Endpoint\Partition;
-use Aws\Endpoint\PartitionEndpointProvider;
-use Aws\Endpoint\PartitionProviderInterface;
-use Aws\Signature\SignatureProvider;
-use Aws\Endpoint\EndpointProvider;
-use Aws\Credentials\CredentialProvider;
+use ILAB_Aws\Api\Validator;
+use ILAB_Aws\Api\ApiProvider;
+use ILAB_Aws\Api\Service;
+use ILAB_Aws\Credentials\Credentials;
+use ILAB_Aws\Credentials\CredentialsInterface;
+use ILAB_Aws\Endpoint\Partition;
+use ILAB_Aws\Endpoint\PartitionEndpointProvider;
+use ILAB_Aws\Endpoint\PartitionProviderInterface;
+use ILAB_Aws\Signature\SignatureProvider;
+use ILAB_Aws\Endpoint\EndpointProvider;
+use ILAB_Aws\Credentials\CredentialProvider;
 use GuzzleHttp\Promise;
 use InvalidArgumentException as IAE;
 use Psr\Http\Message\RequestInterface;
@@ -47,7 +47,7 @@ class ClientResolver
             'type'     => 'value',
             'valid'    => ['string'],
             'doc'      => 'Exception class to create when an error occurs.',
-            'default'  => 'Aws\Exception\AwsException',
+            'default'  => 'ILAB_Aws\Exception\AwsException',
             'internal' => true
         ],
         'scheme' => [
@@ -388,7 +388,7 @@ class ClientResolver
             $args['credentials'] = CredentialProvider::defaultProvider($args);
         } else {
             throw new IAE('Credentials must be an instance of '
-                . 'Aws\Credentials\CredentialsInterface, an associative '
+                . 'ILAB_Aws\Credentials\CredentialsInterface, an associative '
                 . 'array that contains "key", "secret", and an optional "token" '
                 . 'key-value pairs, a credentials provider function, or false.');
         }

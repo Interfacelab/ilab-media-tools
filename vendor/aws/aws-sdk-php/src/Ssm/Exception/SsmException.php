@@ -1,7 +1,7 @@
 <?php
-namespace Aws\Ssm\Exception;
+namespace ILAB_Aws\Ssm\Exception;
 
-use Aws\Exception\AwsException;
+use ILAB_Aws\Exception\AwsException;
 
 /**
  * Amazon EC2 Simple Systems Manager exception.

@@ -23,15 +23,15 @@ class ComposerStaticInit7cfef76309978281e71f7485dd851eb9
         array (
             'JmesPath\\' => 9,
         ),
+        'I' => 
+        array (
+            'ILAB_Aws\\' => 9,
+        ),
         'G' => 
         array (
             'GuzzleHttp\\Psr7\\' => 16,
             'GuzzleHttp\\Promise\\' => 19,
             'GuzzleHttp\\' => 11,
-        ),
-        'A' => 
-        array (
-            'Aws\\' => 4,
         ),
     );
 
@@ -44,6 +44,10 @@ class ComposerStaticInit7cfef76309978281e71f7485dd851eb9
         array (
             0 => __DIR__ . '/..' . '/mtdowling/jmespath.php/src',
         ),
+        'ILAB_Aws\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/aws/aws-sdk-php/src',
+        ),
         'GuzzleHttp\\Psr7\\' => 
         array (
             0 => __DIR__ . '/..' . '/guzzlehttp/psr7/src',
@@ -55,10 +59,6 @@ class ComposerStaticInit7cfef76309978281e71f7485dd851eb9
         'GuzzleHttp\\' => 
         array (
             0 => __DIR__ . '/..' . '/guzzlehttp/guzzle/src',
-        ),
-        'Aws\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/aws/aws-sdk-php/src',
         ),
     );
 

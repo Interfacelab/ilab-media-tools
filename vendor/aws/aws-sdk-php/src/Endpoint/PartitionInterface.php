@@ -1,5 +1,5 @@
 <?php
-namespace Aws\Endpoint;
+namespace ILAB_Aws\Endpoint;
 
 /**
  * Represents a section of the AWS cloud.

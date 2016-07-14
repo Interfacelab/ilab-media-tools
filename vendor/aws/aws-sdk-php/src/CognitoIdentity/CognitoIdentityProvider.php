@@ -1,7 +1,7 @@
 <?php
-namespace Aws\CognitoIdentity;
+namespace ILAB_Aws\CognitoIdentity;
 
-use Aws\Credentials\Credentials;
+use ILAB_Aws\Credentials\Credentials;
 use GuzzleHttp\Promise;
 
 class CognitoIdentityProvider

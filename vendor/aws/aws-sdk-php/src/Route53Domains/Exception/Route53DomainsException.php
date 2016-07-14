@@ -1,7 +1,7 @@
 <?php
-namespace Aws\Route53Domains\Exception;
+namespace ILAB_Aws\Route53Domains\Exception;
 
-use Aws\Exception\AwsException;
+use ILAB_Aws\Exception\AwsException;
 
 /**
  * Represents an error interacting with the Amazon Route 53 Domains service.
