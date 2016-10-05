@@ -355,6 +355,13 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
             return $this->cdn.'/'.$meta['s3']['key'];
         }
         else if (isset($meta['s3']) && isset($meta['s3']['url'])) {
+			if (isset($meta['file']) && $this->docCdn) {
+				$ext = strtolower(pathinfo($meta['file'],PATHINFO_EXTENSION));
+                $image_exts = array( 'jpg', 'jpeg', 'jpe', 'gif', 'png' );
+				if (!in_array( $ext, $image_exts ))
+					return trim($this->docCdn,'/').'/'.$meta['s3']['key'];
+			}
+
             return $meta['s3']['url'];
         }
 
