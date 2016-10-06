@@ -488,23 +488,24 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
     }
 
     public function importMedia() {
+	    $query = new WP_Query([
+		                          'post_type'      => 'attachment',
+		                          'post_status'    => 'inherit',
+		                          'post_mime_type' =>'image',
+		                          'fields'         => 'ids',
+		                          'nopaging'       => true,
+	                          ]);
 
-        $attachments = get_posts([
-                                     'post_type'=> 'attachment',
-                                     'posts_per_page' => -1
-                                 ]);
-
-
-        if (count($attachments)>0) {
+        if ($query->post_count > 0) {
             update_option('ilab_s3_import_status', true);
-            update_option('ilab_s3_import_total_count', count($attachments));
+            update_option('ilab_s3_import_total_count', $query->post_count);
             update_option('ilab_s3_import_current', 1);
 
             $process = new ILABS3ImportProcess();
 
-            for($i = 0; $i<count($attachments); $i++) {
-                $process->push_to_queue(['index' => $i, 'post' => $attachments[$i]->ID]);
-            }
+	        for($i = 0; $i < $query->post_count; ++$i) {
+		        $process->push_to_queue(['index' => $i, 'post' => $query->posts[$i]]);
+	        }
 
             $process->save();
             $process->dispatch();
