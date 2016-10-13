@@ -17,13 +17,7 @@
     }
   ],
   "require" : {
-    "composer/installers": "~1.0.12",
     "ilab/ilab-aws-sdk": "dev-master",
     "imgix/imgix-php": "^1.0"
-  },
-  "extra": {
-    "installer-paths": {
-      "vendor/{$name}/": ["type:library"]
-    }
   }
 }
