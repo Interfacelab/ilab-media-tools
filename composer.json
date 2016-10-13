@@ -4,6 +4,12 @@
   "type": "wordpress-plugin",
   "license": "LGPL",
   "keywords": ["s3","imgix","cropping"],
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/jawngee/ilab-aws-sdk"
+    }
+  ],
   "authors": [
     {
       "name": "Jon Gilkison",
@@ -11,12 +17,13 @@
     }
   ],
   "require" : {
-    "aws/aws-sdk-php": "^3.2",
+    "composer/installers": "~1.0.12",
+    "ilab/ilab-aws-sdk": "dev-master",
     "imgix/imgix-php": "^1.0"
   },
-  "autoload": {
-    "psr-4": {
-      "ILAB_Aws\\" : "vendor/aws/aws-sdk-php/src"
+  "extra": {
+    "installer-paths": {
+      "vendor/{$name}/": ["type:library"]
     }
   }
 }
