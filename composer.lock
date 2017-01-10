@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "97c46990625681aebda485d444f77216",
-    "content-hash": "e574eaece591f0745efa8f4d37f4e5b5",
+    "hash": "5391b529f2297a0afbcc044d3fc074b0",
+    "content-hash": "d6f1b80f9dbcb3630be14b574f6b335a",
     "packages": [
         {
             "name": "composer/installers",
@@ -280,15 +280,15 @@
         },
         {
             "name": "ilab/ilab-aws-sdk",
-            "version": "dev-master",
+            "version": "v0.1.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/jawngee/ilab-aws-sdk.git",
+                "url": "https://github.com/Interfacelab/ilab-aws-sdk.git",
                 "reference": "a4f72f8f36e8a0b4ade8de5027adf2bfae204582"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jawngee/ilab-aws-sdk/zipball/a4f72f8f36e8a0b4ade8de5027adf2bfae204582",
+                "url": "https://api.github.com/repos/Interfacelab/ilab-aws-sdk/zipball/a4f72f8f36e8a0b4ade8de5027adf2bfae204582",
                 "reference": "a4f72f8f36e8a0b4ade8de5027adf2bfae204582",
                 "shasum": ""
             },
@@ -361,7 +361,7 @@
             "support": {
                 "forum": "https://forums.aws.amazon.com/forum.jspa?forumID=80",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/jawngee/ilab-aws-sdk/tree/master"
+                "source": "https://github.com/Interfacelab/ilab-aws-sdk/tree/v0.1.0"
             },
             "time": "2016-10-13 16:17:03"
         },
@@ -507,9 +507,7 @@
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "ilab/ilab-aws-sdk": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],

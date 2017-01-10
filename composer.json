@@ -7,7 +7,7 @@
   "repositories": [
     {
       "type": "vcs",
-      "url": "https://github.com/jawngee/ilab-aws-sdk"
+      "url": "https://github.com/interfacelab/ilab-aws-sdk"
     }
   ],
   "authors": [
@@ -17,7 +17,7 @@
     }
   ],
   "require" : {
-    "ilab/ilab-aws-sdk": "dev-master",
-    "imgix/imgix-php": "^1.0"
+    "imgix/imgix-php": "^1.0",
+    "ilab/ilab-aws-sdk": "^0.1.0"
   }
 }

@@ -424,16 +424,16 @@
     },
     {
         "name": "ilab/ilab-aws-sdk",
-        "version": "dev-master",
-        "version_normalized": "9999999-dev",
+        "version": "v0.1.0",
+        "version_normalized": "0.1.0.0",
         "source": {
             "type": "git",
-            "url": "https://github.com/jawngee/ilab-aws-sdk.git",
+            "url": "https://github.com/Interfacelab/ilab-aws-sdk.git",
             "reference": "a4f72f8f36e8a0b4ade8de5027adf2bfae204582"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/jawngee/ilab-aws-sdk/zipball/a4f72f8f36e8a0b4ade8de5027adf2bfae204582",
+            "url": "https://api.github.com/repos/Interfacelab/ilab-aws-sdk/zipball/a4f72f8f36e8a0b4ade8de5027adf2bfae204582",
             "reference": "a4f72f8f36e8a0b4ade8de5027adf2bfae204582",
             "shasum": ""
         },
@@ -467,7 +467,7 @@
         },
         "time": "2016-10-13 16:17:03",
         "type": "library",
-        "installation-source": "source",
+        "installation-source": "dist",
         "autoload": {
             "psr-4": {
                 "ILAB_Aws\\": "src/"
@@ -508,7 +508,7 @@
         "support": {
             "forum": "https://forums.aws.amazon.com/forum.jspa?forumID=80",
             "issues": "https://github.com/aws/aws-sdk-php/issues",
-            "source": "https://github.com/jawngee/ilab-aws-sdk/tree/master"
+            "source": "https://github.com/Interfacelab/ilab-aws-sdk/tree/v0.1.0"
         }
     }
 ]
