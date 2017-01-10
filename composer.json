@@ -3,7 +3,7 @@
   "description": "Tools for cropping, uploading to S3, serving through Imgix",
   "type": "wordpress-plugin",
   "license": "LGPL",
-  "keywords": ["s3","imgix","cropping"],
+  "keywords": ["s3","imgix","cropping", "wordpress"],
   "repositories": [
     {
       "type": "vcs",
