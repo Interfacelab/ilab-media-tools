@@ -15,7 +15,10 @@ if (!defined('ABSPATH')) { header('Location: /'); die; }
 
 require_once(ILAB_CLASSES_DIR.'/ilab-media-tool-base.php');
 require_once(ILAB_CLASSES_DIR.'/ilab-media-tool-view.php');
-require_once(ILAB_VENDOR_DIR.'/autoload.php');
+
+if (file_exists(ILAB_VENDOR_DIR.'/autoload.php')) {
+    require_once(ILAB_VENDOR_DIR.'/autoload.php');
+}
 
 /**
  * Class ILabMediaImgixTool
