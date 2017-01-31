@@ -141,7 +141,7 @@ class ILabMediaCropTool extends ILabMediaToolBase
                                 button.on('click',function(e){
                                     e.preventDefault();
 
-                                    ILabModal.loadURL("<?php echo relative_admin_url('admin-ajax.php')?>?action=ilab_crop_image_page&size=<?php echo $sizeKeys[0]?>&post="+image_id,false,null);
+                                    ILabModal.loadURL("<?php echo get_admin_url(null, 'admin-ajax.php')?>?action=ilab_crop_image_page&size=<?php echo $sizeKeys[0]?>&post="+image_id,false,null);
 
                                     return false;
                                 });
@@ -181,7 +181,7 @@ class ILabMediaCropTool extends ILabMediaToolBase
      */
     public function cropPageURL($id, $size = 'thumbnail', $partial=false)
     {
-        $url=relative_admin_url('admin-ajax.php')."?action=ilab_crop_image_page&post=$id&size=$size";
+        $url=get_admin_url(null, 'admin-ajax.php')."?action=ilab_crop_image_page&post=$id&size=$size";
         if ($partial===true)
             $url.='&partial=1';
 

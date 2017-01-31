@@ -499,7 +499,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
                                 button.on('click',function(e){
                                     e.preventDefault();
 
-                                    ILabModal.loadURL("<?php echo relative_admin_url('admin-ajax.php')?>?action=ilab_imgix_edit_page&image_id="+image_id,false,null);
+                                    ILabModal.loadURL("<?php echo get_admin_url(null, 'admin-ajax.php')?>?action=ilab_imgix_edit_page&image_id="+image_id,false,null);
 
                                     return false;
                                 });
@@ -510,7 +510,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
                             var image_id=button.data('id');
                             e.preventDefault();
 
-                            ILabModal.loadURL("<?php echo relative_admin_url('admin-ajax.php')?>?action=ilab_imgix_edit_page&image_id="+image_id,false,null);
+                            ILabModal.loadURL("<?php echo get_admin_url(null, 'admin-ajax.php')?>?action=ilab_imgix_edit_page&image_id="+image_id,false,null);
 
                             return false;
                         });
@@ -544,7 +544,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
      */
     public function editPageURL($id, $size = 'full', $partial=false, $preset=null)
     {
-        $url=relative_admin_url('admin-ajax.php')."?action=ilab_imgix_edit_page&image_id=$id";
+        $url=get_admin_url(null, 'admin-ajax.php')."?action=ilab_imgix_edit_page&image_id=$id";
 
         if ($size!='full')
             $url.="&size=$size";
