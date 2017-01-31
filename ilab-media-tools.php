@@ -4,7 +4,7 @@ Plugin Name: ILAB Media Tools
 Plugin URI: http://interfacelab.com/media-tools
 Description: Complete media management tools
 Author: Jon Gilkison
-Version: 1.0.5
+Version: 1.0.7
 Author URI: http://interfacelab.com
 */
 
@@ -63,7 +63,9 @@ define('ILAB_PUB_CSS_URL',$plug_url.'public/css');
 define('ILAB_PUB_IMG_URL',$plug_url.'public/img');
 
 // Composer
-require_once(ILAB_VENDOR_DIR.'/autoload.php');
+if (file_exists(ILAB_VENDOR_DIR.'/autoload.php')) {
+	require_once(ILAB_VENDOR_DIR.'/autoload.php');
+}
 
 // Helper functions
 require_once('helpers/ilab-media-tool-helpers.php');
