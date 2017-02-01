@@ -209,6 +209,10 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
         if (file_is_displayable_image($upload['file']))
             return $upload;
 
+	    if (isset($_REQUEST["action"]) && ($_REQUEST["action"]=="upload-plugin")) {
+		    return $upload;
+	    }
+
         $s3=$this->s3Client(true);
         if ($s3)
         {
