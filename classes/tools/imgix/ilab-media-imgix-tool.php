@@ -243,7 +243,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
             $imgix->setSignKey($this->signingKey);
 
 
-        $is_crop=(count($size)<=2) || ((count($size)>=3) && ($size[2] == 'crop'));
+        $is_crop = ((count($size)>=3) && ($size[2] == 'crop'));
 
         $params=[
             'fit'=> ($is_crop) ? 'crop' : 'fit',
