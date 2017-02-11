@@ -35,41 +35,63 @@ class ILabImgixImageEditor extends WP_Image_Editor
         return true;
     }
 
+    private function loadFromFile() {
+	    if (!file_exists($this->sourceFile))
+		    return false;
+
+	    $this->mime=mime_content_type($this->sourceFile);
+	    $this->isGif=($this->mime=='image/gif');
+	    $size=getimagesize($this->sourceFile);
+
+	    if (!$size)
+		    return false;
+
+	    $this->size=[
+		    'width'=>$size[0], 'height'=>$size[1]
+	    ];
+
+	    return true;
+    }
+
     public function load()
     {
         $url=parse_url($this->file);
         if (($url!==false) && (isset($url['scheme'])) && ($url['scheme']!='file'))
         {
-            $info=pathinfo($url['path']);
-            $tmpPath='/tmp'.$info['dirname'];
-            @mkdir($tmpPath,0777,true);
-            $this->sourceFile=$tmpPath.'/'.$info['basename'];
-            if (!file_exists($this->sourceFile))
-            {
-                error_log("[image-editor] File is remote.  Downloading $this->file to $this->sourceFile.");
-                file_put_contents($this->sourceFile,file_get_contents($this->file));
-            }
-            else
-                error_log("[image-editor] File exists as $this->sourceFile.");
+	        error_log("[image-editor] File '$this->file' is remote.");
+	        global $wpdb;
+	        $pid = $wpdb->get_var($wpdb->prepare("select ID from $wpdb->posts where post_type ='attachment' and guid like %s", '%'.$url['path']));
+			error_log("[image-editor] Search for attachment named {$url['path']}.  Found: $pid");
+	        if (!empty($pid)) {
+		        $meta = wp_get_attachment_metadata($pid);
+		        if (isset($meta['width']) && isset($meta['height'])) {
+			        $this->size=[
+				        'width'=>$meta['width'], 'height'=>$meta['height']
+			        ];
+
+			        return true;
+		        }
+	        }
+
+	        $info=pathinfo($url['path']);
+	        $tmpPath='/tmp'.$info['dirname'];
+	        @mkdir($tmpPath,0777,true);
+	        $this->sourceFile=$tmpPath.'/'.preg_replace('/[^\x20-\x7E]/','', $info['basename']);
+	        if (!file_exists($this->sourceFile))
+	        {
+		        error_log("[image-editor] File is remote.  Downloading $this->file to $this->sourceFile.");
+		        file_put_contents($this->sourceFile,file_get_contents($this->file));
+	        }
+	        else
+		        error_log("[image-editor] File exists as $this->sourceFile.");
+
+	        file_put_contents($this->sourceFile,file_get_contents($this->file));
+
+	        return $this->loadFromFile();
         }
-        else
-            $this->sourceFile=$this->file;
-
-        if (!file_exists($this->sourceFile))
-            return false;
-
-        $this->mime=mime_content_type($this->sourceFile);
-        $this->isGif=($this->mime=='image/gif');
-        $size=getimagesize($this->sourceFile);
-
-        if (!$size)
-            return false;
-
-        $this->size=[
-            'width'=>$size[0], 'height'=>$size[1]
-        ];
-
-        return true;
+        else {
+	        return $this->loadFromFile();
+        }
     }
 
     /**
@@ -193,15 +215,17 @@ class ILabImgixImageEditor extends WP_Image_Editor
         $filename = $this->generate_filename( null, null, $extension );
 
         /** This filter is documented in wp-includes/class-wp-image-editor-gd.php */
-        return array(
-            'file'      => wp_basename( apply_filters( 'image_make_intermediate_size', $filename ) ),
+        $result = array(
+            'file'      => wp_basename( $this->file ),
             'width'     => $this->size['width'],
             'height'    => $this->size['height'],
             'mime-type' => $mime
         );
+
+	    return $result;
     }
 
     public function save( $destfilename = null, $mime_type = null ) {
-        return true;
+        return $this->getMetadata();
     }
 }
