@@ -252,8 +252,10 @@ class ILabMediaImgixTool extends ILabMediaToolBase
             'fm'=>'jpg'
         ];
 
+        $imageFile = (isset($meta['s3'])) ? $meta['s3']['key'] : $meta['file'];
+
         $result=[
-            $imgix->createURL(str_replace('%2F','/',urlencode($meta['file'])),$params),
+            $imgix->createURL(str_replace('%2F','/',urlencode($imageFile)),$params),
             $size[0],
             $size[1]
         ];
@@ -295,8 +297,10 @@ class ILabMediaImgixTool extends ILabMediaToolBase
                 return null;
             }
 
+            $imageFile = (isset($meta['s3'])) ? $meta['s3']['key'] : $meta['file'];
+
             $result=[
-                $imgix->createURL(str_replace('%2F','/',urlencode($meta['file'])),($skipParams) ? [] : $params),
+                $imgix->createURL(str_replace('%2F','/',urlencode($imageFile)),($skipParams) ? [] : $params),
                 $meta['width'],
                 $meta['height'],
                 false
@@ -407,8 +411,10 @@ class ILabMediaImgixTool extends ILabMediaToolBase
 
         $params=$this->buildImgixParams($params,$mimetype);
 
+        $imageFile = (isset($meta['s3'])) ? $meta['s3']['key'] : $meta['file'];
+
         $result=[
-            $imgix->createURL(str_replace('%2F','/',urlencode($meta['file'])),$params),
+            $imgix->createURL(str_replace('%2F','/',urlencode($imageFile)),$params),
             $params['w'],
             $params['h'],
             false

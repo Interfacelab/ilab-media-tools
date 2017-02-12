@@ -375,6 +375,12 @@
               "description": "If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_AWS_S3_BUCKET</strong>",
               "type": "text-field",
               "watch": true
+            },
+            "ilab-media-s3-prefix": {
+              "title": "AWS Bucket Prefix",
+              "description": "This will prepend a prefix to any file uploaded to S3.  For dynamically created prefixes, you can use the following variables: <code>@{date:format}<\/code>, <code>@{site-name}<\/code>, <code>@{site-host}<\/code>, <code>@{user-name}<\/code>, <code>@{unique-id}<\/code>, <code>@{unique-path}<\/code>.  For the date token, format is any format string that you can use with php's date() function.  Note that specifying a prefix here will remove WordPress's default date prefix.  WordPress's default prefix would look like: <code>@{date:Y\/m}<\/code>",
+              "type": "text-field",
+              "watch": true
             }
           }
         },

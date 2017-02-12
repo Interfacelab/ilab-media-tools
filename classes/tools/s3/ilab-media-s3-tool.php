@@ -30,6 +30,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
     private $cdn = null;
     private $deleteOnUpload = false;
     private $deleteFromS3 = false;
+	private $prefixFormat = '';
 
     private $settingsError = false;
 
@@ -46,6 +47,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
         $this->secret = get_option('ilab-media-s3-secret', getenv('ILAB_AWS_S3_ACCESS_SECRET'));
         $this->deleteOnUpload = get_option('ilab-media-s3-delete-uploads', false);
         $this->deleteFromS3 = get_option('ilab-media-s3-delete-from-s3', false);
+	    $this->prefixFormat = get_option('ilab-media-s3-prefix', '');
 
         $this->cdn = get_option('ilab-media-s3-cdn-base', getenv('ILAB_AWS_S3_CDN_BASE'));
         if ($this->cdn)
@@ -179,7 +181,11 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
                             continue;
 
                         $file=$path_base.'/'.$size['file'];
-                        $data['sizes'][$key]=$this->processFile($s3,$upload_path,$file,$size);
+	                    if ($file == $data['file']) {
+		                    $data['sizes'][$key]['s3']=$data['s3'];
+	                    } else {
+		                    $data['sizes'][$key]=$this->processFile($s3,$upload_path,$file,$size);
+	                    }
                     }
                 }
             }
@@ -237,6 +243,59 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
         return $upload;
     }
 
+	private function genUUID() {
+		return sprintf('%04x%04x%04x%03x4%04x%04x%04x%04x',
+		               mt_rand(0, 65535),
+		               mt_rand(0, 65535),
+		               mt_rand(0, 65535),
+		               mt_rand(0, 4095),
+		               bindec(substr_replace(sprintf('%016b', mt_rand(0, 65535)), '01', 6, 2)),
+		               mt_rand(0, 65535),
+		               mt_rand(0, 65535),
+		               mt_rand(0, 65535)
+		);
+	}
+
+	private function genUUIDPath() {
+		$uid = $this->genUUID();
+		$result='/';
+
+		$segments = 8;
+		if ($segments>strlen($uid)/2)
+			$segments=strlen($uid)/2;
+		for($i=0; $i<$segments; $i++)
+			$result.=substr($uid,$i*2,2).'/';
+
+		return $result;
+	}
+
+	private function parsePrefix($prefix) {
+		$host = parse_url(get_home_url(), PHP_URL_HOST);
+
+		$user = wp_get_current_user();
+		$userName = '';
+		if ($user->ID != 0) {
+			$userName = sanitize_title($user->display_name);
+		}
+
+		$prefix = str_replace("@{site-name}", sanitize_title(strtolower(get_bloginfo('name'))), $prefix);
+		$prefix = str_replace("@{site-host}", $host, $prefix);
+		$prefix = str_replace("@{user-name}", $userName, $prefix);
+		$prefix = str_replace("@{unique-id}", $this->genUUID(), $prefix);
+		$prefix = str_replace("@{unique-path}", $this->genUUIDPath(), $prefix);
+		$prefix = str_replace("//","/", $prefix);
+
+		$matches = [];
+		preg_match_all('/\@\{date\:([^\}]*)\}/', $prefix, $matches);
+		if (count($matches)==2) {
+			for($i = 0; $i<count($matches[0]); $i++) {
+				$prefix = str_replace($matches[0][$i],date($matches[1][$i]), $prefix);
+			}
+		}
+
+		return trim($prefix, '/').'/';
+	}
+
     private function processFile($s3,$upload_path,$filename,$data)
     {
         if (!file_exists($upload_path.'/'.$filename))
@@ -252,15 +311,24 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
             $this->delete_file($s3,$key);
         }
 
+        $bucketFilename = $filename;
+
+        $prefix = '';
+	    if (!empty($this->prefixFormat)) {
+		    $prefix = $this->parsePrefix($this->prefixFormat);
+		    $parts= explode('/',$filename);
+		    $bucketFilename = array_pop($parts);
+	    }
+
         $file=fopen($upload_path.'/'.$filename,'r');
         try
         {
-            $result = $s3->upload($this->bucket,$filename,$file,'public-read');
+            $result = $s3->upload($this->bucket,$prefix.$bucketFilename,$file,'public-read');
 
             $data['s3']=[
               'url' => $result->get('ObjectURL') ,
               'bucket'=>$this->bucket,
-              'key'=>$filename
+              'key'=> $prefix.$bucketFilename
             ];
         }
         catch (\ILAB_Aws\Exception\AwsException $ex)
