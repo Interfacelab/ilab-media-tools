@@ -99,6 +99,11 @@ No, I'm just one very enthusiastic customer.
 
 == Changelog ==
 
+= 1.1.0 =
+* Fixed a bug where SEO Framework and some other plugins were resizing images on the fly, causing an image to be
+  downloaded to be resized.
+* You can now specify a prefix to be prepended to file names when uploaded to S3.
+
 = 1.0.5 =
 * Improved compatibility with other plugins that are using the AWS SDK.  There should be zero compatibility issues.
 * Forward compatibility with Offload S3.  Any media uploaded with Offload S3 will continue to work normally when
