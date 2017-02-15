@@ -417,7 +417,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
             $imgix->createURL(str_replace('%2F','/',urlencode($imageFile)),$params),
             $params['w'],
             $params['h'],
-            false
+            true
         ];
 
         return $result;
