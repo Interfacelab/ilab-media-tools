@@ -116,7 +116,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         add_action('wp_ajax_ilab_imgix_new_preset',[$this,'newPreset']);
         add_action('wp_ajax_ilab_imgix_save_preset',[$this,'savePreset']);
         add_action('wp_ajax_ilab_imgix_delete_preset',[$this,'deletePreset']);
-        
+
         add_filter( 'wp_image_editors', function($editors)
         {
             require_once('ilab-media-imgix-editor.php');
@@ -409,6 +409,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         if ($size && !is_array($size))
             $params['wpsize'] = $size;
 
+        $params = apply_filters( 'ilab-imgx-parameters', $params, $size );
         $params=$this->buildImgixParams($params,$mimetype);
 
         $imageFile = (isset($meta['s3'])) ? $meta['s3']['key'] : $meta['file'];
