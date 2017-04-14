@@ -80,6 +80,11 @@
               "title": "Auto Format",
               "description": "Allows imgix to choose the most appropriate file format to deliver your image based on the requesting web browser.",
               "type": "checkbox"
+            },
+            "ilab-media-imgix-auto-compress": {
+              "title": "Auto Compress",
+              "description": "Allows imgix to automatically compress your images.",
+              "type": "checkbox"
             }
           }
         },
