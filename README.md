@@ -44,6 +44,32 @@ the WordPress admin interface!  Completely non-destructive!
 5. For Imgix, enter your Imgix settings in the *ILab Media Tools -> Imgix Settings* page.
 6. Once your settings are complete, use the *ILab Media Tools -> S3 Importer* to import your current media library to
    Amazon S3.
+   
+## Developer Notes
+
+If you're using Imgix, you can specify additional parameters by adding a filter for `ilab_imgix_filter_parameters`.  For example, if you wanted to 
+add blur to all of your images for some crazy reason:
+
+```php
+add_filter('ilab_imgix_filter_parameters',function($params, $size, $id, $meta){
+	$params['blur'] = 20;
+	return $params;
+}, 10, 4);
+```
+
+There are additional filters and actions that you can hook into for various purposes:
+
+| Filter | Description | Arguments |
+| :======== | :============= | :=========== |
+| ilab_s3_can_calculate_srcset | Determines if the imgix tool can calculate the srcset for an img tag | None |
+| ilab_imgix_enabled | Determines if the imgix is enabled | None |
+
+| Action | Description | Arguments |
+| :======== | :============= | :=========== |
+| ilab_imgix_setup | Called when imgix is setup/initialized | None |
+
+
+
 
 ## Frequently Asked Questions
 

@@ -109,10 +109,10 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 			add_filter('wp_update_attachment_metadata', [$this, 'updateAttachmentMetadata'], 1000, 2);
 			add_filter('delete_attachment', [$this, 'deleteAttachment'], 1000);
 			add_filter('wp_handle_upload', [$this, 'handleUpload'], 10000);
-			add_filter('ilab-s3-process-crop', [$this, 'processCrop'], 10000, 3);
+			add_filter('ilab_s3_process_crop', [$this, 'processCrop'], 10000, 3);
 			add_filter('get_attached_file', [$this, 'getAttachedFile'], 10000, 2);
 
-			add_filter('ilab-s3-process-file-name', function($filename) {
+			add_filter('ilab_s3_process_file_name', function($filename) {
 				if (strpos($filename,'/'.$this->bucket) === 0)
 					return str_replace('/'.$this->bucket, '', $filename);
 

@@ -41,10 +41,10 @@ class ILabMediaCropTool extends ILabMediaToolBase
             add_action('wp_ajax_ilab_crop_image_page',[$this,'displayCropUI']);
             add_action('wp_ajax_ilab_perform_crop',[$this,'performCrop']);
 
-            add_filter('ilab-s3-process-crop', function($size, $path, $sizeMeta){
+            add_filter('ilab_s3_process_crop', function($size, $path, $sizeMeta){
                 return $sizeMeta;
             }, 3, 3);
-            add_filter('ilab-s3-process-file-name', function($filename) {
+            add_filter('ilab_s3_process_file_name', function($filename) {
                 return $filename;
             }, 3, 1);
         }
@@ -338,7 +338,7 @@ class ILabMediaCropTool extends ILabMediaToolBase
         if (($path_url!==false) && (isset($path_url['scheme'])))
         {
             $parsed_path=pathinfo($path_url['path']);
-            $img_subpath=apply_filters('ilab-s3-process-file-name',$parsed_path['dirname']);
+            $img_subpath=apply_filters('ilab_s3_process_file_name',$parsed_path['dirname']);
 
             $upload_dir=wp_upload_dir();
             $save_path=$upload_dir['basedir'].$img_subpath;
@@ -382,7 +382,7 @@ class ILabMediaCropTool extends ILabMediaToolBase
         $img_editor->save($save_path . '/' . $filename);
 
         // Let S3 upload the new crop
-        $processedSize = apply_filters('ilab-s3-process-crop', $size, $filename, $meta['sizes'][$size]);
+        $processedSize = apply_filters('ilab_s3_process_crop', $size, $filename, $meta['sizes'][$size]);
         if ($processedSize)
             $meta['sizes'][$size] = $processedSize;
 
