@@ -32,6 +32,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
     protected $imageQuality;
     protected $autoFormat;
     protected $autoCompress;
+    protected $enableGifs;
     protected $paramPropsByType;
     protected $paramProps;
     protected $noGifSizes;
@@ -101,6 +102,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         $this->imageQuality=get_option('ilab-media-imgix-default-quality');
         $this->autoFormat=get_option('ilab-media-imgix-auto-format');
         $this->autoCompress=get_option('ilab-media-imgix-auto-compress');
+	    $this->enableGifs=get_option('ilab-media-imgix-enable-gifs');
 
         add_filter('wp_get_attachment_url', [$this, 'getAttachmentURL'], 10000, 2);
         add_filter('wp_prepare_attachment_for_js', array($this, 'prepareAttachmentForJS'), 1000, 3);
@@ -175,17 +177,51 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         return $new_url;
     }
 
-    private function buildImgixParams($params,$mimetype='')
-    {
-        $auto=null;
-
-        if (($auto!=null) && isset($params['auto']))
-        {
-            $params['auto']=$params['auto'].','.$auto;
+    private function buildImgixParams($params,$mimetype='') {
+        $format = null;
+        if (!isset($params['fm'])) {
+	        if (($mimetype == 'image/gif') && $this->enableGifs) {
+		        $format = 'gif';
+	        } else if (($mimetype == 'image/png') && !$this->autoFormat) {
+		        $format = 'png';
+	        } else if (!$this->autoFormat) {
+		        $format = 'pjpg';
+	        }
+        } else {
+	        $format = $params['fm'];
         }
-        else if ($auto!=null)
-        {
-            $params['auto']=$auto;
+
+        unset($params['fm']);
+
+        $auto = [];
+        if (isset($params['auto'])) {
+            $auto = explode(',', $params['auto']);
+            unset($params['auto']);
+        }
+
+        if (!$format) {
+	        if ($this->autoCompress && $this->autoFormat) {
+		        $auto[] = 'compress';
+		        $auto[] = 'format';
+	        } else if ($this->autoCompress) {
+		        $auto[] = 'compress';
+	        } else if ($this->autoFormat) {
+		        $auto[] = 'format';
+	        }
+        } else if ($format) {
+	        $params['fm'] = $format;
+	        if ($this->autoCompress) {
+		        $auto[] = 'compress';
+	        }
+        } else {
+	        $params['fm'] = 'pjpg';
+	        if ($this->autoCompress) {
+		        $auto[] = 'compress';
+	        }
+        }
+
+        if (count($auto)>0) {
+	        $params['auto'] = implode(",", $auto);
         }
 
         unset($params['enhance']);
@@ -395,24 +431,6 @@ class ILabMediaImgixTool extends ILabMediaToolBase
 
         if ($mergeParams && is_array($mergeParams))
             $params=array_merge($params, $mergeParams);
-
-        if (!isset($params['fm'])) {
-            if ($mimetype=='image/gif')
-                $params['fm']='gif';
-            else {
-                if ($this->autoCompress && $this->autoFormat) {
-                    $params['auto']='compress,format';
-                } elseif ($this->autoCompress) {
-                    $params['auto']='compress';
-                } elseif ($this->autoFormat) {
-                    $params['auto']='format';
-                } elseif ((!$this->autoFormat) && ($mimetype=='image/png')) {
-                    $params['fm']='png';
-                } else {
-                    $params['fm']='pjpg';
-                }
-            }
-        }
 
         if ($size && !is_array($size))
             $params['wpsize'] = $size;
