@@ -49,7 +49,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
 
         if (!get_option('ilab-media-imgix-domains'))
         {
-            $this->displayAdminNotice('error',"To start using Imgix, you will need to <a href='admin.php?page=media-tools-imgix'>set it up</a>.");
+            $this->displayAdminNotice('error',"To start using Imgix, you will need to <a href='admin.php?page=media-tools-imgix'>set it up</a>.", true, 'disable-ilab-imgix-warning');
             return false;
         }
 

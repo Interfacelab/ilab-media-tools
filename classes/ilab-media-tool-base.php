@@ -124,16 +124,32 @@ abstract class ILabMediaToolBase {
         return $enabled;
     }
 
-    public function displayAdminNotice($type,$message)
+    public function displayAdminNotice($type, $message, $dismissible=false, $dismissibleIdentifier = null)
     {
         if (isset($this->adminNotices[$message]))
             return;
 
+        if (!PAnD::is_admin_notice_active($dismissibleIdentifier)) {
+        	return;
+        }
+
         $this->adminNotices[$message]=true;
-        add_action('admin_notices',function() use($type,$message) {
+        if ($dismissible) {
+        	if ($dismissibleIdentifier) {
+		        $dismissibleAttr = "data-dismissible='$dismissibleIdentifier'";
+	        }
+
+        	$class = "notice notice-$type is-dismissible";
+        } else {
+	        $dismissibleAttr = '';
+	        $class = "notice notice-$type";
+        }
+
+        add_action('admin_notices',function() use($class,$message,$dismissibleAttr) {
             echo render_view('base/ilab-admin-notice.php',[
-                'type'=>$type,
-                'message'=>$message
+                'class'=>$class,
+                'message'=>$message,
+                'identifier' => $dismissibleAttr
             ]);
         });
     }
