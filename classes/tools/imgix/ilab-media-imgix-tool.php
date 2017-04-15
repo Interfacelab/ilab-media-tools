@@ -289,7 +289,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
             'h'=>$size[1],
             'fm'=>'jpg'
         ];
-	    $params = apply_filters('ilab-imgix-filter-parameters', $params, $size, $id);
+	    $params = apply_filters('ilab-imgix-filter-parameters', $params, $size, $id, $meta);
 
 	    $imageFile = (isset($meta['s3'])) ? $meta['s3']['key'] : $meta['file'];
 
@@ -330,7 +330,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
             }
 
             $params = $this->buildImgixParams($params,$mimetype);
-	        $params = apply_filters('ilab-imgix-filter-parameters', $params, $size, $id);
+	        $params = apply_filters('ilab-imgix-filter-parameters', $params, $size, $id, $meta);
 
             if (!isset($meta['file'])) {
                 return null;
@@ -437,7 +437,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
             $params['wpsize'] = $size;
 
         $params = $this->buildImgixParams($params,$mimetype);
-	    $params = apply_filters('ilab-imgix-filter-parameters', $params, $size, $id);
+	    $params = apply_filters('ilab-imgix-filter-parameters', $params, $size, $id, $meta);
 
         $imageFile = (isset($meta['s3'])) ? $meta['s3']['key'] : $meta['file'];
 
