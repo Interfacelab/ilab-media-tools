@@ -17,7 +17,6 @@ var ILabCrop=function($,settings){
         currentValue: this.settings.size,
         tabSelected:function(tab){
             ILabModal.loadURL(tab.data('url'),true,function(response){
-                console.log(response);
                 cropRef.bindUI(response);
             });
         }
@@ -86,7 +85,6 @@ var ILabCrop=function($,settings){
                     width : settings.prev_crop_width,
                     height : settings.prev_crop_height
                 };
-                console.log(this.cropperData);
             }
 
             this.cropper.on('built.cropper',function(){
@@ -123,7 +121,6 @@ var ILabCrop=function($,settings){
         data['post'] = this.settings.image_id;
         data['size'] = this.settings.size;
         jQuery.post(ajaxurl, data, function(response) {
-            console.log(response);
             if (response.status=='ok') {
                 cropRef.modalContainer.find('.ilab-current-crop-img').one('load',function(){
                    cropRef.hideStatus();

@@ -3,8 +3,6 @@
  */
 
 var ILabImageEdit=function($, settings){
-    console.log(settings);
-
     this.previewTimeout=null;
     this.previewsSuspended=false;
     this.parameters=[];
@@ -62,7 +60,6 @@ var ILabImageEdit=function($, settings){
         currentValue: self.settings.size,
         tabSelected:function(tab){
             ILabModal.loadURL(tab.data('url'),true,function(response){
-                console.log(response);
                 self.bindUI(response);
             });
         }
@@ -86,8 +83,6 @@ var ILabImageEdit=function($, settings){
             postData=value.saveValue(postData);
         });
 
-        console.log(postData);
-
         data['image_id'] = self.settings.image_id;
         data['action'] = action;
         data['size'] = self.settings.size;
@@ -108,15 +103,31 @@ var ILabImageEdit=function($, settings){
         self.postAjax('ilab_imgix_preview',{},function(response) {
             if (response.status=='ok')
             {
-                if (self.settings.debug)
-                    console.log(response.src);
+                var sameSrc = (response.src == self.previewImage.attr('src'));
+                var didLoad = false;
 
                 self.previewImage.on('load',function(){
+                    didLoad = true;
+                    self.waitModal.addClass('is-hidden');
+                    self.hideStatus();
+                });
+
+                self.previewImage.on('error', function(){
+                    didLoad = true;
                     self.waitModal.addClass('is-hidden');
                     self.hideStatus();
                 });
 
                 self.previewImage.attr('src',response.src);
+
+                if (sameSrc) {
+                    setTimeout(function(){
+                        if (!didLoad) {
+                            self.waitModal.addClass('is-hidden');
+                            self.hideStatus();
+                        }
+                    }, 3000);
+                }
             }
             else
             {
@@ -175,7 +186,6 @@ var ILabImageEdit=function($, settings){
     };
 
     this.bindPreset=function(preset){
-        console.log(preset);
         self.previewsSuspended=true;
         self.settings.settings=preset.settings;
 

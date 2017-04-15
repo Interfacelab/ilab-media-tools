@@ -53,8 +53,6 @@
         var blend='none';
         var val;
 
-        console.log(data);
-
         if ((data !== undefined) && data.hasOwnProperty(this.blendParam))
         {
             blend=data[this.blendParam];

@@ -6,12 +6,27 @@
 
         return this.each(function(){
             var container=$(this);
+            var windowContainer = container;
+
+            var parentContainer = container.parent();
+            while(true) {
+                if (parentContainer.hasClass('ilabm-container')) {
+                    windowContainer = parentContainer;
+                    break;
+                }
+
+                parentContainer = parentContainer.parent();
+                if (!parentContainer) {
+                    break;
+                }
+            }
+
             var label=container.find('.ilabm-tabs-select-label');
             var select=container.find('.ilabm-tabs-select');
             var tabs=container.find('.ilabm-editor-tab');
 
             var minWidth=0;
-            var tabFont,tabMarginLeft,tabMarginRight,tabPaddingLeft,tabPaddingRight=null;
+            var tabFont=null,tabMarginLeft=0,tabMarginRight=0,tabPaddingLeft=0,tabPaddingRight=0;
 
             var getTextWidth=function(text, font) {
                 // re-use canvas object for better performance
@@ -26,7 +41,6 @@
             tabs.each(function(){
                 var tab=$(this);
                 if (tabFont===null) {
-
                     tabFont = tab.css('font');
                     tabMarginLeft=parseInt(tab.css('margin-left'));
                     tabMarginRight=parseInt(tab.css('margin-right'));
@@ -37,8 +51,6 @@
                 tabWidth=getTextWidth(tab.text(),tabFont)+tabMarginLeft+tabMarginRight+tabPaddingLeft+tabPaddingRight+15;
                 minWidth+=tabWidth;
             });
-
-            console.log('min-width',minWidth);
 
             if (label && settings.hasOwnProperty('label'))
                 label.text(settings.label);
@@ -90,8 +102,7 @@
             }
 
             var checkOverflow=function(){
-                console.log('overflow');
-                if (minWidth > container.width()) {
+                if (minWidth > windowContainer.width()) {
                     label.show();
                     select.show();
                     tabs.hide();

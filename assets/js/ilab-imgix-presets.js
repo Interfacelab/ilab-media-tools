@@ -49,8 +49,6 @@ var ILabImgixPresets=function($,delegate,container) {
         else
         {
             Object.keys(self.delegate.settings.presets).forEach(function(key,index) {
-                console.log(key);
-
                 self.presetSelect.append($('<option></option>')
                     .attr("value",'0')
                     .text('None'));
