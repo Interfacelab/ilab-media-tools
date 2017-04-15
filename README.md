@@ -60,12 +60,12 @@ add_filter('ilab_imgix_filter_parameters',function($params, $size, $id, $meta){
 There are additional filters and actions that you can hook into for various purposes:
 
 | Filter | Description | Arguments |
-| :======== | :============= | :=========== |
+| :----- | :----- | :----- |
 | ilab_s3_can_calculate_srcset | Determines if the imgix tool can calculate the srcset for an img tag | None |
 | ilab_imgix_enabled | Determines if the imgix is enabled | None |
 
 | Action | Description | Arguments |
-| :======== | :============= | :=========== |
+| :----- | :----- | :----- |
 | ilab_imgix_setup | Called when imgix is setup/initialized | None |
 
 
