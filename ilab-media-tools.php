@@ -76,5 +76,3 @@ require_once('helpers/ilab-media-tool-geometry-helpers.php');
 require_once('classes/ilab-media-tools-manager.php');
 register_activation_hook(__FILE__,[ILabMediaToolsManager::instance(),'install']);
 register_deactivation_hook(__FILE__,[ILabMediaToolsManager::instance(),'uninstall']);
-
-add_action( 'admin_init', ['PAnD', 'init']);

@@ -5,6 +5,10 @@
 // Released under the GPLv3 license
 // http://www.gnu.org/licenses/gpl-3.0.html
 //
+// Uses code from:
+// Persist Admin Notices Dismissal
+// by Agbonghama Collins and Andy Fragen
+//
 // **********************************************************************
 // This program is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -80,6 +84,13 @@ abstract class ILabMediaToolBase {
             foreach($toolInfo['helpers'] as $helper)
                 require_once(ILAB_HELPERS_DIR.'/'.$helper);
         }
+
+	    add_action( 'admin_enqueue_scripts', function(){
+		    wp_enqueue_script('ilab-dismissible-notices', ILAB_PUB_JS_URL . '/ilab-dismiss-notice.js', ['jquery', 'common'], false, true);
+		    wp_localize_script('ilab-dismissible-notices', 'ilab_dismissible_notice', ['nonce' => wp_create_nonce( 'dismissible-notice' )]);
+	    });
+
+	    add_action('wp_ajax_ilab_dismiss_admin_notice', [$this, 'dismissAdminNotice']);
     }
 
     /**
@@ -124,19 +135,19 @@ abstract class ILabMediaToolBase {
         return $enabled;
     }
 
-    public function displayAdminNotice($type, $message, $dismissible=false, $dismissibleIdentifier = null)
+    public function displayAdminNotice($type, $message, $dismissible=false, $dismissibleIdentifier = null, $dismissibleLength = 30)
     {
         if (isset($this->adminNotices[$message]))
             return;
 
-        if (!PAnD::is_admin_notice_active($dismissibleIdentifier)) {
+        if (!$this->isAdminNoticeActive($dismissibleIdentifier)) {
         	return;
         }
 
         $this->adminNotices[$message]=true;
         if ($dismissible) {
         	if ($dismissibleIdentifier) {
-		        $dismissibleAttr = "data-dismissible='$dismissibleIdentifier'";
+		        $dismissibleAttr = "data-dismissible='$dismissibleIdentifier' data-dismissible-length='$dismissibleLength'";
 	        }
 
         	$class = "notice notice-$type is-dismissible";
@@ -153,6 +164,36 @@ abstract class ILabMediaToolBase {
             ]);
         });
     }
+
+	public function dismissAdminNotice() {
+		$option_name        = sanitize_text_field( $_POST['option_name'] );
+		$dismissible_length = sanitize_text_field( $_POST['dismissible_length'] );
+		$transient          = 0;
+
+		if ( 'forever' != $dismissible_length ) {
+			$dismissible_length = ( 0 == absint( $dismissible_length ) ) ? 1 : $dismissible_length;
+			$transient          = absint( $dismissible_length ) * DAY_IN_SECONDS;
+			$dismissible_length = strtotime( absint( $dismissible_length ) . ' days' );
+		}
+
+		check_ajax_referer( 'dismissible-notice', 'nonce' );
+		set_site_transient( $option_name, $dismissible_length, $transient );
+		wp_die();
+	}
+
+	public function isAdminNoticeActive( $arg ) {
+		$array       = explode( '-', $arg );
+		$option_name = implode( '-', $array );
+		$db_record   = get_site_transient( $option_name );
+
+		if ( 'forever' == $db_record ) {
+			return false;
+		} elseif ( absint( $db_record ) >= time() ) {
+			return false;
+		} else {
+			return true;
+		}
+	}
 
     /**
      * Register any settings

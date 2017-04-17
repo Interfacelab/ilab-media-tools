@@ -26,8 +26,7 @@ class ILabMediaToolsManager
     public function __construct()
     {
         $toolList=ejson_decode_file(ILAB_TOOLS_DIR.'/tools.json',true);
-
-        $this->tools=[];
+	    $this->tools=[];
 
         foreach($toolList as $toolName => $toolInfo)
         {
