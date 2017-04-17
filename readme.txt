@@ -5,7 +5,7 @@ Requires at least: 4.4
 Tested up to: 4.5
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 1.2
+Stable tag: 1.2.1
 
 Set of tools for enhancing media in WordPress.  Includes image cropper, host media from S3 or CDN, integrate with Imgix
 and an advanced image editor.
@@ -98,6 +98,9 @@ No, I'm just one very enthusiastic customer.
 5. Imgix settings.
 
 == Changelog ==
+
+= 1.2.1 =
+* Fix for admin notice dismissal when used with Bedrock
 
 = 1.2 =
 * Fix for imgix admin notice
