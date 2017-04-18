@@ -38,6 +38,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 
 	private $cacheControl = null;
 	private $expires = null;
+	private $versionedIds = [];
 
 	public function __construct($toolName, $toolInfo, $toolManager)
 	{
@@ -183,7 +184,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 				$upload_path=$upload_info['basedir'];
 				$path_base=pathinfo($data['file'])['dirname'];
 
-				$data=$this->processFile($s3,$upload_path,$data['file'],$data);
+				$data=$this->processFile($s3,$upload_path,$data['file'],$data,$id);
 
 				if (isset($data['sizes'])) {
 					foreach($data['sizes'] as $key => $size)
@@ -195,7 +196,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 						if ($file == $data['file']) {
 							$data['sizes'][$key]['s3']=$data['s3'];
 						} else {
-							$data['sizes'][$key]=$this->processFile($s3,$upload_path,$file,$size);
+							$data['sizes'][$key]=$this->processFile($s3,$upload_path,$file,$size,$id);
 						}
 					}
 				}
@@ -279,7 +280,11 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 
 		return $result;
 	}
-	private function get_object_version_string() {
+	private function get_object_version_string($id=null) {
+
+		if (!empty($id) && !empty($this->versionedIds[$id])) {
+			return $this->versionedIds[$id];
+		}
 
 		$date_format = 'dHis';
 		// Use current time so that object version is unique
@@ -288,10 +293,14 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 		$object_version = date( $date_format, $time ) . '/';
 		$object_version = apply_filters( 'as3cf_get_object_version_string', $object_version );
 
+		if (!empty($id)) {
+			$this->versionedIds[$id] = $object_version;
+		}
+
 		return $object_version;
 	}
 
-	private function parsePrefix($prefix) {
+	private function parsePrefix($prefix, $id=null) {
 		$host = parse_url(get_home_url(), PHP_URL_HOST);
 
 		$user = wp_get_current_user();
@@ -300,7 +309,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 			$userName = sanitize_title($user->display_name);
 		}
 
-		$prefix = str_replace("@{versioning}", $this->get_object_version_string(), $prefix);
+		$prefix = str_replace("@{versioning}", $this->get_object_version_string($id), $prefix);
 		$prefix = str_replace("@{site-id}", sanitize_title(strtolower(get_current_blog_id())), $prefix);
 		$prefix = str_replace("@{site-name}", sanitize_title(strtolower(get_bloginfo('name'))), $prefix);
 		$prefix = str_replace("@{site-host}", $host, $prefix);
@@ -320,7 +329,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 		return trim($prefix, '/').'/';
 	}
 
-	private function processFile($s3,$upload_path,$filename,$data)
+	private function processFile($s3,$upload_path,$filename,$data,$id=null)
 	{
 		if (!file_exists($upload_path.'/'.$filename))
 			return $data;
@@ -339,7 +348,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 
 		$prefix = '';
 		if (!empty($this->prefixFormat)) {
-			$prefix = $this->parsePrefix($this->prefixFormat);
+			$prefix = $this->parsePrefix($this->prefixFormat, $id);
 			$parts= explode('/',$filename);
 			$bucketFilename = array_pop($parts);
 		}
@@ -411,12 +420,13 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 					$this->delete_file($s3, $file);
 				}
 			} else {
-				$path_base=pathinfo($data['file'])['dirname'];
-
 				$this->delete_file($s3,$data['s3']['key']);
-				/*$this->delete_file($s3,$data['file']);*/
 
 				if (isset($data['sizes'])) {
+					$pathParts = explode('/',$data['s3']['key']);
+					array_pop($pathParts);
+					$path_base = implode('/',$pathParts);
+
 					foreach($data['sizes'] as $key => $size) {
 						$file=$path_base.'/'.$size['file'];
 						try {
