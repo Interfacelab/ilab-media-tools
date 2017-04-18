@@ -37,6 +37,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 	private $uploadedDocs = [];
 
 	private $cacheControl = null;
+	private $expires = null;
 
 	public function __construct($toolName, $toolInfo, $toolManager)
 	{
@@ -60,6 +61,12 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 		$this->settingsError = get_option('ilab-s3-settings-error', false);
 
 		$this->cacheControl = get_option('ilab-media-s3-cache-control', getenv('ILAB_AWS_S3_CACHE_CONTROL'));
+
+		$expires = get_option('ilab-media-s3-expires', getenv('ILAB_AWS_S3_EXPIRES'));
+		if (!empty($expires)) {
+			$this->expires = gmdate('D, d M Y H:i:s \G\M\T', time() + ($expires * 60));
+		}
+
 
 		if ($this->haveSettingsChanged()) {
 			$this->settingsChanged();
@@ -340,9 +347,19 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 		$file=fopen($upload_path.'/'.$filename,'r');
 		try
 		{
-			$options = array();
-			if ( $this->cacheControl !== "" ) {
-				$options['params'] = array('CacheControl'=>$this->cacheControl);
+			$options = [];
+			$params = [];
+
+			if (!empty($this->cacheControl)) {
+				$params['CacheControl'] = $this->cacheControl;
+			}
+
+			if (!empty($this->expires)) {
+				$params['Expires'] = $this->expires;
+			}
+
+			if (!empty($params)) {
+				$options['params'] = $params;
 			}
 
 			$result = $s3->upload($this->bucket,$prefix.$bucketFilename,$file,'public-read', $options);
