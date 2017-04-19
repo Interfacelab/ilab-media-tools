@@ -2,10 +2,10 @@
 Contributors: interfacelab
 Tags: media, images, cdn, uploads, crop, imgix, s3, cloudfront, aws, amazon s3, image editing, image editor, mirror, media library, offload, offload s3
 Requires at least: 4.4
-Tested up to: 4.5
+Tested up to: 4.7.3
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 1.2.2
+Stable tag: 1.2.3
 
 Set of tools for enhancing media in WordPress.  Includes image cropper, host media from S3 or CDN, integrate with Imgix
 and an advanced image editor.
@@ -98,6 +98,9 @@ No, I'm just one very enthusiastic customer.
 5. Imgix settings.
 
 == Changelog ==
+
+= 1.2.3 =
+* Fix for importing non-image files to S3 with the importer tool
 
 = 1.2.2 =
 * Ability to specify Cache-Control and Expires metadata for S3 uploads (thanks to metadan)
