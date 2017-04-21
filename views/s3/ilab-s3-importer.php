@@ -29,11 +29,8 @@
 			<li>This process DOES NOT delete your files on your server, you'll have to do that yourself manually.</li>
 			<li>It's recommended that you have the S3 tool disabled in <a href="admin.php?page=media-tools-top">Tools Settings</a> before running this task.</li>
 		</ol>
-        <div style="margin-top: 2em;">
-            <input type="checkbox" name="import-non-image" id="ilab-import-non-image" style="vertical-align: -5px; margin-right: 8px;"><label for="ilab-import-non-image">Import non-image files like zip files, Word documents, etc.</label>
-        </div>
 		<div style="margin-top: 2em;">
-			<a href="#" class="ilab-ajax button">Import Media</a>
+			<a href="#" class="ilab-ajax button">Import Uploads</a>
 		</div>
 	</div>
 	<div id="s3-importer-progress" {{($status!="running") ? 'style="display:none"':''}}>
@@ -56,11 +53,8 @@
 
 					importing=true;
 
-                    var importDocs = document.getElementById('ilab-import-non-image').checked;
-
 					var data={
-						action: 'ilab_s3_import_media',
-                        importDocs: (importDocs) ? 1 : 0
+						action: 'ilab_s3_import_media'
 					};
 
 					$.post(ajaxurl,data,function(response){

@@ -1,26 +1,20 @@
-=== Plugin Name ===
+=== Media Cloud by ILAB ===
 Contributors: interfacelab
 Tags: media, images, cdn, uploads, crop, imgix, s3, cloudfront, aws, amazon s3, image editing, image editor, mirror, media library, offload, offload s3
 Requires at least: 4.4
-Tested up to: 4.7.3
+Tested up to: 4.7.4
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 1.2.3
+Stable tag: 1.2.4
 
-Set of tools for enhancing media in WordPress.  Includes image cropper, host media from S3 or CDN, integrate with Imgix
-and an advanced image editor.
-
+Automatically upload media to Amazon S3 and integrate with Imgix, a real-time image processing CDN.  Boosts site
+performance and simplifies workflows.
 
 == Description ==
 
-ILAB Media Tools are a suite of tools designed to enhance media handling in WordPress in a number of ways.
+Media Cloud by ILAB is a suite of tools designed to enhance media handling in WordPress in a number of ways.
 
 **NOTE**: This plugin requires PHP 5.5x or higher (PHP 7.x preferred)
-
-= Image Cropping =
-ILAB Media Tools ships with the most advanced image cropping tool
-available for WordPress, based on Chen Fengyuan's amazing Cropper
-plugin for jQuery.
 
 = Upload to S3 =
 Automatically copy media uploads to S3 and hosts your media directly
@@ -36,17 +30,22 @@ processing and automatic format delivery.  Forget ImageMagick, Imgix
 is light years ahead in quality and speed.
 
 = Advanced Image Editing =
-When integrating with [Imgix](https://imgix.com), ILAB Media Tools provides the most
+When integrating with [Imgix](https://imgix.com), Media Cloud by ILAB provides the most
 advanced WordPress image editor.  Alter contrast, saturation, vibrancy
 and over 30 other image editing operations - in real time right inside
 the WordPress admin interface!  Completely non-destructive!
 
+= Image Cropping =
+Media Cloud by ILAB ships with the most advanced image cropping tool
+available for WordPress, based on Chen Fengyuan's amazing Cropper
+plugin for jQuery.
+
 **Best of all you get this functionality for free.**
 
-* Advanced image cropping tool
 * Upload to S3
 * Host media from S3 or any CDN that can connect to S3
 * Integrate with Imgix media hosting
+* Advanced image cropping tool
 * Advanced image editing with saturation, contrast, auto-correct,
   sharpen, blur and more (only when integrated with Imgix)
 
@@ -99,6 +98,10 @@ No, I'm just one very enthusiastic customer.
 
 == Changelog ==
 
+= 1.2.4 =
+* Changed plugin name
+
+
 = 1.2.3 =
 * Fix for importing non-image files to S3 with the importer tool
 
@@ -126,7 +129,7 @@ No, I'm just one very enthusiastic customer.
 = 1.0.5 =
 * Improved compatibility with other plugins that are using the AWS SDK.  There should be zero compatibility issues.
 * Forward compatibility with Offload S3.  Any media uploaded with Offload S3 will continue to work normally when
-  switching to ILAB Media Tools.
+  switching to Media Cloud by ILAB.
 * Check to make sure WordPress is being run on 5.5 or better.
 
 = 1.0.4 =

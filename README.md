@@ -1,11 +1,6 @@
-# ILAB Media Tools
+# Media Cloud by ILAB
 
-ILAB Media Tools are a suite of tools designed to enhance media handling in WordPress in a number of ways.
-
-##### Image Cropping
-ILAB Media Tools ships with the most advanced image cropping tool 
-available for WordPress, based on Chen Fengyuan's amazing Cropper 
-plugin for jQuery.
+Media Cloud by ILAB is a suite of tools designed to enhance media handling in WordPress in a number of ways.
 
 ##### Upload to S3
 Automatically copy media uploads to S3 and hosts your media directly 
@@ -21,17 +16,22 @@ processing and automatic format delivery.  Forget ImageMagick, Imgix
 is light years ahead in quality and speed.
 
 ##### Advanced Image Editing
-When integrating with [Imgix](https://imgix.com), ILAB Media Tools provides the most 
+When integrating with [Imgix](https://imgix.com), Media Cloud by ILAB provides the most 
 advanced WordPress image editor.  Alter contrast, saturation, vibrancy
 and over 30 other image editing operations - in real time right inside
 the WordPress admin interface!  Completely non-destructive!
 
+##### Image Cropping
+Media Cloud by ILAB ships with the most advanced image cropping tool 
+available for WordPress, based on Chen Fengyuan's amazing Cropper 
+plugin for jQuery.
+
 **Best of all you get this functionality for free.**
 
-* Advanced image cropping tool
 * Upload to S3
 * Host media from S3 or any CDN that can connect to S3
 * Integrate with Imgix media hosting
+* Advanced image cropping tool
 * Advanced image editing with saturation, contrast, auto-correct, 
   sharpen, blur and more (only when integrated with Imgix)
   

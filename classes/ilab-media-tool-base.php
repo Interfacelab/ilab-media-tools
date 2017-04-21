@@ -232,7 +232,7 @@ abstract class ILabMediaToolBase {
                                 $this->registerPasswordFieldSetting($option,$optionInfo['title'],$group,(isset($optionInfo['description']) ? $optionInfo['description'] : null));
                                 break;
                             case 'checkbox':
-                                $this->registerCheckboxFieldSetting($option,$optionInfo['title'],$group,(isset($optionInfo['description']) ? $optionInfo['description'] : null));
+                                $this->registerCheckboxFieldSetting($option,$optionInfo['title'],$group,(isset($optionInfo['description']) ? $optionInfo['description'] : null), (isset($optionInfo['default'])) ? $optionInfo['default'] : false);
                                 break;
                             case 'number':
                                 $this->registerNumberFieldSetting($option,$optionInfo['title'],$group,(isset($optionInfo['description']) ? $optionInfo['description'] : null));
@@ -352,15 +352,15 @@ abstract class ILabMediaToolBase {
             echo "<p class='description'>".$args['description']."</p>";
     }
 
-    protected function registerCheckboxFieldSetting($option_name,$title,$settings_slug,$description=null)
+    protected function registerCheckboxFieldSetting($option_name,$title,$settings_slug,$description=null, $default=false)
     {
-        add_settings_field($option_name,$title,[$this,'renderCheckboxFieldSetting'],$this->options_page,$settings_slug,['option'=>$option_name,'description'=>$description]);
+        add_settings_field($option_name,$title,[$this,'renderCheckboxFieldSetting'],$this->options_page,$settings_slug,['option'=>$option_name,'description'=>$description, 'default' => $default]);
 
     }
 
     public function renderCheckboxFieldSetting($args)
     {
-        $value=get_option($args['option']);
+        $value=get_option($args['option'], $args['default']);
         echo "<input type=\"checkbox\" name=\"{$args['option']}\" ".(($value) ? 'checked':'').">";
         if ($args['description'])
             echo "<p class='description'>".$args['description']."</p>";

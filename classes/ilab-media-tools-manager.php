@@ -43,7 +43,7 @@ class ILabMediaToolsManager
 
 
         add_action('admin_menu', function(){
-            add_menu_page('Settings', 'ILab Media Tools', 'manage_options', 'media-tools-top', [$this,'renderSettings'],'dashicons-image-crop');
+            add_menu_page('Settings', 'Media Cloud', 'manage_options', 'media-tools-top', [$this,'renderSettings'],'dashicons-cloud');
             add_submenu_page( 'media-tools-top', 'ILab Tools', 'Tools', 'manage_options', 'media-tools-top', [$this,'renderSettings']);
 
             add_settings_section('ilab-media-tools','Enabled Tools',[$this,'renderSettingsSection'],'media-tools-top');
@@ -56,6 +56,8 @@ class ILabMediaToolsManager
                 $tool->registerMenu('media-tools-top');
                 $tool->registerSettings();
             }
+
+	        add_submenu_page( 'media-tools-top', 'Plugin Support', 'Support', 'manage_options', 'media-tools-support', [$this,'renderSupport']);
         });
     }
 
@@ -124,6 +126,10 @@ class ILabMediaToolsManager
     public function renderSettingsSection()
     {
         echo 'Enabled/disable tools.';
+    }
+
+    public function renderSupport() {
+        echo render_view('base/ilab-support.php', []);
     }
 
     public function renderToolSettings($args)

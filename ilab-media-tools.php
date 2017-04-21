@@ -1,11 +1,11 @@
 <?php
 /*
-Plugin Name: ILAB Media Tools
+Plugin Name: Media Cloud by ILAB
 Plugin URI: http://interfacelab.com/media-tools
-Description: Complete media management tools
-Author: Jon Gilkison
-Version: 1.2.3
-Author URI: http://interfacelab.com
+Description: Automatically upload media to Amazon S3 and integrate with Imgix, a real-time image processing CDN.  Boosts site performance and simplifies workflows.
+Author: interfacelab
+Version: 1.2.4
+Author URI: http://interfacelab.io
 */
 
 // Copyright (c) 2016 Interfacelab LLC. All rights reserved.

@@ -410,6 +410,17 @@
               "type": "text-field",
               "watch": true
             },
+            "ilab-media-s3-upload-documents": {
+              "title": "Upload Non-image Files",
+              "description": "Upload non-image files such as Word documents, PDF files, zip files, etc.",
+              "type": "checkbox",
+              "default": true
+            },
+            "ilab-media-s3-ignored-mime-types": {
+              "title": "Ignored MIME Types",
+              "description": "List of MIME types to ignore.  Any files with matching MIME types will not be uploaded to S3.",
+              "type": "text-area"
+            },
             "ilab-media-s3-delete-uploads": {
               "title": "Delete Uploaded Files",
               "description": "Deletes uploaded files from the WordPress server after they've been uploaded to S3.",
