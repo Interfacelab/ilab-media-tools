@@ -193,6 +193,16 @@
             <td>Returns the <strong>$params</strong> array that may or may not have been modified.</td>
         </tr>
         <tr>
+            <td><strong>ilab_imgix_enabled</strong></td>
+            <td>Determines if imgix is enabled.</td>
+            <td>
+                <ul>
+                    <li><strong>$isEnabled</strong> - Boolean that determines if imgix is enabled.</li>
+                </ul>
+            </td>
+            <td>Returns true if enabled.</td>
+        </tr>
+        <tr>
             <td><strong>ilab_s3_can_calculate_srcset</strong></td>
             <td>Determines if the S3 tool can calculate the srcset of an image.  This would allow you to override how S3 generates the image's srcset when WordPress requests it.</td>
             <td>
@@ -203,14 +213,28 @@
             <td>Returns a boolean that determines if S3 can calculate it or not.</td>
         </tr>
         <tr>
-            <td><strong>ilab_imgix_enabled</strong></td>
-            <td>Determines if imgix is enabled.</td>
+            <td><strong>ilab_s3_upload_params</strong></td>
+            <td>Modify the parameters for the S3 upload.</td>
             <td>
                 <ul>
-                    <li><strong>$isEnabled</strong> - Boolean that determines if imgix is enabled.</li>
+                    <li><strong>$params</strong> - The current list of params.</li>
+                    <li><strong>$id</strong> - The ID of the attachment.</li>
+                    <li><strong>$data</strong> - The complete metadata for the attachment.</li>
                 </ul>
             </td>
-            <td>Returns true if enabled.</td>
+            <td>Returns the <strong>$params</strong> array that may or may not have been modified.</td>
+        </tr>
+        <tr>
+            <td><strong>ilab_s3_upload_options</strong></td>
+            <td>Modify the options for the S3 upload.</td>
+            <td>
+                <ul>
+                    <li><strong>$options</strong> - The current array of options for the upload.</li>
+                    <li><strong>$id</strong> - The ID of the attachment.</li>
+                    <li><strong>$data</strong> - The complete metadata for the attachment.</li>
+                </ul>
+            </td>
+            <td>Returns the <strong>$options</strong> array that may or may not have been modified.</td>
         </tr>
         </tbody>
     </table>
