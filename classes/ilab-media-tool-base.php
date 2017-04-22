@@ -57,6 +57,12 @@ abstract class ILabMediaToolBase {
      */
     protected $options_group;
 
+	/**
+	 * The name of the environment variable
+	 * @var string
+	 */
+    protected $env_variable;
+
     private $select_options = [];
 
     /**
@@ -72,6 +78,10 @@ abstract class ILabMediaToolBase {
         $this->settingSections=[];
         $this->toolInfo=$toolInfo;
         $this->toolManager=$toolManager;
+
+        if (isset($toolInfo['env'])) {
+        	$this->env_variable = $toolInfo['env'];
+        }
 
         if (isset($toolInfo['settings']['options-page']))
             $this->options_page=$toolInfo['settings']['options-page'];
@@ -121,7 +131,7 @@ abstract class ILabMediaToolBase {
      */
     public function enabled()
     {
-        $enabled=get_option("ilab-media-tool-enabled-$this->toolName",true);
+        $enabled=get_option("ilab-media-tool-enabled-$this->toolName",($this->env_variable) ? env($this->env_variable) : true);
 
         if ($enabled && isset($this->toolInfo['dependencies']))
         {
@@ -416,5 +426,18 @@ abstract class ILabMediaToolBase {
         }
 
         return false;
+    }
+
+    public function getOption($optionName, $envVariableName = null, $default = false) {
+    	if ($envVariableName == null) {
+    		$envVariableName = str_replace('-','_', strtoupper($optionName));
+	    }
+
+    	$envval = getenv($envVariableName);
+    	if ($envval) {
+    		return $envval;
+	    }
+
+        return get_option($optionName, $default);
     }
 }

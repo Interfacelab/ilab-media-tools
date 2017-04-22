@@ -49,33 +49,37 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 
 		new ILABS3ImportProcess();
 
-		$this->bucket=get_option('ilab-media-s3-bucket', getenv('ILAB_AWS_S3_BUCKET'));
-		$this->key = get_option('ilab-media-s3-access-key', getenv('ILAB_AWS_S3_ACCESS_KEY'));
-		$this->secret = get_option('ilab-media-s3-secret', getenv('ILAB_AWS_S3_ACCESS_SECRET'));
-		$this->deleteOnUpload = get_option('ilab-media-s3-delete-uploads', false);
-		$this->deleteFromS3 = get_option('ilab-media-s3-delete-from-s3', false);
-		$this->prefixFormat = get_option('ilab-media-s3-prefix', '');
-		$this->uploadDocs = get_option('ilab-media-s3-upload-documents',true);
+		$this->bucket = $this->getOption('ilab-media-s3-bucket', 'ILAB_AWS_S3_BUCKET');
+		$this->key = $this->getOption('ilab-media-s3-access-key', 'ILAB_AWS_S3_ACCESS_KEY');
+		$this->secret = $this->getOption('ilab-media-s3-secret', 'ILAB_AWS_S3_ACCESS_SECRET');
+		$this->deleteOnUpload = $this->getOption('ilab-media-s3-delete-uploads');
+		$this->deleteFromS3 = $this->getOption('ilab-media-s3-delete-from-s3');
+		$this->prefixFormat = $this->getOption('ilab-media-s3-prefix', '');
+		$this->uploadDocs = $this->getOption('ilab-media-s3-upload-documents', null, true);
 
-		$ignored = get_option('ilab-media-s3-ignored-mime-types','');
+		$ignored = $this->getOption('ilab-media-s3-ignored-mime-types',null,'');
 		$ignored_lines = explode("\n",$ignored);
+		if (count($ignored_lines)<=1) {
+			$ignored_lines = explode(',', $ignored);
+		}
 		foreach($ignored_lines as $d) {
 			if (!empty($d)) {
 				$this->ignoredMimeTypes[]=trim($d);
 			}
 		}
 
-		$this->cdn = get_option('ilab-media-s3-cdn-base', getenv('ILAB_AWS_S3_CDN_BASE'));
-		if ($this->cdn)
+		$this->cdn = $this->getOption('ilab-media-s3-cdn-base', 'ILAB_AWS_S3_CDN_BASE');
+		if ($this->cdn) {
 			$this->cdn=rtrim($this->cdn,'/');
+		}
 
-		$this->docCdn = get_option('ilab-doc-s3-cdn-base', $this->cdn);
+		$this->docCdn = $this->getOption('ilab-doc-s3-cdn-base', 'ILAB_AWS_S3_DOC_CDN_BASE', $this->cdn);
 
 		$this->settingsError = get_option('ilab-s3-settings-error', false);
 
-		$this->cacheControl = get_option('ilab-media-s3-cache-control', getenv('ILAB_AWS_S3_CACHE_CONTROL'));
+		$this->cacheControl = $this->getOption('ilab-media-s3-cache-control', 'ILAB_AWS_S3_CACHE_CONTROL');
 
-		$expires = get_option('ilab-media-s3-expires', getenv('ILAB_AWS_S3_EXPIRES'));
+		$expires = $this->getOption('ilab-media-s3-expires', 'ILAB_AWS_S3_EXPIRES');
 		if (!empty($expires)) {
 			$this->expires = gmdate('D, d M Y H:i:s \G\M\T', time() + ($expires * 60));
 		}
@@ -185,8 +189,18 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 	 */
 	public function updateAttachmentMetadata($data,$id)
 	{
-		if (!$data)
+		if (!$data) {
 			return $data;
+		}
+
+		if (!isset($data['file'])) {
+			$mime = get_post_mime_type($id);
+			$renderPDF = apply_filters('ilab_imgix_render_pdf', false);
+			if (($mime == 'application/pdf') && (!$renderPDF)) {
+				unset($data['sizes']);
+			}
+			return $data;
+		}
 
 		$upload_info=wp_upload_dir();
 		$upload_path=$upload_info['basedir'];

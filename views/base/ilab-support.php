@@ -1,6 +1,237 @@
-<div class="wrap">
-	<h1>Support</h1>
+<style>
+    .help-docs > h2 {
+        margin-top: 40px;
+    }
+    .help-docs > h2:first-of-type {
+        margin-top: 20px;
+    }
+
+    td > ul {
+        margin-top: 0px;
+        margin-bottom: 0px;
+    }
+</style>
+<div class="wrap help-docs">
+	<h1>Help and Support</h1>
+
+	<h2>Support Forum</h2>
 	<p>Please use the Interfacelab Discourse site for all support requests.  You can also use the Wordpress support forums, but I don't check them very frequently.</p>
-	<a href="https://discourse.interfacelab.io/c/media-cloud" target="_blank" class="button">Support Site</a>
+	<a href="https://discourse.interfacelab.io/c/media-cloud" target="_blank" class="button">Visit Support Site</a>
+
+	<h2>Environment Variables</h2>
+	<p>You can configure this plugin using the various pages, but it's highly recommended that you configure it through
+		environment variables.  This is particularly true if you are using Bedrock for Wordpress development.</p>
+	<p>Below is a list of all the environment variables you can use:</p>
+	<table class="wp-list-table widefat striped">
+		<thead>
+			<tr>
+				<th>Environment Variable</th>
+				<th>Type</th>
+				<th>Description</th>
+			</tr>
+		</thead>
+		<tbody>
+		<tr>
+			<td>ILAB_MEDIA_CROP_ENABLED</td>
+			<td>Boolean</td>
+			<td>Enable or disable the crop tool.</td>
+		</tr>
+		<tr>
+			<td>ILAB_MEDIA_IMGIX_ENABLED</td>
+			<td>Boolean</td>
+			<td>Enable or disable imgix support.</td>
+		</tr>
+		<tr>
+			<td>ILAB_MEDIA_S3_ENABLED</td>
+			<td>Boolean</td>
+			<td>Enable or disable s3 uploads.</td>
+		</tr>
+        <tr>
+            <td>ILAB_MEDIA_CROP_QUALITY</td>
+            <td>Number (1-100)</td>
+            <td>Compression quality for images cropped with the crop tool.</td>
+        </tr>
+        <tr>
+            <td>ILAB_MEDIA_IMGIX_DOMAINS</td>
+            <td>String</td>
+            <td>Comma separatred list of your source domains. For more information, please read the imgix documentation.</td>
+        </tr>
+        <tr>
+            <td>ILAB_MEDIA_IMGIX_USE_HTTPS</td>
+            <td>Boolean</td>
+            <td>Use HTTPS for image URLs.</td>
+        </tr>
+        <tr>
+            <td>ILAB_MEDIA_IMGIX_SIGNING_KEY</td>
+            <td>String</td>
+            <td>Optional signing key to create secure URLs. Recommended. For information on setting it up, refer to the imgix documentation.</td>
+        </tr>
+        <tr>
+            <td>ILAB_MEDIA_IMGIX_DEFAULT_QUALITY</td>
+            <td>Number (0-100)</td>
+            <td>Default quality for images when served from Imgix in a lossy format like jpeg or webp.</td>
+        </tr>
+        <tr>
+            <td>ILAB_MEDIA_IMGIX_AUTO_FORMAT</td>
+            <td>Boolean</td>
+            <td>Allows imgix to choose the most appropriate file format to deliver your image based on the requesting web browser.</td>
+        </tr>
+        <tr>
+            <td>ILAB_MEDIA_IMGIX_AUTO_COMPRESS</td>
+            <td>Boolean</td>
+            <td>Allows imgix to automatically compress your images.</td>
+        </tr>
+        <tr>
+            <td>ILAB_MEDIA_IMGIX_ENABLE_GIFS</td>
+            <td>Boolean</td>
+            <td>Enables support for animated GIFs. If this is not enabled, any uploaded GIFs will be converted.</td>
+        </tr>
+        <tr>
+            <td>ILAB_MEDIA_IMGIX_NO_GIF_SIZES</td>
+            <td>String</td>
+            <td>Comma separatred list of the image sizes that aren't allowed to have animated GIFs. These sizes will display jpegs instead.</td>
+        </tr>
+        <tr>
+            <td>ILAB_MEDIA_IMGIX_ENABLE_ALT_FORMATS</td>
+            <td>Boolean</td>
+            <td>Allow uploads of Photoshop PSDs, TIFF images and Adobe Illustrator documents.  Note that if you enable this, you'll only be able to view them as images on your site while Imgix is enabled.  Basically, once you head down this path, you cannot go back.</td>
+        </tr>
+        <tr>
+            <td>ILAB_MEDIA_IMGIX_RENDER_PDF_FILES</td>
+            <td>Boolean</td>
+            <td>Render PDF files as images.  Like the <em>ILAB_MEDIA_S3_IMGIX_ENABLE_ALT_FORMATS</em>, once you enable this option, you'll only be able to see the PDFs as images while Imgix is enabled.</td>
+        </tr>
+        <tr>
+            <td>ILAB_AWS_S3_BUCKET</td>
+            <td>String</td>
+            <td>The name of the bucket to use on S3.</td>
+        </tr>
+        <tr>
+            <td>ILAB_AWS_S3_ACCESS_KEY</td>
+            <td>String</td>
+            <td>Access key for Amazon S3.</td>
+        </tr>
+        <tr>
+            <td>ILAB_AWS_S3_ACCESS_SECRET</td>
+            <td>String</td>
+            <td>Secret key for Amazon S3.</td>
+        </tr>
+        <tr>
+            <td>ILAB_MEDIA_S3_DELETE_UPLOADS</td>
+            <td>Boolean</td>
+            <td>Delete uploads from the WordPress server after a successful upload to Amazon S3.</td>
+        </tr>
+        <tr>
+            <td>ILAB_MEDIA_S3_DELETE_FROM_S3</td>
+            <td>Boolean</td>
+            <td>Delete uploads from Amazon S3 when deleted from WordPress's media library.</td>
+        </tr>
+        <tr>
+            <td>ILAB_MEDIA_S3_PREFIX</td>
+            <td>String</td>
+            <td>This will prepend a prefix to any file uploaded to S3. For dynamically created prefixes, you can use the following variables: <code>@{date:format}</code>, <code>@{site-name}</code>, <code>@{site-host}</code>, <code>@{site-id}</code>, <code>@{versioning}</code>, <code>@{user-name}</code>, <code>@{unique-id}</code>, <code>@{unique-path}</code>. For the date token, format is any format string that you can use with php's <code>date()</code> function. Note that specifying a prefix here will remove WordPress's default date prefix. WordPress's default prefix would look like: <code>@{date:Y/m}</code>.</td>
+        </tr>
+        <tr>
+            <td>ILAB_MEDIA_S3_UPLOAD_DOCUMENTS</td>
+            <td>Boolean</td>
+            <td>Enables uploading non-image files such as Word documents, PDF files, zip files, etc. to Amazon S3.</td>
+        </tr>
+        <tr>
+            <td>ILAB_MEDIA_S3_IGNORED_MIME_TYPES</td>
+            <td>String</td>
+            <td>Comma separated list of mime types that should NOT be uploaded to S3.</td>
+        </tr>
+        <tr>
+            <td>ILAB_AWS_S3_CDN_BASE</td>
+            <td>String</td>
+            <td>This is the base URL for your CDN for serving images, including the scheme (meaning the http/https part).</td>
+        </tr>
+        <tr>
+            <td>ILAB_AWS_S3_DOC_CDN_BASE</td>
+            <td>String</td>
+            <td>This is the base URL for your CDN for serving non-image files, including the scheme (meaning the http/https part). This is separated for your convenience. If you don't specify a document CDN, it'll use the media/image CDN.</td>
+        </tr>
+        <tr>
+            <td>ILAB_AWS_S3_CACHE_CONTROL</td>
+            <td>String</td>
+            <td>Sets the Cache-Control metadata for an object in S3, e.g. public,max-age=2592000.</td>
+        </tr>
+        <tr>
+            <td>ILAB_AWS_S3_EXPIRES</td>
+            <td>String</td>
+            <td>Sets the Expire metadata for an object in S3. This is the number of minutes from the date of upload.</td>
+        </tr>
+		</tbody>
+	</table>
+
+	<h2>Filters</h2>
+	<p>This plugin exposes a few filter hooks that you can use to change the behavior of the plugin for whatever purposes.</p>
+    <p>For example, you may want to append parameters to an Imgix URL or override the default ones.  The following gist is an example of that:</p>
+    <script src="https://gist.github.com/jawngee/4e941a0f28149eaaa06499447e326698.js"></script>
+    <p>Below is a complete list of available filters:</p>
+    <table class="wp-list-table widefat striped">
+        <thead>
+        <tr>
+            <th>Filter Name</th>
+            <th>Description</th>
+            <th>Arguments</th>
+            <th>Returns</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><strong>ilab_imgix_filter_parameters</strong></td>
+            <td>Modifiy or append parameters to the Imgix URL.</td>
+            <td>
+                <ul>
+                    <li><strong>$params</strong> - The current list of params.</li>
+                    <li><strong>$size</strong> - The current name of the image size that the URL is being generated for.</li>
+                    <li><strong>$id</strong> - The ID of the attachment.</li>
+                    <li><strong>$meta</strong> - The complete metadata for the attachment.</li>
+                </ul>
+            </td>
+            <td>Returns the <strong>$params</strong> array that may or may not have been modified.</td>
+        </tr>
+        <tr>
+            <td><strong>ilab_s3_can_calculate_srcset</strong></td>
+            <td>Determines if the S3 tool can calculate the srcset of an image.  This would allow you to override how S3 generates the image's srcset when WordPress requests it.</td>
+            <td>
+                <ul>
+                    <li><strong>$canCalculate</strong> - Boolean that determines if S3 can calculate it or not.</li>
+                </ul>
+            </td>
+            <td>Returns a boolean that determines if S3 can calculate it or not.</td>
+        </tr>
+        <tr>
+            <td><strong>ilab_imgix_enabled</strong></td>
+            <td>Determines if imgix is enabled.</td>
+            <td>
+                <ul>
+                    <li><strong>$isEnabled</strong> - Boolean that determines if imgix is enabled.</li>
+                </ul>
+            </td>
+            <td>Returns true if enabled.</td>
+        </tr>
+        </tbody>
+    </table>
+
+	<h2>Actions</h2>
+	<p>This plugin exposes a single action hooks that you can use.</p>
+    <table class="wp-list-table widefat striped">
+        <thead>
+        <tr>
+            <th>Action Name</th>
+            <th>Description</th>
+            <th>Arguments</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><strong>ilab_imgix_setup</strong></td>
+            <td>Called after the Imgix tool has been setup.</td>
+            <td>None.</td>
+        </tr>
+        </tbody>
+    </table>
 
 </div>

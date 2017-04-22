@@ -57,7 +57,7 @@ class ILabMediaToolsManager
                 $tool->registerSettings();
             }
 
-	        add_submenu_page( 'media-tools-top', 'Plugin Support', 'Support', 'manage_options', 'media-tools-support', [$this,'renderSupport']);
+	        add_submenu_page( 'media-tools-top', 'Plugin Support', 'Help / Support', 'manage_options', 'media-tools-support', [$this,'renderSupport']);
         });
     }
 

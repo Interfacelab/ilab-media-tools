@@ -37,6 +37,9 @@ class ILabMediaImgixTool extends ILabMediaToolBase
     protected $paramProps;
     protected $noGifSizes;
     protected $useHTTPS;
+    protected $enabledAlternativeFormats;
+    protected $renderPDF;
+
 
     public function __construct($toolName, $toolInfo, $toolManager)
     {
@@ -47,8 +50,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
     {
         $enabled=parent::enabled();
 
-        if (!get_option('ilab-media-imgix-domains'))
-        {
+        if (!$this->getOption('ilab-media-imgix-domains')) {
             $this->displayAdminNotice('error',"To start using Imgix, you will need to <a href='admin.php?page=media-tools-imgix'>set it up</a>.", true, 'disable-ilab-imgix-warning');
             return false;
         }
@@ -82,27 +84,40 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         }
 
         $this->noGifSizes=[];
-        $noGifSizes=get_option('ilab-media-imgix-no-gif-sizes');
+        $noGifSizes=$this->getOption('ilab-media-imgix-no-gif-sizes', null, '');
         $noGifSizesArray=explode("\n",$noGifSizes);
-        foreach($noGifSizesArray as $gs)
-            if (!empty($gs))
-                $this->noGifSizes[]=trim($gs);
+        if (count($noGifSizesArray)<=1) {
+            $noGifSizesArray = explode(',',$noGifSizes);
+        }
+        foreach($noGifSizesArray as $gs) {
+	        if (!empty($gs)) {
+		        $this->noGifSizes[]=trim($gs);
+            }
+        }
 
         $this->imgixDomains=[];
-        $domains=get_option('ilab-media-imgix-domains');
+        $domains=$this->getOption('ilab-media-imgix-domains', null, '');
         $domain_lines=explode("\n",$domains);
-        foreach($domain_lines as $d)
-            if (!empty($d))
-                $this->imgixDomains[]=trim($d);
+	    if (count($domain_lines)<=1) {
+		    $domain_lines = explode(',',$domains);
+	    }
+        foreach($domain_lines as $d) {
+	        if (!empty($d)) {
+		        $this->imgixDomains[]=trim($d);
+            }
+        }
 
-        $this->useHTTPS=get_option('ilab-media-imgix-use-https',true);
+        $this->useHTTPS=$this->getOption('ilab-media-imgix-use-https', null, true);
 
-        $this->signingKey=get_option('ilab-media-imgix-signing-key');
+        $this->signingKey=$this->getOption('ilab-media-imgix-signing-key');
 
-        $this->imageQuality=get_option('ilab-media-imgix-default-quality');
-        $this->autoFormat=get_option('ilab-media-imgix-auto-format');
-        $this->autoCompress=get_option('ilab-media-imgix-auto-compress');
-	    $this->enableGifs=get_option('ilab-media-imgix-enable-gifs');
+        $this->imageQuality=$this->getOption('ilab-media-imgix-default-quality');
+        $this->autoFormat=$this->getOption('ilab-media-imgix-auto-format');
+        $this->autoCompress=$this->getOption('ilab-media-imgix-auto-compress');
+	    $this->enableGifs=$this->getOption('ilab-media-imgix-enable-gifs');
+
+	    $this->enabledAlternativeFormats = $this->getOption('ilab-media-imgix-enable-alt-formats');
+	    $this->renderPDF = $this->getOption('ilab-media-imgix-render-pdf-files');
 
         add_filter('wp_get_attachment_url', [$this, 'getAttachmentURL'], 10000, 2);
         add_filter('wp_prepare_attachment_for_js', array($this, 'prepareAttachmentForJS'), 1000, 3);
@@ -129,11 +144,39 @@ class ILabMediaImgixTool extends ILabMediaToolBase
             return $editors;
         });
 
-        add_filter('imgix_build_gif_mpeg4',[$this,'buildMpeg4'],0,3);
+	    if ($this->enabledAlternativeFormats) {
+		    add_filter('file_is_displayable_image',[$this,"fileIsDisplayableImage"],0,2);
+
+		    add_filter('upload_mimes', function($mime_types){
+			    $mime_types['ai']="application/vnd.adobe.illustrator";
+			    return $mime_types;
+		    }, 1, 1);
+
+		    add_filter('wp_generate_attachment_metadata',[$this, "generateAttachmentMetadata"],1000, 2);
+
+
+		    add_filter('wp_check_filetype_and_ext', function($file, $filePath, $filename, $mimes){
+			    if ($file['ext']=='psd') {
+				    $file['type']='image/psd';
+			    }
+
+			    if ($file['ext']=='ai') {
+				    $file['type']='application/vnd.adobe.illustrator';
+			    }
+
+			    return $file;
+		    }, 0, 4);
+        }
+
+	    add_filter('imgix_build_gif_mpeg4',[$this,'buildMpeg4'],0,3);
         add_filter('imgix_build_gif_jpeg',[$this,'buildGifJpeg'],0,3);
 
         add_filter('ilab_imgix_enabled',function(){
             return true;
+        });
+
+        add_filter('ilab_imgix_render_pdf',function(){
+            return $this->renderPDF;
         });
 
         do_action('ilab_imgix_setup');
@@ -162,15 +205,24 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         if (!$response || empty($response) || !isset($response['sizes']))
             return $response;
 
-        foreach($response['sizes'] as $key => $sizeInfo)
-            $response['sizes'][$key]['url']=$this->buildImgixImage($response['id'],$key)[0];
+        foreach($response['sizes'] as $key => $sizeInfo) {
+            $res = $this->buildImgixImage($response['id'],$key);
+            if (is_array($res)) {
+	            $response['sizes'][$key]['url']=$res[0];
+            }
+        }
 
         return $response;
     }
 
     public function getAttachmentURL($url, $post_id)
     {
-        $new_url=$this->buildImgixImage($post_id,'full')[0];
+        $res = $this->buildImgixImage($post_id,'full');
+        if (!$res || !is_array($res)) {
+            return $url;
+        }
+
+        $new_url=$res[0];
         if (!$new_url)
             return $url;
 
@@ -275,6 +327,10 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         if (!$meta || empty($meta))
             return false;
 
+        if (!isset($meta['s3'])) {
+            return [];
+        }
+
         $imgix=new Imgix\UrlBuilder($this->imgixDomains,$this->useHTTPS);
 
         if ($this->signingKey)
@@ -311,8 +367,23 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         $mimetype=get_post_mime_type($id);
 
         $meta=wp_get_attachment_metadata($id);
-        if (!$meta || empty($meta))
-            return false;
+        if (!$meta || empty($meta)) {
+	        if (($this->renderPDF && ($mimetype == 'application/pdf')) || ($this->enabledAlternativeFormats && ($mimetype == 'application/vnd.adobe.illustrator'))) {
+		        $meta = get_post_meta($id, 'ilab_s3_info', true);
+	        }
+
+	        if (!$meta || empty($meta)) {
+	            return false;
+            }
+        }
+
+	    if (!isset($meta['s3'])) {
+	        if (($this->renderPDF && ($mimetype == 'application/pdf')) || ($this->enabledAlternativeFormats && ($mimetype == 'application/vnd.adobe.illustrator'))) {
+	            $meta = get_post_meta($id, 'ilab_s3_info', true);
+            } else {
+		        return false;
+            }
+	    }
 
         $imgix=new Imgix\UrlBuilder($this->imgixDomains,$this->useHTTPS);
 
@@ -960,5 +1031,86 @@ class ILabMediaImgixTool extends ILabMediaToolBase
 
     public function buildSrcSetURL($post_id, $parentSize, $newSize) {
         return $this->buildImgixImage($post_id, $parentSize, null, false, null, $newSize);
+    }
+
+    public function generateAttachmentMetadata($metadata, $attachment_id) {
+        if (!$this->enabledAlternativeFormats) {
+	        return $metadata;
+        }
+
+	    $mime = get_post_mime_type($attachment_id);
+	    if ($mime == 'application/vnd.adobe.illustrator') {
+		    $file = get_attached_file($attachment_id);
+		    $fileName = pathinfo($file, PATHINFO_BASENAME);
+		    $fallback_sizes = array(
+			    'thumbnail',
+			    'medium',
+			    'large',
+		    );
+		    $fallback_sizes = apply_filters( 'fallback_intermediate_image_sizes', $fallback_sizes, $metadata );
+		    $additional_sizes = wp_get_additional_image_sizes();
+
+		    $metadata = [
+			    'sizes' => [
+				    'full' => [
+					    'file' => $fileName,
+					    'width' => null,
+					    'height' => null,
+					    'mime-type' => 'image/jpeg'
+				    ]
+			    ]
+		    ];
+
+		    foreach($fallback_sizes as $sz) {
+			    $metadata['sizes'][$sz]=[
+				    'file' => $fileName,
+				    'width' => get_option( "{$sz}_size_w" ),
+				    'height' => get_option( "{$sz}_size_h" ),
+				    'mime-type' => 'image/jpeg'
+			    ];
+		    }
+
+		    foreach($additional_sizes as $size => $sizeInfo) {
+			    if (isset($sizeInfo['crop']) && $sizeInfo['crop']) {
+				    $metadata['sizes'][$size] = [
+					    'file' => $fileName,
+					    'width' => $sizeInfo['width'],
+					    'height' => $sizeInfo['height'],
+					    'mime-type' => 'image/jpeg'
+				    ];
+			    }
+		    }
+
+		    $upload_info=wp_upload_dir();
+		    $upload_path=$upload_info['basedir'];
+		    $metadata['file']=trim(str_replace($upload_path,'',$file),'/');
+	    }
+
+	    return $metadata;
+    }
+
+    public function fileIsDisplayableImage($result, $path) {
+	    $mime = wp_get_image_mime($path);
+	    if (!$mime) {
+		    $mime = mime_content_type($path);
+		    $ext = pathinfo($path, PATHINFO_EXTENSION);
+		    if (('ai' == strtolower($ext)) && ("application/pdf" == $mime)) {
+			    return true;
+		    }
+	    }
+
+	    if ($mime == 'application/vnd.adobe.illustrator') {
+		    return true;
+	    }
+
+	    if ($mime =='image/tiff') {
+		    return true;
+	    }
+
+	    if ($mime =='image/psd') {
+		    return true;
+	    }
+
+	    return $result;
     }
 }

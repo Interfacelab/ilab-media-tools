@@ -23,9 +23,13 @@ require_once(ILAB_CLASSES_DIR.'/ilab-media-tool-view.php');
  */
 class ILabMediaCropTool extends ILabMediaToolBase
 {
+    protected $cropQuality = 100;
+
     public function __construct($toolName, $toolInfo, $toolManager)
     {
         parent::__construct($toolName, $toolInfo, $toolManager);
+
+        $this->cropQuality = $this->getOption('ilab-media-crop-quality', null, 100);
     }
 
     /**
@@ -331,7 +335,7 @@ class ILabMediaCropTool extends ILabMediaToolBase
         $dest_height = $crop_size['height'];
 
         $img_editor->crop($crop_x, $crop_y, $crop_width, $crop_height, $dest_width, $dest_height, false );
-        $img_editor->set_quality(get_option('ilab-media-crop-quality',92));
+        $img_editor->set_quality(get_option('ilab-media-crop-quality',env('ILAB_MEDIA_CROP_QUALITY')));
         $save_path_parts = pathinfo($img_path);
 
         $path_url=parse_url($img_path);
