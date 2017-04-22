@@ -213,18 +213,6 @@
             <td>Returns a boolean that determines if S3 can calculate it or not.</td>
         </tr>
         <tr>
-            <td><strong>ilab_s3_upload_params</strong></td>
-            <td>Modify the parameters for the S3 upload.</td>
-            <td>
-                <ul>
-                    <li><strong>$params</strong> - The current list of params.</li>
-                    <li><strong>$id</strong> - The ID of the attachment.</li>
-                    <li><strong>$data</strong> - The complete metadata for the attachment.</li>
-                </ul>
-            </td>
-            <td>Returns the <strong>$params</strong> array that may or may not have been modified.</td>
-        </tr>
-        <tr>
             <td><strong>ilab_s3_upload_options</strong></td>
             <td>Modify the options for the S3 upload.</td>
             <td>

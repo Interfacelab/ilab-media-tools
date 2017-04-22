@@ -406,8 +406,6 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 				$params['Expires'] = $this->expires;
 			}
 
-			$params = apply_filter('ilab_s3_upload_params', $params, $id, $data);
-
 			if (!empty($params)) {
 				$options['params'] = $params;
 			}
