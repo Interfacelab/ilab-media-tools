@@ -43,6 +43,8 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 	private $ignoredMimeTypes = [];
 	private $uploadDocs = true;
 
+	private $privacy = 'public-read';
+
 	public function __construct($toolName, $toolInfo, $toolManager)
 	{
 		parent::__construct($toolName, $toolInfo, $toolManager);
@@ -56,6 +58,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 		$this->deleteFromS3 = $this->getOption('ilab-media-s3-delete-from-s3');
 		$this->prefixFormat = $this->getOption('ilab-media-s3-prefix', '');
 		$this->uploadDocs = $this->getOption('ilab-media-s3-upload-documents', null, true);
+		$this->privacy = $this->getOption('ilab-media-s3-privacy', null, "public-read");
 
 		$ignored = $this->getOption('ilab-media-s3-ignored-mime-types',null,'');
 		$ignored_lines = explode("\n",$ignored);
@@ -412,7 +415,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 
 			$options = apply_filters('ilab_s3_upload_options', $options, $id, $data);
 
-			$result = $s3->upload($this->bucket,$prefix.$bucketFilename,$file,'public-read', $options);
+			$result = $s3->upload($this->bucket,$prefix.$bucketFilename,$file, $this->privacy, $options);
 
 			$data['s3']=[
 				'url' => $result->get('ObjectURL') ,

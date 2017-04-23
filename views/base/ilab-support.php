@@ -18,6 +18,10 @@
 	<p>Please use the Interfacelab Discourse site for all support requests.  You can also use the Wordpress support forums, but I don't check them very frequently.</p>
 	<a href="https://discourse.interfacelab.io/c/media-cloud" target="_blank" class="button">Visit Support Site</a>
 
+    <h2>Donate</h2>
+    <p>This plugin is free and will be free forever.  However, it's taken a lot of work to get it this far.  If this plugin is useful to you, please consider donating to my son's Juvenile Diabetes Research Foundation fundraiser.  He was diagnosed with type 1 diabetes last year at one year of age.  The JDRF is a research charity trying to find a cure for T1D.  They can use all the help they can get.</p>
+    <a href="http://www2.jdrf.org/site/TR?fr_id=6912&pg=personal&px=11429802" target="_blank" class="button">Donate to Diabetes Research</a>
+
 	<h2>Environment Variables</h2>
 	<p>You can configure this plugin using the various pages, but it's highly recommended that you configure it through
 		environment variables.  This is particularly true if you are using Bedrock for Wordpress development.</p>
@@ -130,6 +134,11 @@
             <td>ILAB_MEDIA_S3_PREFIX</td>
             <td>String</td>
             <td>This will prepend a prefix to any file uploaded to S3. For dynamically created prefixes, you can use the following variables: <code>@{date:format}</code>, <code>@{site-name}</code>, <code>@{site-host}</code>, <code>@{site-id}</code>, <code>@{versioning}</code>, <code>@{user-name}</code>, <code>@{unique-id}</code>, <code>@{unique-path}</code>. For the date token, format is any format string that you can use with php's <code>date()</code> function. Note that specifying a prefix here will remove WordPress's default date prefix. WordPress's default prefix would look like: <code>@{date:Y/m}</code>.</td>
+        </tr>
+        <tr>
+            <td>ILAB_MEDIA_S3_PRIVACY</td>
+            <td>String</td>
+            <td>This will set the privacy for each upload.  You should leave it as <code>public-read</code> unless you are using Imgix.</td>
         </tr>
         <tr>
             <td>ILAB_MEDIA_S3_UPLOAD_DOCUMENTS</td>

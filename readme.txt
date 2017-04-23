@@ -4,6 +4,7 @@ Tags: media, images, cdn, uploads, crop, imgix, s3, cloudfront, aws, amazon s3, 
 Requires at least: 4.4
 Tested up to: 4.7.4
 License: GPLv3 or later
+Donate link: http://www2.jdrf.org/site/TR?fr_id=6912&pg=personal&px=11429802
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 Stable tag: 1.2.4
 

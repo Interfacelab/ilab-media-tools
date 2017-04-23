@@ -411,6 +411,15 @@
               "type": "text-field",
               "watch": true
             },
+            "ilab-media-s3-privacy": {
+              "title": "Upload Privacy ACL",
+              "description": "This will set the privacy for each upload.  You should leave it as <code>public-read</code> unless you are using Imgix.",
+              "type": "select",
+              "options": {
+                "public-read": "public-read",
+                "authenticated-read": "authenticated-read"
+              }
+            },
             "ilab-media-s3-cache-control": {
               "title": "Cache Control",
               "description": "Sets the Cache-Control metadata for an object in S3, e.g. <code>public,max-age=2592000</code> - If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_AWS_S3_CACHE_CONTROL</strong>.",
