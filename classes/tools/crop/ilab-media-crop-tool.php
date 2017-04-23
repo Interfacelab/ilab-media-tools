@@ -386,7 +386,7 @@ class ILabMediaCropTool extends ILabMediaToolBase
         $img_editor->save($save_path . '/' . $filename);
 
         // Let S3 upload the new crop
-        $processedSize = apply_filters('ilab_s3_process_crop', $size, $filename, $meta['sizes'][$size]);
+        $processedSize = apply_filters('ilab_s3_process_crop', $size, $save_path, $filename, $meta['sizes'][$size]);
         if ($processedSize)
             $meta['sizes'][$size] = $processedSize;
 

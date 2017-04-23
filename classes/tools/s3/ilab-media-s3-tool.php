@@ -59,6 +59,10 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 		$this->prefixFormat = $this->getOption('ilab-media-s3-prefix', '');
 		$this->uploadDocs = $this->getOption('ilab-media-s3-upload-documents', null, true);
 		$this->privacy = $this->getOption('ilab-media-s3-privacy', null, "public-read");
+		if (!in_array($this->privacy, ['public-read', 'authenticated-read'])) {
+			$this->displayAdminNotice('error', "Your AWS S3 settings are incorrect.  The ACL '{$this->privacy}' is not valid.  Defaulting to 'public-read'.");
+			$this->privacy = 'public-read';
+		}
 
 		$ignored = $this->getOption('ilab-media-s3-ignored-mime-types',null,'');
 		$ignored_lines = explode("\n",$ignored);
@@ -140,8 +144,9 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 			add_filter('wp_update_attachment_metadata', [$this, 'updateAttachmentMetadata'], 1000, 2);
 			add_filter('delete_attachment', [$this, 'deleteAttachment'], 1000);
 			add_filter('wp_handle_upload', [$this, 'handleUpload'], 10000);
-			add_filter('ilab_s3_process_crop', [$this, 'processCrop'], 10000, 3);
+			add_filter('ilab_s3_process_crop', [$this, 'processCrop'], 10000, 4);
 			add_filter('get_attached_file', [$this, 'getAttachedFile'], 10000, 2);
+			add_filter('image_downsize', [$this, 'imageDownsize'], 999, 3 );
 
 			add_filter('ilab_s3_process_file_name', function($filename) {
 				if (strpos($filename,'/'.$this->bucket) === 0)
@@ -242,13 +247,14 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 		return $data;
 	}
 
-	public function processCrop($size, $file, $sizeMeta) {
+	public function processCrop($size, $upload_path, $file, $sizeMeta) {
 		$upload_info=wp_upload_dir();
-		$upload_path=$upload_info['basedir'];
+		$subdir = trim(str_replace($upload_info['basedir'], '', $upload_path), '/');
+		$upload_path = rtrim(str_replace($subdir, '', $upload_path), '/');
 
 		$s3=$this->s3Client(true);
 		if ($s3) {
-			$sizeMeta = $this->processFile($s3, $upload_path, trim($upload_info['subdir'],'/').'/'.$file, $size);
+			$sizeMeta = $this->processFile($s3, $upload_path, $subdir.'/'.$file, $sizeMeta);
 		}
 
 		return $sizeMeta;
@@ -728,5 +734,32 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 		}
 
 		return $file;
+	}
+	public function imageDownsize($fail,$id,$size)
+	{
+		if (apply_filters('ilab_imgix_enabled', false)) {
+			return $fail;
+		}
+
+		$meta=wp_get_attachment_metadata($id);
+		if (!isset($meta['sizes']) && !isset($meta['sizes'][$size])) {
+			return $fail;
+		}
+
+		$sizeMeta = $meta['sizes'][$size];
+		if (!isset($sizeMeta['s3'])) {
+			return $fail;
+		}
+
+		$url = $sizeMeta['s3']['url'];
+
+		$result=[
+			$url,
+			$sizeMeta['width'],
+			$sizeMeta['height'],
+		    true
+		];
+
+		return $result;
 	}
 }

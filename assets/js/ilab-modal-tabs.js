@@ -102,7 +102,7 @@
             }
 
             var checkOverflow=function(){
-                if (minWidth > windowContainer.width()) {
+                if (minWidth > (windowContainer.width() - 350)) {
                     label.show();
                     select.show();
                     tabs.hide();

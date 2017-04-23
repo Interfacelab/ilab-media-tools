@@ -138,7 +138,7 @@
         <tr>
             <td>ILAB_MEDIA_S3_PRIVACY</td>
             <td>String</td>
-            <td>This will set the privacy for each upload.  You should leave it as <code>public-read</code> unless you are using Imgix.</td>
+            <td>This will set the privacy for each upload.  You should leave it as <code>public-read</code> unless you are using Imgix.  Valid values are <code>public-read</code> and <code>authenticated-read</code>.</td>
         </tr>
         <tr>
             <td>ILAB_MEDIA_S3_UPLOAD_DOCUMENTS</td>
