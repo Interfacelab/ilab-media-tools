@@ -147,6 +147,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 			add_filter('ilab_s3_process_crop', [$this, 'processCrop'], 10000, 4);
 			add_filter('get_attached_file', [$this, 'getAttachedFile'], 10000, 2);
 			add_filter('image_downsize', [$this, 'imageDownsize'], 999, 3 );
+			add_filter('wp_prepare_attachment_for_js', [$this, 'prepareAttachmentForJS'], 999, 3);
 
 			add_filter('ilab_s3_process_file_name', function($filename) {
 				if (strpos($filename,'/'.$this->bucket) === 0)
@@ -166,6 +167,67 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 		}
 
 		add_filter('wp_get_attachment_url', [$this, 'getAttachmentURL'], 1000, 2 );
+
+		$this->hookupUI();
+	}
+
+	private function hookupUI() {
+		add_action( 'wp_enqueue_media', function () {
+			add_action('admin_footer', function(){
+				?>
+				<script>
+                    jQuery(document).ready(function() {
+                        var attachTemplate = jQuery('#tmpl-attachment-details-two-column');
+                        if (attachTemplate) {
+                            var txt = attachTemplate.text();
+                            var idx = txt.indexOf('<div class="compat-meta">');
+                            txt = txt.slice(0, idx) + '<# if ( data.s3 ) { #><div><strong>Bucket:</strong> {{data.s3.bucket}}</div><div><strong>Path:</strong> {{data.s3.key}}</div><div><strong>Access:</strong> {{data.s3.privacy}}</div><# if ( data.s3.options ) { #><div><strong>S3 Cache-Control:</strong> {{data.s3.options.params.CacheControl}}</div><div><strong>S3 Expires:</strong> {{data.s3.options.params.Expires}}</div><# } #><div><a href="{{data.s3.url}}" target="_blank">Original S3 URL</a></div><# } #>' + txt.slice(idx);
+                            attachTemplate.text(txt);
+                        }
+                    });
+				</script>
+				<?php
+			} );
+		} );
+
+		add_action('admin_init',function(){
+			add_meta_box('ilab-s3-info-meta','S3 Info',[$this,'renderS3InfoMeta'], 'attachment', 'side', 'low');
+		});
+	}
+
+	public function renderS3InfoMeta() {
+		global $post;
+
+		$meta = wp_get_attachment_metadata($post->ID);
+		if (!isset($meta['s3'])) {
+			$meta = get_post_meta($post->ID, 'ilab_s3_info', true);
+		}
+
+		if (!isset($meta['s3'])) {
+			?>
+			Not uploaded to S3.
+			<?php
+		}
+		?>
+			<div class="misc-pub-section">
+				Bucket: <strong><?php echo $meta['s3']['bucket']?></strong>
+			</div>
+		<div class="misc-pub-section">
+			Path: <strong><?php echo $meta['s3']['key']?></strong>
+		</div>
+		<div class="misc-pub-section">
+			Access: <strong><?php echo (isset($meta['s3']['privacy'])) ? $meta['s3']['privacy'] : $this->privacy ?></strong>
+		</div>
+		<div class="misc-pub-section">
+			Cache-Control: <strong><?php echo (isset($meta['s3']['options']) && isset($meta['s3']['options']['params']['CacheControl'])) ? $meta['s3']['options']['params']['CacheControl'] : 'None' ?></strong>
+		</div>
+		<div class="misc-pub-section">
+			Expires: <strong><?php echo (isset($meta['s3']['options']) && isset($meta['s3']['options']['params']['Expires'])) ? $meta['s3']['options']['params']['Expires'] : 'None' ?></strong>
+		</div>
+		<div class="misc-pub-section">
+			<a href="<?php echo $meta['s3']['url']?>" target="_blank">View S3 URL</a></strong>
+		</div>
+		<?php
 	}
 
 
@@ -426,7 +488,9 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 			$data['s3']=[
 				'url' => $result->get('ObjectURL') ,
 				'bucket'=>$this->bucket,
-				'key'=> $prefix.$bucketFilename
+				'privacy' => $this->privacy,
+				'key'=> $prefix.$bucketFilename,
+			    'options' => $options
 			];
 		}
 		catch (\ILAB_Aws\Exception\AwsException $ex)
@@ -761,5 +825,17 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 		];
 
 		return $result;
+	}
+
+	public function prepareAttachmentForJS($response, $attachment, $meta ) {
+		if (isset($meta['s3'])) {
+			$response['s3'] = $meta['s3'];
+
+			if (!isset($response['s3']['privacy'])) {
+				$response['s3']['privacy'] = $this->privacy;
+			}
+		}
+
+		return $response;
 	}
 }
