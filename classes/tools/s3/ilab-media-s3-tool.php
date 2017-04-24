@@ -45,6 +45,8 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 
 	private $privacy = 'public-read';
 
+	private $skipUpdate = false;
+
 	public function __construct($toolName, $toolInfo, $toolManager)
 	{
 		parent::__construct($toolName, $toolInfo, $toolManager);
@@ -375,6 +377,10 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 	 */
 	public function updateAttachmentMetadata($data,$id)
 	{
+	    if ($this->skipUpdate) {
+	        return $data;
+        }
+        
 		if (!$data) {
 			return $data;
 		}
@@ -707,7 +713,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 		}
 	}
 
-	private function getOffloadS3URL($info) {
+	private function getOffloadS3URL($post_id, $info) {
 
 		if (!is_array($info) && (count($info)<1))
 			return null;
@@ -755,7 +761,23 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 				$meta = get_post_meta($post_id, 'amazonS3_info');
 
 				if ($meta) {
-					$new_url = $this->getOffloadS3URL($meta);
+					$new_url = $this->getOffloadS3URL($post_id, $meta);
+
+					$s3Data=$meta[0];
+					$s3Data['url'] = $new_url;
+					$s3Data['privacy'] = 'public-read';
+
+					$this->skipUpdate = true;
+
+					$imageMeta = wp_get_attachment_metadata($post_id);
+					if ($imageMeta) {
+					    $imageMeta['s3'] = $s3Data;
+					    wp_update_attachment_metadata($post_id, $imageMeta);
+                    } else {
+					    update_post_meta($post_id, ['s3' => $s3Data]);
+                    }
+
+					$this->skipUpdate = false;
 				}
 			}
 
