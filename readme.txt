@@ -6,7 +6,7 @@ Tested up to: 4.7.4
 License: GPLv3 or later
 Donate link: http://www2.jdrf.org/site/TR?fr_id=6912&pg=personal&px=11429802
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 1.2.4
+Stable tag: 1.4
 
 Automatically upload media to Amazon S3 and integrate with Imgix, a real-time image processing CDN.  Boosts site
 performance and simplifies workflows.
@@ -99,9 +99,19 @@ No, I'm just one very enthusiastic customer.
 
 == Changelog ==
 
-= 1.2.4 =
+= 1.4 =
 * Changed plugin name
-
+* Ability to import non-standard image types such as TIFF, Adobe Photoshop, and Adobe Illustrator (requires Imgix)
+* Ability to render PDF as images (requires Imgix)
+* Turn off auto-upload for non-image types
+* Specify specific MIME types to NOT upload to S3
+* Improved compatibility with Offload S3
+* Added ilab_s3_upload_params filter for the ability to specify custom S3 metadata for each upload
+* Ability to define custom ACL for uploads
+* S3 info displayed in Attachment Details pop up modal
+* S3 metabox added to Attachment edit pages, allowing you to edit the Cache-Control, Expires and ACL for the S3 upload
+* Fix for cropping images on S3
+* Other bug fixes.
 
 = 1.2.3 =
 * Fix for importing non-image files to S3 with the importer tool
