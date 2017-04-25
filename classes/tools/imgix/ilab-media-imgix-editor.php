@@ -58,10 +58,8 @@ class ILabImgixImageEditor extends WP_Image_Editor
         $url=parse_url($this->file);
         if (($url!==false) && (isset($url['scheme'])) && ($url['scheme']!='file'))
         {
-	        error_log("[image-editor] File '$this->file' is remote.");
 	        global $wpdb;
 	        $pid = $wpdb->get_var($wpdb->prepare("select ID from $wpdb->posts where post_type ='attachment' and guid like %s", '%'.$url['path']));
-			error_log("[image-editor] Search for attachment named {$url['path']}.  Found: $pid");
 	        if (!empty($pid)) {
 		        $meta = wp_get_attachment_metadata($pid);
 		        if (isset($meta['width']) && isset($meta['height'])) {
@@ -79,11 +77,8 @@ class ILabImgixImageEditor extends WP_Image_Editor
 	        $this->sourceFile=$tmpPath.'/'.preg_replace('/[^\x20-\x7E]/','', $info['basename']);
 	        if (!file_exists($this->sourceFile))
 	        {
-		        error_log("[image-editor] File is remote.  Downloading $this->file to $this->sourceFile.");
 		        file_put_contents($this->sourceFile,file_get_contents($this->file));
 	        }
-	        else
-		        error_log("[image-editor] File exists as $this->sourceFile.");
 
 	        file_put_contents($this->sourceFile,file_get_contents($this->file));
 
@@ -130,11 +125,8 @@ class ILabImgixImageEditor extends WP_Image_Editor
 
     public function resize( $max_w, $max_h, $crop = false )
     {
-        error_log("[image-editor] Resize width:$max_w height:$max_h crop:$crop");
-
         if ( ( $this->size['width'] == $max_w ) && ( $this->size['height'] == $max_h ) )
         {
-            error_log("[image-editor] Same size. Exiting resize.");
             return true;
         }
 
@@ -143,8 +135,6 @@ class ILabImgixImageEditor extends WP_Image_Editor
         {
             $newSize=sizeToFitSize($this->size['width'],$this->size['height'],$max_w,$max_h);
             list($newWidth,$newHeight)=$newSize;
-
-            error_log("[image-editor] New size, width:$newWidth height:$newHeight");
 
             return $this->update_size( $newWidth, $newHeight );
         }
@@ -163,19 +153,13 @@ class ILabImgixImageEditor extends WP_Image_Editor
     }
 
     public function multi_resize( $sizes ) {
-        error_log("[image-editor] Multi-resize.");
-
         $metadata = array();
         $orig_size = $this->size;
 
         foreach ( $sizes as $size => $size_data ) {
-            error_log("[image-editor] Generating $size.");
-
             $this->currentSize=$size;
 
             if ( ! isset( $size_data['width'] ) && ! isset( $size_data['height'] ) ) {
-                error_log("[image-editor] Invalid size $size.");
-
                 continue;
             }
 
@@ -195,7 +179,6 @@ class ILabImgixImageEditor extends WP_Image_Editor
             $metadata[$size] = $resized;
 
             $this->size = $orig_size;
-            error_log("[image-editor] Finished generating $size");
         }
 
         return $metadata;
@@ -203,8 +186,6 @@ class ILabImgixImageEditor extends WP_Image_Editor
 
     public function crop( $src_x, $src_y, $src_w, $src_h, $dst_w = null, $dst_h = null, $src_abs = false )
     {
-        error_log("[image-editor] Crop x:$src_x y:$src_y width:$src_w height:$src_h dest width:$dst_w dest height:$dst_h absolute:$src_abs");
-
         return $this->update_size($dst_w,$dst_h);
     }
 

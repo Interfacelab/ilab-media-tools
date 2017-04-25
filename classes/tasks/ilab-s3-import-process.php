@@ -35,11 +35,6 @@ class ILABS3ImportProcess extends WP_Background_Process {
 		update_option('ilab_s3_import_current', $index+1);
 
 		$data = wp_get_attachment_metadata($post_id);
-		if ($data) {
-			error_log("IMPORT DATA: ".json_encode($data, JSON_PRETTY_PRINT));
-		} else {
-			error_log("IMPORT DATA DOES NOT EXIST.");
-		}
 
 		if (empty($data)) {
 			$isDocument = true;
@@ -106,8 +101,6 @@ class ILABS3ImportProcess extends WP_Background_Process {
 					}
 				}
 			}
-
-			error_log("FOUND DATA: ".json_encode($data, JSON_PRETTY_PRINT));
 		}
 
 		$s3tool = ILabMediaToolsManager::instance()->tools['s3'];
