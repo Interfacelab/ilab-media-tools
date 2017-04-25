@@ -131,7 +131,8 @@ abstract class ILabMediaToolBase {
      */
     public function enabled()
     {
-        $enabled=get_option("ilab-media-tool-enabled-$this->toolName",($this->env_variable) ? env($this->env_variable) : true);
+    	$env = ($this->env_variable) ? getenv($this->env_variable) : false;
+        $enabled=get_option("ilab-media-tool-enabled-$this->toolName", $env);
 
         if ($enabled && isset($this->toolInfo['dependencies']))
         {

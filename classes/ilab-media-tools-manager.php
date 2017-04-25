@@ -44,7 +44,7 @@ class ILabMediaToolsManager
 
         add_action('admin_menu', function(){
             add_menu_page('Settings', 'Media Cloud', 'manage_options', 'media-tools-top', [$this,'renderSettings'],'dashicons-cloud');
-            add_submenu_page( 'media-tools-top', 'ILab Tools', 'Tools', 'manage_options', 'media-tools-top', [$this,'renderSettings']);
+            add_submenu_page( 'media-tools-top', 'Media CLoud Tools', 'Enable/Disable Tools', 'manage_options', 'media-tools-top', [$this,'renderSettings']);
 
             add_settings_section('ilab-media-tools','Enabled Tools',[$this,'renderSettingsSection'],'media-tools-top');
 

@@ -123,6 +123,12 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 			return false;
 		}
 
+		$penabled = parent::enabled();
+		if (!$penabled) {
+			$this->displayAdminNotice('error',"To start using S3, you will need to <a href='admin.php?page=media-tools-top'>enable it</a>.");
+			return false;
+		}
+
 		if ($this->settingsError)
 			return false;
 
