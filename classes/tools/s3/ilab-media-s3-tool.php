@@ -184,7 +184,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
                         if (attachTemplate) {
                             var txt = attachTemplate.text();
                             var idx = txt.indexOf('<div class="compat-meta">');
-                            txt = txt.slice(0, idx) + '<# if ( data.s3 ) { #><div><strong>Bucket:</strong> {{data.s3.bucket}}</div><div><strong>Path:</strong> {{data.s3.key}}</div><div><strong>Access:</strong> {{data.s3.privacy}}</div><# if ( data.s3.options ) { #><div><strong>S3 Cache-Control:</strong> {{data.s3.options.params.CacheControl}}</div><div><strong>S3 Expires:</strong> {{data.s3.options.params.Expires}}</div><# } #><div><a href="{{data.s3.url}}" target="_blank">Original S3 URL</a></div><# } #>' + txt.slice(idx);
+                            txt = txt.slice(0, idx) + '<# if ( data.s3 ) { #><div><strong>Bucket:</strong> {{data.s3.bucket}}</div><div><strong>Path:</strong> {{data.s3.key}}</div><div><strong>Access:</strong> {{data.s3.privacy}}</div><# if ( data.s3.options && data.s3.options.params ) { #><# if (data.s3.options.params.CacheControl) { #><div><strong>S3 Cache-Control:</strong> {{data.s3.options.params.CacheControl}}</div><# } #><# if (data.s3.options.params.Expires) { #><div><strong>S3 Expires:</strong> {{data.s3.options.params.Expires}}</div><# } #><# } #><div><a href="{{data.s3.url}}" target="_blank">Original S3 URL</a></div><# } #>' + txt.slice(idx);
                             attachTemplate.text(txt);
                         }
                     });
