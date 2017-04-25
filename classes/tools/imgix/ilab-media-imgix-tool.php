@@ -182,6 +182,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         do_action('ilab_imgix_setup');
 
         add_filter('imgix_build_srcset_url',[$this,'buildSrcSetURL'],0,3);
+        add_filter('media_send_to_editor', [$this,'mediaSendToEditor'], 0, 3);
     }
 
     public function buildMpeg4($value, $postId, $size) {
@@ -204,6 +205,28 @@ class ILabMediaImgixTool extends ILabMediaToolBase
     {
         if (!$response || empty($response) || !isset($response['sizes']))
             return $response;
+
+	    if ($this->renderPDF && isset($meta['s3'])) {
+		    if ($attachment->post_mime_type == 'application/pdf') {
+                $response['type'] = 'image';
+                $response['mime'] = 'image/pdf';
+                if (isset($meta['width'])) {
+                    $response['width'] = round($meta['width']);
+                }
+
+                if (isset($meta['height'])) {
+                    $response['height'] = round($meta['height']);
+                }
+
+                if (isset($response['width']) && isset($response['height'])) {
+                    $response['orientation'] = ($response['width'] > $response['height']) ? 'landscape' : 'portrait';
+                }
+		    }
+
+		    if (!isset($response['s3']['privacy'])) {
+			    $response['s3']['privacy'] = $this->privacy;
+		    }
+	    }
 
         foreach($response['sizes'] as $key => $sizeInfo) {
             $res = $this->buildImgixImage($response['id'],$key);
@@ -392,6 +415,10 @@ class ILabMediaImgixTool extends ILabMediaToolBase
 
         if ($size=='full' && !$newSize)
         {
+            if (!isset($meta['width']) || !isset($meta['height'])) {
+                return false;
+            }
+
             if (!$params)
             {
                 if (isset($meta['imgix-params']))
@@ -1112,5 +1139,33 @@ class ILabMediaImgixTool extends ILabMediaToolBase
 	    }
 
 	    return $result;
+    }
+
+    public function mediaSendToEditor($html, $id, $attachment) {
+        if (!$this->renderPDF) {
+	        return $html;
+        }
+
+        $mime = get_post_mime_type($id);
+        if ($mime == 'application/pdf') {
+	        $align = isset( $attachment['align'] ) ? $attachment['align'] : 'none';
+	        $size = isset( $attachment['image-size'] ) ? $attachment['image-size'] : 'medium';
+	        $alt = isset( $attachment['image_alt'] ) ? $attachment['image_alt'] : '';
+
+	        // No whitespace-only captions.
+	        $caption = isset( $attachment['post_excerpt'] ) ? $attachment['post_excerpt'] : '';
+	        if ( '' === trim( $caption ) ) {
+		        $caption = '';
+	        }
+
+	        $url = empty( $attachment['url'] ) ? '' : $attachment['url'];
+	        $rel = ( strpos( $url, 'attachment_id') || get_attachment_link( $id ) == $url );
+
+	        $title = ''; // We no longer insert title tags into <img> tags, as they are redundant.
+	        $html = get_image_send_to_editor( $id, $caption, $title, $align, $url, $rel, $size, $alt );
+
+        }
+
+        return $html;
     }
 }

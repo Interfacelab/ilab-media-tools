@@ -26,24 +26,98 @@ require_once(ILAB_CLASSES_DIR.'/tools/s3/ilab-media-s3-tool.php');
 class ILABS3ImportProcess extends WP_Background_Process {
 	protected $action = 'ilab_s3_import_process';
 
-	protected function task($item) {
+	public function task($item) {
 		$index = $item['index'];
 		$post_id = $item['post'];
+
+		$isDocument = false;
 
 		update_option('ilab_s3_import_current', $index+1);
 
 		$data = wp_get_attachment_metadata($post_id);
+		if ($data) {
+			error_log("IMPORT DATA: ".json_encode($data, JSON_PRETTY_PRINT));
+		} else {
+			error_log("IMPORT DATA DOES NOT EXIST.");
+		}
 
 		if (empty($data)) {
-			$file = get_attached_file($post_id);
-			$file = _wp_relative_upload_path($file);
+			$isDocument = true;
+			$post_mime = get_post_mime_type($post_id);
+			$upload_file = get_attached_file($post_id);
+			$file = _wp_relative_upload_path($upload_file);
 			$data = [ 'file' => $file ];
+			if (file_exists($upload_file)) {
+				$mime = trim(`file --mime-type -b {$upload_file}`);
+				if ($mime == 'image/vnd.adobe.photoshop') {
+					$mime = 'application/vnd.adobe.photoshop';
+				}
+
+				$data['ilab-mime'] = $mime;
+				if ($mime != $post_mime) {
+					wp_update_post(['ID'=>$post_id, 'post_mime_type' => $mime]);
+				}
+				$imagesize = getimagesize( $upload_file );
+				if ($imagesize) {
+					if (file_is_displayable_image($upload_file)) {
+						$data['width'] = $imagesize[0];
+						$data['height'] = $imagesize[1];
+						$data['sizes']=[
+							'full' => [
+								'file' => $data['file'],
+								'width' => $data['width'],
+								'height' => $data['height']
+							]
+						];
+
+						$isDocument = false;
+					}
+				}
+
+				if ($mime == 'application/pdf') {
+					$renderPDF = apply_filters('ilab_imgix_render_pdf', false);
+
+					try {
+						$parser = new \Smalot\PdfParser\Parser();
+						$pdf = $parser->parseFile($upload_file);
+						$pages = $pdf->getPages();
+						if (count($pages)>0) {
+							$page = $pages[0];
+							$details = $page->getDetails();
+							if (isset($details['MediaBox'])) {
+								$data['width'] = $details['MediaBox'][2];
+								$data['height'] = $details['MediaBox'][3];
+
+								if ($renderPDF) {
+									$data['sizes']=[
+										'full' => [
+											'file' => $data['file'],
+											'width' => $data['width'],
+											'height' => $data['height']
+										]
+									];
+
+									$isDocument = false;
+								}
+							}
+						}
+					} catch (Exception $ex) {
+						error_log("PDF Exception: ".$ex->getMessage());
+					}
+				}
+			}
+
+			error_log("FOUND DATA: ".json_encode($data, JSON_PRETTY_PRINT));
 		}
 
 		$s3tool = ILabMediaToolsManager::instance()->tools['s3'];
 		$data = $s3tool->updateAttachmentMetadata($data, $post_id);
 
-		wp_update_attachment_metadata($post_id, $data);
+		if ($isDocument) {
+			update_post_meta($post_id, 'ilab_s3_info', $data);
+		} else {
+			wp_update_attachment_metadata($post_id, $data);
+		}
 
 		return false;
 	}

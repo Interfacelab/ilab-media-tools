@@ -35,6 +35,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 	private $settingsError = false;
 
 	private $uploadedDocs = [];
+	private $pdfInfo = [];
 
 	private $cacheControl = null;
 	private $expires = null;
@@ -380,16 +381,41 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 	    if ($this->skipUpdate) {
 	        return $data;
         }
-        
+
 		if (!$data) {
 			return $data;
 		}
 
+		$mime = (isset($data['ilab-mime'])) ? $data['ilab-mime'] : null;
+	    if ($mime) {
+	        unset($data['ilab-mime']);
+        }
+
 		if (!isset($data['file'])) {
-			$mime = get_post_mime_type($id);
-			$renderPDF = apply_filters('ilab_imgix_render_pdf', false);
-			if (($mime == 'application/pdf') && (!$renderPDF)) {
-				unset($data['sizes']);
+	        if (!$mime) {
+		        $mime = get_post_mime_type($id);
+            }
+
+			if ($mime == 'application/pdf') {
+				$renderPDF = apply_filters('ilab_imgix_render_pdf', false);
+
+			    if (!$renderPDF) {
+				    unset($data['sizes']);
+			    }
+
+                $s3Info = get_post_meta($id, 'ilab_s3_info', true);
+                if ($s3Info) {
+                    $pdfInfo = $this->pdfInfo[$s3Info['file']];
+                    $data['width'] = $pdfInfo['width'];
+                    $data['height'] = $pdfInfo['height'];
+                    $data['file'] = $s3Info['s3']['key'];
+                    $data['s3'] = $s3Info['s3'];
+                    if ($renderPDF) {
+                        $data['sizes']['full']['file'] = $s3Info['s3']['key'];
+                        $data['sizes']['full']['width'] = $data['width'];
+                        $data['sizes']['full']['height'] = $data['height'];
+                    }
+                }
 			}
 			return $data;
 		}
@@ -402,7 +428,10 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 			return $data;
 		}
 
-		$mime = wp_get_image_mime($upload_path.'/'.$data['file']);
+		if (!$mime) {
+			$mime = wp_get_image_mime($upload_path.'/'.$data['file']);
+        }
+
 		if ($mime && in_array($mime, $this->ignoredMimeTypes)) {
 			return $data;
 		}
@@ -476,6 +505,26 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 			$upload_path=$upload_info['basedir'];
 
 			$file = trim(str_replace($upload_path,'',$pi['dirname']),'/').'/'.$pi['basename'];
+
+			if (($upload['type']=='application/pdf') && file_exists($upload_path.'/'.$file)) {
+			    try {
+				    $parser = new \Smalot\PdfParser\Parser();
+				    $pdf = $parser->parseFile($upload_path.'/'.$file);
+				    $pages = $pdf->getPages();
+				    if (count($pages)>0) {
+					    $page = $pages[0];
+					    $details = $page->getDetails();
+					    if (isset($details['MediaBox'])) {
+						    $data = [];
+						    $data['width'] = $details['MediaBox'][2];
+						    $data['height'] = $details['MediaBox'][3];
+						    $this->pdfInfo[$upload_path.'/'.$file] = $data;
+					    }
+				    }
+                } catch (Exception $ex) {
+
+                }
+            }
 
 			$upload = $this->processFile($s3, $upload_path, $file, $upload);
 			if (isset($upload['s3'])) {
