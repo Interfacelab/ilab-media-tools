@@ -23,7 +23,7 @@ require_once(ILAB_CLASSES_DIR.'/tools/s3/ilab-media-s3-tool.php');
  *
  * Background processing job for importing existing media to S3
  */
-class ILABS3ImportProcess extends WP_Background_Process {
+class ILABS3ImportProcess extends ILAB_WP_Background_Process {
 	protected $action = 'ilab_s3_import_process';
 
 	public function task($item) {

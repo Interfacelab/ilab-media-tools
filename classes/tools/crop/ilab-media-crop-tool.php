@@ -335,7 +335,7 @@ class ILabMediaCropTool extends ILabMediaToolBase
         $dest_height = $crop_size['height'];
 
         $img_editor->crop($crop_x, $crop_y, $crop_width, $crop_height, $dest_width, $dest_height, false );
-        $img_editor->set_quality(get_option('ilab-media-crop-quality',env('ILAB_MEDIA_CROP_QUALITY')));
+        $img_editor->set_quality($this->cropQuality);
         $save_path_parts = pathinfo($img_path);
 
         $path_url=parse_url($img_path);

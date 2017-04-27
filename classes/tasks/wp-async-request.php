@@ -8,14 +8,14 @@ if (!defined('ABSPATH')) { header('Location: /'); die; }
  * @package WP-Background-Processing
  */
 
-if ( ! class_exists( 'WP_Async_Request' ) ) {
+if ( ! class_exists( 'ILAB_WP_Async_Request' ) ) {
 
 	/**
 	 * Abstract WP_Async_Request class.
 	 *
 	 * @abstract
 	 */
-	abstract class WP_Async_Request {
+	abstract class ILAB_WP_Async_Request {
 
 		/**
 		 * Prefix
