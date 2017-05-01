@@ -513,6 +513,10 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 			$file = trim(str_replace($upload_path,'',$pi['dirname']),'/').'/'.$pi['basename'];
 
 			if (($upload['type']=='application/pdf') && file_exists($upload_path.'/'.$file)) {
+				set_error_handler(function($errno, $errstr, $errfile, $errline){
+					throw new Exception($errstr);
+				}, E_RECOVERABLE_ERROR);
+
 			    try {
 				    $parser = new \Smalot\PdfParser\Parser();
 				    $pdf = $parser->parseFile($upload_path.'/'.$file);
@@ -528,8 +532,10 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 					    }
 				    }
                 } catch (Exception $ex) {
-
+                    error_log($ex->getMessage());
                 }
+
+                restore_error_handler();
             }
 
 			$upload = $this->processFile($s3, $upload_path, $file, $upload);
@@ -1003,7 +1009,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 		}
 
 		$meta=wp_get_attachment_metadata($id);
-		if (!isset($meta['sizes']) && !isset($meta['sizes'][$size])) {
+		if (!isset($meta['sizes']) || !isset($meta['sizes'][$size])) {
 			return $fail;
 		}
 

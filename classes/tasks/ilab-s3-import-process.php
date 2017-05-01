@@ -72,6 +72,10 @@ class ILABS3ImportProcess extends ILAB_WP_Background_Process {
 				if ($mime == 'application/pdf') {
 					$renderPDF = apply_filters('ilab_imgix_render_pdf', false);
 
+					set_error_handler(function($errno, $errstr, $errfile, $errline){
+						throw new Exception($errstr);
+					}, E_RECOVERABLE_ERROR);
+
 					try {
 						$parser = new \Smalot\PdfParser\Parser();
 						$pdf = $parser->parseFile($upload_file);
@@ -99,6 +103,8 @@ class ILABS3ImportProcess extends ILAB_WP_Background_Process {
 					} catch (Exception $ex) {
 						error_log("PDF Exception: ".$ex->getMessage());
 					}
+
+					restore_error_handler();
 				}
 			}
 		}
