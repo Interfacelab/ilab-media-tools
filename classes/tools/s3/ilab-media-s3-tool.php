@@ -1005,14 +1005,19 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 
 		return $file;
 	}
+
 	public function imageDownsize($fail,$id,$size)
 	{
 		if (apply_filters('ilab_imgix_enabled', false)) {
 			return $fail;
 		}
 
+		if (empty($size) || empty($id)) {
+		    return $fail;
+        }
+
 		$meta=wp_get_attachment_metadata($id);
-		if (!isset($meta['sizes']) || !isset($meta['sizes'][$size])) {
+		if (empty($meta) || !isset($meta['sizes']) || !isset($meta['sizes'][$size])) {
 			return $fail;
 		}
 
