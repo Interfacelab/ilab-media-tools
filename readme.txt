@@ -2,11 +2,11 @@
 Contributors: interfacelab
 Tags: media, images, cdn, uploads, crop, imgix, s3, cloudfront, aws, amazon s3, image editing, image editor, mirror, media library, offload, offload s3
 Requires at least: 4.4
-Tested up to: 4.7.4
+Tested up to: 4.8.1
 License: GPLv3 or later
 Donate link: http://www2.jdrf.org/site/TR?fr_id=6912&pg=personal&px=11429802
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 1.4.5
+Stable tag: 1.4.6
 
 Automatically upload media to Amazon S3 and integrate with Imgix, a real-time image processing CDN.  Boosts site
 performance and simplifies workflows.
@@ -98,6 +98,9 @@ No, I'm just one very enthusiastic customer.
 5. Imgix settings.
 
 == Changelog ==
+= 1.4.6 =
+* Added flag to skip bucket checks to avoid rate limiting errors from Amazon on media heavy sites
+* Fixed the log spam for the isset offset error
 
 = 1.4.5 =
 * Updated AWS SDK to 3.26.5
