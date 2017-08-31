@@ -31,6 +31,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 	private $deleteOnUpload = false;
 	private $deleteFromS3 = false;
 	private $prefixFormat = '';
+	private $skipBucketCheck = false;
 
 	private $settingsError = false;
 
@@ -94,6 +95,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 			$this->expires = gmdate('D, d M Y H:i:s \G\M\T', time() + ($expires * 60));
 		}
 
+		$this->skipBucketCheck = $this->getOption('ilab-media-s3-skip-bucket-check', 'ILAB_AWS_S3_SKIP_BUCKET_CHECK');
 
 		if ($this->haveSettingsChanged()) {
 			$this->settingsChanged();
@@ -369,8 +371,11 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 			                                         ]
 		                                         ]);
 
-		if ($insure_bucket && (!$s3->doesBucketExist($this->bucket)))
-			return null;
+		if ($insure_bucket && !$this->skipBucketCheck) {
+			if (!$s3->doesBucketExist($this->bucket)) {
+				return null;
+            }
+        }
 
 		return $s3;
 	}

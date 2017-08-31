@@ -452,6 +452,12 @@
               "title": "Delete From S3",
               "description": "When you delete from the media library, turning this on will also delete the file from S3.",
               "type": "checkbox"
+            },
+            "ilab-media-s3-skip-bucket-check": {
+              "title": "Skip Bucket Check",
+              "description": "Skip testing if the bucket exists on S3 or not.  If you are doing a lot of media uploads, you will want to make sure this is checked or you could end up being rate limited by Amazon which will cause errors and other mayhem.  Generally speaking, you can leave it unchecked though. If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_AWS_S3_SKIP_BUCKET_CHECK</strong>.",
+              "type": "checkbox",
+              "default": false
             }
           }
         },
