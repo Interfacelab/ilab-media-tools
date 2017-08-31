@@ -208,17 +208,15 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 		});
 	}
 
-	public function editAttachment() {
-		global $post;
-
-		$meta = wp_get_attachment_metadata($post->ID);
+	public function editAttachment($post_id) {
+		$meta = wp_get_attachment_metadata($post_id);
 		if (!isset($meta['s3'])) {
 			$this->editDocumentAttachment();
 			return;
 		}
 
-		$meta = $this->updateAttachmentS3Props($post->ID, $meta);
-		wp_update_attachment_metadata($post->ID, $meta);
+		$meta = $this->updateAttachmentS3Props($post_id, $meta);
+		wp_update_attachment_metadata($post_id, $meta);
 	}
 
 	private function editDocumentAttachment() {
