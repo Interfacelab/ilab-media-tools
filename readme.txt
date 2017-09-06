@@ -6,7 +6,7 @@ Tested up to: 4.8.1
 License: GPLv3 or later
 Donate link: http://www2.jdrf.org/site/TR?fr_id=6912&pg=personal&px=11429802
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 1.4.6
+Stable tag: 1.4.8
 
 Automatically upload media to Amazon S3 and integrate with Imgix, a real-time image processing CDN.  Boosts site
 performance and simplifies workflows.
