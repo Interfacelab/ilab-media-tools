@@ -98,6 +98,10 @@ No, I'm just one very enthusiastic customer.
 5. Imgix settings.
 
 == Changelog ==
+= 1.4.7 =
+* Fixed collision with Types plugin
+* Added donation link.  If you find this plugin useful, PLEASE donate to my JDRF fund raiser for finding a cure for type 1 diabetes.
+
 = 1.4.6 =
 * Added flag to skip bucket checks to avoid rate limiting errors from Amazon on media heavy sites
 * Fixed the log spam for the isset offset error
