@@ -168,7 +168,7 @@ abstract class ILabMediaToolBase {
         }
 
         add_action('admin_notices',function() use($class,$message,$dismissibleAttr) {
-            echo render_view('base/ilab-admin-notice.php',[
+            echo ILabMediaToolView::render_view('base/ilab-admin-notice.php',[
                 'class'=>$class,
                 'message'=>$message,
                 'identifier' => $dismissibleAttr
@@ -284,7 +284,7 @@ abstract class ILabMediaToolBase {
     public function renderSettings()
     {
 
-        echo render_view('base/ilab-settings.php',[
+        echo ILabMediaToolView::render_view('base/ilab-settings.php',[
             'title'=>$this->toolInfo['title'],
             'group'=>$this->options_group,
             'page'=>$this->options_page

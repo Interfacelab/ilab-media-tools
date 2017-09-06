@@ -920,7 +920,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 			$progress = ($current / $total) * 100;
 		}
 
-		echo render_view('s3/ilab-s3-importer.php',[
+		echo ILabMediaToolView::render_view('s3/ilab-s3-importer.php',[
 			'status' => ($status) ? 'running' : 'idle',
 			'total' => $total,
 			'progress' => $progress,

@@ -4,7 +4,7 @@ Plugin Name: Media Cloud by ILAB
 Plugin URI: http://interfacelab.com/media-tools
 Description: Automatically upload media to Amazon S3 and integrate with Imgix, a real-time image processing CDN.  Boosts site performance and simplifies workflows.
 Author: interfacelab
-Version: 1.4.6
+Version: 1.4.7
 Author URI: http://interfacelab.io
 */
 
@@ -55,6 +55,7 @@ define('ILAB_HELPERS_DIR',ILAB_TOOLS_DIR.'/helpers');
 define('ILAB_CLASSES_DIR',ILAB_TOOLS_DIR.'/classes');
 define('ILAB_VENDOR_DIR',ILAB_TOOLS_DIR.'/vendor');
 define('ILAB_VIEW_DIR',ILAB_TOOLS_DIR.'/views');
+define('ILAB_PLUGIN_NAME', plugin_basename(__FILE__));
 
 // URL defines for CSS/JS
 $plug_url = plugin_dir_url( __FILE__ );
@@ -69,7 +70,6 @@ if (file_exists(ILAB_VENDOR_DIR.'/autoload.php')) {
 
 // Helper functions
 require_once('helpers/ilab-media-tool-helpers.php');
-require_once('helpers/ilab-media-tool-view.php');
 require_once('helpers/ilab-media-tool-wordpress-helpers.php');
 require_once('helpers/ilab-media-tool-geometry-helpers.php');
 

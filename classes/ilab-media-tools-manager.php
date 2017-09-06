@@ -40,8 +40,6 @@ class ILabMediaToolsManager
             $tool->setup();
         }
 
-
-
         add_action('admin_menu', function(){
             add_menu_page('Settings', 'Media Cloud', 'manage_options', 'media-tools-top', [$this,'renderSettings'],'dashicons-cloud');
             add_submenu_page( 'media-tools-top', 'Media CLoud Tools', 'Enable/Disable Tools', 'manage_options', 'media-tools-top', [$this,'renderSettings']);
@@ -59,6 +57,16 @@ class ILabMediaToolsManager
 
 	        add_submenu_page( 'media-tools-top', 'Plugin Support', 'Help / Support', 'manage_options', 'media-tools-support', [$this,'renderSupport']);
         });
+
+
+
+	    add_filter('plugin_action_links_'.ILAB_PLUGIN_NAME, function($links) {
+		    $links[] = "<a href='http://www2.jdrf.org/site/TR?fr_id=6912&pg=personal&px=11429802' target='_blank'><b>Donate</b></a>";
+		    $links[] = "<a href='admin.php?page=media-tools-top'>Settings</a>";
+		    $links[] = "<a href='https://wordpress.org/support/plugin/ilab-media-tools' target='_blank'>Support</a>";
+
+		    return $links;
+	    });
     }
 
     /**
@@ -113,7 +121,7 @@ class ILabMediaToolsManager
      */
     public function renderSettings()
     {
-        echo render_view('base/ilab-settings.php',[
+        echo ILabMediaToolView::render_view('base/ilab-settings.php',[
             'title'=>'Enabled Tools',
             'group'=>'ilab-media-tools',
             'page'=>'media-tools-top'
@@ -129,14 +137,14 @@ class ILabMediaToolsManager
     }
 
     public function renderSupport() {
-        echo render_view('base/ilab-support.php', []);
+        echo ILabMediaToolView::render_view('base/ilab-support.php', []);
     }
 
     public function renderToolSettings($args)
     {
         $tool=$this->tools[$args['key']];
 
-        echo render_view('base/ilab-tool-settings.php',[
+        echo ILabMediaToolView::render_view('base/ilab-tool-settings.php',[
             'name'=>$args['key'],
             'tool'=>$tool,
             'manager'=>$this
