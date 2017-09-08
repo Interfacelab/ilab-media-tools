@@ -1012,14 +1012,23 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 			return $fail;
 		}
 
-		if (empty($size) || empty($id)) {
+		if (empty($size) || empty($id) || is_array($size)) {
 		    return $fail;
         }
 
 		$meta=wp_get_attachment_metadata($id);
-		if (empty($meta) || !isset($meta['sizes']) || !isset($meta['sizes'][$size])) {
+
+		if (empty($meta)) {
+		    return $fail;
+        }
+
+		if (!isset($meta['sizes'])) {
 			return $fail;
 		}
+
+		if (!isset($meta['sizes'][$size])) {
+		    return $fail;
+        }
 
 		$sizeMeta = $meta['sizes'][$size];
 		if (!isset($sizeMeta['s3'])) {
