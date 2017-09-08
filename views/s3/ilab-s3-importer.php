@@ -27,7 +27,7 @@
 		<ol>
 			<li>If you upload any files while this process is running, you'll need to run this tool again after it finishes.</li>
 			<li>This process DOES NOT delete your files on your server, you'll have to do that yourself manually.</li>
-			<li>It's recommended that you have the S3 tool disabled in <a href="admin.php?page=media-tools-top">Tools Settings</a> before running this task.</li>
+			<li>You <strong>MUST HAVE</strong> S3 enabled and working in <a href="admin.php?page=media-tools-top">Tools Settings</a> before running this task.</li>
 		</ol>
 		<div style="margin-top: 2em;">
 			<a href="#" class="ilab-ajax button">Import Uploads</a>

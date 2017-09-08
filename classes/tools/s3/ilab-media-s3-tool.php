@@ -320,41 +320,49 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 		global $post;
 
 		$meta = wp_get_attachment_metadata($post->ID);
+		if (empty($meta)) {
+		    echo 'gay';
+
+		    return;
+        }
+
 		if (!isset($meta['s3'])) {
 			$meta = get_post_meta($post->ID, 'ilab_s3_info', true);
 		}
 
-		if (!isset($meta['s3'])) {
+		if (empty($meta) || !isset($meta['s3'])) {
 			?>
 			Not uploaded to S3.
 			<?php
-		}
-		?>
-		<div class="misc-pub-section">
-			Bucket: <a href="https://console.aws.amazon.com/s3/buckets/<?php echo $meta['s3']['bucket']?>" target="_blank"><?php echo $meta['s3']['bucket']?></a>
-		</div>
-		<div class="misc-pub-section">
-            Path: <a href="https://console.aws.amazon.com/s3/buckets/<?php echo $meta['s3']['bucket']?>/<?php echo $meta['s3']['key']?>/details" target="_blank"><?php echo $meta['s3']['key']?></a>
-		</div>
-		<div class="misc-pub-section">
-			<label for="s3-access-acl">Access:</label>
-			<select id="s3-access-acl" name="s3-access-acl">
-				<option value="public-read" <?php echo (isset($meta['s3']['privacy']) && ($meta['s3']['privacy']=='public-read')) ? 'selected' : '' ?>>Public</option>
-				<option value="authenticated-read" <?php echo (isset($meta['s3']['privacy']) && ($meta['s3']['privacy']=='authenticated-read')) ? 'selected' : '' ?>>Authenticated Users</option>
-			</select>
-		</div>
-		<div class="misc-pub-section">
-			<label for="s3-cache-control">Cache-Control:</label>
-			<input type="text" class="widefat" name="s3-cache-control" id="s3-cache-control" value="<?php echo (isset($meta['s3']['options']) && isset($meta['s3']['options']['params']['CacheControl'])) ? $meta['s3']['options']['params']['CacheControl'] : '' ?>">
-		</div>
-		<div class="misc-pub-section">
-			<label for="s3-expires">Expires:</label>
-			<input type="text" class="widefat" name="s3-expires" id="s3-expires" value="<?php echo (isset($meta['s3']['options']) && isset($meta['s3']['options']['params']['Expires'])) ? $meta['s3']['options']['params']['Expires'] : '' ?>">
-		</div>
-		<div class="misc-pub-section">
-			<a href="<?php echo $meta['s3']['url']?>" target="_blank">View S3 URL</a></strong>
-		</div>
-		<?php
+		} else {
+			?>
+            <div class="misc-pub-section">
+                Bucket: <a href="https://console.aws.amazon.com/s3/buckets/<?php echo $meta['s3']['bucket']?>" target="_blank"><?php echo $meta['s3']['bucket']?></a>
+            </div>
+            <div class="misc-pub-section">
+                Path: <a href="https://console.aws.amazon.com/s3/buckets/<?php echo $meta['s3']['bucket']?>/<?php echo $meta['s3']['key']?>/details" target="_blank"><?php echo $meta['s3']['key']?></a>
+            </div>
+            <div class="misc-pub-section">
+                <label for="s3-access-acl">Access:</label>
+                <select id="s3-access-acl" name="s3-access-acl">
+                    <option value="public-read" <?php echo (isset($meta['s3']['privacy']) && ($meta['s3']['privacy']=='public-read')) ? 'selected' : '' ?>>Public</option>
+                    <option value="authenticated-read" <?php echo (isset($meta['s3']['privacy']) && ($meta['s3']['privacy']=='authenticated-read')) ? 'selected' : '' ?>>Authenticated Users</option>
+                </select>
+            </div>
+            <div class="misc-pub-section">
+                <label for="s3-cache-control">Cache-Control:</label>
+                <input type="text" class="widefat" name="s3-cache-control" id="s3-cache-control" value="<?php echo (isset($meta['s3']['options']) && isset($meta['s3']['options']['params']['CacheControl'])) ? $meta['s3']['options']['params']['CacheControl'] : '' ?>">
+            </div>
+            <div class="misc-pub-section">
+                <label for="s3-expires">Expires:</label>
+                <input type="text" class="widefat" name="s3-expires" id="s3-expires" value="<?php echo (isset($meta['s3']['options']) && isset($meta['s3']['options']['params']['Expires'])) ? $meta['s3']['options']['params']['Expires'] : '' ?>">
+            </div>
+            <div class="misc-pub-section">
+                <a href="<?php echo $meta['s3']['url']?>" target="_blank">View S3 URL</a></strong>
+            </div>
+			<?php
+        }
+
 	}
 
 

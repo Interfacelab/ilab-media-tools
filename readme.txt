@@ -1,12 +1,12 @@
 === Media Cloud by ILAB ===
 Contributors: interfacelab
-Tags: media, images, cdn, uploads, crop, imgix, s3, cloudfront, aws, amazon s3, image editing, image editor, mirror, media library, offload, offload s3
+Tags: media, images, cdn, uploads, crop, imgix, s3, cloudfront, aws, amazon s3, image editing, image editor, mirror, media library, offload, offload s3, minio, google cloud storage, digital ocean spaces
 Requires at least: 4.4
 Tested up to: 4.8.1
 License: GPLv3 or later
 Donate link: http://www2.jdrf.org/site/TR?fr_id=6912&pg=personal&px=11429802
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 1.4.8
+Stable tag: 1.4.9
 
 Automatically upload media to Amazon S3 and integrate with Imgix, a real-time image processing CDN.  Boosts site
 performance and simplifies workflows.
@@ -17,9 +17,9 @@ Media Cloud by ILAB is a suite of tools designed to enhance media handling in Wo
 
 **NOTE**: This plugin requires PHP 5.5x or higher (PHP 7.x preferred)
 
-= Upload to S3 =
-Automatically copy media uploads to S3 and hosts your media directly
-from S3 or CloudFront.  Additionally, easily import your existing
+= Upload to S3, Mini, Google Cloud Storage and Digital Ocean Spaces =
+Automatically copy media uploads to S3 (and S3 compatible services) and hosts your media directly
+from S3, CloudFront or any other CDN.  Additionally, easily import your existing
 media library to Amazon S3 with the push of a button.
 
 = Integrate with Imgix =
@@ -98,6 +98,10 @@ No, I'm just one very enthusiastic customer.
 5. Imgix settings.
 
 == Changelog ==
+= 1.4.9 =
+* Compatibility with S3-compatible services like Minio, Google Cloud Storage (when in interoperability mode) and Digital Ocean Spaces.  (thanks to Vladimir Pouzanov)
+* Misc. fixes
+
 = 1.4.7 =
 * Fixed collision with Types plugin
 * Added donation link.  If you find this plugin useful, PLEASE donate to my JDRF fund raiser for finding a cure for type 1 diabetes.
