@@ -26,6 +26,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 	private $key = null;
 	private $secret = null;
 	private $bucket = null;
+	private $endpoint = null;
 	private $docCdn = null;
 	private $cdn = null;
 	private $deleteOnUpload = false;
@@ -58,6 +59,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 		$this->bucket = $this->getOption('ilab-media-s3-bucket', 'ILAB_AWS_S3_BUCKET');
 		$this->key = $this->getOption('ilab-media-s3-access-key', 'ILAB_AWS_S3_ACCESS_KEY');
 		$this->secret = $this->getOption('ilab-media-s3-secret', 'ILAB_AWS_S3_ACCESS_SECRET');
+		$this->endpoint = $this->getOption('ilab-media-s3-endpoint', 'ILAB_AWS_S3_ENDPOINT');
 		$this->deleteOnUpload = $this->getOption('ilab-media-s3-delete-uploads');
 		$this->deleteFromS3 = $this->getOption('ilab-media-s3-delete-from-s3');
 		$this->prefixFormat = $this->getOption('ilab-media-s3-prefix', '');
@@ -361,13 +363,19 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 		if (!$this->s3enabled())
 			return null;
 
-		$s3=new \ILAB_Aws\S3\S3MultiRegionClient([
-			                                         'version' => 'latest',
-			                                         'credentials' => [
-				                                         'key'    => $this->key,
-				                                         'secret' => $this->secret
-			                                         ]
-		                                         ]);
+		$config = [
+			'version' => 'latest',
+			'credentials' => [
+				'key'    => $this->key,
+				'secret' => $this->secret
+			]
+		];
+
+		if ($this->endpoint) {
+			$config['endpoint'] = $this->endpoint;
+		}
+
+		$s3=new \ILAB_Aws\S3\S3MultiRegionClient($config);
 
 		if ($insure_bucket && !$this->skipBucketCheck) {
 			if (!$s3->doesBucketExist($this->bucket)) {
@@ -1051,7 +1059,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 	    if (empty($meta) || !isset($meta['s3'])) {
 	        $meta = get_post_meta($attachment->ID, 'ilab_s3_info', true);
         }
-        
+
 		if (isset($meta['s3'])) {
 			$response['s3'] = $meta['s3'];
 

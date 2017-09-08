@@ -398,6 +398,12 @@
               "description": "If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_AWS_S3_BUCKET</strong>",
               "type": "text-field",
               "watch": true
+            },
+            "ilab-media-s3-endpoint": {
+              "title": "Custom Endpoint URL",
+              "description": "If you are <strong>not</strong> running on AWS, but instead use S3-compatible server like Minio or Ceph RGW, specify your endpoint (e.g. <code>http://mystorage.example.com</code>) here. If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_AWS_S3_ENDPOINT</strong>",
+              "type": "text-field",
+              "watch": true
             }
           }
         },
