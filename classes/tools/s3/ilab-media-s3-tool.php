@@ -224,8 +224,12 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 	private function editDocumentAttachment() {
 		global $post;
 
+		if (empty($post)) {
+		    return;
+        }
+
 		$meta = get_post_meta($post->ID, 'ilab_s3_info', true);
-		if (!isset($meta['s3'])) {
+		if (empty($meta) || !isset($meta['s3'])) {
 			return;
 		}
 
@@ -917,6 +921,8 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 	}
 
 	public function renderImporter() {
+	    $enabled = $this->s3enabled();
+
 		$status = get_option('ilab_s3_import_status', false);
 		$total = get_option('ilab_s3_import_total_count', 0);
 		$current = get_option('ilab_s3_import_current', 1);
@@ -940,7 +946,8 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 			'status' => ($status) ? 'running' : 'idle',
 			'total' => $total,
 			'progress' => $progress,
-			'current' => $current
+			'current' => $current,
+            'enabled' => $enabled
 		]);
 	}
 
