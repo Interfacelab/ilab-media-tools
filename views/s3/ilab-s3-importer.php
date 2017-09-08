@@ -17,6 +17,11 @@
 		height: 100%;
 		width: {{$progress}}%;
 	}
+
+    .tool-disabled {
+        padding: 10px 15px;
+        border: 1px solid #df8403;
+    }
 </style>
 <div class="wrap">
 	<h1>S3 Importer</h1>
@@ -27,10 +32,14 @@
 		<ol>
 			<li>If you upload any files while this process is running, you'll need to run this tool again after it finishes.</li>
 			<li>This process DOES NOT delete your files on your server, you'll have to do that yourself manually.</li>
-			<li>It's recommended that you have the S3 tool disabled in <a href="admin.php?page=media-tools-top">Tools Settings</a> before running this task.</li>
+			<li>You <strong>MUST HAVE</strong> S3 enabled and working in <a href="admin.php?page=media-tools-top">Tools Settings</a> before running this task.</li>
 		</ol>
 		<div style="margin-top: 2em;">
+            <?php if($enabled): ?>
 			<a href="#" class="ilab-ajax button">Import Uploads</a>
+            <?php else: ?>
+                <strong class="tool-disabled">Please <a href="admin.php?page=media-tools-top">enable S3</a> before using this tool.</strong>
+            <?php endif ?>
 		</div>
 	</div>
 	<div id="s3-importer-progress" {{($status!="running") ? 'style="display:none"':''}}>

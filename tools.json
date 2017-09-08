@@ -401,6 +401,18 @@
             }
           }
         },
+        "ilab-media-s3-aws-custom-endpoint-settings": {
+          "title": "Custom End Point (Advanced)",
+          "description": "ILAB Media Cloud is compatible with any S3 compatible cloud storage server like Minio, Ceph RGW, Google Cloud Storage (when in <a href='https://cloud.google.com/storage/docs/migrating#migration-simple' target=_blank>interoperability mode</a>) or Digital Ocean Spaces.  If you are using one of these services, specify the endpoint for the service's api here.  <strong>IMPORTANT:</strong> If you are using Minio, your bucket must have a public read policy set for the entire bucket.  See <a href='https://github.com/minio/minio/issues/3774' target=_blank>here</a> for more details.",
+          "options": {
+            "ilab-media-s3-endpoint": {
+              "title": "Custom Endpoint URL",
+              "description": "If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_AWS_S3_ENDPOINT</strong>",
+              "type": "text-field",
+              "watch": true
+            }
+          }
+        },
         "ilab-media-s3-upload-handling-settings": {
           "title": "Upload Handling",
           "description": "The following options control how the S3 tool handles uploads.",
