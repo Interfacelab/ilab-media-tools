@@ -100,6 +100,7 @@ No, I'm just one very enthusiastic customer.
 == Changelog ==
 = 1.4.9 =
 * Compatibility with S3-compatible services like Minio, Google Cloud Storage (when in interoperability mode) and Digital Ocean Spaces.  (thanks to Vladimir Pouzanov)
+* Fix for S3 Importer on Windows (seriously stop hosting WordPress on Windows)
 * Misc. fixes
 
 = 1.4.7 =
