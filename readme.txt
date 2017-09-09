@@ -6,7 +6,7 @@ Tested up to: 4.8.1
 License: GPLv3 or later
 Donate link: http://www2.jdrf.org/site/TR?fr_id=6912&pg=personal&px=11429802
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 1.4.9
+Stable tag: 1.5.0
 
 Automatically upload media to Amazon S3 and integrate with Imgix, a real-time image processing CDN.  Boosts site
 performance and simplifies workflows.
@@ -18,9 +18,9 @@ Media Cloud by ILAB is a suite of tools designed to enhance media handling in Wo
 **NOTE**: This plugin requires PHP 5.5x or higher (PHP 7.x preferred)
 
 = Upload to S3, Minio, Google Cloud Storage and Digital Ocean Spaces =
-Automatically copy media uploads to S3 (and S3 compatible services) and hosts your media directly
-from S3, CloudFront or any other CDN.  Additionally, easily import your existing
-media library to Amazon S3 with the push of a button.
+Automatically copy media uploads to S3 (and S3 compatible services) and hosts your
+media directly from S3, CloudFront or any other CDN.  Additionally, easily import
+your existing media library to Amazon S3 with the push of a button.
 
 = Integrate with Imgix =
 [Imgix](https://imgix.com) will radically change the way that you build
@@ -29,6 +29,10 @@ available for WordPress.  Upload your images to S3 with our S3 tool
 and then host the media with Imgix, providing you with real-time image
 processing and automatic format delivery.  Forget ImageMagick, Imgix
 is light years ahead in quality and speed.
+
+= Upload Directly To S3 =
+Directly upload your media and documents to S3, bypassing your WordPress
+server completely.  Note that this feature requires Imgix.
 
 = Advanced Image Editing =
 When integrating with [Imgix](https://imgix.com), Media Cloud by ILAB provides the most
@@ -98,6 +102,13 @@ No, I'm just one very enthusiastic customer.
 5. Imgix settings.
 
 == Changelog ==
+
+= 1.5.0 =
+* Upload media directly to S3, bypassing WordPress.  This feature requires Imgix.
+* Ability to cancel S3 Importer
+* Fixes to S3 importing
+* Misc. fixes
+
 = 1.4.9 =
 * Compatibility with S3-compatible services like Minio, Google Cloud Storage (when in interoperability mode) and Digital Ocean Spaces.  (thanks to Vladimir Pouzanov)
 * Fix for S3 Importer on Windows (seriously stop hosting WordPress on Windows)

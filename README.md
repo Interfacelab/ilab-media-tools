@@ -15,6 +15,10 @@ and then host the media with Imgix, providing you with real-time image
 processing and automatic format delivery.  Forget ImageMagick, Imgix
 is light years ahead in quality and speed.
 
+##### Upload Directly to S3
+Directly upload your media and documents to S3, bypassing your WordPress 
+server completely.  Note, this feature requires Imgix.
+
 ##### Advanced Image Editing
 When integrating with [Imgix](https://imgix.com), Media Cloud by ILAB provides the most 
 advanced WordPress image editor.  Alter contrast, saturation, vibrancy
