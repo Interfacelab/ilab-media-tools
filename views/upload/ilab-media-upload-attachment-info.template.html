@@ -1,0 +1,69 @@
+<script type="text/template" id="tmpl-ilab-attachment-info">
+    <div class="media-sidebar visible">
+        <div tabindex="0" data-id="569" class="attachment-details save-ready">
+            <h2>Attachment Details</h2>
+            <div class="attachment-info">
+                <div class="thumbnail thumbnail-image">
+                    <img src="{{data.sizes.thumbnail.url}}" draggable="false" alt="">
+                </div>
+                <div class="details">
+                    <div class="filename">{{data.filename}}</div>
+                    <div class="uploaded">{{data.dateFormatted}}</div>
+                    <div class="dimensions">{{data.width}} × {{data.height}}</div>
+                </div>
+            </div>
+            <label class="setting" data-setting="url">
+                <span class="name">URL</span>
+                <input type="text" value="{{data.url}}" readonly="">
+            </label>
+            <label class="setting" data-setting="title">
+                <span class="name">Title</span>
+                <input type="text" value="{{data.title}}" name="attachment-title">
+            </label>
+            <label class="setting" data-setting="caption">
+                <span class="name">Caption</span>
+                <textarea name="attachment-caption">{{data.caption}}</textarea>
+            </label>
+            <label class="setting" data-setting="alt">
+                <span class="name">Alt Text</span>
+                <input type="text" value="{{data.alt}}" name="attachment-alt">
+            </label>
+            <label class="setting" data-setting="description">
+                <span class="name">Description</span>
+                <textarea name="attachment-description">{{data.description}}</textarea>
+            </label>
+        </div>
+        <div class="attachment-display-settings">
+            <h2>Attachment Display Settings</h2>
+            <label class="setting">
+                <span>Alignment</span>
+                <select class="alignment" name="attachment-align">
+                    <option value="left">Left</option>
+                    <option value="center" selected="">Center</option>
+                    <option value="right">Right</option>
+                    <option value="none">None</option>
+                </select>
+            </label>
+            <div class="setting">
+                <label>
+                    <span>Link To</span>
+                    <select class="link-to" name="attachment-link-type">
+                        <option value="none" selected="">None</option>
+                        <option value="file">Media File</option>
+                        <option value="post">Attachment Page</option>
+                        <option value="custom">Custom URL</option>
+                    </select>
+                </label>
+                <input type="text" class="link-to-custom"  name="attachment-link-url" readonly="">
+            </div>
+            <label class="setting">
+                <span>Size</span>
+                <select class="size" name="attachment-size">
+                    <# _.each(Object.keys(data.sizes), function(key) { #>
+                        <option value="{{key}}" <# if (key=='full') { #>selected="selected"<# } #>><# var properKey = key.replace(/[_-]/g, ' ').replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();}); #>{{properKey}} - {{data.sizes[key].width}} x {{data.sizes[key].height}}</option>
+                    <# }); #>
+                </select>
+            </label>
+        </div>
+    </div>
+</script>

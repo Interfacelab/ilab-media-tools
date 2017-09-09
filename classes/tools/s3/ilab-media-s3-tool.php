@@ -169,12 +169,12 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 				return $filename;
 			}, 10000, 1);
 			add_action('add_attachment',function($post_id){
-				$post = get_post($post_id);
 				$file = get_post_meta( $post_id, '_wp_attached_file', true );
 				if (isset($this->uploadedDocs[$file])) {
 					add_post_meta($post_id, 'ilab_s3_info', $this->uploadedDocs[$file]);
+					do_action('ilab_s3_uploaded_attachment', $post_id, $file, $this->uploadedDocs[$file]);
 				}
-			}, 10000);
+			}, 1000);
 
 			add_filter('wp_calculate_image_srcset',[$this,'calculateSrcSet'], 10000, 5);
 		}
@@ -325,8 +325,6 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 
 		$meta = wp_get_attachment_metadata($post->ID);
 		if (empty($meta)) {
-		    echo 'gay';
-
 		    return;
         }
 
@@ -370,7 +368,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 	}
 
 
-	private function s3Client($insure_bucket=false)
+	public function s3Client($insure_bucket=false)
 	{
 		if (!$this->s3enabled())
 			return null;
@@ -521,7 +519,9 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 			return $upload;
 		}
 
-		if (!$this->uploadDocs) {
+		$shouldHandle = apply_filters('ilab_s3_should_handle_upload', false, $upload);
+
+		if (!$shouldHandle && !$this->uploadDocs) {
 			return $upload;
 		}
 
@@ -629,7 +629,10 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 			$userName = sanitize_title($user->display_name);
 		}
 
-		$prefix = str_replace("@{versioning}", $this->get_object_version_string($id), $prefix);
+		if ($id) {
+			$prefix = str_replace("@{versioning}", $this->get_object_version_string($id), $prefix);
+        }
+
 		$prefix = str_replace("@{site-id}", sanitize_title(strtolower(get_current_blog_id())), $prefix);
 		$prefix = str_replace("@{site-name}", sanitize_title(strtolower(get_bloginfo('name'))), $prefix);
 		$prefix = str_replace("@{site-host}", $host, $prefix);
@@ -1028,7 +1031,6 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 
 		return $file;
 	}
-
 	public function imageDownsize($fail,$id,$size)
 	{
 		if (apply_filters('ilab_imgix_enabled', false)) {
@@ -1084,5 +1086,231 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 		}
 
 		return $response;
+	}
+
+	public function uploadUrlForFile($filename) {
+	    $s3 = $this->s3Client(true);
+
+        $config = [
+
+        ];
+		$config = [
+			'version' => 'latest',
+			'credentials' => [
+				'key'    => $this->key,
+				'secret' => $this->secret
+			]
+		];
+
+		if ($this->endpoint) {
+			$config['endpoint'] = $this->endpoint;
+		}
+
+		if (!$this->customEndpointIsGoogle()) {
+			$regionResult = $s3->getBucketLocation(['Bucket'=>$this->bucket]);
+			if ($regionResult->hasKey('LocationConstraint')) {
+				$region = $regionResult->get('LocationConstraint');
+				$config['region'] = $region;
+			}
+        } else {
+			$config['region'] = 'US';
+        }
+
+        $s3Client = new \ILAB_Aws\S3\S3Client($config);
+
+		$bucketFilename = $filename;
+
+		$prefix = '';
+		if (!empty($this->prefixFormat)) {
+			$prefix = $this->parsePrefix($this->prefixFormat, null);
+			$parts= explode('/',$filename);
+			$bucketFilename = array_pop($parts);
+		}
+
+		if ($prefix == '') {
+		    $prefix = date('Y/m').'/';
+        }
+
+		try
+		{
+			$optionsData = [
+				['bucket'=>$this->bucket],
+				['acl' => $this->privacy],
+				['key' => $prefix.$bucketFilename],
+                ['starts-with', '$Content-Type', '']
+			];
+
+			if (!empty($this->cacheControl)) {
+				$optionsData[] = ['Cache-Control' => $this->cacheControl];
+			}
+
+			if (!empty($this->expires)) {
+				$optionsData[] = ['Expires' => $this->expires];
+			}
+
+			$postObject = new \ILAB_Aws\S3\PostObjectV4($s3Client, $this->bucket, [], $optionsData, '+10 minutes');
+			$result = [
+			        'key'=>$prefix.$bucketFilename,
+                    'postObject' => $postObject,
+			        'CacheControl' => (!empty($this->cacheControl)) ? $this->cacheControl : null,
+			        'Expires' => (!empty($this->expires)) ? $this->expires : null,
+            ];
+
+			return $result;
+		}
+		catch (\ILAB_Aws\Exception\AwsException $ex)
+		{
+			error_log($ex->getMessage());
+		}
+
+		return null;
+    }
+
+	public function s3Bucket() {
+	    return $this->bucket;
+    }
+
+    public function importImageAttachmentFromS3($key) {
+        $s3 = $this->s3Client();
+
+        $stream = new \WillWashburn\Stream\Stream();
+        $parser = new \FasterImage\ImageParser($stream);
+
+        $result = [];
+        $currentIndex = 0;
+        while(true) {
+            $data = $s3->getObject(['Bucket'=>$this->bucket, 'Key'=>$key, 'Range'=>$currentIndex.'-'.($currentIndex+255)]);
+	        $contents = $data->get('Body')->getContents();
+            $stream->write($contents);
+
+	        try {
+		        // store the type in the result array by looking at the bits
+		        $result['type'] = $parser->parseType();
+
+		        /*
+				 * We try here to parse the buffer of characters we already have
+				 * for the size.
+				 */
+		        $result['size'] = $parser->parseSize() ?: 'failed';
+
+		        break;
+	        }
+	        catch (InvalidArgumentException $e) {
+		        return false;
+	        }
+
+	        $currentIndex += 256;
+        }
+
+        if (!is_array($result['size'])) {
+            return false;
+        }
+
+        $mimeType = 'image/'.$result['type'];
+
+        $fileParts = explode('/',$key);
+        $filename = array_pop($fileParts);
+        $url = $s3->getObjectUrl($this->bucket, $key);
+
+        $s3Info = [
+            'url' => $url,
+            'bucket' => $this->bucket,
+            'privacy' => $this->privacy,
+            'key' => $key,
+            'options' => [
+                    'params' => []
+            ]
+        ];
+
+	    if (!empty($this->cacheControl)) {
+		    $s3Info['options']['params']['CacheControl'] = $this->cacheControl;
+	    }
+
+	    if (!empty($this->expires)) {
+		    $s3Info['options']['params']['Expires'] = $this->expires;
+	    }
+
+
+        $meta = [
+	        'width' => $result['size'][0],
+	        'height' => $result['size'][1],
+            'file' => $key,
+            'image_meta' => [],
+            's3' => $s3Info,
+            'sizes' => []
+        ];
+
+	    $builtInSizes = [];
+	    foreach(['thumbnail', 'medium', 'medium_large', 'large'] as $size) {
+	        $builtInSizes[$size] = [
+		        'width' => get_option("{$size}_size_w"),
+		        'height' => get_option("{$size}_size_h"),
+                'crop' => get_option("{$size}_crop", 0),
+            ];
+        }
+
+	    $additional_sizes = wp_get_additional_image_sizes();
+        $sizes=array_merge($builtInSizes, $additional_sizes);
+
+        foreach($sizes as $sizeKey => $size) {
+            $resized = image_resize_dimensions($result['size'][0],$result['size'][1],$size['width'],$size['height'],$size['crop']);
+            if ($resized) {
+	            $meta['sizes'][$sizeKey] = [
+		            'file' => $filename,
+		            'width' => $resized[4],
+		            'height' => $resized[5],
+		            'mime-type' => 'image/jpeg',
+		            's3' => $s3Info
+	            ];
+            }
+        }
+
+	    $post = wp_insert_post([
+		                           'post_author' => get_current_user_id(),
+		                           'post_title' => $filename,
+		                           'post_status' => 'inherit',
+		                           'post_type' => 'attachment',
+		                           'guid' => $url,
+		                           'post_mime_type' => $mimeType
+	                           ]);
+
+	    if (is_wp_error($post)) {
+		    return false;
+	    }
+
+        add_post_meta($post, '_wp_attached_file', $key);
+        add_post_meta($post, '_wp_attachment_metadata', $meta);
+
+        $thumbUrl = image_downsize($post, ['width'=>128, 'height'=>128]);
+
+        if (is_array($thumbUrl)) {
+            $thumbUrl = $thumbUrl[0];
+        }
+
+        return [
+	        'id' => $post,
+            'url' =>$url,
+            'thumb' => $thumbUrl
+        ];
+    }
+
+    public function documentUploadsEnabled() {
+	    return $this->uploadDocs;
+    }
+
+    public function hasCustomEndPoint() {
+	    return !empty($this->endpoint);
+    }
+
+    public function customEndpointIsGoogle() {
+	    if ($this->hasCustomEndPoint()) {
+	        return (strpos($this->endpoint, 'googleapis.com')>0);
+        }
+
+        return false;
+    }
+
+    public function accessKey() {
+	    return $this->key;
 	}
 }

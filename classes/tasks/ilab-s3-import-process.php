@@ -44,7 +44,6 @@ class ILABS3ImportProcess extends ILAB_WP_Background_Process {
 			$data = [ 'file' => $file ];
 			if (file_exists($upload_file)) {
 				$mime = mime_content_type($upload_file);
-
 				if ($mime == 'image/vnd.adobe.photoshop') {
 					$mime = 'application/vnd.adobe.photoshop';
 				}
