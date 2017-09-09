@@ -17,7 +17,7 @@ Media Cloud by ILAB is a suite of tools designed to enhance media handling in Wo
 
 **NOTE**: This plugin requires PHP 5.5x or higher (PHP 7.x preferred)
 
-= Upload to S3, Mini, Google Cloud Storage and Digital Ocean Spaces =
+= Upload to S3, Minio, Google Cloud Storage and Digital Ocean Spaces =
 Automatically copy media uploads to S3 (and S3 compatible services) and hosts your media directly
 from S3, CloudFront or any other CDN.  Additionally, easily import your existing
 media library to Amazon S3 with the push of a button.
