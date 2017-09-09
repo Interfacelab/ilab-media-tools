@@ -6,6 +6,11 @@
         "js/ilab-modal.js"
       ]
     },
+    "ilab-media-upload.js": {
+      "files": [
+        "js/ilab-media-upload.js"
+      ]
+    },
     "ilab-media-tools.js": {
       "files": [
         "vendor/cropper/dist/cropper.js",
@@ -26,11 +31,17 @@
     "ilab-modal.min.css": {
       "files": "styles/ilab-modal.scss"
     },
+    "ilab-media-upload.min.css": {
+      "files": "styles/ilab-media-upload.scss"
+    },
     "ilab-media-tools.min.css": {
       "files": [
         "vendor/cropper/dist/cropper.css",
         "styles/ilab-media-tools.scss"
       ]
+    },
+    "images": {
+      "files": ["img/**/*"]
     }
   },
   "paths": {
@@ -38,6 +49,6 @@
     "dist": "../public/"
   },
   "config": {
-    "devUrl": "http://dev.interfacelab.io"
+    "devUrl": "http://example.dev"
   }
 }

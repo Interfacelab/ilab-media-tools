@@ -362,6 +362,13 @@ class ILabMediaImgixTool extends ILabMediaToolBase
 
         $is_crop = ((count($size)>=3) && ($size[2] == 'crop'));
 
+        if (isset($size['width'])) {
+            $size = [
+                $size['width'],
+                $size['height']
+            ];
+        }
+
         $params=[
             'fit'=> ($is_crop) ? 'crop' : 'fit',
             'w'=>$size[0],
@@ -1072,6 +1079,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
 		    $fallback_sizes = array(
 			    'thumbnail',
 			    'medium',
+			    'medium_large',
 			    'large',
 		    );
 		    $fallback_sizes = apply_filters( 'fallback_intermediate_image_sizes', $fallback_sizes, $metadata );
@@ -1167,5 +1175,9 @@ class ILabMediaImgixTool extends ILabMediaToolBase
         }
 
         return $html;
+    }
+
+    public function alternativeFormatsEnabled() {
+	    return $this->enabledAlternativeFormats;
     }
 }

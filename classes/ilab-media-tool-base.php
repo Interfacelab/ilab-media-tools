@@ -63,8 +63,6 @@ abstract class ILabMediaToolBase {
 	 */
     protected $env_variable;
 
-    private $select_options = [];
-
     /**
      * Creates a new instance.  Subclasses should do any setup dependent on being enabled in setup()
      * @param $toolName
@@ -138,8 +136,22 @@ abstract class ILabMediaToolBase {
         {
             foreach($this->toolInfo['dependencies'] as $dep)
             {
-                if (!$this->toolManager->toolEnabled($dep))
-                    return false;
+            	if (is_array($dep)) {
+            		$enabledCount = 0;
+					foreach($dep as $toolDep) {
+						if ($this->toolManager->toolEnabled($toolDep)) {
+							$enabledCount++;
+							break;
+						}
+					}
+
+					if ($enabledCount == 0) {
+						return false;
+					}
+	            } else {
+		            if (!$this->toolManager->toolEnabled($dep))
+			            return false;
+	            }
             }
         }
 
@@ -248,9 +260,12 @@ abstract class ILabMediaToolBase {
                             case 'number':
                                 $this->registerNumberFieldSetting($option,$optionInfo['title'],$group,(isset($optionInfo['description']) ? $optionInfo['description'] : null));
                                 break;
-                            case 'select':
-                                $this->registerSelectSetting($option,$optionInfo['options'],$optionInfo['title'],$group,(isset($optionInfo['description']) ? $optionInfo['description'] : null));
-                                break;
+	                        case 'select':
+		                        $this->registerSelectSetting($option,$optionInfo['options'],$optionInfo['title'],$group,(isset($optionInfo['description']) ? $optionInfo['description'] : null));
+		                        break;
+	                        case 'custom':
+		                        $this->registerCustomFieldSetting($option,'__CUSTOMREMOVE__',$group,$optionInfo['callback'],(isset($optionInfo['description']) ? $optionInfo['description'] : null));
+		                        break;
                         }
                     }
                 }
@@ -279,16 +294,19 @@ abstract class ILabMediaToolBase {
 
 
     /**
-     * Render settings.  Shouldn't need to override though.
+     * Render settings.
      */
     public function renderSettings()
     {
-
-        echo ILabMediaToolView::render_view('base/ilab-settings.php',[
+        $result = ILabMediaToolView::render_view('base/ilab-settings.php',[
             'title'=>$this->toolInfo['title'],
             'group'=>$this->options_group,
             'page'=>$this->options_page
         ]);
+
+        $result = str_replace('<th scope="row">__CUSTOMREMOVE__</th>', '', $result);
+
+        echo $result;
     }
 
     /**
@@ -363,6 +381,10 @@ abstract class ILabMediaToolBase {
             echo "<p class='description'>".$args['description']."</p>";
     }
 
+	protected function registerCustomFieldSetting($option_name,$title,$settings_slug,$renderCallback,$description=null) {
+		add_settings_field($option_name,$title,[$this,$renderCallback],$this->options_page,$settings_slug,['option'=>$option_name,'description'=>$description]);
+	}
+
     protected function registerCheckboxFieldSetting($option_name,$title,$settings_slug,$description=null, $default=false)
     {
         add_settings_field($option_name,$title,[$this,'renderCheckboxFieldSetting'],$this->options_page,$settings_slug,['option'=>$option_name,'description'=>$description, 'default' => $default]);
@@ -393,14 +415,16 @@ abstract class ILabMediaToolBase {
 
     protected function registerSelectSetting($option_name,$options,$title,$settings_slug,$description=null)
     {
-        $this->select_options[$option_name] = $options;
-        add_settings_field($option_name,$title,[$this,'renderSelectSetting'],$this->options_page,$settings_slug,['option'=>$option_name,'description'=>$description]);
+        add_settings_field($option_name,$title,[$this,'renderSelectSetting'],$this->options_page,$settings_slug,['option'=>$option_name,'options'=>$options,'description'=>$description]);
     }
 
     public function renderSelectSetting($args)
     {
         $option = $args['option'];
-        $options = $this->select_options[$option];
+        $options = $args['options'];
+	    if (!is_array($options)) {
+		    $options = $this->$options();
+	    }
 
         $value=get_option($args['option']);
 

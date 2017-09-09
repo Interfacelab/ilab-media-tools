@@ -4,8 +4,18 @@
     <strong>Requires:</strong>
 <?php
         $required=[];
-        foreach($tool->toolInfo['dependencies'] as $dep)
-            $required[]=$manager->tools[$dep]->toolInfo['title'];
+        foreach($tool->toolInfo['dependencies'] as $dep) {
+            if (is_array($dep)) {
+                $depTitles = [];
+                foreach($dep as $toolDep){
+                    $depTitles[] = $manager->tools[$toolDep]->toolInfo['title'];
+                }
+
+                $required[] = implode(' and/or ', $depTitles);
+            } else {
+	            $required[]=$manager->tools[$dep]->toolInfo['title'];
+            }
+        }
         $required=implode(', ',$required);
 ?>
     {{$required}}
