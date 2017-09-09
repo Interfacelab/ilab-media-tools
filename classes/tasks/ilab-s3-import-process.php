@@ -27,6 +27,12 @@ class ILABS3ImportProcess extends ILAB_WP_Background_Process {
 	protected $action = 'ilab_s3_import_process';
 
 	public function task($item) {
+		$shouldCancel = get_option('ilab_s3_import_should_cancel', false);
+		if ($shouldCancel) {
+			$this->cancel_process();
+			return false;
+		}
+
 		$index = $item['index'];
 		$post_id = $item['post'];
 
@@ -41,6 +47,11 @@ class ILABS3ImportProcess extends ILAB_WP_Background_Process {
 			$post_mime = get_post_mime_type($post_id);
 			$upload_file = get_attached_file($post_id);
 			$file = _wp_relative_upload_path($upload_file);
+
+			$fileName = basename($upload_file);
+
+			update_option('ilab_s3_import_current_file', $fileName);
+
 			$data = [ 'file' => $file ];
 			if (file_exists($upload_file)) {
 				$mime = mime_content_type($upload_file);
@@ -107,6 +118,9 @@ class ILABS3ImportProcess extends ILAB_WP_Background_Process {
 					restore_error_handler();
 				}
 			}
+		} else {
+			$fileName = basename($data['file']);
+			update_option('ilab_s3_import_current_file', $fileName);
 		}
 
 		$s3tool = ILabMediaToolsManager::instance()->tools['s3'];
@@ -129,6 +143,31 @@ class ILABS3ImportProcess extends ILAB_WP_Background_Process {
 		update_option('ilab_s3_import_status', false);
 		delete_option('ilab_s3_import_total_count');
 		delete_option('ilab_s3_import_current');
+		delete_option('ilab_s3_import_current_file');
 		parent::complete();
+	}
+
+	public function cancel_process() {
+		parent::cancel_process();
+
+		update_option('ilab_s3_import_status', false);
+		delete_option('ilab_s3_import_total_count');
+		delete_option('ilab_s3_import_current');
+		delete_option('ilab_s3_import_current_file');
+	}
+
+	public static function cancelAll() {
+		global $wpdb;
+
+		$res = $wpdb->get_results("select * from wp_options where option_name like 'wp_ilab_s3_import_process_batch_%'");
+		foreach($res as $batch) {
+			delete_option($batch->option_name);
+
+			update_option('ilab_s3_import_status', 1);
+			delete_option('ilab_s3_import_total_count');
+			delete_option('ilab_s3_import_current');
+			delete_option('ilab_s3_import_current_file');
+
+		}
 	}
 }

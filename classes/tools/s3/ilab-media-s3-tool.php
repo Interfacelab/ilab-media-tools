@@ -110,6 +110,8 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 		if (is_admin()) {
 			add_action('wp_ajax_ilab_s3_import_media', [$this,'importMedia']);
 			add_action('wp_ajax_ilab_s3_import_progress', [$this,'importProgress']);
+			add_action('wp_ajax_ilab_s3_cancel_import', [$this,'cancelImportMedia']);
+			add_action('wp_ajax_ilab_s3_force_cancel_import', [$this,'forceCancelImportMedia']);
 		}
 	}
 
@@ -926,9 +928,11 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 	public function renderImporter() {
 	    $enabled = $this->s3enabled();
 
+		$shouldCancel = get_option('ilab_s3_import_should_cancel', false);
 		$status = get_option('ilab_s3_import_status', false);
 		$total = get_option('ilab_s3_import_total_count', 0);
 		$current = get_option('ilab_s3_import_current', 1);
+		$currentFile = get_option('ilab_s3_import_current_file', '');
 
 		if ($total == 0) {
 			$attachments = get_posts([
@@ -950,22 +954,40 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 			'total' => $total,
 			'progress' => $progress,
 			'current' => $current,
-            'enabled' => $enabled
+			'currentFile' => $currentFile,
+            'enabled' => $enabled,
+            'shouldCancel' => $shouldCancel
 		]);
 	}
 
 	public function importProgress() {
+		$shouldCancel = get_option('ilab_s3_import_should_cancel', false);
 		$status = get_option('ilab_s3_import_status', false);
 		$total = get_option('ilab_s3_import_total_count', 0);
 		$current = get_option('ilab_s3_import_current', 0);
+		$currentFile = get_option('ilab_s3_import_current_file', '');
 
 		header('Content-type: application/json');
 		echo json_encode([
 			                 'status' => ($status) ? 'running' : 'idle',
 			                 'total' => (int)$total,
-			                 'current' => (int)$current
+			                 'current' => (int)$current,
+                             'currentFile' => $currentFile,
+			                 'shouldCancel' => $shouldCancel
 		                 ]);
 		die;
+	}
+
+	public function cancelImportMedia() {
+		update_option('ilab_s3_import_should_cancel', 1);
+		return json_response(['status' => 'ok']);
+	}
+
+	public function forceCancelImportMedia() {
+		update_option('ilab_s3_import_should_cancel', 1);
+        ILABS3ImportProcess::cancelAll();
+
+	    return json_response(['status'=>'ok']);
 	}
 
 	public function importMedia() {
@@ -987,6 +1009,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 			update_option('ilab_s3_import_status', true);
 			update_option('ilab_s3_import_total_count', $query->post_count);
 			update_option('ilab_s3_import_current', 1);
+			update_option('ilab_s3_import_should_cancel', false);
 
 			$process = new ILABS3ImportProcess();
 
