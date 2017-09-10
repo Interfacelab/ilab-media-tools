@@ -111,7 +111,6 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 			add_action('wp_ajax_ilab_s3_import_media', [$this,'importMedia']);
 			add_action('wp_ajax_ilab_s3_import_progress', [$this,'importProgress']);
 			add_action('wp_ajax_ilab_s3_cancel_import', [$this,'cancelImportMedia']);
-			add_action('wp_ajax_ilab_s3_force_cancel_import', [$this,'forceCancelImportMedia']);
 		}
 	}
 
@@ -980,14 +979,9 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 
 	public function cancelImportMedia() {
 		update_option('ilab_s3_import_should_cancel', 1);
-		return json_response(['status' => 'ok']);
-	}
+		ILABS3ImportProcess::cancelAll();
 
-	public function forceCancelImportMedia() {
-		update_option('ilab_s3_import_should_cancel', 1);
-        ILABS3ImportProcess::cancelAll();
-
-	    return json_response(['status'=>'ok']);
+		return json_response(['status'=>'ok']);
 	}
 
 	public function importMedia() {
@@ -1020,7 +1014,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 			$process->save();
 			$process->dispatch();
 		} else {
-			update_option('ilab_s3_import_status', false);
+			delete_option('ilab_s3_import_status');
 		}
 
 		header('Content-type: application/json');

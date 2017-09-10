@@ -140,7 +140,7 @@ class ILABS3ImportProcess extends ILAB_WP_Background_Process {
 	}
 
 	protected function complete() {
-		update_option('ilab_s3_import_status', false);
+		delete_option('ilab_s3_import_status');
 		delete_option('ilab_s3_import_total_count');
 		delete_option('ilab_s3_import_current');
 		delete_option('ilab_s3_import_current_file');
@@ -150,24 +150,25 @@ class ILABS3ImportProcess extends ILAB_WP_Background_Process {
 	public function cancel_process() {
 		parent::cancel_process();
 
-		update_option('ilab_s3_import_status', false);
+		delete_option('ilab_s3_import_status');
 		delete_option('ilab_s3_import_total_count');
 		delete_option('ilab_s3_import_current');
 		delete_option('ilab_s3_import_current_file');
 	}
 
 	public static function cancelAll() {
+		wp_clear_scheduled_hook('wp_ilab_s3_import_process_cron');
+
 		global $wpdb;
 
-		$res = $wpdb->get_results("select * from wp_options where option_name like 'wp_ilab_s3_import_process_batch_%'");
+		$res = $wpdb->get_results("select * from {$wpdb->options} where option_name like 'wp_ilab_s3_import_process_batch_%'");
 		foreach($res as $batch) {
 			delete_option($batch->option_name);
-
-			update_option('ilab_s3_import_status', 1);
-			delete_option('ilab_s3_import_total_count');
-			delete_option('ilab_s3_import_current');
-			delete_option('ilab_s3_import_current_file');
-
 		}
+
+		delete_option('ilab_s3_import_status');
+		delete_option('ilab_s3_import_total_count');
+		delete_option('ilab_s3_import_current');
+		delete_option('ilab_s3_import_current_file');
 	}
 }

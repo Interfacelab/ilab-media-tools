@@ -58,26 +58,25 @@
 		<div class="s3-importer-progress-container">
 			<div id="s3-importer-progress-bar"></div>
 		</div>
-        <button id="cancel-import" title="Cancel">Cancel</button>
-        <div class="force-cancel-help">Import stuck?  <a href="#" id="s3-importer-force-cancel">Force it to cancel</a>.</div>
+        <button id="s3-importer-cancel-import" title="Cancel">Cancel</button>
 	</div>
 	<script>
 		(function($){
 			$(document).ready(function(){
 				var importing={{($status == 'running') ? 'true' : 'false'}};
 
-				$('#s3-importer-force-cancel').on('click', function(e){
+				$('#s3-importer-cancel-import').on('click', function(e){
 				   e.preventDefault();
 
-				   if (confirm("Are you sure you want to force cancel the import?")) {
+				   if (confirm("Are you sure you want to cancel the import?")) {
                        var data={
-                           action: 'ilab_s3_force_cancel_import'
+                           action: 'ilab_s3_cancel_import'
                        };
 
                        $.post(ajaxurl,data,function(response){
                            $('#s3-importer-cancelling-text').css({'display':'block'});
                            $('#s3-importer-status-text').css({'display':'none'});
-                           $('#cancel-import').attr('disabled', true);
+                           $('#s3-importer-cancel-import').attr('disabled', true);
                            console.log(response);
                        });
                    }
@@ -100,7 +99,7 @@
 
 					$.post(ajaxurl,data,function(response){
 						if (response.status == 'running') {
-                            $('#cancel-import').attr('disabled', false);
+                            $('#s3-importer-cancel-import').attr('disabled', false);
                             $('#s3-importer-cancelling-text').css({'display':'none'});
                             $('#s3-importer-status-text').css({'display':'block'});
 
@@ -110,26 +109,6 @@
 					});
 					return false;
 				});
-
-				$('#cancel-import').on('click', function(e){
-                    e.preventDefault();
-                    if (!importing) {
-                        return;
-                    }
-                    var data={
-                        action: 'ilab_s3_cancel_import'
-                    };
-
-                    $.post(ajaxurl,data,function(response){
-                        $('#s3-importer-cancelling-text').css({'display':'block'});
-                        $('#s3-importer-status-text').css({'display':'none'});
-                        console.log(response);
-                    });
-
-                    $(this).attr('disabled', true);
-
-                    return false;
-                });
 
 				var checkStatus = function() {
 					if (importing) {
