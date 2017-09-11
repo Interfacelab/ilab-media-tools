@@ -15,6 +15,7 @@ if (!defined('ABSPATH')) { header('Location: /'); die; }
 
 require_once(ILAB_CLASSES_DIR.'/ilab-media-tool-base.php');
 require_once(ILAB_CLASSES_DIR.'/tasks/ilab-s3-import-process.php');
+require_once(ILAB_CLASSES_DIR.'/utils/ilab-media-tool-logger.php');
 
 /**
  * Class ILabMediaS3Tool
@@ -111,7 +112,6 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 			add_action('wp_ajax_ilab_s3_import_media', [$this,'importMedia']);
 			add_action('wp_ajax_ilab_s3_import_progress', [$this,'importProgress']);
 			add_action('wp_ajax_ilab_s3_cancel_import', [$this,'cancelImportMedia']);
-			add_action('wp_ajax_ilab_s3_force_cancel_import', [$this,'forceCancelImportMedia']);
 		}
 	}
 
@@ -315,7 +315,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 			}
 			catch (\ILAB_Aws\Exception\AwsException $ex)
 			{
-				error_log($ex->getMessage());
+			    ILabMediaToolLogger::error('S3 Error Copying Object', ['exception'=>$ex->getMessage(),'options'=>$copyOptions]);
 			}
 		}
 
@@ -557,7 +557,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 					    }
 				    }
                 } catch (Exception $ex) {
-                    error_log($ex->getMessage());
+				    ILabMediaToolLogger::error('PDF Parsing Error', ['exception'=>$ex->getMessage()]);
                 }
 
                 restore_error_handler();
@@ -710,7 +710,12 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 		}
 		catch (\ILAB_Aws\Exception\AwsException $ex)
 		{
-			error_log($ex->getMessage());
+			ILabMediaToolLogger::error('S3 Upload Error', ['exception'=>$ex->getMessage(),
+                                                           'bucket'=>$this->bucket,
+                                                           'prefix'=>$prefix,
+                                                           'bucketFilename'=>$bucketFilename,
+                                                           'privacy'=>$this->privacy,
+                                                           'options'=>$options]);
 		}
 
 		fclose($file);
@@ -798,7 +803,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 		}
 		catch (\ILAB_Aws\Exception\AwsException $ex)
 		{
-			error_log($ex->getMessage());
+			ILabMediaToolLogger::error('S3 Delete File Error', ['exception'=>$ex->getMessage(), 'Bucket'=>$this->bucket, 'Key'=>$file]);
 		}
 	}
 
@@ -980,14 +985,9 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 
 	public function cancelImportMedia() {
 		update_option('ilab_s3_import_should_cancel', 1);
-		return json_response(['status' => 'ok']);
-	}
+		ILABS3ImportProcess::cancelAll();
 
-	public function forceCancelImportMedia() {
-		update_option('ilab_s3_import_should_cancel', 1);
-        ILABS3ImportProcess::cancelAll();
-
-	    return json_response(['status'=>'ok']);
+		return json_response(['status'=>'ok']);
 	}
 
 	public function importMedia() {
@@ -1020,7 +1020,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 			$process->save();
 			$process->dispatch();
 		} else {
-			update_option('ilab_s3_import_status', false);
+			delete_option('ilab_s3_import_status');
 		}
 
 		header('Content-type: application/json');
@@ -1183,7 +1183,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 		}
 		catch (\ILAB_Aws\Exception\AwsException $ex)
 		{
-			error_log($ex->getMessage());
+			ILabMediaToolLogger::error('S3 Generate File Upload URL Error', ['exception'=>$ex->getMessage()]);
 		}
 
 		return null;

@@ -63,6 +63,12 @@ abstract class ILabMediaToolBase {
 	 */
     protected $env_variable;
 
+	/**
+	 * Only display the settings page when the tool is enabled
+	 * @var bool
+	 */
+    protected $only_when_enabled;
+
     /**
      * Creates a new instance.  Subclasses should do any setup dependent on being enabled in setup()
      * @param $toolName
@@ -76,16 +82,25 @@ abstract class ILabMediaToolBase {
         $this->settingSections=[];
         $this->toolInfo=$toolInfo;
         $this->toolManager=$toolManager;
+	    $this->only_when_enabled = false;
 
         if (isset($toolInfo['env'])) {
         	$this->env_variable = $toolInfo['env'];
         }
 
-        if (isset($toolInfo['settings']['options-page']))
-            $this->options_page=$toolInfo['settings']['options-page'];
+        if (isset($toolInfo['settings']) && !empty($toolInfo['settings'])) {
+	        if (isset($toolInfo['settings']['options-page'])) {
+		        $this->options_page=$toolInfo['settings']['options-page'];
+	        }
 
-        if (isset($toolInfo['settings']['options-group']))
-            $this->options_group=$toolInfo['settings']['options-group'];
+	        if (isset($toolInfo['settings']['only_when_enabled'])) {
+		        $this->only_when_enabled = $toolInfo['settings']['only_when_enabled'];
+	        }
+
+	        if (isset($toolInfo['settings']['options-group'])) {
+		        $this->options_group=$toolInfo['settings']['options-group'];
+	        }
+        }
 
         if (isset($toolInfo['helpers']))
         {
@@ -287,6 +302,10 @@ abstract class ILabMediaToolBase {
     {
         if (!isset($this->toolInfo['settings']))
             return;
+
+	    if ($this->only_when_enabled && (!$this->enabled())) {
+		    return;
+	    }
 
         $settings=$this->toolInfo['settings'];
         add_submenu_page( $top_menu_slug, $settings['title'], $settings['menu'], 'manage_options', $this->options_page, [$this,'renderSettings']);

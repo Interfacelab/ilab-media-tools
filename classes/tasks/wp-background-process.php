@@ -288,6 +288,10 @@ if ( ! class_exists( 'ILAB_WP_Background_Process' ) ) {
 			return $batch;
 		}
 
+		protected function shouldHandle() {
+			return true;
+		}
+
 		/**
 		 * Handle
 		 *
@@ -301,17 +305,19 @@ if ( ! class_exists( 'ILAB_WP_Background_Process' ) ) {
 				$batch = $this->get_batch();
 
 				foreach ( $batch->data as $key => $value ) {
-					$task = $this->task( $value );
+					if ($this->shouldHandle()) {
+						$task = $this->task( $value );
 
-					if ( false !== $task ) {
-						$batch->data[ $key ] = $task;
-					} else {
-						unset( $batch->data[ $key ] );
-					}
+						if ( false !== $task ) {
+							$batch->data[ $key ] = $task;
+						} else {
+							unset( $batch->data[ $key ] );
+						}
 
-					if ( $this->time_exceeded() || $this->memory_exceeded() ) {
-						// Batch limits reached.
-						break;
+						if ( $this->time_exceeded() || $this->memory_exceeded() ) {
+							// Batch limits reached.
+							break;
+						}
 					}
 				}
 
