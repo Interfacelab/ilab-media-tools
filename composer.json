@@ -20,6 +20,7 @@
     "imgix/imgix-php": "^1.0",
     "ilab/ilab-aws-sdk": "^0.1.0",
     "smalot/pdfparser": "^0.10.0",
-    "fasterimage/fasterimage": "^1.1"
+    "fasterimage/fasterimage": "^1.1",
+    "monolog/monolog": "^1.23"
   }
 }

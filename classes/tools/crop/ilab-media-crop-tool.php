@@ -16,6 +16,8 @@ if (!defined('ABSPATH')) { header('Location: /'); die; }
 require_once(ILAB_CLASSES_DIR.'/ilab-media-tool-base.php');
 require_once(ILAB_CLASSES_DIR.'/ilab-media-tool-view.php');
 
+require_once(ILAB_CLASSES_DIR.'/utils/ilab-media-tool-logger.php');
+
 /**
  * Class ILabMediaCropTool
  *

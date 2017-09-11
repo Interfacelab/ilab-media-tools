@@ -15,6 +15,7 @@ if (!defined('ABSPATH')) { header('Location: /'); die; }
 
 require_once(ILAB_CLASSES_DIR.'/ilab-media-tool-base.php');
 require_once(ILAB_CLASSES_DIR.'/tasks/ilab-s3-import-process.php');
+require_once(ILAB_CLASSES_DIR.'/utils/ilab-media-tool-logger.php');
 
 /**
  * Class ILabMediaS3Tool
@@ -314,7 +315,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 			}
 			catch (\ILAB_Aws\Exception\AwsException $ex)
 			{
-				error_log($ex->getMessage());
+			    ILabMediaToolLogger::error('S3 Error Copying Object', ['exception'=>$ex->getMessage(),'options'=>$copyOptions]);
 			}
 		}
 
@@ -556,7 +557,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 					    }
 				    }
                 } catch (Exception $ex) {
-                    error_log($ex->getMessage());
+				    ILabMediaToolLogger::error('PDF Parsing Error', ['exception'=>$ex->getMessage()]);
                 }
 
                 restore_error_handler();
@@ -709,7 +710,12 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 		}
 		catch (\ILAB_Aws\Exception\AwsException $ex)
 		{
-			error_log($ex->getMessage());
+			ILabMediaToolLogger::error('S3 Upload Error', ['exception'=>$ex->getMessage(),
+                                                           'bucket'=>$this->bucket,
+                                                           'prefix'=>$prefix,
+                                                           'bucketFilename'=>$bucketFilename,
+                                                           'privacy'=>$this->privacy,
+                                                           'options'=>$options]);
 		}
 
 		fclose($file);
@@ -797,7 +803,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 		}
 		catch (\ILAB_Aws\Exception\AwsException $ex)
 		{
-			error_log($ex->getMessage());
+			ILabMediaToolLogger::error('S3 Delete File Error', ['exception'=>$ex->getMessage(), 'Bucket'=>$this->bucket, 'Key'=>$file]);
 		}
 	}
 
@@ -1177,7 +1183,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 		}
 		catch (\ILAB_Aws\Exception\AwsException $ex)
 		{
-			error_log($ex->getMessage());
+			ILabMediaToolLogger::error('S3 Generate File Upload URL Error', ['exception'=>$ex->getMessage()]);
 		}
 
 		return null;
