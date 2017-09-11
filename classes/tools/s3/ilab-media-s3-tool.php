@@ -202,13 +202,83 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
                     });
 				</script>
 				<?php
+
 			} );
+
+			add_action('admin_head', function(){
+
+				if (get_current_screen()->base == 'upload') {
+					?>
+                    <style>
+                        th.column-s3, td.column-s3 {
+                            width:60px !important;
+                            max-width: 60px !important;
+                        }
+                    </style>
+					<?php
+				}
+            });
 		} );
 
 		add_action('admin_init',function(){
 			add_meta_box('ilab-s3-info-meta','S3 Info',[$this,'renderS3InfoMeta'], 'attachment', 'side', 'low');
 
 			add_action('edit_attachment', [$this, 'editAttachment']);
+
+			add_filter('manage_media_columns', function($cols) {
+			    $cols["s3"] = 'S3';
+			    return $cols;
+            });
+
+			add_action('manage_media_custom_column', function($column_name, $id) {
+                $meta = wp_get_attachment_metadata($id);
+                if (!empty($meta) && isset($meta['s3'])) {
+	                echo "<a href='".$meta['s3']['url']."' target=_blank>View</a>";
+                }
+            }, 10, 2);
+
+			if ($this->enabled()) {
+				add_filter('bulk_actions-upload', function($actions){
+					$actions['ilab_s3_import'] = 'Import to S3';
+					return $actions;
+				});
+
+				add_filter('handle_bulk_actions-upload', function($redirect_to, $action_name, $post_ids) {
+					if ('ilab_s3_import' === $action_name) {
+						$posts_to_import = [];
+						if (count($post_ids) > 0) {
+							foreach($post_ids as $post_id) {
+								$meta = wp_get_attachment_metadata($post_id);
+								if (!empty($meta) && isset($meta['s3'])) {
+									continue;
+								}
+
+								$posts_to_import[] = $post_id;
+							}
+						}
+
+						if (count($posts_to_import) > 0) {
+							update_option('ilab_s3_import_status', true);
+							update_option('ilab_s3_import_total_count', count($posts_to_import));
+							update_option('ilab_s3_import_current', 1);
+							update_option('ilab_s3_import_should_cancel', false);
+
+							$process = new ILABS3ImportProcess();
+
+							for($i = 0; $i < count($posts_to_import); ++$i) {
+								$process->push_to_queue(['index' => $i, 'post' => $posts_to_import[$i]]);
+							}
+
+							$process->save();
+							$process->dispatch();
+
+							return 'admin.php?page=media-tools-s3-importer';
+						}
+					}
+
+					return $redirect_to;
+				}, 1000, 3);
+			}
 		});
 	}
 
