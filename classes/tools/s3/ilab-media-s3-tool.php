@@ -485,6 +485,10 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 						}
 					}
 				}
+
+				if (isset($data['s3'])) {
+					$data = apply_filters('ilab_s3_after_upload', $id, $data);
+                }
 			}
 
 
@@ -702,6 +706,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 
 			$data['s3']=[
 				'url' => $result->get('ObjectURL') ,
+                'mime-type' => mime_content_type($upload_path.'/'.$filename),
 				'bucket'=>$this->bucket,
 				'privacy' => $this->privacy,
 				'key'=> $prefix.$bucketFilename,
@@ -1237,6 +1242,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 
         $s3Info = [
             'url' => $url,
+            'mime-type' => $mimeType,
             'bucket' => $this->bucket,
             'privacy' => $this->privacy,
             'key' => $key,
@@ -1301,6 +1307,8 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 		    return false;
 	    }
 
+	    $meta = apply_filters('ilab_s3_after_upload', $post, $meta);
+
         add_post_meta($post, '_wp_attached_file', $key);
         add_post_meta($post, '_wp_attachment_metadata', $meta);
 
@@ -1309,6 +1317,8 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
         if (is_array($thumbUrl)) {
             $thumbUrl = $thumbUrl[0];
         }
+
+
 
         return [
 	        'id' => $post,

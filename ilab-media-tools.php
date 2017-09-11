@@ -51,6 +51,7 @@ if (is_plugin_active('amazon-s3-and-cloudfront/wordpress-s3.php')) {
 
 // Directory defines
 define('ILAB_TOOLS_DIR',dirname(__FILE__));
+define('ILAB_CONFIG_DIR',ILAB_TOOLS_DIR.'/config');
 define('ILAB_HELPERS_DIR',ILAB_TOOLS_DIR.'/helpers');
 define('ILAB_CLASSES_DIR',ILAB_TOOLS_DIR.'/classes');
 define('ILAB_VENDOR_DIR',ILAB_TOOLS_DIR.'/vendor');
