@@ -6,7 +6,7 @@ Tested up to: 4.8.1
 License: GPLv3 or later
 Donate link: http://www2.jdrf.org/site/TR?fr_id=6912&pg=personal&px=11429802
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 1.5.0
+Stable tag: 1.5.1
 
 Automatically upload media to Amazon S3 and integrate with Imgix, a real-time image processing CDN.  Boosts site
 performance and simplifies workflows.
@@ -18,38 +18,31 @@ Media Cloud by ILAB is a suite of tools designed to enhance media handling in Wo
 **NOTE**: This plugin requires PHP 5.5x or higher (PHP 7.x preferred)
 
 = Upload to S3, Minio, Google Cloud Storage and Digital Ocean Spaces =
-Automatically copy media uploads to S3 (and S3 compatible services) and hosts your
-media directly from S3, CloudFront or any other CDN.  Additionally, easily import
-your existing media library to Amazon S3 with the push of a button.
+Automatically copy media uploads to S3 (and S3 compatible services) and hosts your media directly from S3, CloudFront or any other CDN.  Additionally, easily import your existing media library to Amazon S3 with the push of a button.
 
 = Integrate with Imgix =
-[Imgix](https://imgix.com) will radically change the way that you build
-your WordPress sites and themes.  This plugin is the best integration
-available for WordPress.  Upload your images to S3 with our S3 tool
-and then host the media with Imgix, providing you with real-time image
-processing and automatic format delivery.  Forget ImageMagick, Imgix
-is light years ahead in quality and speed.
+[Imgix](https://imgix.com) will radically change the way that you build your WordPress sites and themes.  This plugin is the best integration available for WordPress.  Upload your images to S3 with our S3 tool and then host the media with Imgix, providing you with real-time image processing and automatic format delivery.  Forget ImageMagick, Imgix is light years ahead in quality and speed.
 
 = Upload Directly To S3 =
-Directly upload your media and documents to S3, bypassing your WordPress
-server completely.  Note that this feature requires Imgix.
+Directly upload your media and documents to S3, bypassing your WordPress server completely.  Note that this feature requires Imgix.
+
+= Automatically Tag and Categorize with Amazon Rekognition =
+Use Amazon's latest AI tools to tag and categorize your images when uploading to S3.  With Rekognition, you can automatically detect objects, scenes, and faces in images.
 
 = Advanced Image Editing =
-When integrating with [Imgix](https://imgix.com), Media Cloud by ILAB provides the most
-advanced WordPress image editor.  Alter contrast, saturation, vibrancy
-and over 30 other image editing operations - in real time right inside
-the WordPress admin interface!  Completely non-destructive!
+When integrating with [Imgix](https://imgix.com), Media Cloud by ILAB provides the most advanced WordPress image editor.  Alter contrast, saturation, vibrancy and over 30 other image editing operations - in real time right inside the WordPress admin interface!  Completely non-destructive!
 
 = Image Cropping =
-Media Cloud by ILAB ships with the most advanced image cropping tool
-available for WordPress, based on Chen Fengyuan's amazing Cropper
-plugin for jQuery.
+Media Cloud by ILAB ships with the most advanced image cropping tool available for WordPress, based on Chen Fengyuan's amazing Cropper plugin for jQuery.
 
 **Best of all you get this functionality for free.**
 
 * Upload to S3
 * Host media from S3 or any CDN that can connect to S3
 * Integrate with Imgix media hosting
+* Direct uploads to S3
+* Use Amazon Rekognition to automatically tag and categorize images
+* Use third party cloud file providers that use S3 compatible APIs
 * Advanced image cropping tool
 * Advanced image editing with saturation, contrast, auto-correct,
   sharpen, blur and more (only when integrated with Imgix)
@@ -102,6 +95,11 @@ No, I'm just one very enthusiastic customer.
 5. Imgix settings.
 
 == Changelog ==
+
+= 1.5.1 =
+* Added support for Amazon Rekognition for auto tagging and categorizing uploaded images
+* Added debug for support tickets
+* Misc. fixes
 
 = 1.5.0 =
 * Upload media directly to S3, bypassing WordPress.  This feature requires Imgix.

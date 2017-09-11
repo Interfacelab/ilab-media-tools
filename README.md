@@ -19,6 +19,9 @@ is light years ahead in quality and speed.
 Directly upload your media and documents to S3, bypassing your WordPress 
 server completely.  Note, this feature requires Imgix.
 
+##### Automatically Tag and Categorize with Amazon Rekognition
+Use Amazon's latest AI tools to tag and categorize your images when uploading to S3.  With Rekognition, you can automatically detect objects, scenes, and faces in images.
+
 ##### Advanced Image Editing
 When integrating with [Imgix](https://imgix.com), Media Cloud by ILAB provides the most 
 advanced WordPress image editor.  Alter contrast, saturation, vibrancy
