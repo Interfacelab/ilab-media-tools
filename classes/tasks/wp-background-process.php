@@ -2,6 +2,7 @@
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
 require_once('wp-async-request.php');
+require_once(ILAB_CLASSES_DIR.'/utils/ilab-media-tool-logger.php');
 
 /**
  * WP Background Process
@@ -104,6 +105,7 @@ if ( ! class_exists( 'ILAB_WP_Background_Process' ) ) {
 			$key = $this->generate_key();
 
 			if ( ! empty( $this->data ) ) {
+				ILabMediaToolLogger::info("Saving queue: $key", $this->data);
 				update_site_option( $key, $this->data );
 			}
 
@@ -230,6 +232,7 @@ if ( ! class_exists( 'ILAB_WP_Background_Process' ) ) {
 		 * defined in the time_exceeded() method.
 		 */
 		protected function lock_process() {
+			ILabMediaToolLogger::info("Locking process {$this->identifier}");
 			$this->start_time = time(); // Set start time of current process.
 
 			$lock_duration = ( property_exists( $this, 'queue_lock_time' ) ) ? $this->queue_lock_time : 60; // 1 minute
@@ -246,6 +249,7 @@ if ( ! class_exists( 'ILAB_WP_Background_Process' ) ) {
 		 * @return $this
 		 */
 		protected function unlock_process() {
+			ILabMediaToolLogger::info("Unlocking process {$this->identifier}");
 			delete_site_transient( $this->identifier . '_process_lock' );
 
 			return $this;
@@ -304,8 +308,11 @@ if ( ! class_exists( 'ILAB_WP_Background_Process' ) ) {
 			do {
 				$batch = $this->get_batch();
 
+				ILabMediaToolLogger::info("Processing Batch", $batch);
 				foreach ( $batch->data as $key => $value ) {
 					if ($this->shouldHandle()) {
+						ILabMediaToolLogger::info("Running task", $value);
+
 						$task = $this->task( $value );
 
 						if ( false !== $task ) {

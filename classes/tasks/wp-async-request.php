@@ -2,6 +2,8 @@
 
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
+require_once(ILAB_CLASSES_DIR.'/utils/ilab-media-tool-logger.php');
+
 /**
  * WP Async Request
  *
@@ -87,6 +89,8 @@ if ( ! class_exists( 'ILAB_WP_Async_Request' ) ) {
 			$url  = add_query_arg( $this->get_query_args(), $this->get_query_url() );
 			$args = $this->get_post_args();
 
+			ILabMediaToolLogger::info("Background dispatching $url", $args);
+
 			return wp_remote_post( esc_url_raw( $url ), $args );
 		}
 
@@ -144,7 +148,13 @@ if ( ! class_exists( 'ILAB_WP_Async_Request' ) ) {
 		 * Check for correct nonce and pass to handler.
 		 */
 		public function maybe_handle() {
-			check_ajax_referer( $this->identifier, 'nonce' );
+			$check = check_ajax_referer( $this->identifier, 'nonce', false );
+
+			ILabMediaToolLogger::info("Maybe handle, check nonce: ".(($check) ? 'true' : 'false'));
+
+			if (!$check) {
+				wp_die();
+			}
 
 			$this->handle();
 
