@@ -86,14 +86,14 @@ class ILabMediaRekognitionTool extends ILabMediaToolBase {
 			}
 
 
+
 			add_action( 'init' , function() use ($taxes) {
 				foreach($taxes as $tax) {
 					if (in_array($tax, ['post_tag', 'category'])) {
 						register_taxonomy_for_object_type($tax, 'attachment');
 					}
 				}
-//				register_taxonomy_for_object_type('post_tag', 'attachment');
-//				register_taxonomy_for_object_type('category', 'attachment');
+
 			});
 
 		}
@@ -355,7 +355,7 @@ class ILabMediaRekognitionTool extends ILabMediaToolBase {
 	}
 
 	public function setupAdmin() {
-		add_filter('ilab_s3_after_upload', [$this, 'processImageMeta'], 2, 1000);
+		add_filter('ilab_s3_after_upload', [$this, 'processImageMeta'], 1000, 2);
 	}
 
 	public function attachmentTaxonomies() {
