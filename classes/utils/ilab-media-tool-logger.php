@@ -44,12 +44,14 @@ class ILabMediaToolLogger {
 				$paperTrailPort = get_option('ilab-media-s3-debug-papertrail-port', false);
 
 				if (!empty($paperTrailEndPoint) && !empty($paperTrailPort)) {
-					$userId = get_option('ilab-media-s3-debug-papertrail-user-id', false);
-					if (!empty($userId)) {
-						$this->context=['user' => $userId];
-					}
+					if (function_exists('socket_create')) {
+						$userId = get_option('ilab-media-s3-debug-papertrail-user-id', false);
+						if (!empty($userId)) {
+							$this->context=['user' => $userId];
+						}
 
-					$this->logger->pushHandler(new \Monolog\Handler\SyslogUdpHandler($paperTrailEndPoint, $paperTrailPort, LOG_USER, $realLevel));
+						$this->logger->pushHandler(new \Monolog\Handler\SyslogUdpHandler($paperTrailEndPoint, $paperTrailPort, LOG_USER, $realLevel));
+					}
 				}
 			}
 		}

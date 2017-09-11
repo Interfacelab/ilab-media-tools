@@ -26,4 +26,16 @@ if (file_exists(ILAB_VENDOR_DIR.'/autoload.php')) {
  */
 class ILabMediaDebuggingTool extends ILabMediaToolBase {
 
+	public function __construct( $toolName, $toolInfo, $toolManager ) {
+		parent::__construct( $toolName, $toolInfo, $toolManager );
+
+		$paperTrailEndPoint = get_option('ilab-media-s3-debug-papertrail-endpoint', false);
+		$paperTrailPort = get_option('ilab-media-s3-debug-papertrail-port', false);
+
+		if (!empty($paperTrailEndPoint) && !empty($paperTrailPort)) {
+			if (!function_exists('socket_create') && $this->enabled()) {
+				$this->displayAdminNotice('error', 'You have specified papertrail endpoint and ports, but you are missing the <a href="http://php.net/manual/en/book.sockets.php" target=_blank>php socket extension</a>.  Please install this extension to use remote logging.');
+			}
+		}
+	}
 }
