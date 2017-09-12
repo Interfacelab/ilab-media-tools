@@ -1,15 +1,14 @@
 === Media Cloud by ILAB ===
 Contributors: interfacelab
-Tags: media, images, cdn, uploads, crop, imgix, s3, cloudfront, aws, amazon s3, image editing, image editor, mirror, media library, offload, offload s3, minio, google cloud storage, digital ocean spaces
+Tags: uploads, amazon, s3, amazon s3, imgix, media, cdn, rekognition, cloudfront, images, crop, image editing, image editor, media library, offload, offload s3, minio, google cloud storage, digital ocean spaces
 Requires at least: 4.4
 Tested up to: 4.8.1
 License: GPLv3 or later
 Donate link: http://www2.jdrf.org/site/TR?fr_id=6912&pg=personal&px=11429802
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 1.5.1
+Stable tag: 1.5.2
 
-Automatically upload media to Amazon S3 and integrate with Imgix, a real-time image processing CDN.  Boosts site
-performance and simplifies workflows.
+Automatically upload media to Amazon S3 and integrate with Imgix, a real-time image processing CDN.  Boosts site performance and simplifies workflows.
 
 == Description ==
 
@@ -65,22 +64,13 @@ https://www.youtube.com/watch?v=rOmziu30nPI
 
 = How does this compare to WP Offload S3? =
 
-This essentially does everything that WP Offload S3 does but is free.  It includes an import function for importing
-your current library to S3 that only the pro version of WP Offload S3 has.  Otherwise, they work almost exactly the
-same.
+This essentially does everything that WP Offload S3 does but is free.  It includes an import function for importing your current library to S3 that only the pro version of WP Offload S3 has.  Otherwise, they work almost exactly the same.
 
 = Why should I use Imgix? =
 
-One of the headaches of managing a WordPress site is dealing with server disk space.  If you just use the S3
-functionality of this plugin, you are already one step ahead.  Using S3, all of your media is centrally located in
-one place that you can then distribute through a high performing content delivery network to improve page load speeds
-for your site.  You also don't have to worry about disk space on your servers anymore.
+One of the headaches of managing a WordPress site is dealing with server disk space.  If you just use the S3 functionality of this plugin, you are already one step ahead.  Using S3, all of your media is centrally located in one place that you can then distribute through a high performing content delivery network to improve page load speeds for your site.  You also don't have to worry about disk space on your servers anymore.
 
-Imgix is a content delivery network with a twist.  In addition to distributing your media, it also allows you to edit
-them, in real-time. and deliver the edited version through their CDN without altering the original.  Want to add a new
-image size to your theme?  You can do this with Imgix without having to use a plugin to recut all of your existing
-media to this new size.  Imgix optimizes format delivery and a bunch of other things.  It's seriously the greatest
-thing to happen to WordPress and web development in the history of ever.
+Imgix is a content delivery network with a twist.  In addition to distributing your media, it also allows you to edit them, in real-time. and deliver the edited version through their CDN without altering the original.  Want to add a new image size to your theme?  You can do this with Imgix without having to use a plugin to recut all of your existing media to this new size.  Imgix optimizes format delivery and a bunch of other things.  It's seriously the greatest thing to happen to WordPress and web development in the history of ever.
 
 = Are you a paid shill for Imgix? =
 
@@ -95,6 +85,14 @@ No, I'm just one very enthusiastic customer.
 5. Imgix settings.
 
 == Changelog ==
+
+= 1.5.2 =
+
+* Added Rekognition importer utility for running existing media on S3 through Rekognition
+* Added bulk actions for S3 importing and Rekognition processing to the WordPress media library
+* Added S3 icon overlay in the media library (grid mode)
+* Added S3 column to the media library (list mode)
+* Misc. fixes
 
 = 1.5.1 =
 * Added support for Amazon Rekognition for auto tagging and categorizing uploaded images
