@@ -136,6 +136,18 @@ return [
 						"type" => "text-field"
 					]
 				]
+			],
+			"ilab-media-s3-display-settings" => [
+				"title" => "Display Settings",
+				"description" => "",
+				"options" => [
+					"ilab-media-s3-display-s3-badge" => [
+						"title" => "Display S3 Icon",
+						"description" => "When this is selected, an S3 icon will be overlayed on items in the media library grid that are being served from S3.",
+						"type" => "checkbox",
+						"default" => true
+					]
+				]
 			]
 		]
 	]

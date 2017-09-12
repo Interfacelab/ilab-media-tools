@@ -51,6 +51,8 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 
 	private $skipUpdate = false;
 
+	private $displayBadges = true;
+
 	public function __construct($toolName, $toolInfo, $toolManager)
 	{
 		parent::__construct($toolName, $toolInfo, $toolManager);
@@ -65,6 +67,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 		$this->deleteFromS3 = $this->getOption('ilab-media-s3-delete-from-s3');
 		$this->prefixFormat = $this->getOption('ilab-media-s3-prefix', '');
 		$this->uploadDocs = $this->getOption('ilab-media-s3-upload-documents', null, true);
+		$this->displayBadges = $this->getOption('ilab-media-s3-display-s3-badge', null, true);
 		$this->privacy = $this->getOption('ilab-media-s3-privacy', null, "public-read");
 		if (!in_array($this->privacy, ['public-read', 'authenticated-read'])) {
 			$this->displayAdminNotice('error', "Your AWS S3 settings are incorrect.  The ACL '{$this->privacy}' is not valid.  Defaulting to 'public-read'.");
@@ -113,6 +116,8 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 			add_action('wp_ajax_ilab_s3_import_progress', [$this,'importProgress']);
 			add_action('wp_ajax_ilab_s3_cancel_import', [$this,'cancelImportMedia']);
 		}
+
+		$this->hookMediaGrid();
 	}
 
 	public function registerMenu($top_menu_slug) {
@@ -1417,4 +1422,46 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
     public function accessKey() {
 	    return $this->key;
 	}
+
+	protected function hookMediaGrid() {
+	    if (!$this->displayBadges) {
+	        return;
+        }
+        
+	    add_action('admin_head', function(){
+	       ?>
+            <style>
+                .ilab-s3-logo {
+                    display: none;
+                    position: absolute;
+                    right: 10px;
+                    bottom: 8px;
+                    z-index: 5;
+                }
+
+                .has-s3 > .ilab-s3-logo {
+                    display: block;
+                }
+            </style>
+            <?php
+        });
+		add_action('admin_footer', function(){
+			?>
+            <script>
+                jQuery(document).ready(function() {
+                    var attachTemplate = jQuery('#tmpl-attachment');
+                    if (attachTemplate) {
+                        var txt = attachTemplate.text();
+
+                        var search = '<div class="attachment-preview js--select-attachment type-{{ data.type }} subtype-{{ data.subtype }} {{ data.orientation }}">';
+                        var replace = '<div class="attachment-preview js--select-attachment type-{{ data.type }} subtype-{{ data.subtype }} {{ data.orientation }} <# if (data.hasOwnProperty("s3")) {#>has-s3<#}#>"><img src="<?php echo ILAB_PUB_IMG_URL.'/ilab-s3-logo.svg'?>" width="15" height="18" class="ilab-s3-logo">';
+                        txt = txt.replace(search, replace);
+                        attachTemplate.text(txt);
+                    }
+                });
+            </script>
+			<?php
+
+		} );
+    }
 }
