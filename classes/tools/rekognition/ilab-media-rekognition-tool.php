@@ -105,6 +105,56 @@ class ILabMediaRekognitionTool extends ILabMediaToolBase {
 			add_action('wp_ajax_ilab_rekognizer_process_images', [$this,'processImages']);
 			add_action('wp_ajax_ilab_rekognizer_process_progress', [$this,'processProgress']);
 			add_action('wp_ajax_ilab_rekognizer_cancel_process', [$this,'cancelProcessMedia']);
+
+			add_action('admin_init',function(){
+				if ($this->enabled()) {
+					add_filter('bulk_actions-upload', function($actions){
+						$actions['ilab_rekognizer_process'] = 'Process with Rekognizer';
+						return $actions;
+					});
+
+					add_filter('handle_bulk_actions-upload', function($redirect_to, $action_name, $post_ids) {
+						if ('ilab_rekognizer_process' === $action_name) {
+							$posts_to_import = [];
+							if (count($post_ids) > 0) {
+								foreach($post_ids as $post_id) {
+									$meta = wp_get_attachment_metadata($post_id);
+									if (!empty($meta) && !isset($meta['s3'])) {
+										continue;
+									}
+
+									$mime = get_post_mime_type($post_id);
+									if (!in_array($mime, ['image/jpeg', 'image/jpg', 'image/png'])) {
+										continue;
+									}
+
+									$posts_to_import[] = $post_id;
+								}
+							}
+
+							if (count($posts_to_import) > 0) {
+								update_option('ilab_rekognizer_status', true);
+								update_option('ilab_rekognizer_total_count', count($posts_to_import));
+								update_option('ilab_rekognizer_current', 1);
+								update_option('ilab_rekognizer_should_cancel', false);
+
+								$process = new ILABRekognizerProcess();
+
+								for($i = 0; $i < count($posts_to_import); ++$i) {
+									$process->push_to_queue(['index' => $i, 'post' => $posts_to_import[$i]]);
+								}
+
+								$process->save();
+								$process->dispatch();
+
+								return 'admin.php?page=media-tools-rekognizer-importer';
+							}
+						}
+
+						return $redirect_to;
+					}, 1000, 3);
+				}
+			});
 		}
 	}
 

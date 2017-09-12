@@ -29,7 +29,6 @@ class ILABRekognizerProcess extends ILAB_WP_Background_Process {
 
 	protected function shouldHandle() {
 		$result = !get_option('ilab_rekognizer_should_cancel', false);
-		ILabMediaToolLogger::info("Should cancel: ".(($result) ? 'true' : 'false'));
 		return $result;
 	}
 

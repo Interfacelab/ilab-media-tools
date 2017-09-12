@@ -305,10 +305,18 @@ if ( ! class_exists( 'ILAB_WP_Background_Process' ) ) {
 		protected function handle() {
 			$this->lock_process();
 
+			$shouldCancelAll = false;
+
 			do {
 				$batch = $this->get_batch();
 
-				ILabMediaToolLogger::info("Processing Batch", $batch);
+				if ((count($batch->data) == 0) || (!$this->shouldHandle())) {
+					$shouldCancelAll = true;
+					ILabMediaToolLogger::info("No batch to process", $batch);
+					break;
+				}
+
+				ILabMediaToolLogger::info("Processing Batch", $batch->data);
 				foreach ( $batch->data as $key => $value ) {
 					if ($this->shouldHandle()) {
 						ILabMediaToolLogger::info("Running task", $value);
@@ -338,11 +346,15 @@ if ( ! class_exists( 'ILAB_WP_Background_Process' ) ) {
 
 			$this->unlock_process();
 
-			// Start next batch or complete process.
-			if ( ! $this->is_queue_empty() ) {
-				$this->dispatch();
-			} else {
+			if ($shouldCancelAll) {
 				$this->complete();
+				static::cancelAll();
+			} else {
+				if ( ! $this->is_queue_empty() ) {
+					$this->dispatch();
+				} else {
+					$this->complete();
+				}
 			}
 
 			wp_die();
@@ -516,5 +528,6 @@ if ( ! class_exists( 'ILAB_WP_Background_Process' ) ) {
 		 */
 		abstract public function task( $item );
 
+		abstract public static function cancelAll();
 	}
 }
