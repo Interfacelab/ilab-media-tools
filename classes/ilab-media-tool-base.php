@@ -355,7 +355,14 @@ abstract class ILabMediaToolBase {
             return;
 
         $settingSection=$this->settingSections[$section['id']];
-        echo $settingSection['description'];
+
+        if (is_array($settingSection['description'])) {
+			foreach($settingSection['description'] as $description) {
+				echo "<p>$description</p>";
+			}
+        } else {
+	        echo "<p>{$settingSection['description']}</p>";
+        }
     }
 
     protected function registerTextFieldSetting($option_name,$title,$settings_slug,$description=null,$placeholder=null)

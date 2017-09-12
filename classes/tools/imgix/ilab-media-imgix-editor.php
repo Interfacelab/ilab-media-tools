@@ -47,7 +47,10 @@ class ILabImgixImageEditor extends WP_Image_Editor
 	    if (!file_exists($this->sourceFile))
 		    return false;
 
-	    $this->mime=mime_content_type($this->sourceFile);
+	    $mime = wp_check_filetype($this->sourceFile);
+	    if (!empty($mime) && isset($mime['type'])) {
+	    	$this->mime = $mime['type'];
+	    }
 	    $this->isGif=($this->mime=='image/gif');
 	    $size=getimagesize($this->sourceFile);
 

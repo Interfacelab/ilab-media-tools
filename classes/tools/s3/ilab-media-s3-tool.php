@@ -28,12 +28,14 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 	private $secret = null;
 	private $bucket = null;
 	private $endpoint = null;
+	private $endPointPathStyle = true;
 	private $docCdn = null;
 	private $cdn = null;
 	private $deleteOnUpload = false;
 	private $deleteFromS3 = false;
 	private $prefixFormat = '';
 	private $skipBucketCheck = false;
+	private $region = false;
 
 	private $settingsError = false;
 
@@ -53,6 +55,9 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 
 	private $displayBadges = true;
 
+	private $useTransferAcceleration = false;
+
+
 	public function __construct($toolName, $toolInfo, $toolManager)
 	{
 		parent::__construct($toolName, $toolInfo, $toolManager);
@@ -69,6 +74,14 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 		$this->uploadDocs = $this->getOption('ilab-media-s3-upload-documents', null, true);
 		$this->displayBadges = $this->getOption('ilab-media-s3-display-s3-badge', null, true);
 		$this->privacy = $this->getOption('ilab-media-s3-privacy', null, "public-read");
+		$this->useTransferAcceleration = $this->getOption('ilab-media-s3-use-transfer-acceleration','ILAB_AWS_S3_TRANSFER_ACCELERATION', false);
+		$this->endPointPathStyle = $this->getOption('ilab-media-s3-use-path-style-endpoint', 'ILAB_AWS_S3_ENDPOINT_PATH_STYLE', true);
+
+		$region = $this->getOption('ilab-media-s3-region', 'ILAB_AWS_S3_REGION', 'auto');
+		if ($region != 'auto'){
+		    $this->region = $region;
+        }
+
 		if (!in_array($this->privacy, ['public-read', 'authenticated-read'])) {
 			$this->displayAdminNotice('error', "Your AWS S3 settings are incorrect.  The ACL '{$this->privacy}' is not valid.  Defaulting to 'public-read'.");
 			$this->privacy = 'public-read';
@@ -445,9 +458,33 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 
 	}
 
+	//region S3 Client Methods
 
-	public function s3Client($insure_bucket=false)
-	{
+	private function getBucketRegion() {
+        if (!$this->s3enabled()) {
+            return false;
+        }
+
+		$config = [
+			'version' => 'latest',
+			'credentials' => [
+				'key'    => $this->key,
+				'secret' => $this->secret
+			]
+		];
+
+		if (!empty($this->endpoint)) {
+			$config['endpoint'] = $this->endpoint;
+			if ($this->endPointPathStyle) {
+				$config['use_path_style_endpoint'] = true;
+			}
+		}
+
+		$s3=new \ILAB_Aws\S3\S3MultiRegionClient($config);
+		return $s3->determineBucketRegion($this->bucket);
+    }
+
+	private function getS3MultiRegionClient() {
 		if (!$this->s3enabled())
 			return null;
 
@@ -459,20 +496,110 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 			]
 		];
 
-		if ($this->endpoint) {
+		if (!empty($this->endpoint)) {
 			$config['endpoint'] = $this->endpoint;
+
+			if ($this->endPointPathStyle) {
+				$config['use_path_style_endpoint'] = true;
+            }
+		}
+
+		if ($this->useTransferAcceleration) {
+			$config['use_accelerate_endpoint'] = true;
 		}
 
 		$s3=new \ILAB_Aws\S3\S3MultiRegionClient($config);
+		return $s3;
+	}
+
+    private function getS3Client($region = false) {
+	    if (!$this->s3enabled())
+		    return null;
+
+	    if (empty($region)) {
+	        if (empty($this->region)) {
+	            $this->region = $this->getBucketRegion($this->bucket);
+	            if (empty($this->region)) {
+	                ILabMediaToolLogger::info("Could not get region from server.");
+	                return null;
+                }
+
+                update_option('ilab-media-s3-region', $this->region);
+            }
+
+		    $region = $this->region;
+        }
+
+        if (empty($region)) {
+	        return null;
+        }
+
+	    $config = [
+		    'version' => 'latest',
+		    'credentials' => [
+			    'key'    => $this->key,
+			    'secret' => $this->secret
+		    ],
+            'region' => $region
+	    ];
+
+	    if (!empty($this->endpoint)) {
+		    $config['endpoint'] = $this->endpoint;
+		    if ($this->endPointPathStyle) {
+			    $config['use_path_style_endpoint'] = true;
+		    }
+	    }
+
+	    if ($this->useTransferAcceleration) {
+		    $config['use_accelerate_endpoint'] = true;
+	    }
+
+	    $s3=new \ILAB_Aws\S3\S3Client($config);
+	    return $s3;
+    }
+
+
+	public function s3Client($insure_bucket=false)
+	{
+		if (!$this->s3enabled())
+			return null;
+
+		$s3 = $this->getS3Client();
+		if (!$s3) {
+		    ILabMediaToolLogger::info('Could not create regular client, creating multi-region client instead.');
+		    $s3 = $this->getS3MultiRegionClient();
+        }
 
 		if ($insure_bucket && !$this->skipBucketCheck) {
 			if (!$s3->doesBucketExist($this->bucket)) {
+			    try {
+				    ILabMediaToolLogger::info("Bucket does not exist, trying to list buckets.");
+
+				    $result = $s3->listBuckets();
+				    $buckets = $result->get('Buckets');
+				    if (!empty($buckets)) {
+					    foreach($buckets as $bucket) {
+						    if ($bucket['Name'] == $this->bucket) {
+							    return $s3;
+						    }
+					    }
+                    }
+
+				    ILabMediaToolLogger::info("Bucket does not exist.");
+				    return null;
+                } catch (\ILAB_Aws\Exception\AwsException $ex) {
+			        ILabMediaToolLogger::error("Error insuring bucket exists.", ['exception' => $ex->getMessage()]);
+			        return null;
+                }
+
 				return null;
             }
         }
 
 		return $s3;
 	}
+
+	//endregion
 
 	/**
 	 * Filter for when attachments are updated
@@ -778,16 +905,24 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 
 			$options = apply_filters('ilab_s3_upload_options', $options, $id, $data);
 
+			ILabMediaToolLogger::startTiming("Start Upload", ['file' => $prefix.$bucketFilename]);
 			$result = $s3->upload($this->bucket,$prefix.$bucketFilename,$file, $this->privacy, $options);
+			ILabMediaToolLogger::endTiming("End Upload", ['file' => $prefix.$bucketFilename]);
 
 			$data['s3']=[
 				'url' => $result->get('ObjectURL') ,
-                'mime-type' => mime_content_type($upload_path.'/'.$filename),
 				'bucket'=>$this->bucket,
 				'privacy' => $this->privacy,
 				'key'=> $prefix.$bucketFilename,
 			    'options' => $options
 			];
+
+			if (file_exists($upload_path.'/'.$filename)) {
+				$ftype = wp_check_filetype($upload_path.'/'.$filename);
+				if (!empty($ftype) && isset($ftype['type'])) {
+					$data['s3']['mime-type'] = $ftype['type'];
+				}
+			}
 		}
 		catch (\ILAB_Aws\Exception\AwsException $ex)
 		{
@@ -802,7 +937,9 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 		fclose($file);
 
 		if ($this->deleteOnUpload) {
-			unlink($upload_path.'/'.$filename);
+			if (file_exists($upload_path.'/'.$filename)) {
+				unlink( $upload_path . '/' . $filename );
+			}
 		}
 
 		return $data;
@@ -1195,9 +1332,6 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 	public function uploadUrlForFile($filename) {
 	    $s3 = $this->s3Client(true);
 
-        $config = [
-
-        ];
 		$config = [
 			'version' => 'latest',
 			'credentials' => [
@@ -1219,6 +1353,10 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
         } else {
 			$config['region'] = 'US';
         }
+
+		if ($this->useTransferAcceleration) {
+			$config['use_accelerate_endpoint'] = true;
+		}
 
         $s3Client = new \ILAB_Aws\S3\S3Client($config);
 
