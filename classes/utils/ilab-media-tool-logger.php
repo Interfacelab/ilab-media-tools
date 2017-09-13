@@ -21,6 +21,8 @@ class ILabMediaToolLogger {
 	private $logger = null;
 	private $context = [];
 
+	private $time = [];
+
 	public function __construct() {
 		$env = getenv('ILAB_MEDIA_DEBUGGING_ENABLED');
 		$enabled=get_option("ilab-media-tool-enabled-debugging", $env);
@@ -75,6 +77,22 @@ class ILabMediaToolLogger {
 		}
 	}
 
+	public function doStartTiming($message, $context=[]) {
+		if ($this->logger) {
+			$this->time[] = microtime(true);
+			$this->logger->addInfo($message, array_merge($this->context, $context));
+		}
+	}
+
+	public function doEndTiming($message, $context=[]) {
+		if ($this->logger) {
+			$time = array_pop($this->time);
+			$context['time'] = microtime(true) - $time;
+
+			$this->logger->addInfo($message, array_merge($this->context, $context));
+		}
+	}
+
 	public static function instance() {
 		if (!isset(self::$instance)) {
 			$class=__CLASS__;
@@ -94,5 +112,13 @@ class ILabMediaToolLogger {
 
 	public static function error($message, $context=[]) {
 		self::instance()->doLogError($message, (empty($context) || !is_array($context)) ? [] : $context);
+	}
+
+	public static function startTiming($message, $context=[]) {
+		self::instance()->doStartTiming($message, (empty($context) || !is_array($context)) ? [] : $context);
+	}
+
+	public static function endTiming($message, $context=[]) {
+		self::instance()->doEndTiming($message, (empty($context) || !is_array($context)) ? [] : $context);
 	}
 }

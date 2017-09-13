@@ -1128,7 +1128,11 @@ class ILabMediaImgixTool extends ILabMediaToolBase
     public function fileIsDisplayableImage($result, $path) {
 	    $mime = wp_get_image_mime($path);
 	    if (!$mime) {
-		    $mime = mime_content_type($path);
+		    $ftype = wp_check_filetype($path);
+		    if (!empty($ftype) && isset($ftype['type'])) {
+			    $mime = $ftype['type'];
+		    }
+
 		    $ext = pathinfo($path, PATHINFO_EXTENSION);
 		    if (('ai' == strtolower($ext)) && ("application/pdf" == $mime)) {
 			    return true;

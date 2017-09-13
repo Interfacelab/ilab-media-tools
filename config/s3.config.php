@@ -46,17 +46,56 @@ return [
 						"description" => "If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_AWS_S3_BUCKET</strong>",
 						"type" => "text-field",
 						"watch" => true
+					],
+					"ilab-media-s3-region" => [
+						"title" => "AWS Region",
+						"description" => "The region that your bucket is in.  Setting this is only really useful if you are using compatible S3 services, and not if you are using Amazon S3 itself.  If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_AWS_S3_REGION</strong>",
+						"type" => "select",
+						"options" => [
+							"auto" => "Automatic",
+							'us-east-2' => 'US East (Ohio)',
+							'us-east-1' => 'US East (N. Virginia)',
+							'us-west-1' => 'US West (N. California)',
+							'us-west-2' => 'US West (Oregon)',
+							'ca-central-1' => 'Canada (Central)',
+							'ap-south-1' => 'Asia Pacific (Mumbai)',
+							'ap-northeast-2' => 'Asia Pacific (Seoul)',
+							'ap-southeast-1' => 'Asia Pacific (Singapore)',
+							'ap-southeast-2' => 'Asia Pacific (Sydney)',
+							'ap-northeast-1' => 'Asia Pacific (Tokyo)',
+							'eu-central-1' => 'EU (Frankfurt)',
+							'eu-west-1' => 'EU (Ireland)',
+							'eu-west-2' => 'EU (London)',
+							'sa-east-1' => 'South America (São Paulo)',
+						],
+						"watch" => true
+					],
+					"ilab-media-s3-use-transfer-acceleration" => [
+						"title" => "Use Transfer Acceleration",
+						"description" => "Amazon S3 Transfer Acceleration enables fast, easy, and secure transfers of files over long distances between your client and an S3 bucket. Transfer Acceleration takes advantage of Amazon CloudFront’s globally distributed edge locations.  <strong>You must have it enabled on your bucket in the S3 console.</strong>",
+						"type" => "checkbox",
+						"default" => false
 					]
 				]
 			],
 			"ilab-media-s3-aws-custom-endpoint-settings" => [
 				"title" => "Custom End Point (Advanced)",
-				"description" => "ILAB Media Cloud is compatible with any S3 compatible cloud storage server like Minio, Ceph RGW, Google Cloud Storage (when in <a href='https://cloud.google.com/storage/docs/migrating#migration-simple' target=_blank>interoperability mode</a>) or Digital Ocean Spaces.  If you are using one of these services, specify the endpoint for the service's api here.  <strong>IMPORTANT:</strong> If you are using Minio, your bucket must have a public read policy set for the entire bucket.  See <a href='https://github.com/minio/minio/issues/3774' target=_blank>here</a> for more details.",
+				"description" => [
+					"ILAB Media Cloud is compatible with any S3 compatible cloud storage server like Minio, Ceph RGW, Google Cloud Storage (when in <a href='https://cloud.google.com/storage/docs/migrating#migration-simple' target=_blank>interoperability mode</a>) or Digital Ocean Spaces.  If you are using one of these services, specify the endpoint for the service's api here.",
+					"If you are using Minio, it's important that you specify the region (for example <code>us-east-1</code>) in your <code>/etc/minio/config.json</code> file on your Minio server. <strong>IMPORTANT:</strong> If you are using Minio, your bucket must have a public read policy set for the entire bucket.  See <a href='https://github.com/minio/minio/issues/3774' target=_blank>here</a> for more details."
+				],
 				"options" => [
 					"ilab-media-s3-endpoint" => [
 						"title" => "Custom Endpoint URL",
 						"description" => "If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_AWS_S3_ENDPOINT</strong>",
 						"type" => "text-field",
+						"watch" => true
+					],
+					"ilab-media-s3-use-path-style-endpoint" => [
+						"title" => "Path Style Endpoint",
+						"description" => "Set to true to send requests to an S3 path style endpoint by default.  If this is unchecked, requests will be sent to something like <code>https://your-bucket-name.your-s3-server.com/</code>, which is likely not to work.",
+						"type" => "checkbox",
+						"default" => true,
 						"watch" => true
 					]
 				]
@@ -68,8 +107,7 @@ return [
 					"ilab-media-s3-prefix" => [
 						"title" => "Upload File Prefix",
 						"description" => "This will prepend a prefix to any file uploaded to S3.  For dynamically created prefixes, you can use the following variables: <code>@[date:format]</code>, <code>@[site-name]</code>, <code>@[site-host]</code>, <code>@[site-id]</code>, <code>@[versioning]</code>, <code>@[user-name]</code>, <code>@[unique-id]</code>, <code>@[unique-path]</code>.  For the date token, format is any format string that you can use with php's date() function.  Note that specifying a prefix here will remove WordPress's default date prefix.  WordPress's default prefix would look like: <code>@[date:Y\/m]</code>. If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_AWS_S3_BUCKET_PREFIX</strong>.",
-						"type" => "text-field",
-						"watch" => true
+						"type" => "text-field"
 					],
 					"ilab-media-s3-privacy" => [
 						"title" => "Upload Privacy ACL",
@@ -83,14 +121,12 @@ return [
 					"ilab-media-s3-cache-control" => [
 						"title" => "Cache Control",
 						"description" => "Sets the Cache-Control metadata for an object in S3, e.g. <code>public,max-age=2592000</code> - If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_AWS_S3_CACHE_CONTROL</strong>.",
-						"type" => "text-field",
-						"watch" => true
+						"type" => "text-field"
 					],
 					"ilab-media-s3-expires" => [
 						"title" => "Content Expiration",
 						"description" => "Sets the Expire metadata for an object in S3.  This is the number of minutes from the date of upload. If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_AWS_S3_EXPIRES</strong>.",
-						"type" => "text-field",
-						"watch" => true
+						"type" => "text-field"
 					],
 					"ilab-media-s3-upload-documents" => [
 						"title" => "Upload Non-image Files",

@@ -60,7 +60,13 @@ class ILABS3ImportProcess extends ILAB_WP_Background_Process {
 			ILabMediaToolLogger::info('Task metadata was empty.', $item);
 
 			if (file_exists($upload_file)) {
-				$mime = mime_content_type($upload_file);
+				$mime = null;
+
+				$ftype = wp_check_filetype($upload_file);
+				if (!empty($ftype) && isset($ftype['type'])) {
+					$mime  = $ftype['type'];
+				}
+
 				if ($mime == 'image/vnd.adobe.photoshop') {
 					$mime = 'application/vnd.adobe.photoshop';
 				}
