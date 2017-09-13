@@ -67,7 +67,8 @@ return [
 							'eu-west-1' => 'EU (Ireland)',
 							'eu-west-2' => 'EU (London)',
 							'sa-east-1' => 'South America (São Paulo)',
-						]
+						],
+						"watch" => true
 					],
 					"ilab-media-s3-use-transfer-acceleration" => [
 						"title" => "Use Transfer Acceleration",
@@ -94,7 +95,8 @@ return [
 						"title" => "Path Style Endpoint",
 						"description" => "Set to true to send requests to an S3 path style endpoint by default.  If this is unchecked, requests will be sent to something like <code>https://your-bucket-name.your-s3-server.com/</code>, which is likely not to work.",
 						"type" => "checkbox",
-						"default" => true
+						"default" => true,
+						"watch" => true
 					]
 				]
 			],
@@ -105,8 +107,7 @@ return [
 					"ilab-media-s3-prefix" => [
 						"title" => "Upload File Prefix",
 						"description" => "This will prepend a prefix to any file uploaded to S3.  For dynamically created prefixes, you can use the following variables: <code>@[date:format]</code>, <code>@[site-name]</code>, <code>@[site-host]</code>, <code>@[site-id]</code>, <code>@[versioning]</code>, <code>@[user-name]</code>, <code>@[unique-id]</code>, <code>@[unique-path]</code>.  For the date token, format is any format string that you can use with php's date() function.  Note that specifying a prefix here will remove WordPress's default date prefix.  WordPress's default prefix would look like: <code>@[date:Y\/m]</code>. If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_AWS_S3_BUCKET_PREFIX</strong>.",
-						"type" => "text-field",
-						"watch" => true
+						"type" => "text-field"
 					],
 					"ilab-media-s3-privacy" => [
 						"title" => "Upload Privacy ACL",
@@ -120,14 +121,12 @@ return [
 					"ilab-media-s3-cache-control" => [
 						"title" => "Cache Control",
 						"description" => "Sets the Cache-Control metadata for an object in S3, e.g. <code>public,max-age=2592000</code> - If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_AWS_S3_CACHE_CONTROL</strong>.",
-						"type" => "text-field",
-						"watch" => true
+						"type" => "text-field"
 					],
 					"ilab-media-s3-expires" => [
 						"title" => "Content Expiration",
 						"description" => "Sets the Expire metadata for an object in S3.  This is the number of minutes from the date of upload. If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_AWS_S3_EXPIRES</strong>.",
-						"type" => "text-field",
-						"watch" => true
+						"type" => "text-field"
 					],
 					"ilab-media-s3-upload-documents" => [
 						"title" => "Upload Non-image Files",

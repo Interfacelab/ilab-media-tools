@@ -481,7 +481,14 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 		}
 
 		$s3=new \ILAB_Aws\S3\S3MultiRegionClient($config);
-		return $s3->determineBucketRegion($this->bucket);
+		$region = false;
+		try {
+			$region = $s3->determineBucketRegion($this->bucket);
+        } catch (\ILAB_Aws\Exception\AwsException $ex) {
+		    ILabMediaToolLogger::error("AWS Error fetching region", ['exception' => $ex->getMessage()]);
+        }
+
+		return $region;
     }
 
 	private function getS3MultiRegionClient() {
@@ -1330,35 +1337,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 	}
 
 	public function uploadUrlForFile($filename) {
-	    $s3 = $this->s3Client(true);
-
-		$config = [
-			'version' => 'latest',
-			'credentials' => [
-				'key'    => $this->key,
-				'secret' => $this->secret
-			]
-		];
-
-		if ($this->endpoint) {
-			$config['endpoint'] = $this->endpoint;
-		}
-
-		if (!$this->customEndpointIsGoogle()) {
-			$regionResult = $s3->getBucketLocation(['Bucket'=>$this->bucket]);
-			if ($regionResult->hasKey('LocationConstraint')) {
-				$region = $regionResult->get('LocationConstraint');
-				$config['region'] = $region;
-			}
-        } else {
-			$config['region'] = 'US';
-        }
-
-		if ($this->useTransferAcceleration) {
-			$config['use_accelerate_endpoint'] = true;
-		}
-
-        $s3Client = new \ILAB_Aws\S3\S3Client($config);
+	    $s3 = $this->s3Client(false);
 
 		$bucketFilename = $filename;
 
@@ -1390,7 +1369,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 				$optionsData[] = ['Expires' => $this->expires];
 			}
 
-			$postObject = new \ILAB_Aws\S3\PostObjectV4($s3Client, $this->bucket, [], $optionsData, '+10 minutes');
+			$postObject = new \ILAB_Aws\S3\PostObjectV4($s3, $this->bucket, [], $optionsData, '+15 minutes');
 			$result = [
 			        'key'=>$prefix.$bucketFilename,
                     'postObject' => $postObject,
@@ -1415,34 +1394,17 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
     public function importImageAttachmentFromS3($key) {
         $s3 = $this->s3Client();
 
-        $stream = new \WillWashburn\Stream\Stream();
-        $parser = new \FasterImage\ImageParser($stream);
+	    $command = $s3->getCommand('GetObject', ['Bucket' => $this->bucket, 'Key' => $key]);
+	    $presignedRequest = $s3->createPresignedRequest($command, '+10 minutes');
+        $presignedUrl =  (string)  $presignedRequest->getUri();
 
-        $result = [];
-        $currentIndex = 0;
-        while(true) {
-            $data = $s3->getObject(['Bucket'=>$this->bucket, 'Key'=>$key, 'Range'=>$currentIndex.'-'.($currentIndex+255)]);
-	        $contents = $data->get('Body')->getContents();
-            $stream->write($contents);
-
-	        try {
-		        // store the type in the result array by looking at the bits
-		        $result['type'] = $parser->parseType();
-
-		        /*
-				 * We try here to parse the buffer of characters we already have
-				 * for the size.
-				 */
-		        $result['size'] = $parser->parseSize() ?: 'failed';
-
-		        break;
-	        }
-	        catch (InvalidArgumentException $e) {
-		        return false;
-	        }
-
-	        $currentIndex += 256;
+	    $faster = new \FasterImage\FasterImage();
+	    $result = $faster->batch([$presignedUrl]);
+	    if (empty($result)) {
+	        return false;
         }
+
+        $result = $result[$presignedUrl];
 
         if (!is_array($result['size'])) {
             return false;
@@ -1547,6 +1509,10 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 
     public function hasCustomEndPoint() {
 	    return !empty($this->endpoint);
+    }
+
+    public function region() {
+	    return $this->region;
     }
 
     public function customEndpointIsGoogle() {

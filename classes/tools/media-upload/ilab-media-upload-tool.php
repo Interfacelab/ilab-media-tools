@@ -41,7 +41,11 @@ class ILabMediaUploadTool extends ILabMediaToolBase {
 		if (!$enabled)
 			return false;
 
-		return !$s3Tool->hasCustomEndPoint();
+		if ($s3Tool->hasCustomEndPoint()) {
+			return (!$s3Tool->customEndPointIsGoogle() && $s3Tool->region());
+		}
+
+		return true;
 	}
 
 	public function setupAdmin() {
@@ -110,12 +114,19 @@ class ILabMediaUploadTool extends ILabMediaToolBase {
 				                          'Bucket' => $s3Tool->s3Bucket(),
 				                          'Key' => $key
 			                          ]);
+			$type = $result->get('ContentType');
 		} catch (Exception $ex) {
-			error_log($ex->getMessage());
-			json_response(['status'=>'error', 'message'=>'File does not exist on S3.']);
+			ILabMediaToolLogger::error('Error HeadObject', ['exception' => $ex->getMessage()]);
+
+			$ftype = wp_check_filetype($key);
+			if (!empty($ftype) && isset($ftype['type'])) {
+				$type  = $ftype['type'];
+			} else {
+				throw new Exception('Unknown mime type.');
+			}
+
 		}
 
-		$type = $result->get('ContentType');
 
 		$unknownMimes=[
 			'application/octet-stream',
