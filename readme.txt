@@ -6,7 +6,7 @@ Tested up to: 4.8.1
 License: GPLv3 or later
 Donate link: http://www2.jdrf.org/site/TR?fr_id=6912&pg=personal&px=11429802
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 1.5.2
+Stable tag: 1.5.3
 
 Automatically upload media to Amazon S3 and integrate with Imgix, a real-time image processing CDN.  Boosts site performance and simplifies workflows.
 
@@ -86,8 +86,14 @@ No, I'm just one very enthusiastic customer.
 
 == Changelog ==
 
-= 1.5.2 =
+= 1.5.3 =
+* Enabled Amazon S3 Transfer Acceleration for even faster uploads.  You should enable this ASAP.
+* Direct uploads to Minio storage servers now work (still requires Imgix).
+* Fix for missing mime_content_type() errors on misconfigured PHP installs
+* Added path style endpoint option for S3 compatible endpoints
+* Misc. fixes
 
+= 1.5.2 =
 * Added Rekognition importer utility for running existing media on S3 through Rekognition
 * Added bulk actions for S3 importing and Rekognition processing to the WordPress media library
 * Added S3 icon overlay in the media library (grid mode)
