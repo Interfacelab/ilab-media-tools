@@ -10,6 +10,8 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
+namespace ILAB\MediaCloud;
+
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
 class ILabMediaToolView {

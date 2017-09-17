@@ -1,5 +1,4 @@
 <?php
-
 // Copyright (c) 2016 Interfacelab LLC. All rights reserved.
 //
 // Released under the GPLv3 license
@@ -14,6 +13,8 @@
 // WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
+
+namespace ILAB\MediaCloud;
 
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 

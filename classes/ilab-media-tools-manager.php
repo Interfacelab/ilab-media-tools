@@ -10,6 +10,8 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
+namespace ILAB\MediaCloud;
+
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
 /**
@@ -19,31 +21,29 @@ if (!defined('ABSPATH')) { header('Location: /'); die; }
  */
 class ILabMediaToolsManager
 {
+	//region Class variables
     private static $instance;
-
     public $tools;
+    //endregion
 
+	//region Constructor
     public function __construct()
     {
         $toolList=include ILAB_CONFIG_DIR.'/tools.config.php';
 
 	    $this->tools=[];
 
-        foreach($toolList as $toolName => $toolInfo)
-        {
+        foreach($toolList as $toolName => $toolInfo) {
             require_once(ILAB_CLASSES_DIR."/tools/$toolName/".$toolInfo['source']);
             $className=$toolInfo['class'];
             $this->tools[$toolName]=new $className($toolName,$toolInfo,$this);
         }
 
-        foreach($this->tools as $key => $tool)
-        {
+        foreach($this->tools as $key => $tool) {
             $tool->setup();
         }
 
-
-
-        add_action('admin_menu', function(){
+        add_action('admin_menu', function() {
             add_menu_page('Settings', 'Media Cloud', 'manage_options', 'media-tools-top', [$this,'renderSettings'],'dashicons-cloud');
             add_submenu_page( 'media-tools-top', 'Media Cloud Tools', 'Enable/Disable Tools', 'manage_options', 'media-tools-top', [$this,'renderSettings']);
 
@@ -61,8 +61,6 @@ class ILabMediaToolsManager
 	        add_submenu_page( 'media-tools-top', 'Plugin Support', 'Help / Support', 'manage_options', 'media-tools-support', [$this,'renderSupport']);
         });
 
-
-
 	    add_filter('plugin_action_links_'.ILAB_PLUGIN_NAME, function($links) {
 		    $links[] = "<a href='http://www2.jdrf.org/site/TR?fr_id=6912&pg=personal&px=11429802' target='_blank'><b>Donate</b></a>";
 		    $links[] = "<a href='admin.php?page=media-tools-top'>Settings</a>";
@@ -71,59 +69,63 @@ class ILabMediaToolsManager
 		    return $links;
 	    });
     }
+    //endregion
 
+	//region Static Methods
     /**
      * Returns the singleton instance of the manager
      * @return mixed
      */
     public static function instance()
     {
-        if (!isset(self::$instance))
-        {
+        if (!isset(self::$instance)) {
             $class=__CLASS__;
             self::$instance = new $class();
         }
 
         return self::$instance;
     }
+    //endregion
 
+	//region Plugin installation
+	/**
+	 * Perform plugin installation
+	 */
+	public function install() {
+		foreach($this->tools as $key => $tool)
+			$tool->install();
+	}
+
+	/**
+	 * Perform plugin removal
+	 */
+	public function uninstall() {
+		foreach($this->tools as $key => $tool)
+			$tool->uninstall();
+	}
+	//endregion
+
+	//region Tool Settings
     /**
      * Determines if a tool is enabled or not
      *
      * @param $toolName
      * @return bool
      */
-    public function toolEnabled($toolName)
-    {
+    public function toolEnabled($toolName) {
         if (isset($this->tools[$toolName]))
             return $this->tools[$toolName]->enabled();
 
         return false;
     }
+	//endregion
 
-    /**
-     * Perform plugin installation
-     */
-    public function install()
-    {
-        foreach($this->tools as $key => $tool)
-            $tool->install();
-    }
 
-    /**
-     * Perform plugin removal
-     */
-    public function uninstall()
-    {
-        foreach($this->tools as $key => $tool)
-            $tool->uninstall();
-    }
-
+	//region Settings
     /**
      * Render the options page
      */
-    public function renderSettings()
-    {
+    public function renderSettings() {
         echo ILabMediaToolView::render_view('base/ilab-settings.php',[
             'title'=>'Enabled Tools',
             'group'=>'ilab-media-tools',
@@ -134,8 +136,7 @@ class ILabMediaToolsManager
     /**
      * Render the settings section
      */
-    public function renderSettingsSection()
-    {
+    public function renderSettingsSection() {
         echo 'Enabled/disable tools.';
     }
 
@@ -143,8 +144,7 @@ class ILabMediaToolsManager
         echo ILabMediaToolView::render_view('base/ilab-support.php', []);
     }
 
-    public function renderToolSettings($args)
-    {
+    public function renderToolSettings($args) {
         $tool=$this->tools[$args['key']];
 
         echo ILabMediaToolView::render_view('base/ilab-tool-settings.php',[
@@ -153,4 +153,5 @@ class ILabMediaToolsManager
             'manager'=>$this
         ]);
     }
+    //endregion
 }

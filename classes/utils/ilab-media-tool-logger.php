@@ -11,18 +11,24 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-if (!defined('ABSPATH')) { header('Location: /'); die; }
+namespace ILAB\MediaCloud\Utils;
 
-require_once(ILAB_CLASSES_DIR.'/ilab-media-tool-base.php');
-require_once(ILAB_CLASSES_DIR.'/tasks/ilab-s3-import-process.php');
+use Monolog\Handler\ErrorLogHandler;
+use Monolog\Handler\SyslogUdpHandler;
+use Monolog\Logger;
+
+if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
 class ILabMediaToolLogger {
+	//region Class variables
 	private static $instance;
 	private $logger = null;
 	private $context = [];
 
 	private $time = [];
+	//endregion
 
+	//region Constructor
 	public function __construct() {
 		$env = getenv('ILAB_MEDIA_DEBUGGING_ENABLED');
 		$enabled=get_option("ilab-media-tool-enabled-debugging", $env);
@@ -31,16 +37,16 @@ class ILabMediaToolLogger {
 			$level = get_option('ilab-media-s3-debug-logging-level', 'none');
 
 			if ($level != 'none') {
-				$realLevel = \Monolog\Logger::INFO;
+				$realLevel = Logger::INFO;
 
 				if ($level == 'warning') {
-					$realLevel = \Monolog\Logger::WARNING;
+					$realLevel = Logger::WARNING;
 				} else if ($level == 'error') {
-					$realLevel = \Monolog\Logger::ERROR;
+					$realLevel = Logger::ERROR;
 				}
 
-				$this->logger = new \Monolog\Logger('ilab-media-tool');
-				$this->logger->pushHandler(new \Monolog\Handler\ErrorLogHandler(\Monolog\Handler\ErrorLogHandler::OPERATING_SYSTEM, $realLevel));
+				$this->logger = new Logger('ilab-media-tool');
+				$this->logger->pushHandler(new ErrorLogHandler(ErrorLogHandler::OPERATING_SYSTEM, $realLevel));
 
 				$paperTrailEndPoint = get_option('ilab-media-s3-debug-papertrail-endpoint', false);
 				$paperTrailPort = get_option('ilab-media-s3-debug-papertrail-port', false);
@@ -52,39 +58,41 @@ class ILabMediaToolLogger {
 							$this->context=['user' => $userId];
 						}
 
-						$this->logger->pushHandler(new \Monolog\Handler\SyslogUdpHandler($paperTrailEndPoint, $paperTrailPort, LOG_USER, $realLevel));
+						$this->logger->pushHandler(new SyslogUdpHandler($paperTrailEndPoint, $paperTrailPort, LOG_USER, $realLevel));
 					}
 				}
 			}
 		}
 	}
+	//endregion
 
-	public function doLogInfo($message, $context=[]) {
+	//region Protected Logging Methods
+	protected function doLogInfo($message, $context=[]) {
 		if ($this->logger) {
 			$this->logger->addInfo($message, array_merge($this->context, $context));
 		}
 	}
 
-	public function doLogWarning($message, $context=[]) {
+	protected function doLogWarning($message, $context=[]) {
 		if ($this->logger) {
 			$this->logger->addWarning($message, array_merge($this->context, $context));
 		}
 	}
 
-	public function doLogError($message, $context=[]) {
+	protected function doLogError($message, $context=[]) {
 		if ($this->logger) {
 			$this->logger->addError($message, array_merge($this->context, $context));
 		}
 	}
 
-	public function doStartTiming($message, $context=[]) {
+	protected function doStartTiming($message, $context=[]) {
 		if ($this->logger) {
 			$this->time[] = microtime(true);
 			$this->logger->addInfo($message, array_merge($this->context, $context));
 		}
 	}
 
-	public function doEndTiming($message, $context=[]) {
+	protected function doEndTiming($message, $context=[]) {
 		if ($this->logger) {
 			$time = array_pop($this->time);
 			$context['time'] = microtime(true) - $time;
@@ -92,7 +100,13 @@ class ILabMediaToolLogger {
 			$this->logger->addInfo($message, array_merge($this->context, $context));
 		}
 	}
+	//endregion
 
+	//region Static Methods
+	/**
+	 * Returns the static instance
+	 * @return ILabMediaToolLogger
+	 */
 	public static function instance() {
 		if (!isset(self::$instance)) {
 			$class=__CLASS__;
@@ -121,4 +135,5 @@ class ILabMediaToolLogger {
 	public static function endTiming($message, $context=[]) {
 		self::instance()->doEndTiming($message, (empty($context) || !is_array($context)) ? [] : $context);
 	}
+	//endregion
 }
