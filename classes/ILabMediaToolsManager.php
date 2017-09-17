@@ -34,7 +34,6 @@ class ILabMediaToolsManager
 	    $this->tools=[];
 
         foreach($toolList as $toolName => $toolInfo) {
-            require_once(ILAB_CLASSES_DIR."/tools/$toolName/".$toolInfo['source']);
             $className=$toolInfo['class'];
             $this->tools[$toolName]=new $className($toolName,$toolInfo,$this);
         }

@@ -11,11 +11,20 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-if (!defined('ABSPATH')) { header('Location: /'); die; }
+namespace ILAB\MediaCloud\Tools\S3;
 
-require_once(ILAB_CLASSES_DIR.'/ilab-media-tool-base.php');
-require_once(ILAB_CLASSES_DIR.'/tasks/ilab-s3-import-process.php');
-require_once(ILAB_CLASSES_DIR.'/utils/ilab-media-tool-logger.php');
+use FasterImage\FasterImage;
+use ILAB\MediaCloud\ILabMediaToolBase;
+use ILAB\MediaCloud\ILabMediaToolView;
+use ILAB\MediaCloud\Tasks\ILabS3ImportProcess;
+use ILAB\MediaCloud\Utilities\ILabMediaToolLogger;
+use ILAB_Aws\Exception\AwsException;
+use ILAB_Aws\S3\PostObjectV4;
+use ILAB_Aws\S3\S3Client;
+use ILAB_Aws\S3\S3MultiRegionClient;
+use Smalot\PdfParser\Parser;
+
+if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
 /**
  * Class ILabMediaS3Tool
@@ -62,7 +71,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 	{
 		parent::__construct($toolName, $toolInfo, $toolManager);
 
-		new ILABS3ImportProcess();
+		new ILabS3ImportProcess();
 
 		$this->bucket = $this->getOption('ilab-media-s3-bucket', 'ILAB_AWS_S3_BUCKET');
 		$this->key = $this->getOption('ilab-media-s3-access-key', 'ILAB_AWS_S3_ACCESS_KEY');
@@ -402,7 +411,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 					$meta['s3']['options']['params']['Expires'] = $params['Expires'];
 				}
 			}
-			catch (\ILAB_Aws\Exception\AwsException $ex)
+			catch (AwsException $ex)
 			{
 			    ILabMediaToolLogger::error('S3 Error Copying Object', ['exception'=>$ex->getMessage(),'options'=>$copyOptions]);
 			}
@@ -480,11 +489,11 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 			}
 		}
 
-		$s3=new \ILAB_Aws\S3\S3MultiRegionClient($config);
+		$s3=new S3MultiRegionClient($config);
 		$region = false;
 		try {
 			$region = $s3->determineBucketRegion($this->bucket);
-        } catch (\ILAB_Aws\Exception\AwsException $ex) {
+        } catch (AwsException $ex) {
 		    ILabMediaToolLogger::error("AWS Error fetching region", ['exception' => $ex->getMessage()]);
         }
 
@@ -515,7 +524,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 			$config['use_accelerate_endpoint'] = true;
 		}
 
-		$s3=new \ILAB_Aws\S3\S3MultiRegionClient($config);
+		$s3=new S3MultiRegionClient($config);
 		return $s3;
 	}
 
@@ -561,7 +570,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 		    $config['use_accelerate_endpoint'] = true;
 	    }
 
-	    $s3=new \ILAB_Aws\S3\S3Client($config);
+	    $s3=new S3Client($config);
 	    return $s3;
     }
 
@@ -594,7 +603,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 
 				    ILabMediaToolLogger::info("Bucket does not exist.");
 				    return null;
-                } catch (\ILAB_Aws\Exception\AwsException $ex) {
+                } catch (AwsException $ex) {
 			        ILabMediaToolLogger::error("Error insuring bucket exists.", ['exception' => $ex->getMessage()]);
 			        return null;
                 }
@@ -753,11 +762,11 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 
 			if (($upload['type']=='application/pdf') && file_exists($upload_path.'/'.$file)) {
 				set_error_handler(function($errno, $errstr, $errfile, $errline){
-					throw new Exception($errstr);
+					throw new \Exception($errstr);
 				}, E_RECOVERABLE_ERROR);
 
 			    try {
-				    $parser = new \Smalot\PdfParser\Parser();
+				    $parser = new Parser();
 				    $pdf = $parser->parseFile($upload_path.'/'.$file);
 				    $pages = $pdf->getPages();
 				    if (count($pages)>0) {
@@ -770,7 +779,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 						    $this->pdfInfo[$upload_path.'/'.$file] = $data;
 					    }
 				    }
-                } catch (Exception $ex) {
+                } catch (\Exception $ex) {
 				    ILabMediaToolLogger::error('PDF Parsing Error', ['exception'=>$ex->getMessage()]);
                 }
 
@@ -931,7 +940,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 				}
 			}
 		}
-		catch (\ILAB_Aws\Exception\AwsException $ex)
+		catch (AwsException $ex)
 		{
 			ILabMediaToolLogger::error('S3 Upload Error', ['exception'=>$ex->getMessage(),
                                                            'bucket'=>$this->bucket,
@@ -1026,7 +1035,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 				                  ));
 			}
 		}
-		catch (\ILAB_Aws\Exception\AwsException $ex)
+		catch (AwsException $ex)
 		{
 			ILabMediaToolLogger::error('S3 Delete File Error', ['exception'=>$ex->getMessage(), 'Bucket'=>$this->bucket, 'Key'=>$file]);
 		}
@@ -1228,7 +1237,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 			$args['post_mime_type'] = 'image';
 		}
 
-		$query = new WP_Query($args);
+		$query = new \WP_Query($args);
 
 		if ($query->post_count > 0) {
 			update_option('ilab_s3_import_status', true);
@@ -1236,7 +1245,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 			update_option('ilab_s3_import_current', 1);
 			update_option('ilab_s3_import_should_cancel', false);
 
-			$process = new ILABS3ImportProcess();
+			$process = new ILabS3ImportProcess();
 
 			for($i = 0; $i < $query->post_count; ++$i) {
 				$process->push_to_queue(['index' => $i, 'post' => $query->posts[$i]]);
@@ -1369,7 +1378,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 				$optionsData[] = ['Expires' => $this->expires];
 			}
 
-			$postObject = new \ILAB_Aws\S3\PostObjectV4($s3, $this->bucket, [], $optionsData, '+15 minutes');
+			$postObject = new PostObjectV4($s3, $this->bucket, [], $optionsData, '+15 minutes');
 			$result = [
 			        'key'=>$prefix.$bucketFilename,
                     'postObject' => $postObject,
@@ -1379,7 +1388,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 
 			return $result;
 		}
-		catch (\ILAB_Aws\Exception\AwsException $ex)
+		catch (AwsException $ex)
 		{
 			ILabMediaToolLogger::error('S3 Generate File Upload URL Error', ['exception'=>$ex->getMessage()]);
 		}
@@ -1398,7 +1407,7 @@ class ILabMediaS3Tool extends ILabMediaToolBase {
 	    $presignedRequest = $s3->createPresignedRequest($command, '+10 minutes');
         $presignedUrl =  (string)  $presignedRequest->getUri();
 
-	    $faster = new \FasterImage\FasterImage();
+	    $faster = new FasterImage();
 	    $result = $faster->batch([$presignedUrl]);
 	    if (empty($result)) {
 	        return false;

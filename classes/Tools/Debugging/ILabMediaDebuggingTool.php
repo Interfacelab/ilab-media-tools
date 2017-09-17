@@ -11,13 +11,11 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-if (!defined('ABSPATH')) { header('Location: /'); die; }
+namespace ILAB\MediaCloud\Tools\Debugging;
 
-require_once(ILAB_CLASSES_DIR.'/ilab-media-tool-base.php');
+use ILAB\MediaCloud\ILabMediaToolBase;
 
-if (file_exists(ILAB_VENDOR_DIR.'/autoload.php')) {
-	require_once(ILAB_VENDOR_DIR.'/autoload.php');
-}
+if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
 /**
  * Class ILabMediaDebuggingTool
@@ -25,7 +23,6 @@ if (file_exists(ILAB_VENDOR_DIR.'/autoload.php')) {
  * Debugging tool.
  */
 class ILabMediaDebuggingTool extends ILabMediaToolBase {
-
 	public function __construct( $toolName, $toolInfo, $toolManager ) {
 		parent::__construct( $toolName, $toolInfo, $toolManager );
 

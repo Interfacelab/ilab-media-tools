@@ -11,15 +11,16 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-if (!defined('ABSPATH')) { header('Location: /'); die; }
+namespace ILAB\MediaCloud\Tools\Rekognition;
 
-require_once(ILAB_CLASSES_DIR.'/ilab-media-tool-base.php');
-require_once(ILAB_CLASSES_DIR.'/tasks/ilab-recognizer-process.php');
-require_once(ILAB_CLASSES_DIR.'/utils/ilab-media-tool-logger.php');
+use ILAB\MediaCloud\ILabMediaToolBase;
+use ILAB\MediaCloud\ILabMediaToolView;
+use ILAB\MediaCloud\Tasks\ILabRekognizerProcess;
+use ILAB\MediaCloud\Utilities\ILabMediaToolLogger;
+use ILAB_Aws\Exception\AwsException;
+use ILAB_Aws\Rekognition\RekognitionClient;
 
-if (file_exists(ILAB_VENDOR_DIR.'/autoload.php')) {
-	require_once(ILAB_VENDOR_DIR.'/autoload.php');
-}
+if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
 /**
  * Class ILabMediaRekognitionTool
@@ -45,7 +46,7 @@ class ILabMediaRekognitionTool extends ILabMediaToolBase {
 	public function __construct($toolName, $toolInfo, $toolManager) {
 		parent::__construct($toolName, $toolInfo, $toolManager);
 
-		new ILABRekognizerProcess();
+		new ILabRekognizerProcess();
 
 		$this->key = $this->getOption('ilab-media-s3-access-key', 'ILAB_AWS_S3_ACCESS_KEY');
 		$this->secret = $this->getOption('ilab-media-s3-secret', 'ILAB_AWS_S3_ACCESS_SECRET');
@@ -138,7 +139,7 @@ class ILabMediaRekognitionTool extends ILabMediaToolBase {
 								update_option('ilab_rekognizer_current', 1);
 								update_option('ilab_rekognizer_should_cancel', false);
 
-								$process = new ILABRekognizerProcess();
+								$process = new ILabRekognizerProcess();
 
 								for($i = 0; $i < count($posts_to_import); ++$i) {
 									$process->push_to_queue(['index' => $i, 'post' => $posts_to_import[$i]]);
@@ -220,7 +221,7 @@ class ILabMediaRekognitionTool extends ILabMediaToolBase {
 			]
 		];
 
-		$rekt = new \ILAB_Aws\Rekognition\RekognitionClient($config);
+		$rekt = new RekognitionClient($config);
 
 		if ($this->detectLabels) {
 			try {
@@ -251,7 +252,7 @@ class ILabMediaRekognitionTool extends ILabMediaToolBase {
 				}
 
 				ILabMediaToolLogger::info('Detect Labels', $tags);
-			} catch (\ILAB_Aws\Exception\AwsException $ex) {
+			} catch (AwsException $ex) {
 				ILabMediaToolLogger::error('Detect Labels Error', ['exception'=>$ex->getMessage()]);
 				return $meta;
 			}
@@ -290,7 +291,7 @@ class ILabMediaRekognitionTool extends ILabMediaToolBase {
 				}
 
 				ILabMediaToolLogger::info('Detect Moderation Labels', $result->toArray());
-			} catch (\ILAB_Aws\Exception\AwsException $ex) {
+			} catch (AwsException $ex) {
 				ILabMediaToolLogger::error('Detect Moderation Error', ['exception'=>$ex->getMessage()]);
 				return $meta;
 			}
@@ -343,7 +344,7 @@ class ILabMediaRekognitionTool extends ILabMediaToolBase {
 				}
 
 				ILabMediaToolLogger::info('Detect Celebrities', $result->toArray());
-			} catch (\ILAB_Aws\Exception\AwsException $ex) {
+			} catch (AwsException $ex) {
 				ILabMediaToolLogger::error('Detect Celebrities Error', ['exception'=>$ex->getMessage()]);
 				return $meta;
 			}
@@ -367,7 +368,7 @@ class ILabMediaRekognitionTool extends ILabMediaToolBase {
 				}
 
 				ILabMediaToolLogger::info('Detect Faces', $result->toArray());
-			} catch (\ILAB_Aws\Exception\AwsException $ex) {
+			} catch (AwsException $ex) {
 				ILabMediaToolLogger::error('Detect Faces Error', ['exception'=>$ex->getMessage()]);
 				return $meta;
 			}
@@ -543,7 +544,7 @@ SQL;
 
 	public function cancelProcessMedia() {
 		update_option('ilab_rekognizer_should_cancel', 1);
-		ILABRekognizerProcess::cancelAll();
+		ILabRekognizerProcess::cancelAll();
 
 		return json_response(['status'=>'ok']);
 	}

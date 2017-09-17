@@ -16,8 +16,7 @@ if (!defined('ABSPATH')) { header('Location: /'); die; }
 return [
 	"title" => "Rekognition",
 	"description" => "Uses Amazon's Rekognition AI service to automatically tag your uploaded images.",
-	"source" => "ilab-media-rekognition-tool.php",
-	"class" => "ILabMediaRekognitionTool",
+	"class" => "ILAB\\MediaCloud\\Tools\\Rekognition\\ILabMediaRekognitionTool",
 	"dependencies" => ["s3"],
 	"env" => "ILAB_MEDIA_REKOGNITION_ENABLED",
 	"settings" => [

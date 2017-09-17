@@ -15,8 +15,7 @@ if (!defined('ABSPATH')) { header('Location: /'); die; }
 return [
 	"title" => "Media Uploader",
 	"description" => "Provides an easy to use tool for uploading media directly to S3.",
-	"source" => "ilab-media-upload-tool.php",
-	"class" => "ILabMediaUploadTool",
+	"class" => "ILAB\\MediaCloud\\Tools\\MediaUpload\\ILabMediaUploadTool",
 	"dependencies" => ["s3", "imgix"],
 	"env" => "ILAB_MEDIA_UPLOAD_ENABLED"
 ];

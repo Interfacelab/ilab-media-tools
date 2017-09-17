@@ -11,12 +11,12 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-if (!defined('ABSPATH')) { header('Location: /'); die; }
+namespace ILAB\MediaCloud\Tools\Crop;
 
-require_once(ILAB_CLASSES_DIR.'/ilab-media-tool-base.php');
-require_once(ILAB_CLASSES_DIR.'/ilab-media-tool-view.php');
+use ILAB\MediaCloud\ILabMediaToolBase;
+use ILAB\MediaCloud\ILabMediaToolView;
 
-require_once(ILAB_CLASSES_DIR.'/utils/ilab-media-tool-logger.php');
+if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
 /**
  * Class ILabMediaCropTool

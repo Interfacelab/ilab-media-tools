@@ -11,13 +11,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
+namespace ILAB\MediaCloud\Tools\Imgix;
+
 if (!defined('ABSPATH')) { header('Location: /'); die; }
-
-require_once(ILAB_CLASSES_DIR.'/utils/ilab-media-tool-logger.php');
-
-if (file_exists(ILAB_VENDOR_DIR.'/autoload.php')) {
-	require_once(ILAB_VENDOR_DIR.'/autoload.php');
-}
 
 /**
  * Class ILabImgixImageEditor
@@ -26,7 +22,7 @@ if (file_exists(ILAB_VENDOR_DIR.'/autoload.php')) {
  * of Imgix.
  * 
  */
-class ILabImgixImageEditor extends WP_Image_Editor
+class ILabImgixImageEditor extends \WP_Image_Editor
 {
     protected $currentSize;
     protected $sourceFile;

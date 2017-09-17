@@ -15,8 +15,7 @@ if (!defined('ABSPATH')) { header('Location: /'); die; }
 return [
 	"title" => "S3",
 	"description" => "Automatically uploads media to Amazon S3.",
-	"source" => "ilab-media-s3-tool.php",
-	"class" => "ILabMediaS3Tool",
+	"class" => "ILAB\\MediaCloud\\Tools\\S3\\ILabMediaS3Tool",
 	"env" => "ILAB_MEDIA_S3_ENABLED",
 	"dependencies" => [],
 	"settings" => [

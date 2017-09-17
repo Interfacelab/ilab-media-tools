@@ -11,7 +11,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Utils;
+namespace ILAB\MediaCloud\Utilities;
 
 use Monolog\Handler\ErrorLogHandler;
 use Monolog\Handler\SyslogUdpHandler;

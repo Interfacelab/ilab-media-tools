@@ -15,8 +15,7 @@ if (!defined('ABSPATH')) { header('Location: /'); die; }
 return [
 	"title" => "Image Crop",
 	"description" => "Provides an easy to use tool for manually cropping images for all image sizes.",
-	"source" => "ilab-media-crop-tool.php",
-	"class" => "ILabMediaCropTool",
+	"class" => "ILAB\\MediaCloud\\Tools\\Crop\\ILabMediaCropTool",
 	"dependencies" => [],
 	"env" => "ILAB_MEDIA_CROP_ENABLED",
 	"settings" => [

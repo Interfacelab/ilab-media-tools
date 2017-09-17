@@ -11,20 +11,20 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-if (!defined('ABSPATH')) { header('Location: /'); die; }
 
-require_once('wp-background-process.php');
+namespace ILAB\MediaCloud\Tasks;
 
-require_once(ILAB_CLASSES_DIR.'/ilab-media-tools-manager.php');
-require_once(ILAB_CLASSES_DIR.'/tools/rekognition/ilab-media-rekognition-tool.php');
-require_once(ILAB_CLASSES_DIR.'/utils/ilab-media-tool-logger.php');
+use ILAB\MediaCloud\ILabMediaToolsManager;
+use ILAB\MediaCloud\Utilities\ILabMediaToolLogger;
+
+if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
 /**
  * Class ILABRekognizerProcess
  *
  * Background processing job for processing existing media with AWS Rekognizer
  */
-class ILABRekognizerProcess extends ILAB_WP_Background_Process {
+class ILabRekognizerProcess extends ILabWPBackgroundProcess {
 	protected $action = 'ilab_rekognizer_import_process';
 
 	protected function shouldHandle() {

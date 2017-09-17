@@ -1,8 +1,10 @@
 <?php
 
-if (!defined('ABSPATH')) { header('Location: /'); die; }
+namespace ILAB\MediaCloud\Tasks;
 
-require_once(ILAB_CLASSES_DIR.'/utils/ilab-media-tool-logger.php');
+use ILAB\MediaCloud\Utilities\ILabMediaToolLogger;
+
+if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
 /**
  * WP Async Request
@@ -10,14 +12,14 @@ require_once(ILAB_CLASSES_DIR.'/utils/ilab-media-tool-logger.php');
  * @package WP-Background-Processing
  */
 
-if ( ! class_exists( 'ILAB_WP_Async_Request' ) ) {
+if ( ! class_exists( 'ILabWPAsyncRequest' ) ) {
 
 	/**
 	 * Abstract WP_Async_Request class.
 	 *
 	 * @abstract
 	 */
-	abstract class ILAB_WP_Async_Request {
+	abstract class ILabWPAsyncRequest {
 
 		/**
 		 * Prefix

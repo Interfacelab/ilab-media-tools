@@ -15,8 +15,7 @@ if (!defined('ABSPATH')) { header('Location: /'); die; }
 return [
 	"title" => "Imgix Support",
 	"description" => "Serves images through imgix.com",
-	"source" => "ilab-media-imgix-tool.php",
-	"class" => "ILabMediaImgixTool",
+	"class" => "ILAB\\MediaCloud\\Tools\\Imgix\\ILabMediaImgixTool",
 	"env" => "ILAB_MEDIA_IMGIX_ENABLED",
 	"dependencies" => [
 		"crop",

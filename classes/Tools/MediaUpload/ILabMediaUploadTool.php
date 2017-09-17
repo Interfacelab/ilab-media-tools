@@ -11,9 +11,13 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-if (!defined('ABSPATH')) { header('Location: /'); die; }
+namespace ILAB\MediaCloud\Tools\MediaUpload;
 
-require_once(ILAB_CLASSES_DIR.'/ilab-media-tool-base.php');
+use ILAB\MediaCloud\ILabMediaToolBase;
+use ILAB\MediaCloud\ILabMediaToolView;
+use ILAB\MediaCloud\Utilities\ILabMediaToolLogger;
+
+if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
 /**
  * Class ILabMediaUploadTool
@@ -115,7 +119,7 @@ class ILabMediaUploadTool extends ILabMediaToolBase {
 				                          'Key' => $key
 			                          ]);
 			$type = $result->get('ContentType');
-		} catch (Exception $ex) {
+		} catch (\Exception $ex) {
 			ILabMediaToolLogger::error('Error HeadObject', ['exception' => $ex->getMessage()]);
 
 			$ftype = wp_check_filetype($key);

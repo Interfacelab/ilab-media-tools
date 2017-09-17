@@ -11,20 +11,20 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-if (!defined('ABSPATH')) { header('Location: /'); die; }
+namespace ILAB\MediaCloud\Tasks;
 
-require_once('wp-background-process.php');
+use ILAB\MediaCloud\ILabMediaToolsManager;
+use ILAB\MediaCloud\Utilities\ILabMediaToolLogger;
+use Smalot\PdfParser\Parser;
 
-require_once(ILAB_CLASSES_DIR.'/ilab-media-tools-manager.php');
-require_once(ILAB_CLASSES_DIR.'/tools/s3/ilab-media-s3-tool.php');
-require_once(ILAB_CLASSES_DIR.'/utils/ilab-media-tool-logger.php');
+if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
 /**
  * Class ILABS3ImportProcess
  *
  * Background processing job for importing existing media to S3
  */
-class ILABS3ImportProcess extends ILAB_WP_Background_Process {
+class ILabS3ImportProcess extends ILabWPBackgroundProcess {
 	protected $action = 'ilab_s3_import_process';
 
 	protected function shouldHandle() {
@@ -96,11 +96,11 @@ class ILABS3ImportProcess extends ILAB_WP_Background_Process {
 					$renderPDF = apply_filters('ilab_imgix_render_pdf', false);
 
 					set_error_handler(function($errno, $errstr, $errfile, $errline){
-						throw new Exception($errstr);
+						throw new \Exception($errstr);
 					}, E_RECOVERABLE_ERROR);
 
 					try {
-						$parser = new \Smalot\PdfParser\Parser();
+						$parser = new Parser();
 						$pdf = $parser->parseFile($upload_file);
 						$pages = $pdf->getPages();
 						if (count($pages)>0) {
@@ -123,7 +123,7 @@ class ILABS3ImportProcess extends ILAB_WP_Background_Process {
 								}
 							}
 						}
-					} catch (Exception $ex) {
+					} catch (\Exception $ex) {
 						ILabMediaToolLogger::error('PDF Exception.', array_merge($item, ['exception'=>$ex->getMessage()]));
 					}
 

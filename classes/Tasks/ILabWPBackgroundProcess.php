@@ -1,8 +1,10 @@
 <?php
-if (!defined('ABSPATH')) { header('Location: /'); die; }
 
-require_once('wp-async-request.php');
-require_once(ILAB_CLASSES_DIR.'/utils/ilab-media-tool-logger.php');
+namespace ILAB\MediaCloud\Tasks;
+
+use ILAB\MediaCloud\Utilities\ILabMediaToolLogger;
+
+if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
 /**
  * WP Background Process
@@ -10,7 +12,7 @@ require_once(ILAB_CLASSES_DIR.'/utils/ilab-media-tool-logger.php');
  * @package WP-Background-Processing
  */
 
-if ( ! class_exists( 'ILAB_WP_Background_Process' ) ) {
+if ( ! class_exists( 'ILabWPBackgroundProcess' ) ) {
 
 	/**
 	 * Abstract WP_Background_Process class.
@@ -18,7 +20,7 @@ if ( ! class_exists( 'ILAB_WP_Background_Process' ) ) {
 	 * @abstract
 	 * @extends WP_Async_Request
 	 */
-	abstract class ILAB_WP_Background_Process extends ILAB_WP_Async_Request {
+	abstract class ILabWPBackgroundProcess extends ILabWPAsyncRequest {
 
 		/**
 		 * Action
@@ -285,7 +287,7 @@ if ( ! class_exists( 'ILAB_WP_Background_Process' ) ) {
 			LIMIT 1
 		", $key ) );
 
-			$batch       = new stdClass();
+			$batch       = new \stdClass();
 			$batch->key  = $query->$column;
 			$batch->data = maybe_unserialize( $query->$value_column );
 

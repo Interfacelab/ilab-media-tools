@@ -11,15 +11,14 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
+namespace ILAB\MediaCloud\Tools\Imgix;
+
+use ILAB\MediaCloud\ILabMediaToolBase;
+use ILAB\MediaCloud\ILabMediaToolView;
+use Imgix\UrlBuilder;
+
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
-require_once(ILAB_CLASSES_DIR.'/ilab-media-tool-base.php');
-require_once(ILAB_CLASSES_DIR.'/ilab-media-tool-view.php');
-require_once(ILAB_CLASSES_DIR.'/utils/ilab-media-tool-logger.php');
-
-if (file_exists(ILAB_VENDOR_DIR.'/autoload.php')) {
-    require_once(ILAB_VENDOR_DIR.'/autoload.php');
-}
 
 /**
  * Class ILabMediaImgixTool
@@ -139,9 +138,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
 
         add_filter( 'wp_image_editors', function($editors)
         {
-            require_once('ilab-media-imgix-editor.php');
-
-            array_unshift($editors,'ILabImgixImageEditor');
+            array_unshift($editors,'\ILAB\MediaCloud\Tools\Imgix\ILabImgixImageEditor');
             return $editors;
         });
 
@@ -355,7 +352,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
             return [];
         }
 
-        $imgix=new Imgix\UrlBuilder($this->imgixDomains,$this->useHTTPS);
+        $imgix=new UrlBuilder($this->imgixDomains,$this->useHTTPS);
 
         if ($this->signingKey)
             $imgix->setSignKey($this->signingKey);
@@ -416,7 +413,7 @@ class ILabMediaImgixTool extends ILabMediaToolBase
             }
 	    }
 
-        $imgix=new Imgix\UrlBuilder($this->imgixDomains,$this->useHTTPS);
+        $imgix=new UrlBuilder($this->imgixDomains,$this->useHTTPS);
 
         if ($this->signingKey)
             $imgix->setSignKey($this->signingKey);
