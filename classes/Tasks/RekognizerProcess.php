@@ -14,8 +14,8 @@
 
 namespace ILAB\MediaCloud\Tasks;
 
-use ILAB\MediaCloud\ILabMediaToolsManager;
-use ILAB\MediaCloud\Utilities\ILabMediaToolLogger;
+use ILAB\MediaCloud\Tools\ToolsManager;
+use ILAB\MediaCloud\Utilities\Logger;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
@@ -24,7 +24,7 @@ if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
  *
  * Background processing job for processing existing media with AWS Rekognizer
  */
-class ILabRekognizerProcess extends ILabWPBackgroundProcess {
+class RekognizerProcess extends BackgroundProcess {
 	protected $action = 'ilab_rekognizer_import_process';
 
 	protected function shouldHandle() {
@@ -33,9 +33,9 @@ class ILabRekognizerProcess extends ILabWPBackgroundProcess {
 	}
 
 	public function task($item) {
-		ILabMediaToolLogger::info('Start Task', $item);
+		Logger::info( 'Start Task', $item);
 		if (!$this->shouldHandle()) {
-			ILabMediaToolLogger::info('Task cancelled', $item);
+			Logger::info( 'Task cancelled', $item);
 			return false;
 		}
 
@@ -46,12 +46,12 @@ class ILabRekognizerProcess extends ILabWPBackgroundProcess {
 		$data = wp_get_attachment_metadata($post_id);
 
 		if (empty($data)) {
-			ILabMediaToolLogger::info('Missing metadata', $item);
+			Logger::info( 'Missing metadata', $item);
 			return false;
 		}
 
 		if (!isset($data['s3'])) {
-			ILabMediaToolLogger::info('Missing s3 metadata', $item);
+			Logger::info( 'Missing s3 metadata', $item);
 			return false;
 		}
 
@@ -59,7 +59,7 @@ class ILabRekognizerProcess extends ILabWPBackgroundProcess {
 		update_option('ilab_rekognizer_current_file', $fileName);
 
 
-		$rekognizerTool = ILabMediaToolsManager::instance()->tools['rekognition'];
+		$rekognizerTool = ToolsManager::instance()->tools['rekognition'];
 		$data = $rekognizerTool->processImageMeta($post_id, $data);
 		wp_update_attachment_metadata($post_id, $data);
 
@@ -67,12 +67,12 @@ class ILabRekognizerProcess extends ILabWPBackgroundProcess {
 	}
 
 	public function dispatch() {
-		ILabMediaToolLogger::info('Task dispatch');
+		Logger::info( 'Task dispatch');
 		parent::dispatch();
 	}
 
 	protected function complete() {
-		ILabMediaToolLogger::info('Task complete');
+		Logger::info( 'Task complete');
 		delete_option('ilab_rekognizer_status');
 		delete_option('ilab_rekognizer_total_count');
 		delete_option('ilab_rekognizer_current');
@@ -81,7 +81,7 @@ class ILabRekognizerProcess extends ILabWPBackgroundProcess {
 	}
 
 	public function cancel_process() {
-		ILabMediaToolLogger::info('Cancel process');
+		Logger::info( 'Cancel process');
 
 		parent::cancel_process();
 
@@ -92,7 +92,7 @@ class ILabRekognizerProcess extends ILabWPBackgroundProcess {
 	}
 
 	public static function cancelAll() {
-		ILabMediaToolLogger::info('Cancel all processes');
+		Logger::info( 'Cancel all processes');
 
 		wp_clear_scheduled_hook('wp_ilab_rekognizer_import_process_cron');
 
@@ -100,7 +100,7 @@ class ILabRekognizerProcess extends ILabWPBackgroundProcess {
 
 		$res = $wpdb->get_results("select * from {$wpdb->options} where option_name like 'wp_ilab_rekognizer_import_process_batch_%'");
 		foreach($res as $batch) {
-			ILabMediaToolLogger::info("Deleting batch {$batch->option_name}");
+			Logger::info( "Deleting batch {$batch->option_name}");
 			delete_option($batch->option_name);
 		}
 
@@ -109,7 +109,7 @@ class ILabRekognizerProcess extends ILabWPBackgroundProcess {
 		delete_option('ilab_rekognizer_current');
 		delete_option('ilab_rekognizer_current_file');
 
-		ILabMediaToolLogger::info("Current cron", get_option('cron', []));
-		ILabMediaToolLogger::info('End cancel all processes');
+		Logger::info( "Current cron", get_option( 'cron', []));
+		Logger::info( 'End cancel all processes');
 	}
 }

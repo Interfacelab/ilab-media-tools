@@ -4,18 +4,40 @@
 // Released under the GPLv3 license
 // http://www.gnu.org/licenses/gpl-3.0.html
 //
+// Uses code from:
+// Persist Admin Notices Dismissal
+// by Agbonghama Collins and Andy Fragen
+//
 // **********************************************************************
 // This program is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
+namespace ILAB\MediaCloud\Cloud\Storage;
+
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
-return [
-	"title" => "Media Uploader",
-	"description" => "Provides an easy to use tool for uploading media directly to S3.",
-	"class" => "ILAB\\MediaCloud\\Tools\\MediaUpload\\UploadTool",
-	"dependencies" => ["storage", "imgix"],
-	"env" => "ILAB_MEDIA_UPLOAD_ENABLED"
-];
+final class StorageManager {
+	private static $instance = null;
+
+	/**
+	 * Gets the currently configured storage interface.
+	 *
+	 * @return StorageInterface
+	 */
+	public static function storageInstance() {
+		if (self::$instance) {
+			return self::$instance;
+		}
+
+
+	}
+
+	/**
+	 * Resets the current storage interface
+	 */
+	public static function resetStorageInstance() {
+		self::$instance = null;
+	}
+}

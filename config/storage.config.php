@@ -13,14 +13,14 @@
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
 return [
-	"title" => "S3",
-	"description" => "Automatically uploads media to Amazon S3.",
-	"class" => "ILAB\\MediaCloud\\Tools\\S3\\ILabMediaS3Tool",
+	"title" => "Storage",
+	"description" => "Automatically uploads media to Amazon S3, Google Cloud Storage, Backblaze, DigitalOcean Spaces and others.",
+	"class" => "ILAB\\MediaCloud\\Tools\\Storage\\StorageTool",
 	"env" => "ILAB_MEDIA_S3_ENABLED",
 	"dependencies" => [],
 	"settings" => [
-		"title" => "S3 Settings",
-		"menu" => "S3 Settings",
+		"title" => "Storage Settings",
+		"menu" => "Storage Settings",
 		"options-page" => "media-tools-s3",
 		"options-group" => "ilab-media-s3",
 		"groups" => [

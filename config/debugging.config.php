@@ -15,7 +15,7 @@ if (!defined('ABSPATH')) { header('Location: /'); die; }
 return [
 	"title" => "Media Cloud Debugging",
 	"description" => "Enables logging for the plugin to track down issues.",
-	"class" => "ILAB\\MediaCloud\\Tools\\Debugging\\ILabMediaDebuggingTool",
+	"class" => "ILAB\\MediaCloud\\Tools\\Debugging\\DebuggingTool",
 	"dependencies" => [],
 	"env" => "ILAB_MEDIA_DEBUGGING_ENABLED",
 	"settings" => [

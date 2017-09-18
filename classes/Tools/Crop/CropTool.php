@@ -13,8 +13,8 @@
 
 namespace ILAB\MediaCloud\Tools\Crop;
 
-use ILAB\MediaCloud\ILabMediaToolBase;
-use ILAB\MediaCloud\ILabMediaToolView;
+use ILAB\MediaCloud\Tools\ToolBase;
+use ILAB\MediaCloud\Utilities\ToolView;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
@@ -23,7 +23,7 @@ if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
  *
  * Crop tool
  */
-class ILabMediaCropTool extends ILabMediaToolBase
+class CropTool extends ToolBase
 {
     protected $cropQuality = 100;
 
@@ -279,7 +279,7 @@ class ILabMediaCropTool extends ILabMediaToolBase
         if (current_user_can( 'edit_post', $image_id))
         {
             if (!$partial)
-                echo ILabMediaToolView::render_view('crop/ilab-crop-ui.php', $data);
+                echo ToolView::render_view( 'crop/ilab-crop-ui.php', $data);
             else
             {
                 json_response([

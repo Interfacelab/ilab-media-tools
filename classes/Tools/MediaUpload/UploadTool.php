@@ -13,9 +13,9 @@
 
 namespace ILAB\MediaCloud\Tools\MediaUpload;
 
-use ILAB\MediaCloud\ILabMediaToolBase;
-use ILAB\MediaCloud\ILabMediaToolView;
-use ILAB\MediaCloud\Utilities\ILabMediaToolLogger;
+use ILAB\MediaCloud\Tools\ToolBase;
+use ILAB\MediaCloud\Utilities\ToolView;
+use ILAB\MediaCloud\Utilities\Logger;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
@@ -24,7 +24,7 @@ if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
  *
  * Video Tool.
  */
-class ILabMediaUploadTool extends ILabMediaToolBase {
+class UploadTool extends ToolBase {
 	public function __construct($toolName, $toolInfo, $toolManager) {
 		parent::__construct($toolName, $toolInfo, $toolManager);
 
@@ -40,7 +40,7 @@ class ILabMediaUploadTool extends ILabMediaToolBase {
 			return false;
 		}
 
-		$s3Tool = $this->toolManager->tools['s3'];
+		$s3Tool = $this->toolManager->tools['storage'];
 		$enabled = $s3Tool->enabled();
 		if (!$enabled)
 			return false;
@@ -108,7 +108,7 @@ class ILabMediaUploadTool extends ILabMediaToolBase {
 		}
 
 		/** @var ILabMediaS3Tool $s3Tool */
-		$s3Tool = $this->toolManager->tools['s3'];
+		$s3Tool = $this->toolManager->tools['storage'];
 
 		/** @var \ILAB_Aws\S3\S3MultiRegionClient $s3 */
 		$s3 = $s3Tool->s3Client();
@@ -120,7 +120,7 @@ class ILabMediaUploadTool extends ILabMediaToolBase {
 			                          ]);
 			$type = $result->get('ContentType');
 		} catch (\Exception $ex) {
-			ILabMediaToolLogger::error('Error HeadObject', ['exception' => $ex->getMessage()]);
+			Logger::error( 'Error HeadObject', [ 'exception' => $ex->getMessage()]);
 
 			$ftype = wp_check_filetype($key);
 			if (!empty($ftype) && isset($ftype['type'])) {
@@ -160,7 +160,7 @@ class ILabMediaUploadTool extends ILabMediaToolBase {
 		}
 
 		$filename = $_POST['filename'];
-		$s3Tool = $this->toolManager->tools['s3'];
+		$s3Tool = $this->toolManager->tools['storage'];
 		$result = $s3Tool->uploadUrlForFile($filename);
 
 		if (!empty($result)) {
@@ -187,12 +187,12 @@ class ILabMediaUploadTool extends ILabMediaToolBase {
 		$imgixTool = $this->toolManager->tools['imgix'];
 
 		/** @var ILabMediaS3Tool $s3Tool */
-		$s3Tool = $this->toolManager->tools['s3'];
+		$s3Tool = $this->toolManager->tools['storage'];
 
 		$mtypes = array_values(get_allowed_mime_types(get_current_user_id()));
 		$mtypes[] = 'image/psd';
 
-		$result = ILabMediaToolView::render_view('upload/ilab-media-upload.php',[
+		$result = ToolView::render_view( 'upload/ilab-media-upload.php', [
 			'title'=>$this->toolInfo['title'],
 			'group'=>$this->options_group,
 			'page'=>$this->options_page,

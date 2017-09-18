@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) { header('Location: /'); die; }
 return [
 	/** Crop Tool */
 	"crop" => include ILAB_CONFIG_DIR.'/crop.config.php',
-	"s3" => include ILAB_CONFIG_DIR.'/s3.config.php',
+	"storage" => include ILAB_CONFIG_DIR.'/storage.config.php',
 	"rekognition" => include ILAB_CONFIG_DIR.'/rekognition.config.php',
 	"imgix" => include ILAB_CONFIG_DIR.'/imgix.config.php',
 	"media-upload" => include ILAB_CONFIG_DIR.'/media-upload.config.php',

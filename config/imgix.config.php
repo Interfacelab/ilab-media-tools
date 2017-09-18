@@ -15,11 +15,11 @@ if (!defined('ABSPATH')) { header('Location: /'); die; }
 return [
 	"title" => "Imgix Support",
 	"description" => "Serves images through imgix.com",
-	"class" => "ILAB\\MediaCloud\\Tools\\Imgix\\ILabMediaImgixTool",
+	"class" => "ILAB\\MediaCloud\\Tools\\Imgix\\ImgixTool",
 	"env" => "ILAB_MEDIA_IMGIX_ENABLED",
 	"dependencies" => [
 		"crop",
-		"s3"
+		"storage"
 	],
 	"helpers" => [
 		"ilab-imgix-helpers.php"

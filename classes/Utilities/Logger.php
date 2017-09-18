@@ -15,11 +15,11 @@ namespace ILAB\MediaCloud\Utilities;
 
 use Monolog\Handler\ErrorLogHandler;
 use Monolog\Handler\SyslogUdpHandler;
-use Monolog\Logger;
+use Monolog\Logger as MonologLogger;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
-class ILabMediaToolLogger {
+class Logger {
 	//region Class variables
 	private static $instance;
 	private $logger = null;
@@ -37,15 +37,15 @@ class ILabMediaToolLogger {
 			$level = get_option('ilab-media-s3-debug-logging-level', 'none');
 
 			if ($level != 'none') {
-				$realLevel = Logger::INFO;
+				$realLevel = MonologLogger::INFO;
 
 				if ($level == 'warning') {
-					$realLevel = Logger::WARNING;
+					$realLevel = MonologLogger::WARNING;
 				} else if ($level == 'error') {
-					$realLevel = Logger::ERROR;
+					$realLevel = MonologLogger::ERROR;
 				}
 
-				$this->logger = new Logger('ilab-media-tool');
+				$this->logger = new MonologLogger('ilab-media-tool');
 				$this->logger->pushHandler(new ErrorLogHandler(ErrorLogHandler::OPERATING_SYSTEM, $realLevel));
 
 				$paperTrailEndPoint = get_option('ilab-media-s3-debug-papertrail-endpoint', false);
@@ -105,7 +105,7 @@ class ILabMediaToolLogger {
 	//region Static Methods
 	/**
 	 * Returns the static instance
-	 * @return ILabMediaToolLogger
+	 * @return Logger
 	 */
 	public static function instance() {
 		if (!isset(self::$instance)) {

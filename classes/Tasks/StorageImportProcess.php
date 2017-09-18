@@ -13,8 +13,8 @@
 
 namespace ILAB\MediaCloud\Tasks;
 
-use ILAB\MediaCloud\ILabMediaToolsManager;
-use ILAB\MediaCloud\Utilities\ILabMediaToolLogger;
+use ILAB\MediaCloud\Tools\ToolsManager;
+use ILAB\MediaCloud\Utilities\Logger;
 use Smalot\PdfParser\Parser;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
@@ -24,7 +24,7 @@ if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
  *
  * Background processing job for importing existing media to S3
  */
-class ILabS3ImportProcess extends ILabWPBackgroundProcess {
+class StorageImportProcess extends BackgroundProcess {
 	protected $action = 'ilab_s3_import_process';
 
 	protected function shouldHandle() {
@@ -32,9 +32,9 @@ class ILabS3ImportProcess extends ILabWPBackgroundProcess {
 	}
 
 	public function task($item) {
-		ILabMediaToolLogger::info('Start Task', $item);
+		Logger::info( 'Start Task', $item);
 		if (!$this->shouldHandle()) {
-			ILabMediaToolLogger::info('Task cancelled', $item);
+			Logger::info( 'Task cancelled', $item);
 			return false;
 		}
 
@@ -57,7 +57,7 @@ class ILabS3ImportProcess extends ILabWPBackgroundProcess {
 
 			$data = [ 'file' => $file ];
 
-			ILabMediaToolLogger::info('Task metadata was empty.', $item);
+			Logger::info( 'Task metadata was empty.', $item);
 
 			if (file_exists($upload_file)) {
 				$mime = null;
@@ -124,7 +124,7 @@ class ILabS3ImportProcess extends ILabWPBackgroundProcess {
 							}
 						}
 					} catch (\Exception $ex) {
-						ILabMediaToolLogger::error('PDF Exception.', array_merge($item, ['exception'=>$ex->getMessage()]));
+						Logger::error( 'PDF Exception.', array_merge( $item, [ 'exception' =>$ex->getMessage()]));
 					}
 
 					restore_error_handler();
@@ -133,10 +133,10 @@ class ILabS3ImportProcess extends ILabWPBackgroundProcess {
 		} else {
 			$fileName = basename($data['file']);
 			update_option('ilab_s3_import_current_file', $fileName);
-			ILabMediaToolLogger::info('Task metadata was not empty.', $item);
+			Logger::info( 'Task metadata was not empty.', $item);
 		}
 
-		$s3tool = ILabMediaToolsManager::instance()->tools['s3'];
+		$s3tool = ToolsManager::instance()->tools['storage'];
 		$data = $s3tool->updateAttachmentMetadata($data, $post_id);
 
 		if ($isDocument) {
@@ -149,12 +149,12 @@ class ILabS3ImportProcess extends ILabWPBackgroundProcess {
 	}
 
 	public function dispatch() {
-		ILabMediaToolLogger::info('Task dispatch');
+		Logger::info( 'Task dispatch');
 		parent::dispatch();
 	}
 
 	protected function complete() {
-		ILabMediaToolLogger::info('Task complete');
+		Logger::info( 'Task complete');
 		delete_option('ilab_s3_import_status');
 		delete_option('ilab_s3_import_total_count');
 		delete_option('ilab_s3_import_current');
@@ -163,7 +163,7 @@ class ILabS3ImportProcess extends ILabWPBackgroundProcess {
 	}
 
 	public function cancel_process() {
-		ILabMediaToolLogger::info('Cancel process');
+		Logger::info( 'Cancel process');
 
 		parent::cancel_process();
 
@@ -174,7 +174,7 @@ class ILabS3ImportProcess extends ILabWPBackgroundProcess {
 	}
 
 	public static function cancelAll() {
-		ILabMediaToolLogger::info('Cancel all processes');
+		Logger::info( 'Cancel all processes');
 
 		wp_clear_scheduled_hook('wp_ilab_s3_import_process_cron');
 
@@ -182,7 +182,7 @@ class ILabS3ImportProcess extends ILabWPBackgroundProcess {
 
 		$res = $wpdb->get_results("select * from {$wpdb->options} where option_name like 'wp_ilab_s3_import_process_batch_%'");
 		foreach($res as $batch) {
-			ILabMediaToolLogger::info("Deleting batch {$batch->option_name}");
+			Logger::info( "Deleting batch {$batch->option_name}");
 			delete_option($batch->option_name);
 		}
 
@@ -191,7 +191,7 @@ class ILabS3ImportProcess extends ILabWPBackgroundProcess {
 		delete_option('ilab_s3_import_current');
 		delete_option('ilab_s3_import_current_file');
 
-		ILabMediaToolLogger::info("Current cron", get_option('cron', []));
-		ILabMediaToolLogger::info('End cancel all processes');
+		Logger::info( "Current cron", get_option( 'cron', []));
+		Logger::info( 'End cancel all processes');
 	}
 }

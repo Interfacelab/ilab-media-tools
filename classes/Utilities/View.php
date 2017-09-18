@@ -10,11 +10,11 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud;
+namespace ILAB\MediaCloud\Utilities;
 
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
-class ILabMediaToolView {
+class ToolView {
     protected $currentBlocks;
     protected $currentData;
 
@@ -51,7 +51,7 @@ class ILabMediaToolView {
         {
             $template=$extendMatches[1];
 
-            $this->parent=new ILabMediaToolView(ILAB_VIEW_DIR.'/'.$template);
+            $this->parent=new ToolView( ILAB_VIEW_DIR . '/' . $template);
 
             $contents=preg_replace('#{%\s*extends\s+([/aA-zZ0-9-_.]+)\s*%}#','',$contents);
         }
@@ -126,7 +126,7 @@ class ILabMediaToolView {
     }
 
     public static function render_view($view, $data) {
-        $view=new ILabMediaToolView(ILAB_VIEW_DIR.'/'.$view);
+        $view=new ToolView( ILAB_VIEW_DIR . '/' . $view);
         return $view->render($data);
     }
 }

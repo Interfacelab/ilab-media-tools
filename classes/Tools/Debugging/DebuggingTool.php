@@ -13,7 +13,7 @@
 
 namespace ILAB\MediaCloud\Tools\Debugging;
 
-use ILAB\MediaCloud\ILabMediaToolBase;
+use ILAB\MediaCloud\Tools\ToolBase;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
@@ -22,7 +22,7 @@ if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
  *
  * Debugging tool.
  */
-class ILabMediaDebuggingTool extends ILabMediaToolBase {
+class DebuggingTool extends ToolBase {
 	public function __construct( $toolName, $toolInfo, $toolManager ) {
 		parent::__construct( $toolName, $toolInfo, $toolManager );
 

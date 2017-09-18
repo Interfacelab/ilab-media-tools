@@ -14,14 +14,17 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud;
+namespace ILAB\MediaCloud\Tools;
 
-if (!defined('ABSPATH')) { header('Location: /'); die; }
+use ILAB\MediaCloud\Utilities\EnvironmentOptions;
+use ILAB\MediaCloud\Utilities\ToolView;
+
+if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
 /**
  * Base class for media tools
  */
-abstract class ILabMediaToolBase {
+abstract class ToolBase {
 
     private $adminNotices;
     protected $settingSections;
@@ -36,7 +39,7 @@ abstract class ILabMediaToolBase {
 
     /**
      * Tool manager that owns this tool's admin
-     * @var ILabMediaToolsManager
+     * @var ToolsManager
      */
     protected $toolManager;
 
@@ -196,7 +199,7 @@ abstract class ILabMediaToolBase {
         }
 
         add_action('admin_notices',function() use($class,$message,$dismissibleAttr) {
-            echo ILabMediaToolView::render_view('base/ilab-admin-notice.php',[
+            echo ToolView::render_view( 'base/ilab-admin-notice.php', [
                 'class'=>$class,
                 'message'=>$message,
                 'identifier' => $dismissibleAttr
@@ -318,7 +321,7 @@ abstract class ILabMediaToolBase {
      */
     public function renderSettings()
     {
-        $result = ILabMediaToolView::render_view('base/ilab-settings.php',[
+        $result = ToolView::render_view( 'base/ilab-settings.php', [
             'title'=>$this->toolInfo['title'],
             'group'=>$this->options_group,
             'page'=>$this->options_page
@@ -481,15 +484,6 @@ abstract class ILabMediaToolBase {
     }
 
     public function getOption($optionName, $envVariableName = null, $default = false) {
-    	if ($envVariableName == null) {
-    		$envVariableName = str_replace('-','_', strtoupper($optionName));
-	    }
-
-    	$envval = getenv($envVariableName);
-    	if ($envval) {
-    		return $envval;
-	    }
-
-        return get_option($optionName, $default);
+    	return EnvironmentOptions::Option($optionName, $envVariableName, $default);
     }
 }

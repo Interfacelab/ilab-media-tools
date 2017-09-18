@@ -13,10 +13,10 @@
 
 namespace ILAB\MediaCloud\Tools\Rekognition;
 
-use ILAB\MediaCloud\ILabMediaToolBase;
-use ILAB\MediaCloud\ILabMediaToolView;
-use ILAB\MediaCloud\Tasks\ILabRekognizerProcess;
-use ILAB\MediaCloud\Utilities\ILabMediaToolLogger;
+use ILAB\MediaCloud\Tools\ToolBase;
+use ILAB\MediaCloud\Utilities\ToolView;
+use ILAB\MediaCloud\Tasks\RekognizerProcess;
+use ILAB\MediaCloud\Utilities\Logger;
 use ILAB_Aws\Exception\AwsException;
 use ILAB_Aws\Rekognition\RekognitionClient;
 
@@ -27,7 +27,7 @@ if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
  *
  * Debugging tool.
  */
-class ILabMediaRekognitionTool extends ILabMediaToolBase {
+class RekognitionTool extends ToolBase {
 	protected $key = null;
 	protected $secret = null;
 	protected $region;
@@ -46,7 +46,7 @@ class ILabMediaRekognitionTool extends ILabMediaToolBase {
 	public function __construct($toolName, $toolInfo, $toolManager) {
 		parent::__construct($toolName, $toolInfo, $toolManager);
 
-		new ILabRekognizerProcess();
+		new RekognizerProcess();
 
 		$this->key = $this->getOption('ilab-media-s3-access-key', 'ILAB_AWS_S3_ACCESS_KEY');
 		$this->secret = $this->getOption('ilab-media-s3-secret', 'ILAB_AWS_S3_ACCESS_SECRET');
@@ -139,7 +139,7 @@ class ILabMediaRekognitionTool extends ILabMediaToolBase {
 								update_option('ilab_rekognizer_current', 1);
 								update_option('ilab_rekognizer_should_cancel', false);
 
-								$process = new ILabRekognizerProcess();
+								$process = new RekognizerProcess();
 
 								for($i = 0; $i < count($posts_to_import); ++$i) {
 									$process->push_to_queue(['index' => $i, 'post' => $posts_to_import[$i]]);
@@ -170,7 +170,7 @@ class ILabMediaRekognitionTool extends ILabMediaToolBase {
 			return false;
 		}
 
-		$s3Tool = $this->toolManager->tools['s3'];
+		$s3Tool = $this->toolManager->tools['storage'];
 		$enabled = $s3Tool->enabled();
 		if (!$enabled || $s3Tool->hasCustomEndPoint()) {
 			return false;
@@ -193,24 +193,24 @@ class ILabMediaRekognitionTool extends ILabMediaToolBase {
 		}
 
 		if (!isset($meta['s3'])) {
-			ILabMediaToolLogger::warning("Post $postID is  missing 's3' metadata.", $meta);
+			Logger::warning( "Post $postID is  missing 's3' metadata.", $meta);
 			return $meta;
 		}
 
 		$s3 = $meta['s3'];
 
 		if (!isset($s3['mime-type'])) {
-			ILabMediaToolLogger::warning("Post $postID is  missing 's3/mime-type' metadata.", $meta);
+			Logger::warning( "Post $postID is  missing 's3/mime-type' metadata.", $meta);
 			return $meta;
 		}
 
 		$mime_parts = explode('/', $s3['mime-type']);
 		if ((count($mime_parts)!=2) || ($mime_parts[0] != 'image') || (!in_array($mime_parts[1],['jpg','jpeg', 'png']))) {
-			ILabMediaToolLogger::warning("Post $postID is has invalid or missing mime-type.", $meta);
+			Logger::warning( "Post $postID is has invalid or missing mime-type.", $meta);
 			return $meta;
 		}
 
-		ILabMediaToolLogger::info("Processing Image Meta: $postID", $meta);
+		Logger::info( "Processing Image Meta: $postID", $meta);
 
 		$config = [
 			'version' => 'latest',
@@ -251,9 +251,9 @@ class ILabMediaRekognitionTool extends ILabMediaToolBase {
 					$this->processTags($tags, $this->detectLabelsTax, $postID);
 				}
 
-				ILabMediaToolLogger::info('Detect Labels', $tags);
+				Logger::info( 'Detect Labels', $tags);
 			} catch (AwsException $ex) {
-				ILabMediaToolLogger::error('Detect Labels Error', ['exception'=>$ex->getMessage()]);
+				Logger::error( 'Detect Labels Error', [ 'exception' =>$ex->getMessage()]);
 				return $meta;
 			}
 		}
@@ -290,9 +290,9 @@ class ILabMediaRekognitionTool extends ILabMediaToolBase {
 					$this->processTags($tags, $this->detectExplicitTax, $postID);
 				}
 
-				ILabMediaToolLogger::info('Detect Moderation Labels', $result->toArray());
+				Logger::info( 'Detect Moderation Labels', $result->toArray());
 			} catch (AwsException $ex) {
-				ILabMediaToolLogger::error('Detect Moderation Error', ['exception'=>$ex->getMessage()]);
+				Logger::error( 'Detect Moderation Error', [ 'exception' =>$ex->getMessage()]);
 				return $meta;
 			}
 		}
@@ -343,9 +343,9 @@ class ILabMediaRekognitionTool extends ILabMediaToolBase {
 					$meta['faces'] = $allFaces;
 				}
 
-				ILabMediaToolLogger::info('Detect Celebrities', $result->toArray());
+				Logger::info( 'Detect Celebrities', $result->toArray());
 			} catch (AwsException $ex) {
-				ILabMediaToolLogger::error('Detect Celebrities Error', ['exception'=>$ex->getMessage()]);
+				Logger::error( 'Detect Celebrities Error', [ 'exception' =>$ex->getMessage()]);
 				return $meta;
 			}
 		}
@@ -367,9 +367,9 @@ class ILabMediaRekognitionTool extends ILabMediaToolBase {
 					$meta['faces'] = $faces;
 				}
 
-				ILabMediaToolLogger::info('Detect Faces', $result->toArray());
+				Logger::info( 'Detect Faces', $result->toArray());
 			} catch (AwsException $ex) {
-				ILabMediaToolLogger::error('Detect Faces Error', ['exception'=>$ex->getMessage()]);
+				Logger::error( 'Detect Faces Error', [ 'exception' =>$ex->getMessage()]);
 				return $meta;
 			}
 		}
@@ -465,7 +465,7 @@ class ILabMediaRekognitionTool extends ILabMediaToolBase {
 			$progress = ($current / $total) * 100;
 		}
 
-		echo ILabMediaToolView::render_view('rekognizer/ilab-rekognizer-processor.php',[
+		echo ToolView::render_view( 'rekognizer/ilab-rekognizer-processor.php', [
 			'status' => ($status) ? 'running' : 'idle',
 			'total' => $total,
 			'progress' => $progress,
@@ -507,7 +507,7 @@ SQL;
 			update_option('ilab_rekognizer_current', 1);
 			update_option('ilab_rekognizer_should_cancel', false);
 
-			$process = new ILABRekognizerProcess();
+			$process = new RekognizerProcess();
 
 			for($i = 0; $i < count($posts); ++$i) {
 				$process->push_to_queue(['index' => $i, 'post' => $posts[$i]]);
@@ -544,7 +544,7 @@ SQL;
 
 	public function cancelProcessMedia() {
 		update_option('ilab_rekognizer_should_cancel', 1);
-		ILabRekognizerProcess::cancelAll();
+		RekognizerProcess::cancelAll();
 
 		return json_response(['status'=>'ok']);
 	}

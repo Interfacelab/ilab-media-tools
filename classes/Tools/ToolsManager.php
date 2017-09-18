@@ -10,16 +10,18 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud;
+namespace ILAB\MediaCloud\Tools;
 
-if (!defined('ABSPATH')) { header('Location: /'); die; }
+use ILAB\MediaCloud\Utilities\ToolView;
+
+if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
 /**
  * Class ILabMediaToolsManager
  *
  * Manages all of the tools for the ILab Media Tools plugin
  */
-class ILabMediaToolsManager
+class ToolsManager
 {
 	//region Class variables
     private static $instance;
@@ -125,7 +127,7 @@ class ILabMediaToolsManager
      * Render the options page
      */
     public function renderSettings() {
-        echo ILabMediaToolView::render_view('base/ilab-settings.php',[
+        echo ToolView::render_view( 'base/ilab-settings.php', [
             'title'=>'Enabled Tools',
             'group'=>'ilab-media-tools',
             'page'=>'media-tools-top'
@@ -140,13 +142,13 @@ class ILabMediaToolsManager
     }
 
     public function renderSupport() {
-        echo ILabMediaToolView::render_view('base/ilab-support.php', []);
+        echo ToolView::render_view( 'base/ilab-support.php', []);
     }
 
     public function renderToolSettings($args) {
         $tool=$this->tools[$args['key']];
 
-        echo ILabMediaToolView::render_view('base/ilab-tool-settings.php',[
+        echo ToolView::render_view( 'base/ilab-tool-settings.php', [
             'name'=>$args['key'],
             'tool'=>$tool,
             'manager'=>$this

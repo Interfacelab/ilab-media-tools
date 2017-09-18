@@ -74,5 +74,5 @@ require_once('helpers/ilab-media-tool-helpers.php');
 require_once('helpers/ilab-media-tool-wordpress-helpers.php');
 require_once('helpers/ilab-media-tool-geometry-helpers.php');
 
-register_activation_hook(__FILE__,[\ILAB\MediaCloud\ILabMediaToolsManager::instance(),'install']);
-register_deactivation_hook(__FILE__,[\ILAB\MediaCloud\ILabMediaToolsManager::instance(),'uninstall']);
+register_activation_hook(__FILE__,[ \ILAB\MediaCloud\Tools\ToolsManager::instance(), 'install']);
+register_deactivation_hook(__FILE__,[ \ILAB\MediaCloud\Tools\ToolsManager::instance(), 'uninstall']);
