@@ -12,7 +12,7 @@
 
 namespace ILAB\MediaCloud\Tools;
 
-use ILAB\MediaCloud\Utilities\ToolView;
+use ILAB\MediaCloud\Utilities\View;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
@@ -127,7 +127,7 @@ class ToolsManager
      * Render the options page
      */
     public function renderSettings() {
-        echo ToolView::render_view( 'base/ilab-settings.php', [
+        echo View::render_view( 'base/ilab-settings.php', [
             'title'=>'Enabled Tools',
             'group'=>'ilab-media-tools',
             'page'=>'media-tools-top'
@@ -142,13 +142,13 @@ class ToolsManager
     }
 
     public function renderSupport() {
-        echo ToolView::render_view( 'base/ilab-support.php', []);
+        echo View::render_view( 'base/ilab-support.php', []);
     }
 
     public function renderToolSettings($args) {
         $tool=$this->tools[$args['key']];
 
-        echo ToolView::render_view( 'base/ilab-tool-settings.php', [
+        echo View::render_view( 'base/ilab-tool-settings.php', [
             'name'=>$args['key'],
             'tool'=>$tool,
             'manager'=>$this

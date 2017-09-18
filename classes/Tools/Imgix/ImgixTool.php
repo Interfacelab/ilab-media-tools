@@ -14,7 +14,7 @@
 namespace ILAB\MediaCloud\Tools\Imgix;
 
 use ILAB\MediaCloud\Tools\ToolBase;
-use ILAB\MediaCloud\Utilities\ToolView;
+use ILAB\MediaCloud\Utilities\View;
 use Imgix\UrlBuilder;
 
 if (!defined('ABSPATH')) { header('Location: /'); die; }
@@ -773,7 +773,7 @@ class ImgixTool extends ToolBase
         if (current_user_can( 'edit_post', $image_id))
         {
             if (!$partial)
-                echo ToolView::render_view( 'imgix/ilab-imgix-ui.php', [
+                echo View::render_view( 'imgix/ilab-imgix-ui.php', [
                     'partial'=>$partial,
                     'image_id'=>$image_id,
                     'modal_id'=>gen_uuid(8),

@@ -14,7 +14,7 @@
 namespace ILAB\MediaCloud\Tools\Rekognition;
 
 use ILAB\MediaCloud\Tools\ToolBase;
-use ILAB\MediaCloud\Utilities\ToolView;
+use ILAB\MediaCloud\Utilities\View;
 use ILAB\MediaCloud\Tasks\RekognizerProcess;
 use ILAB\MediaCloud\Utilities\Logger;
 use ILAB_Aws\Exception\AwsException;
@@ -465,7 +465,7 @@ class RekognitionTool extends ToolBase {
 			$progress = ($current / $total) * 100;
 		}
 
-		echo ToolView::render_view( 'rekognizer/ilab-rekognizer-processor.php', [
+		echo View::render_view( 'rekognizer/ilab-rekognizer-processor.php', [
 			'status' => ($status) ? 'running' : 'idle',
 			'total' => $total,
 			'progress' => $progress,

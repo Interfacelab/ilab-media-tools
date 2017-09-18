@@ -14,7 +14,7 @@
 namespace ILAB\MediaCloud\Tools\MediaUpload;
 
 use ILAB\MediaCloud\Tools\ToolBase;
-use ILAB\MediaCloud\Utilities\ToolView;
+use ILAB\MediaCloud\Utilities\View;
 use ILAB\MediaCloud\Utilities\Logger;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
@@ -192,7 +192,7 @@ class UploadTool extends ToolBase {
 		$mtypes = array_values(get_allowed_mime_types(get_current_user_id()));
 		$mtypes[] = 'image/psd';
 
-		$result = ToolView::render_view( 'upload/ilab-media-upload.php', [
+		$result = View::render_view( 'upload/ilab-media-upload.php', [
 			'title'=>$this->toolInfo['title'],
 			'group'=>$this->options_group,
 			'page'=>$this->options_page,

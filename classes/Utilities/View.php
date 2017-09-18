@@ -14,7 +14,7 @@ namespace ILAB\MediaCloud\Utilities;
 
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
-class ToolView {
+class View {
     protected $currentBlocks;
     protected $currentData;
 
@@ -51,7 +51,7 @@ class ToolView {
         {
             $template=$extendMatches[1];
 
-            $this->parent=new ToolView( ILAB_VIEW_DIR . '/' . $template);
+            $this->parent=new View( ILAB_VIEW_DIR . '/' . $template);
 
             $contents=preg_replace('#{%\s*extends\s+([/aA-zZ0-9-_.]+)\s*%}#','',$contents);
         }
@@ -126,7 +126,7 @@ class ToolView {
     }
 
     public static function render_view($view, $data) {
-        $view=new ToolView( ILAB_VIEW_DIR . '/' . $view);
+        $view=new View( ILAB_VIEW_DIR . '/' . $view);
         return $view->render($data);
     }
 }

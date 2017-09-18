@@ -15,7 +15,7 @@ namespace ILAB\MediaCloud\Tools\Storage;
 
 use FasterImage\FasterImage;
 use ILAB\MediaCloud\Tools\ToolBase;
-use ILAB\MediaCloud\Utilities\ToolView;
+use ILAB\MediaCloud\Utilities\View;
 use ILAB\MediaCloud\Tasks\StorageImportProcess;
 use ILAB\MediaCloud\Utilities\Logger;
 use ILAB_Aws\Exception\AwsException;
@@ -1192,7 +1192,7 @@ class StorageTool extends ToolBase {
 			$progress = ($current / $total) * 100;
 		}
 
-		echo ToolView::render_view( 's3/ilab-s3-importer.php', [
+		echo View::render_view( 's3/ilab-s3-importer.php', [
 			'status' => ($status) ? 'running' : 'idle',
 			'total' => $total,
 			'progress' => $progress,

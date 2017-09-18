@@ -17,7 +17,7 @@
 namespace ILAB\MediaCloud\Tools;
 
 use ILAB\MediaCloud\Utilities\EnvironmentOptions;
-use ILAB\MediaCloud\Utilities\ToolView;
+use ILAB\MediaCloud\Utilities\View;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
@@ -199,7 +199,7 @@ abstract class ToolBase {
         }
 
         add_action('admin_notices',function() use($class,$message,$dismissibleAttr) {
-            echo ToolView::render_view( 'base/ilab-admin-notice.php', [
+            echo View::render_view( 'base/ilab-admin-notice.php', [
                 'class'=>$class,
                 'message'=>$message,
                 'identifier' => $dismissibleAttr
@@ -321,7 +321,7 @@ abstract class ToolBase {
      */
     public function renderSettings()
     {
-        $result = ToolView::render_view( 'base/ilab-settings.php', [
+        $result = View::render_view( 'base/ilab-settings.php', [
             'title'=>$this->toolInfo['title'],
             'group'=>$this->options_group,
             'page'=>$this->options_page
