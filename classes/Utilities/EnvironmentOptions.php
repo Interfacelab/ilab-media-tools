@@ -24,7 +24,7 @@ final class EnvironmentOptions {
 	 * Fetches an option from WordPress or the environment.
 	 *
 	 * @param $optionName
-	 * @param null $envVariableName
+	 * @param string|array $envVariableName
 	 * @param bool $default
 	 *
 	 * @return array|false|mixed|string|null
@@ -34,9 +34,18 @@ final class EnvironmentOptions {
 			$envVariableName = str_replace('-','_', strtoupper($optionName));
 		}
 
-		$envval = getenv($envVariableName);
-		if ($envval) {
-			return $envval;
+		if (is_array($envVariableName)) {
+			foreach($envVariableName as $envVariable) {
+				$envval = getenv($envVariable);
+				if ($envval) {
+					return $envval;
+				}
+			}
+		} else {
+			$envval = getenv($envVariableName);
+			if ($envval) {
+				return $envval;
+			}
 		}
 
 		return get_option($optionName, $default);

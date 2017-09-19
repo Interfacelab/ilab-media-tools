@@ -19,12 +19,14 @@
     "ilab/ilab-aws-sdk": "^0.1.0",
     "smalot/pdfparser": "^0.10.0",
     "fasterimage/fasterimage": "^1.1",
-    "monolog/monolog": "^1.23",
-    "ilab/blade": "^4.0"
+    "monolog/monolog": "^1.23"
   },
   "autoload": {
     "psr-4": {
       "ILAB\\MediaCloud\\": "classes"
-    }
+    },
+    "files": [
+      "classes/Utilities/Helpers.php"
+    ]
   }
 }

@@ -14,6 +14,7 @@
 namespace ILAB\MediaCloud\Tools\Debugging;
 
 use ILAB\MediaCloud\Tools\ToolBase;
+use ILAB\MediaCloud\Utilities\NoticeManager;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
@@ -31,7 +32,7 @@ class DebuggingTool extends ToolBase {
 
 		if (!empty($paperTrailEndPoint) && !empty($paperTrailPort)) {
 			if (!function_exists('socket_create') && $this->enabled()) {
-				$this->displayAdminNotice('error', 'You have specified papertrail endpoint and ports, but you are missing the <a href="http://php.net/manual/en/book.sockets.php" target=_blank>php socket extension</a>.  Please install this extension to use remote logging.');
+				NoticeManager::instance()->displayAdminNotice('error', 'You have specified papertrail endpoint and ports, but you are missing the <a href="http://php.net/manual/en/book.sockets.php" target=_blank>php socket extension</a>.  Please install this extension to use remote logging.');
 			}
 		}
 	}

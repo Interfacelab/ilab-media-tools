@@ -70,9 +70,10 @@ if (file_exists(ILAB_VENDOR_DIR.'/autoload.php')) {
 }
 
 // Helper functions
-require_once('helpers/ilab-media-tool-helpers.php');
 require_once('helpers/ilab-media-tool-wordpress-helpers.php');
 require_once('helpers/ilab-media-tool-geometry-helpers.php');
+
+\ILAB\MediaCloud\Utilities\NoticeManager::instance();
 
 register_activation_hook(__FILE__,[ \ILAB\MediaCloud\Tools\ToolsManager::instance(), 'install']);
 register_deactivation_hook(__FILE__,[ \ILAB\MediaCloud\Tools\ToolsManager::instance(), 'uninstall']);

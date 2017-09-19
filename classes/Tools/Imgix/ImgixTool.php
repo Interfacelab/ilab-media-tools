@@ -14,6 +14,10 @@
 namespace ILAB\MediaCloud\Tools\Imgix;
 
 use ILAB\MediaCloud\Tools\ToolBase;
+use function ILAB\MediaCloud\Utilities\gen_uuid;
+use function ILAB\MediaCloud\Utilities\json_response;
+use ILAB\MediaCloud\Utilities\NoticeManager;
+use function ILAB\MediaCloud\Utilities\parse_req;
 use ILAB\MediaCloud\Utilities\View;
 use Imgix\UrlBuilder;
 
@@ -51,7 +55,7 @@ class ImgixTool extends ToolBase
         $enabled=parent::enabled();
 
         if (!$this->getOption('ilab-media-imgix-domains')) {
-            $this->displayAdminNotice('error',"To start using Imgix, you will need to <a href='admin.php?page=media-tools-imgix'>set it up</a>.", true, 'disable-ilab-imgix-warning');
+	        NoticeManager::instance()->displayAdminNotice('error',"To start using Imgix, you will need to <a href='admin.php?page=media-tools-imgix'>set it up</a>.", true, 'disable-ilab-imgix-warning');
             return false;
         }
 

@@ -16,8 +16,10 @@
 
 namespace ILAB\MediaCloud\Tools;
 
+use function ILAB\MediaCloud\Utilities\arrayPath;
 use ILAB\MediaCloud\Utilities\EnvironmentOptions;
 use ILAB\MediaCloud\Utilities\View;
+
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
@@ -111,13 +113,6 @@ abstract class ToolBase {
             foreach($toolInfo['helpers'] as $helper)
                 require_once(ILAB_HELPERS_DIR.'/'.$helper);
         }
-
-	    add_action( 'admin_enqueue_scripts', function(){
-		    wp_enqueue_script('ilab-dismissible-notices', ILAB_PUB_JS_URL . '/ilab-dismiss-notice.js', ['jquery', 'common'], false, true);
-		    wp_localize_script('ilab-dismissible-notices', 'ilab_dismissible_notice', ['nonce' => wp_create_nonce( 'dismissible-notice' )]);
-	    });
-
-	    add_action('wp_ajax_ilab_dismiss_admin_notice', [$this, 'dismissAdminNotice']);
     }
 
     /**
@@ -177,66 +172,6 @@ abstract class ToolBase {
         return $enabled;
     }
 
-    public function displayAdminNotice($type, $message, $dismissible=false, $dismissibleIdentifier = null, $dismissibleLength = 30)
-    {
-        if (isset($this->adminNotices[$message]))
-            return;
-
-        if (!$this->isAdminNoticeActive($dismissibleIdentifier)) {
-        	return;
-        }
-
-        $this->adminNotices[$message]=true;
-        if ($dismissible) {
-        	if ($dismissibleIdentifier) {
-		        $dismissibleAttr = "data-dismissible='$dismissibleIdentifier' data-dismissible-length='$dismissibleLength'";
-	        }
-
-        	$class = "notice notice-$type is-dismissible";
-        } else {
-	        $dismissibleAttr = '';
-	        $class = "notice notice-$type";
-        }
-
-        add_action('admin_notices',function() use($class,$message,$dismissibleAttr) {
-            echo View::render_view( 'base/ilab-admin-notice.php', [
-                'class'=>$class,
-                'message'=>$message,
-                'identifier' => $dismissibleAttr
-            ]);
-        });
-    }
-
-	public function dismissAdminNotice() {
-		$option_name        = sanitize_text_field( $_POST['option_name'] );
-		$dismissible_length = sanitize_text_field( $_POST['dismissible_length'] );
-		$transient          = 0;
-
-		if ( 'forever' != $dismissible_length ) {
-			$dismissible_length = ( 0 == absint( $dismissible_length ) ) ? 1 : $dismissible_length;
-			$transient          = absint( $dismissible_length ) * DAY_IN_SECONDS;
-			$dismissible_length = strtotime( absint( $dismissible_length ) . ' days' );
-		}
-
-		check_ajax_referer( 'dismissible-notice', 'nonce' );
-		set_site_transient( $option_name, $dismissible_length, $transient );
-		wp_die();
-	}
-
-	public function isAdminNoticeActive( $arg ) {
-		$array       = explode( '-', $arg );
-		$option_name = implode( '-', $array );
-		$db_record   = get_site_transient( $option_name );
-
-		if ( 'forever' == $db_record ) {
-			return false;
-		} elseif ( absint( $db_record ) >= time() ) {
-			return false;
-		} else {
-			return true;
-		}
-	}
-
     /**
      * Register any settings
      */
@@ -262,28 +197,33 @@ abstract class ToolBase {
 
                     if (isset($optionInfo['type']))
                     {
+                    	$description = arrayPath($optionInfo,'description',null);
+                    	$conditions = arrayPath($optionInfo,'conditions',null);
+                    	$placeholder = arrayPath($optionInfo,'placeholder',null);
+                    	$default = arrayPath($optionInfo,'default',null);
+
                         switch($optionInfo['type'])
                         {
                             case 'text-field':
-                                $this->registerTextFieldSetting($option,$optionInfo['title'],$group,(isset($optionInfo['description']) ? $optionInfo['description'] : null), (isset($optionInfo['placeholder']) ? $optionInfo['placeholder'] : null));
+                                $this->registerTextFieldSetting($option,$optionInfo['title'],$group,$description,$placeholder,$conditions);
                                 break;
                             case 'text-area':
-                                $this->registerTextAreaFieldSetting($option,$optionInfo['title'],$group,(isset($optionInfo['description']) ? $optionInfo['description'] : null));
+                                $this->registerTextAreaFieldSetting($option,$optionInfo['title'],$group,$description, $placeholder, $conditions);
                                 break;
                             case 'password':
-                                $this->registerPasswordFieldSetting($option,$optionInfo['title'],$group,(isset($optionInfo['description']) ? $optionInfo['description'] : null));
+                                $this->registerPasswordFieldSetting($option,$optionInfo['title'],$group,$description, $placeholder, $conditions);
                                 break;
                             case 'checkbox':
-                                $this->registerCheckboxFieldSetting($option,$optionInfo['title'],$group,(isset($optionInfo['description']) ? $optionInfo['description'] : null), (isset($optionInfo['default'])) ? $optionInfo['default'] : false);
+                                $this->registerCheckboxFieldSetting($option,$optionInfo['title'],$group,$description, $default, $conditions);
                                 break;
                             case 'number':
-                                $this->registerNumberFieldSetting($option,$optionInfo['title'],$group,(isset($optionInfo['description']) ? $optionInfo['description'] : null));
+                                $this->registerNumberFieldSetting($option,$optionInfo['title'],$group,$description, $conditions);
                                 break;
 	                        case 'select':
-		                        $this->registerSelectSetting($option,$optionInfo['options'],$optionInfo['title'],$group,(isset($optionInfo['description']) ? $optionInfo['description'] : null));
+		                        $this->registerSelectSetting($option,$optionInfo['options'],$optionInfo['title'],$group,$description, $conditions);
 		                        break;
 	                        case 'custom':
-		                        $this->registerCustomFieldSetting($option,'__CUSTOMREMOVE__',$group,$optionInfo['callback'],(isset($optionInfo['description']) ? $optionInfo['description'] : null));
+		                        $this->registerCustomFieldSetting($option,'__CUSTOMREMOVE__',$group,$optionInfo['callback'],$description, $conditions);
 		                        break;
                         }
                     }
@@ -369,69 +309,101 @@ abstract class ToolBase {
         }
     }
 
-    protected function registerTextFieldSetting($option_name,$title,$settings_slug,$description=null,$placeholder=null)
+    protected function registerTextFieldSetting($option_name, $title, $settings_slug, $description=null, $placeholder=null, $conditions=null)
     {
-        add_settings_field($option_name,$title,[$this,'renderTextFieldSetting'],$this->options_page,$settings_slug,['option'=>$option_name,'description'=>$description, 'placeholder' => $placeholder]);
-
+        add_settings_field($option_name,
+                           $title,
+                           [$this,'renderTextFieldSetting'],
+                           $this->options_page,
+                           $settings_slug,
+                           ['option'=>$option_name, 'description'=>$description, 'placeholder' => $placeholder, 'conditions' => $conditions]);
     }
 
     public function renderTextFieldSetting($args)
     {
-        $value=get_option($args['option']);
-        echo "<input size='40' type=\"text\" name=\"{$args['option']}\" value=\"$value\" placeholder=\"{$args['placeholder']}\">";
-        if ($args['description'])
-            echo "<p class='description'>".$args['description']."</p>";
+    	echo View::render_view('base/fields/text-field.php',[
+			'value' => get_option($args['option']),
+			'name' => $args['option'],
+			'placeholder' => $args['placeholder'],
+			'conditions' => $args['conditions'],
+			'description' => (isset($args['description'])) ? $args['description'] : false
+	    ]);
     }
 
-    protected function registerPasswordFieldSetting($option_name,$title,$settings_slug,$description=null)
+    protected function registerPasswordFieldSetting($option_name,$title,$settings_slug, $description=null, $placeholder=null, $conditions=null)
     {
-        add_settings_field($option_name,$title,[$this,'renderPasswordFieldSetting'],$this->options_page,$settings_slug,['option'=>$option_name,'description'=>$description]);
-
+        add_settings_field($option_name,
+                           $title,
+                           [$this,'renderPasswordFieldSetting'],
+                           $this->options_page,
+                           $settings_slug,
+                           ['option'=>$option_name,'description'=>$description, 'placeholder'=>$placeholder, 'conditions' => $conditions]);
     }
 
     public function renderPasswordFieldSetting($args)
     {
-        $value=get_option($args['option']);
-        echo "<input size='40' type=\"password\" name=\"{$args['option']}\" value=\"$value\" autocomplete=\"off\">";
-        if ($args['description'])
-            echo "<p class='description'>".$args['description']."</p>";
+        echo View::render_view('base/fields/password.php',[
+		    'value' => get_option($args['option']),
+		    'name' => $args['option'],
+		    'placeholder' => $args['placeholder'],
+		    'conditions' => $args['conditions'],
+		    'description' => (isset($args['description'])) ? $args['description'] : false
+	    ]);
     }
 
-    protected function registerTextAreaFieldSetting($option_name,$title,$settings_slug,$description=null)
+    protected function registerTextAreaFieldSetting($option_name,$title,$settings_slug,$description=null, $placeholder=null, $conditions=null)
     {
-        add_settings_field($option_name,$title,[$this,'renderTextAreaFieldSetting'],$this->options_page,$settings_slug,['option'=>$option_name,'description'=>$description]);
-
+        add_settings_field($option_name,
+                           $title,
+                           [$this,'renderTextAreaFieldSetting'],
+                           $this->options_page,
+                           $settings_slug,
+                           ['option'=>$option_name,'description'=>$description, 'placeholder'=>$placeholder, 'conditions' => $conditions]);
     }
 
-    public function renderTextAreaFieldSetting($args)
-    {
-        $value=get_option($args['option']);
-        echo "<textarea cols='40' rows='4' name=\"{$args['option']}\">$value</textarea>";
-        if ($args['description'])
-            echo "<p class='description'>".$args['description']."</p>";
+    public function renderTextAreaFieldSetting($args) {
+	    echo View::render_view('base/fields/text-area.php',[
+		    'value' => get_option($args['option']),
+		    'name' => $args['option'],
+		    'placeholder' => $args['placeholder'],
+		    'conditions' => $args['conditions'],
+		    'description' => (isset($args['description'])) ? $args['description'] : false
+	    ]);
     }
 
-	protected function registerCustomFieldSetting($option_name,$title,$settings_slug,$renderCallback,$description=null) {
-		add_settings_field($option_name,$title,[$this,$renderCallback],$this->options_page,$settings_slug,['option'=>$option_name,'description'=>$description]);
+	protected function registerCustomFieldSetting($option_name,$title,$settings_slug,$renderCallback,$description=null, $conditions=null) {
+		add_settings_field($option_name,
+		                   $title,
+		                   [$this,$renderCallback],
+		                   $this->options_page,
+		                   $settings_slug,
+		                   ['option'=>$option_name,'description'=>$description, 'conditions' => $conditions]);
 	}
 
-    protected function registerCheckboxFieldSetting($option_name,$title,$settings_slug,$description=null, $default=false)
+    protected function registerCheckboxFieldSetting($option_name,$title,$settings_slug,$description=null, $default=false, $conditions=null)
     {
-        add_settings_field($option_name,$title,[$this,'renderCheckboxFieldSetting'],$this->options_page,$settings_slug,['option'=>$option_name,'description'=>$description, 'default' => $default]);
+        add_settings_field($option_name,
+                           $title,
+                           [$this,'renderCheckboxFieldSetting'],
+                           $this->options_page,
+                           $settings_slug,
+                           ['option'=>$option_name,'description'=>$description, 'default' => $default, 'conditions' => $conditions]);
 
     }
 
     public function renderCheckboxFieldSetting($args)
     {
-        $value=get_option($args['option'], $args['default']);
-        echo "<input type=\"checkbox\" name=\"{$args['option']}\" ".(($value) ? 'checked':'').">";
-        if ($args['description'])
-            echo "<p class='description'>".$args['description']."</p>";
+	    echo View::render_view('base/fields/checkbox.php',[
+		    'value' => get_option($args['option'], $args['default']),
+		    'name' => $args['option'],
+		    'conditions' => $args['conditions'],
+		    'description' => (isset($args['description'])) ? $args['description'] : false
+	    ]);
     }
 
-    protected function registerNumberFieldSetting($option_name,$title,$settings_slug,$description=null)
+    protected function registerNumberFieldSetting($option_name,$title,$settings_slug,$description=null, $conditions=null)
     {
-        add_settings_field($option_name,$title,[$this,'renderNumberFieldSetting'],$this->options_page,$settings_slug,['option'=>$option_name,'description'=>$description]);
+        add_settings_field($option_name,$title,[$this,'renderNumberFieldSetting'],$this->options_page,$settings_slug,['option'=>$option_name,'description'=>$description, 'conditions' => $conditions]);
 
     }
 
@@ -443,34 +415,26 @@ abstract class ToolBase {
             echo "<p class='description'>".$args['description']."</p>";
     }
 
-    protected function registerSelectSetting($option_name,$options,$title,$settings_slug,$description=null)
+    protected function registerSelectSetting($option_name, $options, $title, $settings_slug, $description=null, $conditions=null)
     {
-        add_settings_field($option_name,$title,[$this,'renderSelectSetting'],$this->options_page,$settings_slug,['option'=>$option_name,'options'=>$options,'description'=>$description]);
+        add_settings_field($option_name,$title,[$this,'renderSelectSetting'],$this->options_page,$settings_slug,['option'=>$option_name,'options'=>$options,'description'=>$description, 'conditions'=>$conditions]);
     }
 
     public function renderSelectSetting($args)
     {
-        $option = $args['option'];
         $options = $args['options'];
 	    if (!is_array($options)) {
 		    $options = $this->$options();
 	    }
 
-        $value=get_option($args['option']);
 
-        echo "<select name=\"{$option}\">\n";
-        foreach($options as $val => $name) {
-            $opt = "\t<option value=\"{$val}\"";
-            if ($val == $value)
-                $opt .= " selected";
-            $opt .= ">{$name}</option>\n";
-
-            echo $opt;
-        }
-        echo "</select>\n";
-
-        if ($args['description'])
-            echo "<p class='description'>".$args['description']."</p>";
+	    echo View::render_view('base/fields/select.php',[
+		    'value' => get_option($args['option']),
+		    'name' => $args['option'],
+		    'options' => $options,
+		    'conditions' => $args['conditions'],
+		    'description' => (isset($args['description'])) ? $args['description'] : false
+	    ]);
     }
 
     public function haveSettingsChanged() {

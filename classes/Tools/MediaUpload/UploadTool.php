@@ -14,6 +14,7 @@
 namespace ILAB\MediaCloud\Tools\MediaUpload;
 
 use ILAB\MediaCloud\Tools\ToolBase;
+use function ILAB\MediaCloud\Utilities\json_response;
 use ILAB\MediaCloud\Utilities\View;
 use ILAB\MediaCloud\Utilities\Logger;
 

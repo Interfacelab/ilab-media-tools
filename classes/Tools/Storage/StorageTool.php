@@ -15,6 +15,8 @@ namespace ILAB\MediaCloud\Tools\Storage;
 
 use FasterImage\FasterImage;
 use ILAB\MediaCloud\Tools\ToolBase;
+use function ILAB\MediaCloud\Utilities\json_response;
+use ILAB\MediaCloud\Utilities\NoticeManager;
 use ILAB\MediaCloud\Utilities\View;
 use ILAB\MediaCloud\Tasks\StorageImportProcess;
 use ILAB\MediaCloud\Utilities\Logger;
@@ -94,7 +96,7 @@ class StorageTool extends ToolBase {
         }
 
 		if (!in_array($this->privacy, ['public-read', 'authenticated-read'])) {
-			$this->displayAdminNotice('error', "Your AWS S3 settings are incorrect.  The ACL '{$this->privacy}' is not valid.  Defaulting to 'public-read'.");
+			NoticeManager::instance()->displayAdminNotice('error', "Your AWS S3 settings are incorrect.  The ACL '{$this->privacy}' is not valid.  Defaulting to 'public-read'.");
 			$this->privacy = 'public-read';
 		}
 
@@ -132,7 +134,7 @@ class StorageTool extends ToolBase {
 		}
 
 		if ($this->settingsError) {
-			$this->displayAdminNotice('error', 'Your AWS S3 settings are incorrect or the bucket does not exist.  Please verify your settings and update them.');
+		    NoticeManager::instance()->displayAdminNotice('error', 'Your AWS S3 settings are incorrect or the bucket does not exist.  Please verify your settings and update them.');
 		}
 
 		if (is_admin()) {
@@ -457,13 +459,13 @@ class StorageTool extends ToolBase {
 	public function s3enabled() {
 		if (!($this->key && $this->secret && $this->bucket))
 		{
-			$this->displayAdminNotice('error',"To start using Cloud Storage, you will need to <a href='admin.php?page={$this->options_page}'>supply your AWS credentials.</a>.");
+			NoticeManager::instance()->displayAdminNotice('error',"To start using Cloud Storage, you will need to <a href='admin.php?page={$this->options_page}'>supply your AWS credentials.</a>.");
 			return false;
 		}
 
 		$penabled = parent::enabled();
 		if (!$penabled) {
-			$this->displayAdminNotice('error',"To start using Cloud Storage, you will need to <a href='admin.php?page=media-tools-top'>enable it</a>.");
+			NoticeManager::instance()->displayAdminNotice('error',"To start using Cloud Storage, you will need to <a href='admin.php?page=media-tools-top'>enable it</a>.");
 			return false;
 		}
 

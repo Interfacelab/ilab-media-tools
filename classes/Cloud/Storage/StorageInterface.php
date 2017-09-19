@@ -30,34 +30,29 @@ interface StorageInterface {
 	public function supportsDirectUploads();
 
 	/**
-	 * Returns a list of buckets
-	 * @throws StorageException
-	 * @return array
-	 */
-	public function listBuckets();
-
-	/**
-	 * Determines if a bucket exists or not.
-	 *
-	 * @param $bucket
-	 * @throws StorageException
+	 * Insures that all the configuration settings are valid and that the storage is enabled.
 	 * @return bool
 	 */
-	public function bucketExists($bucket);
+	public function enabled();
+
+	/**
+	 * Validates settings.
+	 *
+	 * @return bool
+	 */
+	public function validateSettings();
 
 	/**
 	 * Determines if a file exists in a given bucket.
 	 *
-	 * @param $bucket
 	 * @param $key
 	 * @throws StorageException
 	 * @return bool
 	 */
-	public function exists($bucket, $key);
+	public function exists($key);
 
 	/**
 	 * Copies a file in a given bucket to a new file name.
-	 * @param $bucket
 	 * @param $sourceKey
 	 * @param $destKey
 	 * @param $acl
@@ -66,56 +61,52 @@ interface StorageInterface {
 	 * @param bool $expires
 	 * @throws StorageException
 	 */
-	public function copy($bucket, $sourceKey, $destKey, $acl, $mime=false, $cacheControl=false, $expires=false);
+	public function copy($sourceKey, $destKey, $acl, $mime=false, $cacheControl=false, $expires=false);
 
 	/**
-	 * Uploads a file
+	 * Uploads a file, returning the new URL for the file.
 	 *
-	 * @param $bucket
 	 * @param $key
 	 * @param $file
 	 * @param $acl
 	 * @param bool $cacheControl
 	 * @param bool $expires
 	 * @throws StorageException
+	 * @return string
 	 */
-	public function upload($bucket, $key, $file, $acl, $cacheControl=false, $expires=false);
+	public function upload($key, $file, $acl, $cacheControl=false, $expires=false);
 
 	/**
 	 * Deletes a file
-	 * @param $bucket
 	 * @param $key
 	 * @throws StorageException
 	 */
-	public function delete($bucket, $key);
+	public function delete($key);
 
 	/**
 	 * Returns info (size, mime type, acl) about an item in a bucket.
-	 * @param $bucket
 	 * @param $key
 	 * @throws StorageException
 	 * @return array
 	 */
-	public function info($bucket, $key);
+	public function info($key);
 
 	/**
 	 * Generates a presigned URL for an item in a bucket.
 	 *
-	 * @param $bucket
 	 * @param $key
 	 * @throws StorageException
 	 * @return string
 	 */
-	public function presignedUrl($bucket, $key);
+	public function presignedUrl($key);
 
 	/**
 	 * Returns the URL (not-signed) for the item in a bucket
-	 * @param $bucket
 	 * @param $key
 	 * @throws StorageException
 	 * @return string
 	 */
-	public function url($bucket, $key);
+	public function url($key);
 
 	/**
 	 * Renders the necessary scripts for handling direct uploads
