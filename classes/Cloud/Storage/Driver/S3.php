@@ -16,6 +16,7 @@
 
 namespace ILAB\MediaCloud\Cloud\Storage\Driver;
 
+use FasterImage\FasterImage;
 use ILAB\MediaCloud\Cloud\Storage\InvalidStorageSettingsException;
 use ILAB\MediaCloud\Cloud\Storage\StorageException;
 use ILAB\MediaCloud\Cloud\Storage\StorageInterface;
@@ -23,6 +24,7 @@ use ILAB\MediaCloud\Utilities\EnvironmentOptions;
 use ILAB\MediaCloud\Utilities\Logger;
 use ILAB\MediaCloud\Utilities\NoticeManager;
 use ILAB_Aws\Exception\AwsException;
+use ILAB_Aws\S3\PostObjectV4;
 use ILAB_Aws\S3\S3Client;
 use ILAB_Aws\S3\S3MultiRegionClient;
 
@@ -158,6 +160,7 @@ class S3 implements StorageInterface {
 		}
 
 		if ($this->settingsError) {
+			NoticeManager::instance()->displayAdminNotice('error', 'Your AWS S3 settings are incorrect or the bucket does not exist.  Please verify your settings and update them.');
 			return false;
 		}
 
@@ -304,6 +307,10 @@ class S3 implements StorageInterface {
 	//endregion
 
 	//region File Functions
+	public function bucket() {
+		return $this->bucket;
+	}
+
 	public function exists( $key ) {
 		if (!$this->client) {
 			throw new InvalidStorageSettingsException('Storage settings are invalid');
@@ -398,7 +405,19 @@ class S3 implements StorageInterface {
 	}
 
 	public function info( $key ) {
-		// TODO: Implement info() method.
+		if (!$this->client) {
+			throw new InvalidStorageSettingsException('Storage settings are invalid');
+		}
+
+		$presignedUrl = $this->presignedUrl($key);
+
+		$faster = new FasterImage();
+		$result = $faster->batch([$presignedUrl]);
+		if (empty($result)) {
+			return null;
+		}
+
+		return $result[$presignedUrl];
 	}
 	//endregion
 
@@ -420,6 +439,39 @@ class S3 implements StorageInterface {
 
 		return $this->client->getObjectUrl($this->bucket, $key);
 	}
+
+	public function uploadUrl($key, $acl, $cacheControl = null, $expires = null) {
+		try {
+			$optionsData = [
+				['bucket'=>$this->bucket],
+				['acl' => $acl],
+				['key' => $key],
+				['starts-with', '$Content-Type', '']
+			];
+
+			if (!empty($cacheControl)) {
+				$optionsData[] = ['Cache-Control' => $cacheControl];
+			}
+
+			if (!empty($expires)) {
+				$optionsData[] = ['Expires' => $expires];
+			}
+
+			$postObject = new PostObjectV4($this->client, $this->bucket, [], $optionsData, '+15 minutes');
+			$result = [
+				'key'=> $key,
+				'postObject' => $postObject,
+				'cacheControl' => (!empty($this->cacheControl)) ? $this->cacheControl : null,
+				'expires' => (!empty($this->expires)) ? $this->expires : null,
+			];
+
+			return $result;
+		} catch (AwsException $ex) {
+			Logger::error( 'S3 Generate File Upload URL Error', [ 'exception' =>$ex->getMessage()]);
+			throw new StorageException($ex->getMessage(), $ex->getCode(), $ex);
+		}
+	}
+
 	//endregion
 
 	//region Direct Uploads

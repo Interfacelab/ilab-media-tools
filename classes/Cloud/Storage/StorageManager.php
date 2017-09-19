@@ -16,14 +16,18 @@
 
 namespace ILAB\MediaCloud\Cloud\Storage;
 
+use ILAB\MediaCloud\Utilities\EnvironmentOptions;
+
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
 final class StorageManager {
+	private static $registry = [];
 	private static $instance = null;
 
 	/**
 	 * Gets the currently configured storage interface.
 	 *
+	 * @throws StorageException
 	 * @return StorageInterface
 	 */
 	public static function storageInstance() {
@@ -31,7 +35,15 @@ final class StorageManager {
 			return self::$instance;
 		}
 
+		$driverName = EnvironmentOptions::Option('ilab-media-storage-provider','ILAB_CLOUD_STORAGE_PROVIDER', 's3');
+		if (!isset(self::$registry[$driverName])) {
+			throw new StorageException("Invalid driver '$driverName'");
+		}
 
+		$class = self::$registry[$driverName];
+		self::$instance = new $class();
+
+		return self::$instance;
 	}
 
 	/**
@@ -39,5 +51,14 @@ final class StorageManager {
 	 */
 	public static function resetStorageInstance() {
 		self::$instance = null;
+	}
+
+	/**
+	 * Registers a storage driver
+	 * @param $identifier
+	 * @param $class
+	 */
+	public static function registerDriver($identifier, $class) {
+		self::$registry[$identifier] = $class;
 	}
 }

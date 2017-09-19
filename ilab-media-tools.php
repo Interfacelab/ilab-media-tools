@@ -73,6 +73,10 @@ if (file_exists(ILAB_VENDOR_DIR.'/autoload.php')) {
 require_once('helpers/ilab-media-tool-wordpress-helpers.php');
 require_once('helpers/ilab-media-tool-geometry-helpers.php');
 
+// Register storage drivers
+\ILAB\MediaCloud\Cloud\Storage\StorageManager::registerDriver('s3', \ILAB\MediaCloud\Cloud\Storage\Driver\S3::class);
+
+// Make sure the NoticeManager is initialized
 \ILAB\MediaCloud\Utilities\NoticeManager::instance();
 
 register_activation_hook(__FILE__,[ \ILAB\MediaCloud\Tools\ToolsManager::instance(), 'install']);

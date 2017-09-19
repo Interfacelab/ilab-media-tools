@@ -43,6 +43,13 @@ interface StorageInterface {
 	public function validateSettings();
 
 	/**
+	 * Returns the name of the bucket this storage is using.
+	 *
+	 * @return string
+	 */
+	public function bucket();
+
+	/**
 	 * Determines if a file exists in a given bucket.
 	 *
 	 * @param $key
@@ -107,6 +114,18 @@ interface StorageInterface {
 	 * @return string
 	 */
 	public function url($key);
+
+	/**
+	 * Generates a signed URL for direct uploads
+	 * @param string $key
+	 * @param string $acl
+	 * @param string $cacheControl
+	 * @param string $expires
+	 *
+	 * @return array|null
+	 */
+	public function uploadUrl($key, $acl, $cacheControl = null, $expires = null);
+
 
 	/**
 	 * Renders the necessary scripts for handling direct uploads
