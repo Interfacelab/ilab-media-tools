@@ -1,0 +1,238 @@
+// Toggle Stolen from: https://codepen.io/personable/pen/ZGKjwe
+// Chris Hart
+@mixin super-toggle-designer (
+  $toggle-width: 60px,
+  $toggle-color-switch: white,
+  $toggle-background-OFF: #5b6c79,
+  $toggle-background-ON: #008a14,
+  $toggle-color-left-unchecked: white,
+  $toggle-color-left-checked: white,
+  $toggle-color-right-unchecked: white,
+  $toggle-color-right-checked: white
+) {
+
+  display: inline-block;
+  vertical-align: middle;
+
+  .ic-Super-toggle__input {
+    &:focus ~ label {
+      .ic-Super-toggle-switch::after {
+        box-shadow:
+                inset 0 0 0 1px $toggle-color-switch,
+                inset 0 0 0 3px $toggle-background-OFF,
+                0 3px 6px rgba(black, 0.3);
+      }
+    }
+    &:checked ~ label {
+      .ic-Super-toggle-switch {
+        background: $toggle-background-ON;
+        border-color: $toggle-background-ON;
+      }
+      .ic-Super-toggle-option-LEFT {
+        color: $toggle-color-left-checked;
+        .ic-Super-toggle__svg > * {
+          fill: $toggle-color-left-checked;
+        }
+      }
+      .ic-Super-toggle-option-RIGHT {
+        color: $toggle-color-right-checked;
+        .ic-Super-toggle__svg > * {
+          fill: $toggle-color-right-checked;
+        }
+      }
+    }
+    &:checked {
+      &:focus ~ label {
+        .ic-Super-toggle-switch::after {
+          box-shadow:
+                  inset 0 0 0 1px $toggle-color-switch,
+                  inset 0 0 0 3px $toggle-background-ON,
+                  0 3px 6px rgba(black, 0.3);
+        }
+      }
+    }
+  }
+
+  .ic-Super-toggle-switch {
+    width: $toggle-width; height: $toggle-width/2;
+    background: $toggle-background-OFF;
+    border: 2px solid $toggle-background-OFF;
+    border-radius: ($toggle-width/4) + 2;
+    .ic-Form-group.ic-Form-group--horizontal & {
+      flex: 0 0 $toggle-width;
+    }
+    &:after {
+      background-color: $toggle-color-switch;
+      width: $toggle-width/2; height: $toggle-width/2;
+    }
+  }
+
+  .ic-Super-toggle-option-LEFT {
+    color: $toggle-color-left-unchecked;
+    .ic-Super-toggle__svg > * { fill: $toggle-color-left-unchecked; }
+  }
+
+  .ic-Super-toggle-option-RIGHT {
+    color: $toggle-color-right-unchecked;
+    .ic-Super-toggle__svg > * { fill: $toggle-color-right-unchecked; }
+  }
+
+  .ic-Super-toggle__svg {
+    max-width: $toggle-width/4;
+    max-height: $toggle-width/4;
+  }
+}
+
+.ic-Super-toggle__label {
+  box-sizing: border-box;
+  margin: 0;
+  user-select: none;
+  .ic-Form-group.ic-Form-group--horizontal & {
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+.ic-Super-toggle__input {
+  opacity: 0;
+  position: absolute;
+  top: 0; left: 0;
+  &:checked {
+    ~ label {
+      .ic-Super-toggle-switch {
+        &:after { transform: translate3d(100%,0,0); }
+      }
+      .ic-Super-toggle__disabled-msg {
+        &:before { content: attr(data-checked); }
+      }
+    }
+  }
+  &[disabled] {
+    ~ label {
+      .ic-Super-toggle__disabled-msg { display: block; }
+      .ic-Super-toggle-switch,
+      [class^="ic-Super-toggle-option-"] { display: none; }
+    }
+  }
+}
+
+.ic-Super-toggle-switch {
+  transition: background 0.1s, border-color 0.1s;
+  display: inline-block;
+  position: relative;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  background-clip: padding-box;
+  &::after {
+    transition: all 0.1s ease-in-out;
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    transform: translate3d(0,0,0);
+    border-radius: 100%;
+    box-shadow: 0 3px 6px rgba(black, 0.3);
+    background-image: url("https://cl.ly/320m31452k2X/handle.svg");
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
+    background-size: 20px;
+  }
+}
+
+.ic-Super-toggle__disabled-msg {
+  display: none;
+  &:before {
+    content: attr(data-unchecked);
+    font-style: italic;
+    opacity: 0.8;
+  }
+}
+
+[class^="ic-Super-toggle-option-"] {
+  transition: all 0.2s ease-out;
+  flex: 0 0 50%;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  text-transform: uppercase;
+  font-weight: bold;
+  line-height: 1;
+  speak: none;
+  box-sizing: border-box;
+}
+
+// Screenreader class from HTML5 Boilerplate's .visuallyhidden
+.ic-Super-toggle__screenreader {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+}
+
+
+.ic-Super-toggle--on-off {
+  @include super-toggle-designer;
+  [class^="ic-Super-toggle-option-"] { transition-delay: 0.1s; }
+  .ic-Super-toggle-option-LEFT {
+    transform: scale(0.1);
+    opacity: 0;
+  }
+  .ic-Super-toggle-option-RIGHT {
+    transform: scale(1);
+    opacity: 1;
+  }
+  .ic-Super-toggle__input:checked ~ label {
+    .ic-Super-toggle-option-LEFT {
+      transform: scale(1);
+      opacity: 1;
+    }
+    .ic-Super-toggle-option-RIGHT {
+      transform: scale(0.1);
+      opacity: 0;
+    }
+  }
+
+}
+
+.ic-Super-toggle--ui-switch {
+  @include super-toggle-designer(
+                  60px, // width
+                  white, // switch bg color
+                  #5b6c79, // background color when checkbox is unchecked
+                  #5b6c79, // background color when checkbox is checked
+                  #08c, // left unchecked
+                  #888, // left checked
+                  #888, // right unchecked
+                  #08c // right checked
+  );
+  .ic-Super-toggle__label {
+    display: inline-flex;
+    align-items: center;
+  }
+  .ic-Super-toggle-switch {
+    display: block;
+  }
+  [class^="ic-Super-toggle-option-"] {
+    flex: none;
+    min-width: 24px;
+  }
+  .ic-Super-toggle-option-LEFT {
+    text-align: left;
+    transform: scale(1.1);
+  }
+  .ic-Super-toggle-option-RIGHT {
+    text-align: right;
+    transform: scale(0.9);
+  }
+  .ic-Super-toggle__input:checked ~ label {
+    .ic-Super-toggle-option-LEFT {
+      transform: scale(0.9);
+    }
+    .ic-Super-toggle-option-RIGHT {
+      transform: scale(1.1);
+    }
+  }
+}

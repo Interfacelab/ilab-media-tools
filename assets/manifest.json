@@ -40,6 +40,11 @@
         "styles/ilab-media-tools.scss"
       ]
     },
+    "ilab-media-tools.settings.min.css": {
+      "files": [
+        "styles/ilab-settings.scss"
+      ]
+    },
     "images": {
       "files": ["img/**/*"]
     }

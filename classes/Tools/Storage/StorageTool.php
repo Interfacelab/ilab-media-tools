@@ -80,6 +80,9 @@ class StorageTool extends ToolBase {
 	/** @var bool */
 	private $displayBadges = true;
 
+	/** @var bool */
+	private $mediaListIntegration = true;
+
 	/** @var StorageInterface|null */
 	private $client = null;
 
@@ -97,6 +100,7 @@ class StorageTool extends ToolBase {
 		$this->prefixFormat = EnvironmentOptions::Option('ilab-media-s3-prefix', '');
 		$this->uploadDocs = EnvironmentOptions::Option('ilab-media-s3-upload-documents', null, true);
 		$this->displayBadges = EnvironmentOptions::Option('ilab-media-s3-display-s3-badge', null, true);
+        $this->mediaListIntegration = EnvironmentOptions::Option('ilab-cloud-storage-display-media-list',null,true);
 
 		$this->privacy = EnvironmentOptions::Option('ilab-media-s3-privacy', null, "public-read");
 		if (!in_array($this->privacy, ['public-read', 'authenticated-read'])) {
@@ -1089,6 +1093,10 @@ class StorageTool extends ToolBase {
 	 * Adds a custom column to the media list.
 	 */
     private function hookMediaList() {
+        if (!$this->mediaListIntegration) {
+            return;
+        }
+
 	    add_action('admin_init',function(){
 		    add_filter('manage_media_columns', function($cols) {
 			    $cols["cloud"] = 'Cloud';
@@ -1128,6 +1136,10 @@ class StorageTool extends ToolBase {
 	    if (!$this->enabled()) {
 	        return;
         }
+
+	    if (!$this->mediaListIntegration) {
+		    return;
+	    }
 
 	    add_action('admin_init', function() {
 		    add_filter('bulk_actions-upload', function($actions){

@@ -197,15 +197,6 @@ return [
 						"title" => "Delete From Storage",
 						"description" => "When you delete from the media library, turning this on will also delete the file from cloud storage.",
 						"type" => "checkbox"
-					],
-					"ilab-media-s3-skip-bucket-check" => [
-						"title" => "Skip Bucket Check",
-						"description" => "Skip testing if the bucket exists on S3 or not.  If you are doing a lot of media uploads, you will want to make sure this is checked or you could end up being rate limited by Amazon which will cause errors and other mayhem.  Generally speaking, you can leave it unchecked though. If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_AWS_S3_SKIP_BUCKET_CHECK</strong>.",
-						"type" => "checkbox",
-						"default" => false,
-						"conditions" => [
-							"ilab-media-storage-provider" => ["s3"]
-						]
 					]
 				]
 			],
@@ -232,6 +223,12 @@ return [
 					"ilab-media-s3-display-s3-badge" => [
 						"title" => "Display Cloud Icon",
 						"description" => "When this is selected, a cloud icon will be overlayed on items in the media library grid that have been uploaded to cloud storage.",
+						"type" => "checkbox",
+						"default" => true
+					],
+					"ilab-cloud-storage-display-media-list" => [
+						"title" => "Media List Integration",
+						"description" => "When this is selected, an extra column will be added to the media library's list view, as well as bulk actions for importing.",
 						"type" => "checkbox",
 						"default" => true
 					]

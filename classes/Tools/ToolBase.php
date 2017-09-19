@@ -113,6 +113,11 @@ abstract class ToolBase {
             foreach($toolInfo['helpers'] as $helper)
                 require_once(ILAB_HELPERS_DIR.'/'.$helper);
         }
+
+
+	    add_action('admin_enqueue_scripts', function(){
+		    wp_enqueue_style('ilab-media-settings-css', ILAB_PUB_CSS_URL . '/ilab-media-tools.settings.min.css' );
+	    });
     }
 
     /**
@@ -261,6 +266,7 @@ abstract class ToolBase {
      */
     public function renderSettings()
     {
+
         $result = View::render_view( 'base/ilab-settings.php', [
             'title'=>$this->toolInfo['title'],
             'group'=>$this->options_group,
