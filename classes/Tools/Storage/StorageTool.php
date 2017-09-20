@@ -25,7 +25,10 @@ use ILAB\MediaCloud\Tasks\StorageImportProcess;
 use ILAB\MediaCloud\Utilities\Logger;
 use Smalot\PdfParser\Parser;
 
-if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
+if(!defined('ABSPATH')) {
+	header('Location: /');
+	die;
+}
 
 /**
  * Class StorageTool
@@ -88,40 +91,39 @@ class StorageTool extends ToolBase {
 
 	//endregion
 
-    //region Constructor
-	public function __construct($toolName, $toolInfo, $toolManager)
-	{
+	//region Constructor
+	public function __construct($toolName, $toolInfo, $toolManager) {
 		parent::__construct($toolName, $toolInfo, $toolManager);
 
 		new StorageImportProcess();
 
-		$this->deleteOnUpload =  EnvironmentOptions::Option('ilab-media-s3-delete-uploads');
+		$this->deleteOnUpload = EnvironmentOptions::Option('ilab-media-s3-delete-uploads');
 		$this->deleteFromStorage = EnvironmentOptions::Option('ilab-media-s3-delete-from-s3');
 		$this->prefixFormat = EnvironmentOptions::Option('ilab-media-s3-prefix', '');
 		$this->uploadDocs = EnvironmentOptions::Option('ilab-media-s3-upload-documents', null, true);
 		$this->displayBadges = EnvironmentOptions::Option('ilab-media-s3-display-s3-badge', null, true);
-        $this->mediaListIntegration = EnvironmentOptions::Option('ilab-cloud-storage-display-media-list',null,true);
+		$this->mediaListIntegration = EnvironmentOptions::Option('ilab-cloud-storage-display-media-list', null, true);
 
 		$this->privacy = EnvironmentOptions::Option('ilab-media-s3-privacy', null, "public-read");
-		if (!in_array($this->privacy, ['public-read', 'authenticated-read'])) {
+		if(!in_array($this->privacy, ['public-read', 'authenticated-read'])) {
 			NoticeManager::instance()->displayAdminNotice('error', "Your AWS S3 settings are incorrect.  The ACL '{$this->privacy}' is not valid.  Defaulting to 'public-read'.");
 			$this->privacy = 'public-read';
 		}
 
-		$ignored = EnvironmentOptions::Option('ilab-media-s3-ignored-mime-types',null,'');
-		$ignored_lines = explode("\n",$ignored);
-		if (count($ignored_lines)<=1) {
+		$ignored = EnvironmentOptions::Option('ilab-media-s3-ignored-mime-types', null, '');
+		$ignored_lines = explode("\n", $ignored);
+		if(count($ignored_lines) <= 1) {
 			$ignored_lines = explode(',', $ignored);
 		}
 		foreach($ignored_lines as $d) {
-			if (!empty($d)) {
-				$this->ignoredMimeTypes[]=trim($d);
+			if(!empty($d)) {
+				$this->ignoredMimeTypes[] = trim($d);
 			}
 		}
 
 		$this->cdn = EnvironmentOptions::Option('ilab-media-s3-cdn-base', 'ILAB_AWS_S3_CDN_BASE');
-		if ($this->cdn) {
-			$this->cdn=rtrim($this->cdn,'/');
+		if($this->cdn) {
+			$this->cdn = rtrim($this->cdn, '/');
 		}
 
 		$this->docCdn = EnvironmentOptions::Option('ilab-doc-s3-cdn-base', 'ILAB_AWS_S3_DOC_CDN_BASE', $this->cdn);
@@ -129,28 +131,28 @@ class StorageTool extends ToolBase {
 		$this->cacheControl = EnvironmentOptions::Option('ilab-media-s3-cache-control', 'ILAB_AWS_S3_CACHE_CONTROL');
 
 		$expires = EnvironmentOptions::Option('ilab-media-s3-expires', 'ILAB_AWS_S3_EXPIRES');
-		if (!empty($expires)) {
+		if(!empty($expires)) {
 			$this->expires = gmdate('D, d M Y H:i:s \G\M\T', time() + ($expires * 60));
 		}
 
 		$this->client = StorageManager::storageInstance();
 
-		if ($this->haveSettingsChanged()) {
+		if($this->haveSettingsChanged()) {
 			$this->settingsChanged();
 		}
 
 
-		if (is_admin()) {
-			add_action('wp_ajax_ilab_s3_import_media', [$this,'importMedia']);
-			add_action('wp_ajax_ilab_s3_import_progress', [$this,'importProgress']);
-			add_action('wp_ajax_ilab_s3_cancel_import', [$this,'cancelImportMedia']);
+		if(is_admin()) {
+			add_action('wp_ajax_ilab_s3_import_media', [$this, 'importMedia']);
+			add_action('wp_ajax_ilab_s3_import_progress', [$this, 'importProgress']);
+			add_action('wp_ajax_ilab_s3_cancel_import', [$this, 'cancelImportMedia']);
 		}
 	}
-    //endregion
+	//endregion
 
-    //region Properties
+	//region Properties
 	/**
-     * Returns the storage client
+	 * Returns the storage client
 	 * @return StorageInterface|null
 	 */
 	public function client() {
@@ -158,7 +160,7 @@ class StorageTool extends ToolBase {
 	}
 
 	/**
-     * Determines if document uploads are allowed
+	 * Determines if document uploads are allowed
 	 * @return bool
 	 */
 	public function documentUploadsEnabled() {
@@ -166,48 +168,47 @@ class StorageTool extends ToolBase {
 	}
 	//endregion
 
-    //region ToolBase Overrides
+	//region ToolBase Overrides
 	public function enabled() {
 		$enabled = parent::enabled();
 
-		if ($enabled) {
-		    $enabled = ($this->client && $this->client->enabled());
-        }
+		if($enabled) {
+			$enabled = ($this->client && $this->client->enabled());
+		}
 
-        return $enabled;
+		return $enabled;
 	}
 
-	public function setup()
-	{
+	public function setup() {
 		parent::setup();
 
-		if ($this->enabled()) {
+		if($this->enabled()) {
 			add_filter('wp_update_attachment_metadata', [$this, 'updateAttachmentMetadata'], 1000, 2);
 			add_action('delete_attachment', [$this, 'deleteAttachment'], 1000);
 			add_filter('wp_handle_upload', [$this, 'handleUpload'], 10000);
 			add_filter('get_attached_file', [$this, 'getAttachedFile'], 10000, 2);
-			add_filter('image_downsize', [$this, 'imageDownsize'], 999, 3 );
-			add_action('add_attachment',[$this, 'addAttachment'], 1000);
+			add_filter('image_downsize', [$this, 'imageDownsize'], 999, 3);
+			add_action('add_attachment', [$this, 'addAttachment'], 1000);
 			add_action('edit_attachment', [$this, 'editAttachment']);
 
 			add_filter('ilab_s3_process_crop', [$this, 'processCrop'], 10000, 4);
 
 			add_filter('ilab_s3_process_file_name', function($filename) {
-			    if (!$this->client) {
-			        return $filename;
-                }
+				if(!$this->client) {
+					return $filename;
+				}
 
-				if (strpos($filename,'/'.$this->client->bucket()) === 0) {
+				if(strpos($filename, '/'.$this->client->bucket()) === 0) {
 					return str_replace('/'.$this->client->bucket(), '', $filename);
-                }
+				}
 
 				return $filename;
 			}, 10000, 1);
 		}
 
-		add_filter('wp_calculate_image_srcset',[$this,'calculateSrcSet'], 10000, 5);
+		add_filter('wp_calculate_image_srcset', [$this, 'calculateSrcSet'], 10000, 5);
 		add_filter('wp_prepare_attachment_for_js', [$this, 'prepareAttachmentForJS'], 999, 3);
-		add_filter('wp_get_attachment_url', [$this, 'getAttachmentURL'], 1000, 2 );
+		add_filter('wp_get_attachment_url', [$this, 'getAttachmentURL'], 1000, 2);
 
 		$this->hookupUI();
 	}
@@ -219,55 +220,58 @@ class StorageTool extends ToolBase {
 	public function registerMenu($top_menu_slug) {
 		parent::registerMenu($top_menu_slug);
 
-		if ($this->enabled()) {
-			add_submenu_page( $top_menu_slug, 'Storage Importer', 'Storage Importer', 'manage_options', 'media-tools-s3-importer', [$this,'renderImporter']);
+		if($this->enabled()) {
+			add_submenu_page($top_menu_slug, 'Storage Importer', 'Storage Importer', 'manage_options', 'media-tools-s3-importer', [
+				$this,
+				'renderImporter'
+			]);
 		}
 	}
 	//endregion
 
-    //region WordPress Upload/Attachment Hooks & Filters
+	//region WordPress Upload/Attachment Hooks & Filters
 	/**
 	 * Filter for when attachments are updated (https://core.trac.wordpress.org/browser/tags/4.8/src/wp-includes/post.php#L5013)
 	 *
 	 * @param array $data
 	 * @param integer $id
+	 *
 	 * @return array
 	 */
-	public function updateAttachmentMetadata($data, $id)
-	{
-		if ($this->skipUpdate) {
+	public function updateAttachmentMetadata($data, $id) {
+		if($this->skipUpdate) {
 			return $data;
 		}
 
-		if (!$data) {
+		if(!$data) {
 			return $data;
 		}
 
 		$mime = (isset($data['ilab-mime'])) ? $data['ilab-mime'] : null;
-		if ($mime) {
+		if($mime) {
 			unset($data['ilab-mime']);
 		}
 
-		if (!isset($data['file'])) {
-			if (!$mime) {
+		if(!isset($data['file'])) {
+			if(!$mime) {
 				$mime = get_post_mime_type($id);
 			}
 
-			if ($mime == 'application/pdf') {
+			if($mime == 'application/pdf') {
 				$renderPDF = apply_filters('ilab_imgix_render_pdf', false);
 
-				if (!$renderPDF) {
+				if(!$renderPDF) {
 					unset($data['sizes']);
 				}
 
 				$s3Info = get_post_meta($id, 'ilab_s3_info', true);
-				if ($s3Info) {
+				if($s3Info) {
 					$pdfInfo = $this->pdfInfo[$s3Info['file']];
 					$data['width'] = $pdfInfo['width'];
 					$data['height'] = $pdfInfo['height'];
 					$data['file'] = $s3Info['s3']['key'];
 					$data['s3'] = $s3Info['s3'];
-					if ($renderPDF) {
+					if($renderPDF) {
 						$data['sizes']['full']['file'] = $s3Info['s3']['key'];
 						$data['sizes']['full']['width'] = $data['width'];
 						$data['sizes']['full']['height'] = $data['height'];
@@ -278,42 +282,42 @@ class StorageTool extends ToolBase {
 			return $data;
 		}
 
-		$upload_info=wp_upload_dir();
-		$upload_path=$upload_info['basedir'];
-		$path_base=pathinfo($data['file'])['dirname'];
+		$upload_info = wp_upload_dir();
+		$upload_path = $upload_info['basedir'];
+		$path_base = pathinfo($data['file'])['dirname'];
 
-		if (!file_exists($upload_path.'/'.$data['file'])) {
+		if(!file_exists($upload_path.'/'.$data['file'])) {
 			return $data;
 		}
 
-		if (!$mime) {
+		if(!$mime) {
 			$mime = wp_get_image_mime($upload_path.'/'.$data['file']);
 		}
 
-		if ($mime && in_array($mime, $this->ignoredMimeTypes)) {
+		if($mime && in_array($mime, $this->ignoredMimeTypes)) {
 			return $data;
 		}
 
-		if ($this->client && $this->client->enabled()) {
-			if (!isset($data['s3'])) {
-				$data=$this->processFile($upload_path,$data['file'],$data,$id);
+		if($this->client && $this->client->enabled()) {
+			if(!isset($data['s3'])) {
+				$data = $this->processFile($upload_path, $data['file'], $data, $id);
 
-				if (isset($data['sizes'])) {
-					foreach($data['sizes'] as $key => $size)
-					{
-						if (!is_array($size))
+				if(isset($data['sizes'])) {
+					foreach($data['sizes'] as $key => $size) {
+						if(!is_array($size)) {
 							continue;
+						}
 
-						$file=$path_base.'/'.$size['file'];
-						if ($file == $data['file']) {
-							$data['sizes'][$key]['s3']=$data['s3'];
+						$file = $path_base.'/'.$size['file'];
+						if($file == $data['file']) {
+							$data['sizes'][$key]['s3'] = $data['s3'];
 						} else {
-							$data['sizes'][$key]=$this->processFile($upload_path,$file,$size,$id);
+							$data['sizes'][$key] = $this->processFile($upload_path, $file, $size, $id);
 						}
 					}
 				}
 
-				if (isset($data['s3'])) {
+				if(isset($data['s3'])) {
 					$data = apply_filters('ilab_s3_after_upload', $id, $data);
 				}
 			}
@@ -324,25 +328,26 @@ class StorageTool extends ToolBase {
 
 	/**
 	 * Filters for when attachments are deleted
+	 *
 	 * @param $id
+	 *
 	 * @return mixed
 	 */
-	public function deleteAttachment($id)
-	{
-		if (!$this->deleteFromStorage) {
-			return $id;
-        }
-
-		$data=wp_get_attachment_metadata($id);
-		if (isset($data['file']) && !isset($data['s3'])) {
+	public function deleteAttachment($id) {
+		if(!$this->deleteFromStorage) {
 			return $id;
 		}
 
-		if ($this->client && $this->client->enabled()) {
-			if (!isset($data['file'])) {
+		$data = wp_get_attachment_metadata($id);
+		if(isset($data['file']) && !isset($data['s3'])) {
+			return $id;
+		}
+
+		if($this->client && $this->client->enabled()) {
+			if(!isset($data['file'])) {
 				$file = get_attached_file($id);
-				if ($file) {
-					if (strpos($file,'http')===0) {
+				if($file) {
+					if(strpos($file, 'http') === 0) {
 						$pi = parse_url($file);
 						$file = trim($pi['path'], '/');
 						if(0 === strpos($file, $this->client->bucket())) {
@@ -351,10 +356,10 @@ class StorageTool extends ToolBase {
 						}
 					} else {
 						$pi = pathinfo($file);
-						$upload_info=wp_upload_dir();
-						$upload_path=$upload_info['basedir'];
+						$upload_info = wp_upload_dir();
+						$upload_path = $upload_info['basedir'];
 
-						$file = trim(str_replace($upload_path,'',$pi['dirname']),'/').'/'.$pi['basename'];
+						$file = trim(str_replace($upload_path, '', $pi['dirname']), '/').'/'.$pi['basename'];
 					}
 
 					$this->deleteFile($file);
@@ -363,16 +368,17 @@ class StorageTool extends ToolBase {
 			} else {
 				$this->deleteFile($data['s3']['key']);
 
-				if (isset($data['sizes'])) {
-					$pathParts = explode('/',$data['s3']['key']);
+				if(isset($data['sizes'])) {
+					$pathParts = explode('/', $data['s3']['key']);
 					array_pop($pathParts);
-					$path_base = implode('/',$pathParts);
+					$path_base = implode('/', $pathParts);
 
 					foreach($data['sizes'] as $key => $size) {
-						$file=$path_base.'/'.$size['file'];
+						$file = $path_base.'/'.$size['file'];
 						try {
 							$this->deleteFile($file);
-						} catch (\Exception $ex) {
+						}
+						catch(\Exception $ex) {
 							error_log($ex->getMessage());
 						}
 					}
@@ -384,44 +390,46 @@ class StorageTool extends ToolBase {
 	}
 
 	/**
-     * Filters the data after a file has been uploaded to WordPress (https://core.trac.wordpress.org/browser/tags/4.8/src/wp-admin/includes/file.php#L416)
-     *
+	 * Filters the data after a file has been uploaded to WordPress (https://core.trac.wordpress.org/browser/tags/4.8/src/wp-admin/includes/file.php#L416)
+	 *
 	 * @param array $upload
 	 * @param string $context
 	 *
 	 * @return array
 	 */
-	public function handleUpload($upload, $context='upload') {
-		if (!isset($upload['file']))
-			return $upload;
-
-		if (isset($upload['type']) && in_array($upload['type'],$this->ignoredMimeTypes)) {
+	public function handleUpload($upload, $context = 'upload') {
+		if(!isset($upload['file'])) {
 			return $upload;
 		}
 
-		if (file_is_displayable_image($upload['file']))
+		if(isset($upload['type']) && in_array($upload['type'], $this->ignoredMimeTypes)) {
 			return $upload;
+		}
 
-		if (isset($_REQUEST["action"]) && ($_REQUEST["action"]=="upload-plugin")) {
+		if(file_is_displayable_image($upload['file'])) {
+			return $upload;
+		}
+
+		if(isset($_REQUEST["action"]) && ($_REQUEST["action"] == "upload-plugin")) {
 			return $upload;
 		}
 
 		$shouldHandle = apply_filters('ilab_s3_should_handle_upload', false, $upload);
 
-		if (!$shouldHandle && !$this->uploadDocs) {
+		if(!$shouldHandle && !$this->uploadDocs) {
 			return $upload;
 		}
 
-		if ($this->client && $this->client->enabled()) {
+		if($this->client && $this->client->enabled()) {
 			$pi = pathinfo($upload['file']);
 
-			$upload_info=wp_upload_dir();
-			$upload_path=$upload_info['basedir'];
+			$upload_info = wp_upload_dir();
+			$upload_path = $upload_info['basedir'];
 
-			$file = trim(str_replace($upload_path,'',$pi['dirname']),'/').'/'.$pi['basename'];
+			$file = trim(str_replace($upload_path, '', $pi['dirname']), '/').'/'.$pi['basename'];
 
-			if (($upload['type']=='application/pdf') && file_exists($upload_path.'/'.$file)) {
-				set_error_handler(function($errno, $errstr, $errfile, $errline){
+			if(($upload['type'] == 'application/pdf') && file_exists($upload_path.'/'.$file)) {
+				set_error_handler(function($errno, $errstr, $errfile, $errline) {
 					throw new \Exception($errstr);
 				}, E_RECOVERABLE_ERROR);
 
@@ -429,29 +437,31 @@ class StorageTool extends ToolBase {
 					$parser = new Parser();
 					$pdf = $parser->parseFile($upload_path.'/'.$file);
 					$pages = $pdf->getPages();
-					if (count($pages)>0) {
+					if(count($pages) > 0) {
 						$page = $pages[0];
 						$details = $page->getDetails();
-						if (isset($details['MediaBox'])) {
+						if(isset($details['MediaBox'])) {
 							$data = [];
 							$data['width'] = $details['MediaBox'][2];
 							$data['height'] = $details['MediaBox'][3];
 							$this->pdfInfo[$upload_path.'/'.$file] = $data;
 						}
 					}
-				} catch (\Exception $ex) {
-					Logger::error( 'PDF Parsing Error', [ 'exception' =>$ex->getMessage()]);
+				}
+				catch(\Exception $ex) {
+					Logger::error('PDF Parsing Error', ['exception' => $ex->getMessage()]);
 				}
 
 				restore_error_handler();
 			}
 
 			$upload = $this->processFile($upload_path, $file, $upload);
-			if (isset($upload['s3'])) {
-				if ($this->docCdn)
+			if(isset($upload['s3'])) {
+				if($this->docCdn) {
 					$upload['url'] = trim($this->docCdn, '/').'/'.$file;
-				else if (isset($upload['s3']['url']))
+				} else if(isset($upload['s3']['url'])) {
 					$upload['url'] = $upload['s3']['url'];
+				}
 			}
 
 			$this->uploadedDocs[$file] = $upload;
@@ -461,82 +471,82 @@ class StorageTool extends ToolBase {
 	}
 
 	/**
-     * Filters the attached file based on the given ID (https://core.trac.wordpress.org/browser/tags/4.8/src/wp-includes/post.php#L293)
-     *
+	 * Filters the attached file based on the given ID (https://core.trac.wordpress.org/browser/tags/4.8/src/wp-includes/post.php#L293)
+	 *
 	 * @param string $file
 	 * @param int $attachment_id
 	 *
 	 * @return null|string
 	 */
 	public function getAttachedFile($file, $attachment_id) {
-		if (!file_exists($file)) {
-			$meta=wp_get_attachment_metadata($attachment_id);
+		if(!file_exists($file)) {
+			$meta = wp_get_attachment_metadata($attachment_id);
 
 			$new_url = null;
-			if ($meta)
+			if($meta) {
 				$new_url = $this->getAttachmentURLFromMeta($meta);
+			}
 
-			if (!$new_url) {
+			if(!$new_url) {
 				$meta = get_post_meta($attachment_id, 'ilab_s3_info', true);
-				if ($meta) {
+				if($meta) {
 					$new_url = $this->getAttachmentURLFromMeta($meta);
-				}
-				else if (!$meta && $this->docCdn) {
+				} else if(!$meta && $this->docCdn) {
 					$post = \WP_Post::get_instance($attachment_id);
-					if ($post && (strpos($post->guid, $this->docCdn) === 0))
+					if($post && (strpos($post->guid, $this->docCdn) === 0)) {
 						$new_url = $post->guid;
+					}
 				}
 			}
 
-			if ($new_url) {
+			if($new_url) {
 				return $new_url;
-            }
+			}
 		}
 
 		return $file;
 	}
 
 	/**
-     * Filters whether to preempt the output of image_downsize().  (https://core.trac.wordpress.org/browser/tags/4.8/src/wp-includes/media.php#L201)
-     *
+	 * Filters whether to preempt the output of image_downsize().  (https://core.trac.wordpress.org/browser/tags/4.8/src/wp-includes/media.php#L201)
+	 *
 	 * @param bool $fail
 	 * @param int $id
 	 * @param array|string $size
 	 *
 	 * @return bool|array
 	 */
-	public function imageDownsize($fail,$id,$size)
-	{
-		if (apply_filters('ilab_imgix_enabled', false)) {
+	public function imageDownsize($fail, $id, $size) {
+		if(apply_filters('ilab_imgix_enabled', false)) {
 			return $fail;
 		}
 
-		if (empty($size) || empty($id) || is_array($size)) {
+		if(empty($size) || empty($id) || is_array($size)) {
 			return $fail;
 		}
 
-		$meta=wp_get_attachment_metadata($id);
+		$meta = wp_get_attachment_metadata($id);
 
-		if (empty($meta)) {
+		if(empty($meta)) {
 			return $fail;
 		}
 
-		if (!isset($meta['sizes'])) {
+		if(!isset($meta['sizes'])) {
 			return $fail;
 		}
 
-		if (!isset($meta['sizes'][$size])) {
+		if(!isset($meta['sizes'][$size])) {
 			return $fail;
 		}
 
 		$sizeMeta = $meta['sizes'][$size];
-		if (!isset($sizeMeta['s3'])) {
+		if(!isset($sizeMeta['s3'])) {
 			return $fail;
 		}
 
 		$url = $sizeMeta['s3']['url'];
 
-		$result=[
+		$result = [
 			$url,
 			$sizeMeta['width'],
 			$sizeMeta['height'],
@@ -547,28 +557,28 @@ class StorageTool extends ToolBase {
 	}
 
 	/**
-     * Fires once an attachment has been added. (https://core.trac.wordpress.org/browser/tags/4.8/src/wp-includes/post.php#L3457)
-     *
+	 * Fires once an attachment has been added. (https://core.trac.wordpress.org/browser/tags/4.8/src/wp-includes/post.php#L3457)
+	 *
 	 * @param int $post_id
 	 */
 	public function addAttachment($post_id) {
-		$file = get_post_meta( $post_id, '_wp_attached_file', true );
-		if (isset($this->uploadedDocs[$file])) {
+		$file = get_post_meta($post_id, '_wp_attached_file', true);
+		if(isset($this->uploadedDocs[$file])) {
 			add_post_meta($post_id, 'ilab_s3_info', $this->uploadedDocs[$file]);
 			do_action('ilab_s3_uploaded_attachment', $post_id, $file, $this->uploadedDocs[$file]);
 		}
 	}
 
 	/**
-     * Fires once an existing attachment has been updated.  (https://core.trac.wordpress.org/browser/tags/4.8/src/wp-includes/post.php#L3528)
-     *
+	 * Fires once an existing attachment has been updated.  (https://core.trac.wordpress.org/browser/tags/4.8/src/wp-includes/post.php#L3528)
+	 *
 	 * @param int $post_id
 	 */
 	public function editAttachment($post_id) {
 		$meta = wp_get_attachment_metadata($post_id);
-		if (!isset($meta['s3'])) {
+		if(!isset($meta['s3'])) {
 			$meta = get_post_meta($post_id, 'ilab_s3_info', true);
-			if (empty($meta) || !isset($meta['s3'])) {
+			if(empty($meta) || !isset($meta['s3'])) {
 				return;
 			}
 
@@ -583,15 +593,15 @@ class StorageTool extends ToolBase {
 	}
 
 	/**
-     * Updates the attachment's properties, as well as updates the metadata on the storage service.
-     *
+	 * Updates the attachment's properties, as well as updates the metadata on the storage service.
+	 *
 	 * @param int $id
 	 * @param array $meta
 	 *
 	 * @return mixed
 	 */
 	private function updateAttachmentS3Props($id, $meta) {
-		if (isset($_POST['s3-access-acl']) || isset($_POST['s3-cache-control']) || isset($_POST['s3-expires'])) {
+		if(isset($_POST['s3-access-acl']) || isset($_POST['s3-cache-control']) || isset($_POST['s3-expires'])) {
 			$mime = get_post_mime_type($id);
 
 			$acl = (isset($meta['s3']['privacy'])) ? $meta['s3']['privacy'] : $this->privacy;
@@ -601,21 +611,21 @@ class StorageTool extends ToolBase {
 			$cacheControl = false;
 			$expires = false;
 
-			if (isset($_POST['s3-cache-control'])) {
+			if(isset($_POST['s3-cache-control'])) {
 				$cacheControl = $_POST['s3-cache-control'];
 			}
 
-			if (isset($_POST['s3-expires'])) {
+			if(isset($_POST['s3-expires'])) {
 				$expires = $_POST['s3-expires'];
-				if (!empty($expires)) {
-					if (!is_numeric($expires)) {
+				if(!empty($expires)) {
+					if(!is_numeric($expires)) {
 						$expires = strtotime($expires) - time();
-						if ($expires !== false) {
+						if($expires !== false) {
 							$expires = round($expires / 60);
 						}
 					}
 
-					if (($expires !== false) && is_numeric($expires)) {
+					if(($expires !== false) && is_numeric($expires)) {
 						$expires = gmdate('D, d M Y H:i:00 \G\M\T', time() + ($expires * 60));
 					}
 				}
@@ -624,31 +634,32 @@ class StorageTool extends ToolBase {
 			try {
 				$this->client->copy($meta['s3']['key'], $meta['s3']['key'], $acl, $mime, $cacheControl, $expires);
 
-				if (!empty($cacheControl)) {
-					if (!isset($meta['s3']['options'])) {
-						$meta['s3']['options']=[];
+				if(!empty($cacheControl)) {
+					if(!isset($meta['s3']['options'])) {
+						$meta['s3']['options'] = [];
 					}
 
-					if (!isset($meta['s3']['options']['params'])) {
-						$meta['s3']['options']['params']=[];
+					if(!isset($meta['s3']['options']['params'])) {
+						$meta['s3']['options']['params'] = [];
 					}
 
 					$meta['s3']['options']['params']['CacheControl'] = $cacheControl;
 				}
 
-				if (!empty($expires)) {
-					if (!isset($meta['s3']['options'])) {
-						$meta['s3']['options']=[];
+				if(!empty($expires)) {
+					if(!isset($meta['s3']['options'])) {
+						$meta['s3']['options'] = [];
 					}
 
-					if (!isset($meta['s3']['options']['params'])) {
-						$meta['s3']['options']['params']=[];
+					if(!isset($meta['s3']['options']['params'])) {
+						$meta['s3']['options']['params'] = [];
 					}
 
 					$meta['s3']['options']['params']['Expires'] = $expires;
 				}
-			} catch (StorageException $ex) {
-				Logger::error( 'Error Copying Object', [ 'exception' =>$ex->getMessage()]);
+			}
+			catch(StorageException $ex) {
+				Logger::error('Error Copying Object', ['exception' => $ex->getMessage()]);
 			}
 		}
 
@@ -656,8 +667,8 @@ class StorageTool extends ToolBase {
 	}
 
 	/**
-     * Filters an image’s ‘srcset’ sources.  (https://core.trac.wordpress.org/browser/tags/4.8/src/wp-includes/media.php#L1203)
-     *
+	 * Filters an image’s ‘srcset’ sources.  (https://core.trac.wordpress.org/browser/tags/4.8/src/wp-includes/media.php#L1203)
+	 *
 	 * @param array $sources
 	 * @param array $size_array
 	 * @param string $image_src
@@ -667,31 +678,33 @@ class StorageTool extends ToolBase {
 	 * @return array
 	 */
 	public function calculateSrcSet($sources, $size_array, $image_src, $image_meta, $attachment_id) {
-		if (!apply_filters('ilab_s3_can_calculate_srcset', true)) {
+		if(!apply_filters('ilab_s3_can_calculate_srcset', true)) {
 			return $sources;
-        }
+		}
 
 		foreach($image_meta['sizes'] as $sizeName => $sizeData) {
 			$width = $sizeData['width'];
-			if (isset($sources[$width])) {
+			if(isset($sources[$width])) {
 				$src = wp_get_attachment_image_src($attachment_id, $sizeName);
 
-				if (is_array($src))
+				if(is_array($src)) {
 					$sources[$width]['url'] = $src[0];
-				else
+				} else {
 					unset($sources[$width]);
+				}
 			}
 		}
 
-		if (isset($image_meta['width'])) {
+		if(isset($image_meta['width'])) {
 			$width = $image_meta['width'];
-			if (isset($sources[$width])) {
+			if(isset($sources[$width])) {
 				$src = wp_get_attachment_image_src($attachment_id, 'full');
 
-				if (is_array($src))
+				if(is_array($src)) {
 					$sources[$width]['url'] = $src[0];
-				else
+				} else {
 					unset($sources[$width]);
+				}
 			}
 		}
 
@@ -699,23 +712,23 @@ class StorageTool extends ToolBase {
 	}
 
 	/**
-     * Filters the attachment data prepared for JavaScript. (https://core.trac.wordpress.org/browser/tags/4.8/src/wp-includes/media.php#L3279)
-     *
+	 * Filters the attachment data prepared for JavaScript. (https://core.trac.wordpress.org/browser/tags/4.8/src/wp-includes/media.php#L3279)
+	 *
 	 * @param array $response
 	 * @param int|object $attachment
 	 * @param array $meta
 	 *
 	 * @return array
 	 */
-	public function prepareAttachmentForJS($response, $attachment, $meta ) {
-		if (empty($meta) || !isset($meta['s3'])) {
+	public function prepareAttachmentForJS($response, $attachment, $meta) {
+		if(empty($meta) || !isset($meta['s3'])) {
 			$meta = get_post_meta($attachment->ID, 'ilab_s3_info', true);
 		}
 
-		if (isset($meta['s3'])) {
+		if(isset($meta['s3'])) {
 			$response['s3'] = $meta['s3'];
 
-			if (!isset($response['s3']['privacy'])) {
+			if(!isset($response['s3']['privacy'])) {
 				$response['s3']['privacy'] = $this->privacy;
 			}
 		}
@@ -724,55 +737,56 @@ class StorageTool extends ToolBase {
 	}
 
 	/**
-     * Filters the attachment's url. (https://core.trac.wordpress.org/browser/tags/4.8/src/wp-includes/post.php#L5077)
+	 * Filters the attachment's url. (https://core.trac.wordpress.org/browser/tags/4.8/src/wp-includes/post.php#L5077)
+	 *
 	 * @param string $url
 	 * @param int $post_id
 	 *
 	 * @return string
 	 */
 	public function getAttachmentURL($url, $post_id) {
-		$meta=wp_get_attachment_metadata($post_id);
+		$meta = wp_get_attachment_metadata($post_id);
 
 		$new_url = null;
-		if ($meta) {
+		if($meta) {
 			$new_url = $this->getAttachmentURLFromMeta($meta);
-        }
+		}
 
-		if (!$new_url) {
+		if(!$new_url) {
 			$meta = get_post_meta($post_id, 'ilab_s3_info', true);
-			if ($meta) {
+			if($meta) {
 				$new_url = $this->getAttachmentURLFromMeta($meta);
 			}
 
-			if (!$new_url) {
+			if(!$new_url) {
 				$meta = get_post_meta($post_id, 'amazonS3_info');
 
-				if ($meta) {
+				if($meta) {
 					$new_url = $this->getOffloadS3URL($post_id, $meta);
 
-					$s3Data=$meta[0];
+					$s3Data = $meta[0];
 					$s3Data['url'] = $new_url;
 					$s3Data['privacy'] = 'public-read';
 
 					$this->skipUpdate = true;
 
 					$imageMeta = wp_get_attachment_metadata($post_id);
-					if ($imageMeta) {
+					if($imageMeta) {
 						$imageMeta['s3'] = $s3Data;
 						wp_update_attachment_metadata($post_id, $imageMeta);
 					} else {
-						update_post_meta($post_id, 'ilab_s3_info',['s3' => $s3Data]);
+						update_post_meta($post_id, 'ilab_s3_info', ['s3' => $s3Data]);
 					}
 
 					$this->skipUpdate = false;
 				}
 			}
 
-			if (!$meta && $this->docCdn) {
+			if(!$meta && $this->docCdn) {
 				$post = \WP_Post::get_instance($post_id);
-				if ($post && (strpos($post->guid, $this->docCdn) === 0)) {
+				if($post && (strpos($post->guid, $this->docCdn) === 0)) {
 					$new_url = $post->guid;
-                }
+				}
 			}
 		}
 
@@ -780,21 +794,22 @@ class StorageTool extends ToolBase {
 	}
 
 	/**
-     * Attempts to get the url based on the S3/Storage metadata
+	 * Attempts to get the url based on the S3/Storage metadata
+	 *
 	 * @param array $meta
 	 *
 	 * @return null|string
 	 */
 	private function getAttachmentURLFromMeta($meta) {
-		if (isset($meta['s3']) && $this->cdn) {
+		if(isset($meta['s3']) && $this->cdn) {
 			return $this->cdn.'/'.$meta['s3']['key'];
-		} else if (isset($meta['s3']) && isset($meta['s3']['url'])) {
-			if (isset($meta['file']) && $this->docCdn) {
-				$ext = strtolower(pathinfo($meta['file'],PATHINFO_EXTENSION));
-				$image_exts = array( 'jpg', 'jpeg', 'jpe', 'gif', 'png' );
-				if (!in_array( $ext, $image_exts )) {
-					return trim($this->docCdn,'/').'/'.$meta['s3']['key'];
-                }
+		} else if(isset($meta['s3']) && isset($meta['s3']['url'])) {
+			if(isset($meta['file']) && $this->docCdn) {
+				$ext = strtolower(pathinfo($meta['file'], PATHINFO_EXTENSION));
+				$image_exts = array('jpg', 'jpeg', 'jpe', 'gif', 'png');
+				if(!in_array($ext, $image_exts)) {
+					return trim($this->docCdn, '/').'/'.$meta['s3']['key'];
+				}
 			}
 
 			return $meta['s3']['url'];
@@ -804,16 +819,17 @@ class StorageTool extends ToolBase {
 	}
 
 	/**
-     * For compatibility with Offload S3.
-     *
+	 * For compatibility with Offload S3.
+	 *
 	 * @param int $post_id
 	 * @param array $info
 	 *
 	 * @return null|string
 	 */
 	private function getOffloadS3URL($post_id, $info) {
-		if (!is_array($info) && (count($info)<1))
+		if(!is_array($info) && (count($info) < 1)) {
 			return null;
+		}
 
 		$region = $info[0]['region'];
 		$bucket = $info[0]['bucket'];
@@ -823,10 +839,10 @@ class StorageTool extends ToolBase {
 	}
 	//endregion
 
-    //region Crop Tool Related
+	//region Crop Tool Related
 	/**
-     * Processes a file after a crop has been performed, uploading it to storage if it exists
-     *
+	 * Processes a file after a crop has been performed, uploading it to storage if it exists
+	 *
 	 * @param string $size
 	 * @param string $upload_path
 	 * @param string $file
@@ -835,21 +851,21 @@ class StorageTool extends ToolBase {
 	 * @return array
 	 */
 	public function processCrop($size, $upload_path, $file, $sizeMeta) {
-		$upload_info=wp_upload_dir();
+		$upload_info = wp_upload_dir();
 		$subdir = trim(str_replace($upload_info['basedir'], '', $upload_path), '/');
 		$upload_path = rtrim(str_replace($subdir, '', $upload_path), '/');
 
-		if ($this->client && $this->client->enabled()) {
+		if($this->client && $this->client->enabled()) {
 			$sizeMeta = $this->processFile($upload_path, $subdir.'/'.$file, $sizeMeta);
 		}
 
 		return $sizeMeta;
 	}
-    //endregion
+	//endregion
 
-    //region Prefix
+	//region Prefix
 	/**
-     * Generates a UUID string.
+	 * Generates a UUID string.
 	 * @return string
 	 */
 	private function genUUID() {
@@ -866,43 +882,45 @@ class StorageTool extends ToolBase {
 	}
 
 	/**
-     * Generates a UUID path
+	 * Generates a UUID path
 	 * @return string
 	 */
 	private function genUUIDPath() {
 		$uid = $this->genUUID();
-		$result='/';
+		$result = '/';
 
 		$segments = 8;
-		if ($segments>strlen($uid)/2)
-			$segments=strlen($uid)/2;
-		for($i=0; $i<$segments; $i++)
-			$result.=substr($uid,$i*2,2).'/';
+		if($segments > strlen($uid) / 2) {
+			$segments = strlen($uid) / 2;
+		}
+		for($i = 0; $i < $segments; $i ++) {
+			$result .= substr($uid, $i * 2, 2).'/';
+		}
 
 		return $result;
 	}
 
 	/**
-     * Gets an Offload S3 compatible object version string.
-     *
+	 * Gets an Offload S3 compatible object version string.
+	 *
 	 * @param int $id
 	 *
 	 * @return string|null
 	 */
-	private function getObjectVersion($id=null) {
+	private function getObjectVersion($id = null) {
 
-		if (!empty($id) && !empty($this->versionedIds[$id])) {
+		if(!empty($id) && !empty($this->versionedIds[$id])) {
 			return $this->versionedIds[$id];
 		}
 
 		$date_format = 'dHis';
 		// Use current time so that object version is unique
-		$time = current_time( 'timestamp' );
+		$time = current_time('timestamp');
 
-		$object_version = date( $date_format, $time ) . '/';
-		$object_version = apply_filters( 'as3cf_get_object_version_string', $object_version );
+		$object_version = date($date_format, $time).'/';
+		$object_version = apply_filters('as3cf_get_object_version_string', $object_version);
 
-		if (!empty($id)) {
+		if(!empty($id)) {
 			$this->versionedIds[$id] = $object_version;
 		}
 
@@ -910,23 +928,23 @@ class StorageTool extends ToolBase {
 	}
 
 	/**
-     * Generates a prefix string from a prefix format string.
-     *
+	 * Generates a prefix string from a prefix format string.
+	 *
 	 * @param string $prefix
 	 * @param int|null $id
 	 *
 	 * @return string
 	 */
-	private function parsePrefix($prefix, $id=null) {
+	private function parsePrefix($prefix, $id = null) {
 		$host = parse_url(get_home_url(), PHP_URL_HOST);
 
 		$user = wp_get_current_user();
 		$userName = '';
-		if ($user->ID != 0) {
+		if($user->ID != 0) {
 			$userName = sanitize_title($user->display_name);
 		}
 
-		if ($id) {
+		if($id) {
 			$prefix = str_replace("@{versioning}", $this->getObjectVersion($id), $prefix);
 		}
 
@@ -936,13 +954,13 @@ class StorageTool extends ToolBase {
 		$prefix = str_replace("@{user-name}", $userName, $prefix);
 		$prefix = str_replace("@{unique-id}", $this->genUUID(), $prefix);
 		$prefix = str_replace("@{unique-path}", $this->genUUIDPath(), $prefix);
-		$prefix = str_replace("//","/", $prefix);
+		$prefix = str_replace("//", "/", $prefix);
 
 		$matches = [];
 		preg_match_all('/\@\{date\:([^\}]*)\}/', $prefix, $matches);
-		if (count($matches)==2) {
-			for($i = 0; $i<count($matches[0]); $i++) {
-				$prefix = str_replace($matches[0][$i],date($matches[1][$i]), $prefix);
+		if(count($matches) == 2) {
+			for($i = 0; $i < count($matches[0]); $i ++) {
+				$prefix = str_replace($matches[0][$i], date($matches[1][$i]), $prefix);
 			}
 		}
 
@@ -950,10 +968,10 @@ class StorageTool extends ToolBase {
 	}
 	//endregion
 
-    //region Storage File Processing
+	//region Storage File Processing
 	/**
-     * Uploads a file to storage and updates the related metadata.
-     *
+	 * Uploads a file to storage and updates the related metadata.
+	 *
 	 * @param string $upload_path
 	 * @param string $filename
 	 * @param array $data
@@ -961,17 +979,17 @@ class StorageTool extends ToolBase {
 	 *
 	 * @return array
 	 */
-    private function processFile($upload_path, $filename, $data, $id=null) {
-		if (!file_exists($upload_path.'/'.$filename)) {
+	private function processFile($upload_path, $filename, $data, $id = null) {
+		if(!file_exists($upload_path.'/'.$filename)) {
 			return $data;
 		}
 
-		if (isset($data['s3'])) {
+		if(isset($data['s3'])) {
 			$key = $data['s3']['key'];
 
-			if ($key == $filename) {
+			if($key == $filename) {
 				return $data;
-            }
+			}
 
 			$this->deleteFile($key);
 		}
@@ -979,58 +997,60 @@ class StorageTool extends ToolBase {
 		$bucketFilename = $filename;
 
 		$prefix = '';
-		if (!empty($this->prefixFormat)) {
+		if(!empty($this->prefixFormat)) {
 			$prefix = $this->parsePrefix($this->prefixFormat, $id);
-			$parts= explode('/',$filename);
+			$parts = explode('/', $filename);
 			$bucketFilename = array_pop($parts);
 		}
 
-		$file=fopen($upload_path.'/'.$filename,'r');
+		$file = fopen($upload_path.'/'.$filename, 'r');
 		try {
-			$url = $this->client->upload($prefix.$bucketFilename,$file, $this->privacy, $this->cacheControl, $this->expires);
+			$url = $this->client->upload($prefix.$bucketFilename, $file, $this->privacy, $this->cacheControl, $this->expires);
 
 			$options = [];
 			$params = [];
-			if (!empty($this->cacheControl)) {
+			if(!empty($this->cacheControl)) {
 				$params['CacheControl'] = $this->cacheControl;
 			}
 
-			if (!empty($this->expires)) {
+			if(!empty($this->expires)) {
 				$params['Expires'] = $this->expires;
 			}
 
-			if (!empty($params)) {
+			if(!empty($params)) {
 				$options['params'] = $params;
 			}
 
-			$data['s3']=[
+			$data['s3'] = [
 				'url' => $url,
-				'bucket'=>$this->client->bucket(),
+				'bucket' => $this->client->bucket(),
 				'privacy' => $this->privacy,
-				'key'=> $prefix.$bucketFilename,
+				'key' => $prefix.$bucketFilename,
 				'options' => $options
 			];
 
-			if (file_exists($upload_path.'/'.$filename)) {
+			if(file_exists($upload_path.'/'.$filename)) {
 				$ftype = wp_check_filetype($upload_path.'/'.$filename);
-				if (!empty($ftype) && isset($ftype['type'])) {
+				if(!empty($ftype) && isset($ftype['type'])) {
 					$data['s3']['mime-type'] = $ftype['type'];
 				}
 			}
-		} catch (StorageException $ex) {
-			Logger::error( 'Upload Error', [
-				'exception'      =>$ex->getMessage(),
-				'prefix'         =>$prefix,
-				'bucketFilename' =>$bucketFilename,
-				'privacy'        =>$this->privacy
+		}
+		catch(StorageException $ex) {
+			Logger::error('Upload Error', [
+				'exception' => $ex->getMessage(),
+				'prefix' => $prefix,
+				'bucketFilename' => $bucketFilename,
+				'privacy' => $this->privacy
 			]);
-		} finally {
+		}
+		finally {
 			fclose($file);
 		}
 
-		if ($this->deleteOnUpload) {
-			if (file_exists($upload_path.'/'.$filename)) {
-				unlink( $upload_path . '/' . $filename );
+		if($this->deleteOnUpload) {
+			if(file_exists($upload_path.'/'.$filename)) {
+				unlink($upload_path.'/'.$filename);
 			}
 		}
 
@@ -1038,42 +1058,43 @@ class StorageTool extends ToolBase {
 	}
 
 	/**
-     * Deletes a file from storage
+	 * Deletes a file from storage
+	 *
 	 * @param $file
 	 */
 	private function deleteFile($file) {
 		try {
-			if ($this->client && $this->client->enabled()) {
+			if($this->client && $this->client->enabled()) {
 				$this->client->delete($file);
 			}
 		}
-		catch (StorageException $ex) {
-			Logger::error( 'Delete File Error', [ 'exception' =>$ex->getMessage(), 'Key' =>$file]);
+		catch(StorageException $ex) {
+			Logger::error('Delete File Error', ['exception' => $ex->getMessage(), 'Key' => $file]);
 		}
 	}
 	//endregion
 
-    //region WordPress UI Hooks
+	//region WordPress UI Hooks
 	/**
 	 * Hooks into the WordPress UI in various ways.
 	 */
 	private function hookupUI() {
-        $this->hookAttachmentDetails();
-        $this->hookMediaList();
-        $this->hookBulkActions();
-        $this->hookStorageInfoMetabox();
+		$this->hookAttachmentDetails();
+		$this->hookMediaList();
+		$this->hookBulkActions();
+		$this->hookStorageInfoMetabox();
 		$this->hookMediaGrid();
 	}
 
 	/**
 	 * Displays storage info in the attachment details pop up.
 	 */
-    private function hookAttachmentDetails() {
-	    add_action( 'wp_enqueue_media', function () {
-		    add_action('admin_footer', function(){
-			    ?>
+	private function hookAttachmentDetails() {
+		add_action('wp_enqueue_media', function() {
+			add_action('admin_footer', function() {
+				?>
                 <script>
-                    jQuery(document).ready(function() {
+                    jQuery(document).ready(function () {
                         var attachTemplate = jQuery('#tmpl-attachment-details-two-column');
                         if (attachTemplate) {
                             var txt = attachTemplate.text();
@@ -1083,117 +1104,119 @@ class StorageTool extends ToolBase {
                         }
                     });
                 </script>
-			    <?php
+				<?php
 
-		    } );
-	    } );
-    }
+			});
+		});
+	}
 
 	/**
 	 * Adds a custom column to the media list.
 	 */
-    private function hookMediaList() {
-        if (!$this->mediaListIntegration) {
-            return;
-        }
+	private function hookMediaList() {
+		if(!$this->mediaListIntegration) {
+			return;
+		}
 
-	    add_action('admin_init',function(){
-		    add_filter('manage_media_columns', function($cols) {
-			    $cols["cloud"] = 'Cloud';
-			    return $cols;
-		    });
+		add_action('admin_init', function() {
+			add_filter('manage_media_columns', function($cols) {
+				$cols["cloud"] = 'Cloud';
 
-		    add_action('manage_media_custom_column', function($column_name, $id) {
-		        if ($column_name == "cloud") {
-			        $meta = wp_get_attachment_metadata($id);
-			        if (!empty($meta) && isset($meta['s3'])) {
-				        echo "<a href='".$meta['s3']['url']."' target=_blank>View</a>";
-			        }
-                }
-		    }, 10, 2);
-	    });
+				return $cols;
+			});
 
-	    add_action( 'wp_enqueue_media', function () {
-		    add_action('admin_head', function(){
-			    if (get_current_screen()->base == 'upload') {
-				    ?>
+			add_action('manage_media_custom_column', function($column_name, $id) {
+				if($column_name == "cloud") {
+					$meta = wp_get_attachment_metadata($id);
+					if(!empty($meta) && isset($meta['s3'])) {
+						echo "<a href='".$meta['s3']['url']."' target=_blank>View</a>";
+					}
+				}
+			}, 10, 2);
+		});
+
+		add_action('wp_enqueue_media', function() {
+			add_action('admin_head', function() {
+				if(get_current_screen()->base == 'upload') {
+					?>
                     <style>
                         th.column-s3, td.column-s3 {
-                            width:60px !important;
+                            width: 60px !important;
                             max-width: 60px !important;
                         }
                     </style>
-				    <?php
-			    }
-		    });
-	    } );
-    }
+					<?php
+				}
+			});
+		});
+	}
 
 	/**
 	 * Adds bulk actions to the media list view.
 	 */
-    private function hookBulkActions() {
-	    if (!$this->enabled()) {
-	        return;
-        }
+	private function hookBulkActions() {
+		if(!$this->enabled()) {
+			return;
+		}
 
-	    if (!$this->mediaListIntegration) {
-		    return;
-	    }
+		if(!$this->mediaListIntegration) {
+			return;
+		}
 
-	    add_action('admin_init', function() {
-		    add_filter('bulk_actions-upload', function($actions){
-			    $actions['ilab_s3_import'] = 'Import to S3';
-			    return $actions;
-		    });
+		add_action('admin_init', function() {
+			add_filter('bulk_actions-upload', function($actions) {
+				$actions['ilab_s3_import'] = 'Import to S3';
 
-		    add_filter('handle_bulk_actions-upload', function($redirect_to, $action_name, $post_ids) {
-			    if ('ilab_s3_import' === $action_name) {
-				    $posts_to_import = [];
-				    if (count($post_ids) > 0) {
-					    foreach($post_ids as $post_id) {
-						    $meta = wp_get_attachment_metadata($post_id);
-						    if (!empty($meta) && isset($meta['s3'])) {
-							    continue;
-						    }
+				return $actions;
+			});
 
-						    $posts_to_import[] = $post_id;
-					    }
-				    }
+			add_filter('handle_bulk_actions-upload', function($redirect_to, $action_name, $post_ids) {
+				if('ilab_s3_import' === $action_name) {
+					$posts_to_import = [];
+					if(count($post_ids) > 0) {
+						foreach($post_ids as $post_id) {
+							$meta = wp_get_attachment_metadata($post_id);
+							if(!empty($meta) && isset($meta['s3'])) {
+								continue;
+							}
 
-				    if (count($posts_to_import) > 0) {
-					    update_option('ilab_s3_import_status', true);
-					    update_option('ilab_s3_import_total_count', count($posts_to_import));
-					    update_option('ilab_s3_import_current', 1);
-					    update_option('ilab_s3_import_should_cancel', false);
+							$posts_to_import[] = $post_id;
+						}
+					}
 
-					    $process = new StorageImportProcess();
+					if(count($posts_to_import) > 0) {
+						update_option('ilab_s3_import_status', true);
+						update_option('ilab_s3_import_total_count', count($posts_to_import));
+						update_option('ilab_s3_import_current', 1);
+						update_option('ilab_s3_import_should_cancel', false);
 
-					    for($i = 0; $i < count($posts_to_import); ++$i) {
-						    $process->push_to_queue(['index' => $i, 'post' => $posts_to_import[$i]]);
-					    }
+						$process = new StorageImportProcess();
 
-					    $process->save();
-					    $process->dispatch();
+						for($i = 0; $i < count($posts_to_import); ++ $i) {
+							$process->push_to_queue(['index' => $i, 'post' => $posts_to_import[$i]]);
+						}
 
-					    return 'admin.php?page=media-tools-s3-importer';
-				    }
-			    }
+						$process->save();
+						$process->dispatch();
 
-			    return $redirect_to;
-		    }, 1000, 3);
-        });
-    }
+						return 'admin.php?page=media-tools-s3-importer';
+					}
+				}
+
+				return $redirect_to;
+			}, 1000, 3);
+		});
+	}
 
 	/**
 	 * Displays a cloud icon on items in the media grid.
 	 */
 	private function hookMediaGrid() {
-		if (!$this->displayBadges) {
+		if(!$this->displayBadges) {
 			return;
 		}
 
-		add_action('admin_head', function(){
+		add_action('admin_head', function() {
 			?>
             <style>
                 .ilab-s3-logo {
@@ -1210,10 +1233,10 @@ class StorageTool extends ToolBase {
             </style>
 			<?php
 		});
-		add_action('admin_footer', function(){
+		add_action('admin_footer', function() {
 			?>
             <script>
-                jQuery(document).ready(function() {
+                jQuery(document).ready(function () {
                     var attachTemplate = jQuery('#tmpl-attachment');
                     if (attachTemplate) {
                         var txt = attachTemplate.text();
@@ -1227,17 +1250,20 @@ class StorageTool extends ToolBase {
             </script>
 			<?php
 
-		} );
+		});
 	}
 
 	/**
 	 * Adds the Cloud Storage metabox on attachment edit pages.
 	 */
-    private function hookStorageInfoMetabox() {
-	    add_action('admin_init', function() {
-		    add_meta_box('ilab-s3-info-meta', 'Cloud Storage Info', [ $this, 'renderStorageInfoMeta' ], 'attachment', 'side', 'low');
-	    });
-    }
+	private function hookStorageInfoMetabox() {
+		add_action('admin_init', function() {
+			add_meta_box('ilab-s3-info-meta', 'Cloud Storage Info', [
+				$this,
+				'renderStorageInfoMeta'
+			], 'attachment', 'side', 'low');
+		});
+	}
 
 	/**
 	 * Renders the Cloud Storage metabox
@@ -1246,51 +1272,60 @@ class StorageTool extends ToolBase {
 		global $post;
 
 		$meta = wp_get_attachment_metadata($post->ID);
-		if (empty($meta)) {
+		if(empty($meta)) {
 			return;
 		}
 
-		if (!isset($meta['s3'])) {
+		if(!isset($meta['s3'])) {
 			$meta = get_post_meta($post->ID, 'ilab_s3_info', true);
 		}
 
-		if (empty($meta) || !isset($meta['s3'])) {
+		if(empty($meta) || !isset($meta['s3'])) {
 			?>
             Not uploaded.
 			<?php
 		} else {
 			?>
             <div class="misc-pub-section">
-                Bucket: <a href="https://console.aws.amazon.com/s3/buckets/<?php echo $meta['s3']['bucket']?>" target="_blank"><?php echo $meta['s3']['bucket']?></a>
+                Bucket: <a href="https://console.aws.amazon.com/s3/buckets/<?php echo $meta['s3']['bucket'] ?>"
+                           target="_blank"><?php echo $meta['s3']['bucket'] ?></a>
             </div>
             <div class="misc-pub-section">
-                Path: <a href="https://console.aws.amazon.com/s3/buckets/<?php echo $meta['s3']['bucket']?>/<?php echo $meta['s3']['key']?>/details" target="_blank"><?php echo $meta['s3']['key']?></a>
+                Path: <a
+                        href="https://console.aws.amazon.com/s3/buckets/<?php echo $meta['s3']['bucket'] ?>/<?php echo $meta['s3']['key'] ?>/details"
+                        target="_blank"><?php echo $meta['s3']['key'] ?></a>
             </div>
             <div class="misc-pub-section">
                 <label for="s3-access-acl">Access:</label>
                 <select id="s3-access-acl" name="s3-access-acl">
-                    <option value="public-read" <?php echo (isset($meta['s3']['privacy']) && ($meta['s3']['privacy']=='public-read')) ? 'selected' : '' ?>>Public</option>
-                    <option value="authenticated-read" <?php echo (isset($meta['s3']['privacy']) && ($meta['s3']['privacy']=='authenticated-read')) ? 'selected' : '' ?>>Authenticated Users</option>
+                    <option value="public-read" <?php echo (isset($meta['s3']['privacy']) && ($meta['s3']['privacy'] == 'public-read')) ? 'selected' : '' ?>>
+                        Public
+                    </option>
+                    <option value="authenticated-read" <?php echo (isset($meta['s3']['privacy']) && ($meta['s3']['privacy'] == 'authenticated-read')) ? 'selected' : '' ?>>
+                        Authenticated Users
+                    </option>
                 </select>
             </div>
             <div class="misc-pub-section">
                 <label for="s3-cache-control">Cache-Control:</label>
-                <input type="text" class="widefat" name="s3-cache-control" id="s3-cache-control" value="<?php echo (isset($meta['s3']['options']) && isset($meta['s3']['options']['params']['CacheControl'])) ? $meta['s3']['options']['params']['CacheControl'] : '' ?>">
+                <input type="text" class="widefat" name="s3-cache-control" id="s3-cache-control"
+                       value="<?php echo (isset($meta['s3']['options']) && isset($meta['s3']['options']['params']['CacheControl'])) ? $meta['s3']['options']['params']['CacheControl'] : '' ?>">
             </div>
             <div class="misc-pub-section">
                 <label for="s3-expires">Expires:</label>
-                <input type="text" class="widefat" name="s3-expires" id="s3-expires" value="<?php echo (isset($meta['s3']['options']) && isset($meta['s3']['options']['params']['Expires'])) ? $meta['s3']['options']['params']['Expires'] : '' ?>">
+                <input type="text" class="widefat" name="s3-expires" id="s3-expires"
+                       value="<?php echo (isset($meta['s3']['options']) && isset($meta['s3']['options']['params']['Expires'])) ? $meta['s3']['options']['params']['Expires'] : '' ?>">
             </div>
             <div class="misc-pub-section">
-                <a href="<?php echo $meta['s3']['url']?>" target="_blank">View S3 URL</a></strong>
+                <a href="<?php echo $meta['s3']['url'] ?>" target="_blank">View S3 URL</a></strong>
             </div>
 			<?php
 		}
 
 	}
-    //endregion
+	//endregion
 
-    //region Importer
+	//region Importer
 	/**
 	 * Renders the storage importer view
 	 */
@@ -1301,10 +1336,10 @@ class StorageTool extends ToolBase {
 		$current = get_option('ilab_s3_import_current', 1);
 		$currentFile = get_option('ilab_s3_import_current_file', '');
 
-		if ($total == 0) {
+		if($total == 0) {
 			$attachments = get_posts([
-				                         'post_type'=> 'attachment',
-				                         'posts_per_page' => -1
+				                         'post_type' => 'attachment',
+				                         'posts_per_page' => - 1
 			                         ]);
 
 			$total = count($attachments);
@@ -1312,11 +1347,11 @@ class StorageTool extends ToolBase {
 
 		$progress = 0;
 
-		if ($total > 0) {
+		if($total > 0) {
 			$progress = ($current / $total) * 100;
 		}
 
-		echo View::render_view( 'storage/ilab-storage-importer.php', [
+		echo View::render_view('storage/ilab-storage-importer.php', [
 			'status' => ($status) ? 'running' : 'idle',
 			'total' => $total,
 			'progress' => $progress,
@@ -1340,8 +1375,8 @@ class StorageTool extends ToolBase {
 		header('Content-type: application/json');
 		echo json_encode([
 			                 'status' => ($status) ? 'running' : 'idle',
-			                 'total' => (int)$total,
-			                 'current' => (int)$current,
+			                 'total' => (int) $total,
+			                 'current' => (int) $current,
 			                 'currentFile' => $currentFile,
 			                 'shouldCancel' => $shouldCancel
 		                 ]);
@@ -1355,7 +1390,7 @@ class StorageTool extends ToolBase {
 		update_option('ilab_s3_import_should_cancel', 1);
 		StorageImportProcess::cancelAll();
 
-		json_response(['status'=>'ok']);
+		json_response(['status' => 'ok']);
 	}
 
 	/**
@@ -1363,19 +1398,19 @@ class StorageTool extends ToolBase {
 	 */
 	public function importMedia() {
 		$args = [
-			'post_type'      => 'attachment',
-			'post_status'    => 'inherit',
-			'nopaging'       => true,
-			'fields'         => 'ids',
+			'post_type' => 'attachment',
+			'post_status' => 'inherit',
+			'nopaging' => true,
+			'fields' => 'ids',
 		];
 
-		if (!$this->uploadDocs) {
+		if(!$this->uploadDocs) {
 			$args['post_mime_type'] = 'image';
 		}
 
 		$query = new \WP_Query($args);
 
-		if ($query->post_count > 0) {
+		if($query->post_count > 0) {
 			update_option('ilab_s3_import_status', true);
 			update_option('ilab_s3_import_total_count', $query->post_count);
 			update_option('ilab_s3_import_current', 1);
@@ -1383,7 +1418,7 @@ class StorageTool extends ToolBase {
 
 			$process = new StorageImportProcess();
 
-			for($i = 0; $i < $query->post_count; ++$i) {
+			for($i = 0; $i < $query->post_count; ++ $i) {
 				$process->push_to_queue(['index' => $i, 'post' => $query->posts[$i]]);
 			}
 
@@ -1397,13 +1432,13 @@ class StorageTool extends ToolBase {
 		echo '{"status":"running"}';
 		die;
 	}
-    //endregion
+	//endregion
 
-    //region Direct Upload Support
+	//region Direct Upload Support
 	/**
-     * Gets a pre-signed URL for uploading directly to the storage backend
+	 * Gets a pre-signed URL for uploading directly to the storage backend
 	 *
-     * @param string $filename
+	 * @param string $filename
 	 *
 	 * @return array|null
 	 */
@@ -1411,21 +1446,22 @@ class StorageTool extends ToolBase {
 		$bucketFilename = $filename;
 
 		$prefix = '';
-		if (!empty($this->prefixFormat)) {
+		if(!empty($this->prefixFormat)) {
 			$prefix = $this->parsePrefix($this->prefixFormat, null);
-			$parts= explode('/',$filename);
+			$parts = explode('/', $filename);
 			$bucketFilename = array_pop($parts);
 		}
 
-		if ($prefix == '') {
+		if($prefix == '') {
 			$prefix = date('Y/m').'/';
 		}
 
-		if ($this->client && $this->client->enabled()) {
-			try  {
+		if($this->client && $this->client->enabled()) {
+			try {
 				return $this->client->uploadUrl($prefix.$bucketFilename, $this->privacy, $this->cacheControl, $this->expires);
-			} catch (StorageException $ex) {
-				Logger::error( 'Generate File Upload URL Error', [ 'exception' =>$ex->getMessage()]);
+			}
+			catch(StorageException $ex) {
+				Logger::error('Generate File Upload URL Error', ['exception' => $ex->getMessage()]);
 			}
 		}
 
@@ -1433,26 +1469,26 @@ class StorageTool extends ToolBase {
 	}
 
 	/**
-     * Once a file has been directly uploaded, it'll need to be "imported" into WordPress
-     *
+	 * Once a file has been directly uploaded, it'll need to be "imported" into WordPress
+	 *
 	 * @param string $key
 	 *
 	 * @return array|bool
 	 */
 	public function importImageAttachmentFromStorage($key) {
-		if (!$this->client || !$this->client->enabled()) {
+		if(!$this->client || !$this->client->enabled()) {
 			return null;
 		}
 
 		$result = $this->client->info($key);
 
-		if (!is_array($result['size'])) {
+		if(!is_array($result['size'])) {
 			return false;
 		}
 
 		$mimeType = 'image/'.$result['type'];
 
-		$fileParts = explode('/',$key);
+		$fileParts = explode('/', $key);
 		$filename = array_pop($fileParts);
 		$url = $this->client->url($key);
 
@@ -1467,11 +1503,11 @@ class StorageTool extends ToolBase {
 			]
 		];
 
-		if (!empty($this->cacheControl)) {
+		if(!empty($this->cacheControl)) {
 			$s3Info['options']['params']['CacheControl'] = $this->cacheControl;
 		}
 
-		if (!empty($this->expires)) {
+		if(!empty($this->expires)) {
 			$s3Info['options']['params']['Expires'] = $this->expires;
 		}
 
@@ -1495,11 +1531,11 @@ class StorageTool extends ToolBase {
 		}
 
 		$additional_sizes = wp_get_additional_image_sizes();
-		$sizes=array_merge($builtInSizes, $additional_sizes);
+		$sizes = array_merge($builtInSizes, $additional_sizes);
 
 		foreach($sizes as $sizeKey => $size) {
-			$resized = image_resize_dimensions($result['size'][0],$result['size'][1],$size['width'],$size['height'],$size['crop']);
-			if ($resized) {
+			$resized = image_resize_dimensions($result['size'][0], $result['size'][1], $size['width'], $size['height'], $size['crop']);
+			if($resized) {
 				$meta['sizes'][$sizeKey] = [
 					'file' => $filename,
 					'width' => $resized[4],
@@ -1519,7 +1555,7 @@ class StorageTool extends ToolBase {
 			                       'post_mime_type' => $mimeType
 		                       ]);
 
-		if (is_wp_error($post)) {
+		if(is_wp_error($post)) {
 			return false;
 		}
 
@@ -1528,21 +1564,20 @@ class StorageTool extends ToolBase {
 		add_post_meta($post, '_wp_attached_file', $key);
 		add_post_meta($post, '_wp_attachment_metadata', $meta);
 
-		$thumbUrl = image_downsize($post, ['width'=>128, 'height'=>128]);
+		$thumbUrl = image_downsize($post, ['width' => 128, 'height' => 128]);
 
-		if (is_array($thumbUrl)) {
+		if(is_array($thumbUrl)) {
 			$thumbUrl = $thumbUrl[0];
 		}
 
 
-
 		return [
 			'id' => $post,
-			'url' =>$url,
+			'url' => $url,
 			'thumb' => $thumbUrl
 		];
 
 	}
-    //endregion
+	//endregion
 
 }

@@ -16,13 +16,13 @@ namespace ILAB\MediaCloud\Tools\Imgix;
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
 /**
- * Class ILabImgixImageEditor
+ * Class ImgixImageEditor
  * 
  * Replaces WordPress's WP_Image_Editor with one that supports all of the features
  * of Imgix.
  * 
  */
-class ILabImgixImageEditor extends \WP_Image_Editor
+class ImgixImageEditor extends \WP_Image_Editor
 {
     protected $currentSize;
     protected $sourceFile;
