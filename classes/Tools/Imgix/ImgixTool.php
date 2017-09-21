@@ -49,6 +49,20 @@ class ImgixTool extends ToolBase {
 	protected $renderPDF;
 	//endregion
 
+    //region Constructor
+    public function __construct($toolName, $toolInfo, $toolManager) {
+	    parent::__construct($toolName, $toolInfo, $toolManager);
+
+	    add_filter('ilab_imgix_enabled', function($enabled){
+	        return $this->enabled();
+        });
+
+	    add_filter('ilab_imgix_alternative_formats', function($enabled){
+	        return $this->enabledAlternativeFormats;
+        });
+    }
+    //endregion
+
 	//region ToolBase Overrides
 	public function enabled() {
 		$enabled = parent::enabled();
@@ -173,10 +187,6 @@ class ImgixTool extends ToolBase {
 
 		add_filter('imgix_build_gif_mpeg4', [$this, 'buildMpeg4'], 0, 3);
 		add_filter('imgix_build_gif_jpeg', [$this, 'buildGifJpeg'], 0, 3);
-
-		add_filter('ilab_imgix_enabled', function() {
-			return true;
-		});
 
 		add_filter('ilab_imgix_render_pdf', function() {
 			return $this->renderPDF;

@@ -14,9 +14,11 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Cloud\Storage\Driver;
+namespace ILAB\MediaCloud\Cloud\Storage\Driver\S3;
 
 use FasterImage\FasterImage;
+use GuzzleHttp\Client;
+use ILAB\MediaCloud\Cloud\Storage\FileInfo;
 use ILAB\MediaCloud\Cloud\Storage\InvalidStorageSettingsException;
 use ILAB\MediaCloud\Cloud\Storage\StorageException;
 use ILAB\MediaCloud\Cloud\Storage\StorageInterface;
@@ -30,7 +32,7 @@ use ILAB_Aws\S3\S3MultiRegionClient;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
-class S3 implements StorageInterface {
+class S3Storage implements StorageInterface {
 	//region Properties
 	/*** @var string */
 	private $key = null;
@@ -409,27 +411,41 @@ class S3 implements StorageInterface {
 			throw new InvalidStorageSettingsException('Storage settings are invalid');
 		}
 
-		$presignedUrl = $this->presignedUrl($key);
-
-		$faster = new FasterImage();
-		$result = $faster->batch([$presignedUrl]);
-		if (empty($result)) {
-			return null;
+		try {
+			$result = $this->client->headObject(['Bucket' => $this->bucket, 'Key'=>$key]);
+			$length = $result->get('ContentLength');
+			$type = $result->get('ContentType');
+		} catch (AwsException $ex) {
+			throw new StorageException($ex->getMessage(), $ex->getStatusCode(), $ex);
 		}
 
-		return $result[$presignedUrl];
+		$presignedUrl = $this->presignedUrl($key);
+
+		$size = null;
+		if (strpos($type, 'image/') === 0) {
+			$faster = new FasterImage();
+			$result = $faster->batch([$presignedUrl]);
+			$result = $result[$presignedUrl];
+			$size = $result['size'];
+		}
+
+		$fileInfo = new FileInfo($key,$presignedUrl, $length, $type, $size);
+		return $fileInfo;
 	}
 	//endregion
 
 	//region URLs
-	public function presignedUrl( $key ) {
+	private function presignedRequest($key) {
 		if (!$this->client) {
 			throw new InvalidStorageSettingsException('Storage settings are invalid');
 		}
 
 		$command = $this->client->getCommand('GetObject', ['Bucket' => $this->bucket, 'Key' => $key]);
-		$presignedRequest = $this->client->createPresignedRequest($command, '+10 minutes');
-		return (string) $presignedRequest->getUri();
+		return $this->client->createPresignedRequest($command, '+10 minutes');
+	}
+
+	public function presignedUrl( $key ) {
+		return (string)$this->presignedRequest($key)->getUri();
 	}
 
 	public function url( $key ) {
@@ -458,14 +474,8 @@ class S3 implements StorageInterface {
 			}
 
 			$postObject = new PostObjectV4($this->client, $this->bucket, [], $optionsData, '+15 minutes');
-			$result = [
-				'key'=> $key,
-				'postObject' => $postObject,
-				'cacheControl' => (!empty($this->cacheControl)) ? $this->cacheControl : null,
-				'expires' => (!empty($this->expires)) ? $this->expires : null,
-			];
 
-			return $result;
+			return new S3UploadInfo($key, $postObject,$acl, $cacheControl, $expires);
 		} catch (AwsException $ex) {
 			Logger::error( 'S3 Generate File Upload URL Error', [ 'exception' =>$ex->getMessage()]);
 			throw new StorageException($ex->getMessage(), $ex->getCode(), $ex);

@@ -147,13 +147,13 @@ var ilabMediaUploadItem = function($, uploader, file) {
                 self.status.text('Uploading ...');
 
                 var data = new FormData();
-                _.each(Object.keys(response.inputs), function(key){
+                _.each(Object.keys(response.formData), function(key){
                     if (key != 'key') {
-                        data.append(key, response.inputs[key]);
+                        data.append(key, response.formData[key]);
                     }
                 });
 
-                if (response.cacheControl != null) {
+                if ((response.cacheControl != null) && (response.cacheControl.length > 0)) {
                     data.append('Cache-Control', response.cacheControl);
                 }
 
@@ -167,13 +167,13 @@ var ilabMediaUploadItem = function($, uploader, file) {
                 }
 
                 data.append('Content-Type', mimeType);
-                data.append('acl','public-read');
+                data.append('acl',response.acl);
                 data.append('key',response.key);
                 data.append('file',file);
 
 
                 $.ajax({
-                    url: response.attr.action,
+                    url: response.url,
                     method: 'POST',
                     contentType: false,
                     processData: false,
@@ -187,7 +187,7 @@ var ilabMediaUploadItem = function($, uploader, file) {
                     },
                     success: function(successResponse) {
                         var importData = {
-                            "action": "ilab_upload_import_s3_file",
+                            "action": "ilab_upload_import_cloud_file",
                             "key": response.key
                         };
 
@@ -269,7 +269,6 @@ var ilabMediaUploadItem = function($, uploader, file) {
 var ilabMediaUploader = function($, settings) {
     var self = this;
 
-    console.log(settings);
     this.insertButton = $('#ilab-insert-button');
     this.settings = settings;
     this.uploadTarget = $('#ilab-video-upload-target');

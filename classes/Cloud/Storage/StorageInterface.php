@@ -94,7 +94,7 @@ interface StorageInterface {
 	 * Returns info (size, mime type, acl) about an item in a bucket.
 	 * @param $key
 	 * @throws StorageException
-	 * @return array
+	 * @return FileInfo
 	 */
 	public function info($key);
 
@@ -122,7 +122,7 @@ interface StorageInterface {
 	 * @param string $cacheControl
 	 * @param string $expires
 	 *
-	 * @return array|null
+	 * @return UploadInfo
 	 */
 	public function uploadUrl($key, $acl, $cacheControl = null, $expires = null);
 

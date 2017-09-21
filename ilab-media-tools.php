@@ -74,7 +74,7 @@ require_once('helpers/ilab-media-tool-wordpress-helpers.php');
 require_once('helpers/ilab-media-tool-geometry-helpers.php');
 
 // Register storage drivers
-\ILAB\MediaCloud\Cloud\Storage\StorageManager::registerDriver('s3', \ILAB\MediaCloud\Cloud\Storage\Driver\S3::class);
+\ILAB\MediaCloud\Cloud\Storage\StorageManager::registerDriver('s3', \ILAB\MediaCloud\Cloud\Storage\Driver\S3\S3Storage::class);
 
 // Make sure the NoticeManager is initialized
 \ILAB\MediaCloud\Utilities\NoticeManager::instance();
