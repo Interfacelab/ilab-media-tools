@@ -59,7 +59,7 @@ interface StorageInterface {
 	/**
 	 * Determines if a file exists in a given bucket.
 	 *
-	 * @param $key
+	 * @param string $key
 	 * @throws StorageException
 	 * @return bool
 	 */
@@ -67,9 +67,9 @@ interface StorageInterface {
 
 	/**
 	 * Copies a file in a given bucket to a new file name.
-	 * @param $sourceKey
-	 * @param $destKey
-	 * @param $acl
+	 * @param string $sourceKey
+	 * @param string $destKey
+	 * @param string $acl
 	 * @param bool $mime
 	 * @param bool $cacheControl
 	 * @param bool $expires
@@ -80,9 +80,9 @@ interface StorageInterface {
 	/**
 	 * Uploads a file, returning the new URL for the file.
 	 *
-	 * @param $key
-	 * @param $fileName
-	 * @param $acl
+	 * @param string $key
+	 * @param string $fileName
+	 * @param string $acl
 	 * @param bool $cacheControl
 	 * @param bool $expires
 	 * @throws StorageException
@@ -92,14 +92,14 @@ interface StorageInterface {
 
 	/**
 	 * Deletes a file
-	 * @param $key
+	 * @param string $key
 	 * @throws StorageException
 	 */
 	public function delete($key);
 
 	/**
 	 * Returns info (size, mime type, acl) about an item in a bucket.
-	 * @param $key
+	 * @param string $key
 	 * @throws StorageException
 	 * @return FileInfo
 	 */
@@ -108,7 +108,7 @@ interface StorageInterface {
 	/**
 	 * Generates a presigned URL for an item in a bucket.
 	 *
-	 * @param $key
+	 * @param string $key
 	 * @throws StorageException
 	 * @return string
 	 */
@@ -116,7 +116,7 @@ interface StorageInterface {
 
 	/**
 	 * Returns the URL (not-signed) for the item in a bucket
-	 * @param $key
+	 * @param string $key
 	 * @throws StorageException
 	 * @return string
 	 */
