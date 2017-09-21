@@ -38,10 +38,6 @@ class UploadTool extends ToolBase {
 	private $client;
 	//endregion
 
-	public function __construct($toolName, $toolInfo, $toolManager) {
-		parent::__construct($toolName, $toolInfo, $toolManager);
-	}
-
 	//region ToolBase Overrides
 	public function setup() {
 		parent::setup();
@@ -182,15 +178,17 @@ class UploadTool extends ToolBase {
 		}
 
 		$filename = $_POST['filename'];
-		if (empty($filename)) {
-			json_response(["status" => "error", "message" => "Invalid file name."]);
+		$type = $_POST['type'];
+
+		if (empty($filename) || empty($type)) {
+			json_response(["status" => "error", "message" => "Invalid file name or missing type."]);
 		}
 
 		$prefix = StorageSettings::prefix(null);
 		$parts = explode('/', $filename);
 		$bucketFilename = array_pop($parts);
 
-		$uploadInfo = $this->client->uploadUrl($prefix.$bucketFilename,StorageSettings::privacy(), StorageSettings::cacheControl(), StorageSettings::expires());
+		$uploadInfo = $this->client->uploadUrl($prefix.$bucketFilename,StorageSettings::privacy(), $type,StorageSettings::cacheControl(), StorageSettings::expires());
 		$res = $uploadInfo->toArray();
 		$res['status'] = 'ready';
 		json_response($res);

@@ -1,12 +1,17 @@
 var ilabMediaS3Uploader = function($, item, file) {
     this.start = function() {
+        var mimeType = file.type;
+        if (mimeType == 'application/x-photoshop') {
+            mimeType = 'image/psd';
+        }
+
         var data = {
             "action": "ilab_upload_prepare",
-            "filename": file.name
+            "filename": file.name,
+            "type": mimeType
         };
 
         $.post(ajaxurl, data, function(response){
-            console.log(response);
             if (response.status == 'ready') {
                 item.updateStatusText('Uploading ...');
 
@@ -23,11 +28,6 @@ var ilabMediaS3Uploader = function($, item, file) {
 
                 if (response.expires != null) {
                     data.append('Expires', response.expires);
-                }
-
-                var mimeType = file.type;
-                if (mimeType == 'application/x-photoshop') {
-                    mimeType = 'image/psd';
                 }
 
                 data.append('Content-Type', mimeType);
@@ -56,7 +56,6 @@ var ilabMediaS3Uploader = function($, item, file) {
                         };
 
                         $.post(ajaxurl, importData, function(importResponse) {
-                            console.log(importResponse);
                             item.itemUploaded((importResponse.status == 'success'), importResponse);
                         });
                     },

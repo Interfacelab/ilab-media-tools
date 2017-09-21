@@ -105,6 +105,8 @@ interface StorageInterface {
 	 */
 	public function info($key);
 
+	public function insureACL($key, $acl);
+
 	/**
 	 * Generates a presigned URL for an item in a bucket.
 	 *
@@ -126,12 +128,13 @@ interface StorageInterface {
 	 * Generates a signed URL for direct uploads
 	 * @param string $key
 	 * @param string $acl
+	 * @param string $mimeType
 	 * @param string $cacheControl
 	 * @param string $expires
 	 *
 	 * @return UploadInfo
 	 */
-	public function uploadUrl($key, $acl, $cacheControl = null, $expires = null);
+	public function uploadUrl($key, $acl, $mimeType=null, $cacheControl = null, $expires = null);
 
 	/**
 	 * Enqueue any scripts need for direct uploading.

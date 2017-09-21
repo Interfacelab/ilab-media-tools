@@ -1293,6 +1293,8 @@ class StorageTool extends ToolBase {
 			return false;
 		}
 
+		$this->client->insureACL($fileInfo->key(), StorageSettings::privacy());
+
 		$fileParts = explode('/', $fileInfo->key());
 		$filename = array_pop($fileParts);
 		$url = $this->client->url($fileInfo->key());

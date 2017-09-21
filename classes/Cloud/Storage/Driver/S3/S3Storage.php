@@ -317,6 +317,10 @@ class S3Storage implements StorageInterface {
 		return $this->region;
 	}
 
+	public function insureACL($key, $acl) {
+
+	}
+
 	public function exists( $key ) {
 		if (!$this->client) {
 			throw new InvalidStorageSettingsException('Storage settings are invalid');
@@ -464,8 +468,10 @@ class S3Storage implements StorageInterface {
 
 		return $this->client->getObjectUrl($this->bucket, $key);
 	}
+	//endregion
 
-	public function uploadUrl($key, $acl, $cacheControl = null, $expires = null) {
+	//region Direct Uploads
+	public function uploadUrl($key, $acl, $mimeType=null, $cacheControl = null, $expires = null) {
 		try {
 			$optionsData = [
 				['bucket'=>$this->bucket],
@@ -491,12 +497,10 @@ class S3Storage implements StorageInterface {
 		}
 	}
 
-	//endregion
-
-
 	public function enqueueUploaderScripts() {
 		add_action('admin_enqueue_scripts', function() {
 			wp_enqueue_script('ilab-media-upload-s3',ILAB_PUB_JS_URL.'/ilab-media-upload-s3.js',[],false,true);
 		});
 	}
+	//endregion
 }

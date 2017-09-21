@@ -87,7 +87,7 @@ class GoogleStorage implements StorageInterface {
 
 	//region Enabled/Options
 	public function supportsDirectUploads() {
-		return false;
+		return true;
 	}
 
 	public function validateSettings() {
@@ -168,6 +168,11 @@ class GoogleStorage implements StorageInterface {
 
 	public function region() {
 		return null;
+	}
+
+	public function insureACL($key, $acl) {
+		$object = $this->client->bucket($this->bucket)->object($key);
+		$object->update([],['predefinedAcl' => self::GOOGLE_ACL[$acl]]);
 	}
 
 	public function exists($key) {
@@ -286,34 +291,41 @@ class GoogleStorage implements StorageInterface {
 		$url = str_replace('gs://',StorageObject::DEFAULT_DOWNLOAD_URL.'/', $url);
 		return $url;
 	}
+	//endregion
 
-	public function uploadUrl($key, $acl, $cacheControl = null, $expires = null) {
-		return null;
-//		try {
-//			$optionsData = [
-//				['bucket' => $this->bucket],
-//				['acl' => $acl],
-//				['key' => $key],
-//				['starts-with', '$Content-Type', '']
-//			];
-//
-//			if(!empty($cacheControl)) {
-//				$optionsData[] = ['Cache-Control' => $cacheControl];
-//			}
-//
-//			if(!empty($expires)) {
-//				$optionsData[] = ['Expires' => $expires];
-//			}
-//
-//			$postObject = new PostObjectV4($this->client, $this->bucket, [], $optionsData, '+15 minutes');
-//
-//			return new S3UploadInfo($key, $postObject, $acl, $cacheControl, $expires);
-//		}
-//		catch(AwsException $ex) {
-//			Logger::error('S3 Generate File Upload URL Error', ['exception' => $ex->getMessage()]);
-//			throw new StorageException($ex->getMessage(), $ex->getCode(), $ex);
-//		}
+	//region Direct Uploads
+
+	public function uploadUrl($key, $acl, $mimeType=null, $cacheControl = null, $expires = null) {
+		if(!$this->client) {
+			throw new InvalidStorageSettingsException('Storage settings are invalid');
+		}
+
+		$bucket = $this->client->bucket($this->bucket);
+		$object = $bucket->object($key);
+
+		$options=[];
+
+		if (!empty($mimeType)) {
+			$options['contentType'] = $mimeType;
+		}
+
+		if (!empty($cacheControl)) {
+			$options['cacheControl'] = $cacheControl;
+		}
+
+		$options['predefinedAcl'] = $acl;
+
+
+		$url = $object->signedUploadUrl(new Timestamp(new \DateTime('tomorrow')), $options);
+//		$url = $object->beginSignedUploadSession();
+
+		return new GoogleUploadInfo($key, $url, self::GOOGLE_ACL[$acl]);
 	}
 
+	public function enqueueUploaderScripts() {
+		add_action('admin_enqueue_scripts', function() {
+			wp_enqueue_script('ilab-media-upload-google',ILAB_PUB_JS_URL.'/ilab-media-upload-google.js',[],false,true);
+		});
+	}
 	//endregion
 }

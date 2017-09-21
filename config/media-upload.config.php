@@ -13,8 +13,8 @@
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
 return [
-	"title" => "Media Uploader",
-	"description" => "Provides an easy to use tool for uploading media directly to S3.",
+	"title" => "Direct Uploads",
+	"description" => "Provides an easy to use tool for uploading media directly to S3 or Google Cloud Storage.",
 	"class" => "ILAB\\MediaCloud\\Tools\\MediaUpload\\UploadTool",
 	"dependencies" => ["storage", "imgix"],
 	"env" => "ILAB_MEDIA_UPLOAD_ENABLED"

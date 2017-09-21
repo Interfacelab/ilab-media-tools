@@ -16,6 +16,11 @@
         "js/ilab-media-upload-s3.js"
       ]
     },
+    "ilab-media-upload-google.js": {
+      "files": [
+        "js/ilab-media-upload-google.js"
+      ]
+    },
     "ilab-media-tools.js": {
       "files": [
         "vendor/cropper/dist/cropper.js",
