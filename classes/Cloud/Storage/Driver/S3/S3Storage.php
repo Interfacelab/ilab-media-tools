@@ -22,6 +22,7 @@ use ILAB\MediaCloud\Cloud\Storage\FileInfo;
 use ILAB\MediaCloud\Cloud\Storage\InvalidStorageSettingsException;
 use ILAB\MediaCloud\Cloud\Storage\StorageException;
 use ILAB\MediaCloud\Cloud\Storage\StorageInterface;
+use ILAB\MediaCloud\Cloud\Storage\StorageManager;
 use ILAB\MediaCloud\Utilities\EnvironmentOptions;
 use ILAB\MediaCloud\Utilities\Logger;
 use ILAB\MediaCloud\Utilities\NoticeManager;
@@ -35,31 +36,31 @@ if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 class S3Storage implements StorageInterface {
 	//region Properties
 	/*** @var string */
-	private $key = null;
+	protected $key = null;
 
 	/*** @var string */
-	private $secret = null;
+	protected $secret = null;
 
 	/*** @var string */
-	private $bucket = null;
+	protected $bucket = null;
 
 	/*** @var string */
-	private $region = false;
+	protected $region = false;
 
 	/*** @var bool */
-	private $settingsError = false;
+	protected $settingsError = false;
 
 	/*** @var string */
-	private $endpoint = null;
+	protected $endpoint = null;
 
 	/*** @var bool */
-	private $endPointPathStyle = true;
+	protected $endPointPathStyle = true;
 
 	/*** @var bool */
-	private $useTransferAcceleration = false;
+	protected $useTransferAcceleration = false;
 
 	/*** @var S3Client|S3MultiRegionClient|null */
-	private $client = null;
+	protected $client = null;
 	//endregion
 
 	//region Constructor
@@ -79,17 +80,20 @@ class S3Storage implements StorageInterface {
 			'ILAB_CLOUD_ACCESS_SECRET'
 		]);
 
-		$this->useTransferAcceleration = EnvironmentOptions::Option('ilab-media-s3-use-transfer-acceleration', 'ILAB_AWS_S3_TRANSFER_ACCELERATION', false);
+		if (StorageManager::driver() == 's3') {
+			$this->useTransferAcceleration = EnvironmentOptions::Option('ilab-media-s3-use-transfer-acceleration', 'ILAB_AWS_S3_TRANSFER_ACCELERATION', false);
+		} else {
+			$this->endpoint = EnvironmentOptions::Option('ilab-media-s3-endpoint', [
+				'ILAB_AWS_S3_ENDPOINT',
+				'ILAB_CLOUD_ENDPOINT'
+			], false);
 
-		$this->endpoint = EnvironmentOptions::Option('ilab-media-s3-endpoint', [
-			'ILAB_AWS_S3_ENDPOINT',
-			'ILAB_CLOUD_ENDPOINT'
-		], false);
+			$this->endPointPathStyle = EnvironmentOptions::Option('ilab-media-s3-use-path-style-endpoint', [
+				'ILAB_AWS_S3_ENDPOINT_PATH_STYLE',
+				'ILAB_CLOUD_ENDPOINT_PATH_STYLE'
+			], true);
+		}
 
-		$this->endPointPathStyle = EnvironmentOptions::Option('ilab-media-s3-use-path-style-endpoint', [
-			'ILAB_AWS_S3_ENDPOINT_PATH_STYLE',
-			'ILAB_CLOUD_ENDPOINT_PATH_STYLE'
-		], true);
 
 		$this->settingsError = get_option('ilab-cloud-settings-error', false);
 
@@ -108,7 +112,7 @@ class S3Storage implements StorageInterface {
 
 	//region Enabled/Options
 	public function supportsDirectUploads() {
-		return true;
+		return (StorageManager::driver() == 's3');
 	}
 
 	public function validateSettings() {
@@ -448,7 +452,7 @@ class S3Storage implements StorageInterface {
 	//endregion
 
 	//region URLs
-	private function presignedRequest($key) {
+	protected function presignedRequest($key) {
 		if (!$this->client) {
 			throw new InvalidStorageSettingsException('Storage settings are invalid');
 		}
