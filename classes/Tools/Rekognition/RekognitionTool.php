@@ -71,7 +71,6 @@ class RekognitionTool extends ToolBase {
 	protected $ignoredTags = [];
 	//endregion
 
-
 	//region Constructor
 	public function __construct($toolName, $toolInfo, $toolManager) {
 		parent::__construct($toolName, $toolInfo, $toolManager);
