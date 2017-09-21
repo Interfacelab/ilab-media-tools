@@ -115,6 +115,7 @@ var ilabMediaUploadItem = function($, uploader, file) {
 
     this.loader = this.cell.find('.ilab-loader-container');
 
+
     if ((file.type.indexOf('image/')==0) && (file.size < (15 * 1024 * 1024))) {
         this.background.css({opacity: 0.33, 'background-image': 'url('+URL.createObjectURL(file)+')'});
     } else {
@@ -135,111 +136,161 @@ var ilabMediaUploadItem = function($, uploader, file) {
         this.cell.removeClass('ilab-upload-selected');
     };
 
-    this.startUpload = function() {
-        var data = {
-            "action": "ilab_upload_prepare",
-            "filename": file.name
-        };
+    this.updateProgress = function(amount) {
+        this.progressTrack.css({'width': (Math.floor(amount * 100) + '%')});
+    };
 
-        $.post(ajaxurl, data, function(response){
-            console.log(response);
-            if (response.status == 'ready') {
-                self.status.text('Uploading ...');
+    this.itemUploaded = function(success, importResponse) {
+        if (success) {
+            this.progress.css({'display': 'none'});
+            this.status.css({'display': 'none'});
+            this.background.css({'opacity':''});
 
-                var data = new FormData();
-                _.each(Object.keys(response.formData), function(key){
-                    if (key != 'key') {
-                        data.append(key, response.formData[key]);
-                    }
-                });
+            this.state = 'ready';
+            this.postId = importResponse.data.id;
+            if (importResponse.data.thumb) {
+                this.loader.css({"opacity": 1});
+                var image = new Image();
+                image.onload=function() {
+                    console.log('image loaded');
+                    this.background.css({'background-image': 'url('+importResponse.data.thumb+')'});
+                    this.loader.css({"opacity": 0});
+                }.bind(this);
 
-                if ((response.cacheControl != null) && (response.cacheControl.length > 0)) {
-                    data.append('Cache-Control', response.cacheControl);
-                }
-
-                if (response.expires != null) {
-                    data.append('Expires', response.expires);
-                }
-
-                var mimeType = file.type;
-                if (mimeType == 'application/x-photoshop') {
-                    mimeType = 'image/psd';
-                }
-
-                data.append('Content-Type', mimeType);
-                data.append('acl',response.acl);
-                data.append('key',response.key);
-                data.append('file',file);
-
-
-                $.ajax({
-                    url: response.url,
-                    method: 'POST',
-                    contentType: false,
-                    processData: false,
-                    data:data,
-                    xhr: function() {
-                        var xhr = $.ajaxSettings.xhr();
-                        xhr.upload.onprogress = function (e) {
-                            self.progressTrack.css({'width': (Math.floor(e.loaded / e.total * 100) + '%')});
-                        };
-                        return xhr;
-                    },
-                    success: function(successResponse) {
-                        var importData = {
-                            "action": "ilab_upload_import_cloud_file",
-                            "key": response.key
-                        };
-
-                        $.post(ajaxurl, importData, function(importResponse){
-                            console.log(importResponse);
-                            if (importResponse.status == 'success') {
-                                self.progress.css({'display': 'none'});
-                                self.status.css({'display': 'none'});
-                                self.background.css({'opacity':''});
-
-                                self.state = 'ready';
-                                self.postId = importResponse.data.id;
-                                if (importResponse.data.thumb) {
-
-                                    self.loader.css({"opacity": 1});
-                                    var image = new Image();
-                                    image.onload=function() {
-                                        console.log('image loaded');
-                                        self.background.css({'background-image': 'url('+importResponse.data.thumb+')'});
-                                        self.loader.css({"opacity": 0});
-                                    };
-
-                                    image.src = importResponse.data.thumb;
-                                }
-
-                                self.cell.removeClass('no-mouse');
-                            } else {
-                                self.progress.css({'display': 'none'});
-                                self.status.text("Error.");
-                                self.cell.addClass('upload-error');
-
-                            }
-
-                            uploader.uploadFinished(self);
-                        });
-
-
-                    },
-                    error: function(response) {
-                        self.progress.css({'display': 'none'});
-                        self.status.text('Error uploading.');
-
-                        uploader.uploadFinished(self);
-                    }
-                })
-            } else {
-                uploader.uploadFinished(self);
-                self.progress.css({'display': 'none'});
-
-                self.status.text('Error uploading.');
+                image.src = importResponse.data.thumb;
             }
-        });
+
+            this.cell.removeClass('no-mouse');
+        } else {
+            this.progress.css({'display': 'none'});
+            this.status.text("Error.");
+            this.cell.addClass('upload-error');
+        }
+
+        uploader.uploadFinished(this);
+    };
+
+    this.itemUploadError = function() {
+        self.progress.css({'display': 'none'});
+        self.status.text('Error uploading.');
+
+        uploader.uploadFinished(self);
+    };
+
+    this.updateStatusText = function(text) {
+        this.status.text('Uploading ...');
+    };
+
+    this.startUpload = function() {
+        var uploader = new this.storageUploader($, this, file);
+        uploader.start();
+        //
+        // console.log(uploader);
+        //
+        // var data = {
+        //     "action": "ilab_upload_prepare",
+        //     "filename": file.name
+        // };
+
+        // $.post(ajaxurl, data, function(response){
+        //     console.log(response);
+        //     if (response.status == 'ready') {
+        //         self.status.text('Uploading ...');
+        //
+        //         var data = new FormData();
+        //         _.each(Object.keys(response.formData), function(key){
+        //             if (key != 'key') {
+        //                 data.append(key, response.formData[key]);
+        //             }
+        //         });
+        //
+        //         if ((response.cacheControl != null) && (response.cacheControl.length > 0)) {
+        //             data.append('Cache-Control', response.cacheControl);
+        //         }
+        //
+        //         if (response.expires != null) {
+        //             data.append('Expires', response.expires);
+        //         }
+        //
+        //         var mimeType = file.type;
+        //         if (mimeType == 'application/x-photoshop') {
+        //             mimeType = 'image/psd';
+        //         }
+        //
+        //         data.append('Content-Type', mimeType);
+        //         data.append('acl',response.acl);
+        //         data.append('key',response.key);
+        //         data.append('file',file);
+        //
+        //
+        //         $.ajax({
+        //             url: response.url,
+        //             method: 'POST',
+        //             contentType: false,
+        //             processData: false,
+        //             data:data,
+        //             xhr: function() {
+        //                 var xhr = $.ajaxSettings.xhr();
+        //                 xhr.upload.onprogress = function (e) {
+        //                     self.progressTrack.css({'width': (Math.floor(e.loaded / e.total * 100) + '%')});
+        //                 };
+        //                 return xhr;
+        //             },
+        //             success: function(successResponse) {
+        //                 var importData = {
+        //                     "action": "ilab_upload_import_cloud_file",
+        //                     "key": response.key
+        //                 };
+        //
+        //                 $.post(ajaxurl, importData, function(importResponse){
+        //                     console.log(importResponse);
+        //                     if (importResponse.status == 'success') {
+        //                         self.progress.css({'display': 'none'});
+        //                         self.status.css({'display': 'none'});
+        //                         self.background.css({'opacity':''});
+        //
+        //                         self.state = 'ready';
+        //                         self.postId = importResponse.data.id;
+        //                         if (importResponse.data.thumb) {
+        //
+        //                             self.loader.css({"opacity": 1});
+        //                             var image = new Image();
+        //                             image.onload=function() {
+        //                                 console.log('image loaded');
+        //                                 self.background.css({'background-image': 'url('+importResponse.data.thumb+')'});
+        //                                 self.loader.css({"opacity": 0});
+        //                             };
+        //
+        //                             image.src = importResponse.data.thumb;
+        //                         }
+        //
+        //                         self.cell.removeClass('no-mouse');
+        //                     } else {
+        //                         self.progress.css({'display': 'none'});
+        //                         self.status.text("Error.");
+        //                         self.cell.addClass('upload-error');
+        //
+        //                     }
+        //
+        //                     uploader.uploadFinished(self);
+        //                 });
+        //
+        //
+        //             },
+        //             error: function(response) {
+        //                 self.progress.css({'display': 'none'});
+        //                 self.status.text('Error uploading.');
+        //
+        //                 uploader.uploadFinished(self);
+        //             }
+        //         })
+        //     } else {
+        //         uploader.uploadFinished(self);
+        //         self.progress.css({'display': 'none'});
+        //
+        //         self.status.text('Error uploading.');
+        //     }
+        // });
     };
 
 

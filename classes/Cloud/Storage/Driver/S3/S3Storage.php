@@ -492,4 +492,11 @@ class S3Storage implements StorageInterface {
 	}
 
 	//endregion
+
+
+	public function enqueueUploaderScripts() {
+		add_action('admin_enqueue_scripts', function() {
+			wp_enqueue_script('ilab-media-upload-s3',ILAB_PUB_JS_URL.'/ilab-media-upload-s3.js',[],false,true);
+		});
+	}
 }

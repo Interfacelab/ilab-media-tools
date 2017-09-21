@@ -75,6 +75,7 @@ class UploadTool extends ToolBase {
 	 * Setup upload UI
 	 */
 	public function setupAdmin() {
+
 		add_action('admin_enqueue_scripts', function() {
 			wp_enqueue_script('wp-util');
 			wp_enqueue_style('ilab-media-upload-css', ILAB_PUB_CSS_URL.'/ilab-media-upload.min.css');
@@ -83,6 +84,8 @@ class UploadTool extends ToolBase {
 				'wp-util'
 			], false, true);
 		});
+
+		$this->client->enqueueUploaderScripts();
 
 		add_action('admin_menu', function() {
 			if(current_user_can('upload_files')) {

@@ -132,4 +132,9 @@ interface StorageInterface {
 	 * @return UploadInfo
 	 */
 	public function uploadUrl($key, $acl, $cacheControl = null, $expires = null);
+
+	/**
+	 * Enqueue any scripts need for direct uploading.
+	 */
+	public function enqueueUploaderScripts();
 }
