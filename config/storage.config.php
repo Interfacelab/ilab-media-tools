@@ -35,7 +35,7 @@ return [
 						"options" => [
 							"s3" => "Amazon S3",
 							"minio" => "Minio",
-							"do" => "Digital Ocean Spaces",
+							"do" => "DigitalOcean Spaces",
 							"other-s3" => "Other S3 Compatible Service",
 							'google' => 'Google Cloud Storage',
 							'backblaze' => 'BackBlaze B2 Cloud Storage',

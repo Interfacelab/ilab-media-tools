@@ -24,7 +24,7 @@ use function ILAB\MediaCloud\Utilities\arrayPath;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
-class MinioStorage extends OtherS3Storage {
+class OtherS3Storage extends S3Storage {
 	//region Properties
 
 	//endregion
@@ -35,7 +35,7 @@ class MinioStorage extends OtherS3Storage {
 
 	//region Enabled/Options
 	public function supportsDirectUploads() {
-		return true;
+		return false;
 	}
 	//endregion
 
@@ -43,6 +43,43 @@ class MinioStorage extends OtherS3Storage {
 	//endregion
 
 	//region File Functions
+	public function info( $key ) {
+		if (!$this->client) {
+			throw new InvalidStorageSettingsException('Storage settings are invalid');
+		}
+
+		$presignedUrl = $this->presignedUrl($key);
+
+		$defaults = stream_context_get_default();
+		stream_context_set_default(['http'=>['method'=>'HEAD']]);
+		$headers = get_headers($presignedUrl, 1);
+		stream_context_set_default($defaults);
+
+		$length = (arrayPath($headers, 'Content-Length', false));
+		if ($length && is_array($length)) {
+			$length = $length[count($length) - 1];
+		}
+
+		$type = (arrayPath($headers, 'Content-Type', false));
+		if ($type && is_array($type)) {
+			$type = $type[count($type) - 1];
+		}
+
+		if (empty($type) && empty($length)) {
+			throw new StorageException("Unable to get Content-Type or Content-Length for '$key'");
+		}
+
+		$size = null;
+		if (strpos($type, 'image/') === 0) {
+			$faster = new FasterImage();
+			$result = $faster->batch([$presignedUrl]);
+			$result = $result[$presignedUrl];
+			$size = $result['size'];
+		}
+
+		$fileInfo = new FileInfo($key,$presignedUrl, $length, $type, $size);
+		return $fileInfo;
+	}
 	//endregion
 
 	//region URLs

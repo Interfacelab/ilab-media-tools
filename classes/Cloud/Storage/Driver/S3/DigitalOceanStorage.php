@@ -24,7 +24,7 @@ use function ILAB\MediaCloud\Utilities\arrayPath;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
-class MinioStorage extends OtherS3Storage {
+class DigitalOceanStorage extends OtherS3Storage {
 	//region Properties
 
 	//endregion
@@ -35,7 +35,7 @@ class MinioStorage extends OtherS3Storage {
 
 	//region Enabled/Options
 	public function supportsDirectUploads() {
-		return true;
+		return false;
 	}
 	//endregion
 
