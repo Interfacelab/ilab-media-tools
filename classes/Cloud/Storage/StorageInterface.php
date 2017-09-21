@@ -81,14 +81,14 @@ interface StorageInterface {
 	 * Uploads a file, returning the new URL for the file.
 	 *
 	 * @param $key
-	 * @param $file
+	 * @param $fileName
 	 * @param $acl
 	 * @param bool $cacheControl
 	 * @param bool $expires
 	 * @throws StorageException
 	 * @return string
 	 */
-	public function upload($key, $file, $acl, $cacheControl=false, $expires=false);
+	public function upload($key, $fileName, $acl, $cacheControl=false, $expires=false);
 
 	/**
 	 * Deletes a file

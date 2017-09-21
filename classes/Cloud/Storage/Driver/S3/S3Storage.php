@@ -359,7 +359,7 @@ class S3Storage implements StorageInterface {
 		}
 	}
 
-	public function upload( $key, $file, $acl, $cacheControl = false, $expires = false ) {
+	public function upload( $key, $fileName, $acl, $cacheControl = false, $expires = false ) {
 		if (!$this->client) {
 			throw new InvalidStorageSettingsException('Storage settings are invalid');
 		}
@@ -380,12 +380,17 @@ class S3Storage implements StorageInterface {
 		}
 
 		try {
+			$file = fopen($fileName, 'r');
+
 			Logger::startTiming( "Start Upload", [ 'file' => $key]);
 			$result = $this->client->upload($this->bucket,$key,$file, $acl, $options);
 			Logger::endTiming( "End Upload", [ 'file' => $key]);
 
+			fclose($file);
+
 			return $result->get('ObjectURL');
 		} catch (AwsException $ex) {
+			fclose($file);
 			Logger::error( 'S3 Upload Error', [
 				'exception' => $ex->getMessage(),
 			    'bucket' => $this->bucket,

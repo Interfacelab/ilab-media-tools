@@ -22,6 +22,7 @@ use ILAB\MediaCloud\Cloud\Storage\UploadInfo;
 use ILAB\MediaCloud\Tools\ToolBase;
 use ILAB\MediaCloud\Utilities\EnvironmentOptions;
 use function ILAB\MediaCloud\Utilities\json_response;
+use ILAB\MediaCloud\Utilities\NoticeManager;
 use ILAB\MediaCloud\Utilities\View;
 use ILAB\MediaCloud\Tasks\StorageImportProcess;
 use ILAB\MediaCloud\Utilities\Logger;
@@ -131,7 +132,11 @@ class StorageTool extends ToolBase {
 	}
 
 	public function settingsChanged() {
-		$this->client->validateSettings();
+	    try {
+		    $this->client->validateSettings();
+        } catch (StorageException $ex) {
+            NoticeManager::instance()->displayAdminNotice('error', 'There is a serious issue with your storage settings.  Please check them and try again.');
+        }
 	}
 
 	public function registerMenu($top_menu_slug) {
@@ -279,11 +284,16 @@ class StorageTool extends ToolBase {
 						$file = trim(str_replace($upload_path, '', $pi['dirname']), '/').'/'.$pi['basename'];
 					}
 
-					$this->deleteFile($file);
+					try {
+						$this->deleteFile($file);
+					}
+					catch(\Exception $ex) {
+					}
 				}
 
 			} else {
-				$this->deleteFile($data['s3']['key']);
+			    $lastFile = $data['s3']['key'];
+				$this->deleteFile($lastFile);
 
 				if(isset($data['sizes'])) {
 					$pathParts = explode('/', $data['s3']['key']);
@@ -292,11 +302,16 @@ class StorageTool extends ToolBase {
 
 					foreach($data['sizes'] as $key => $size) {
 						$file = $path_base.'/'.$size['file'];
+						if ($file == $lastFile) {
+						    continue;
+                        }
+
+                        $lastFile = $file;
+
 						try {
 							$this->deleteFile($file);
 						}
 						catch(\Exception $ex) {
-							error_log($ex->getMessage());
 						}
 					}
 				}
@@ -810,9 +825,8 @@ class StorageTool extends ToolBase {
         $parts = explode('/', $filename);
         $bucketFilename = array_pop($parts);
 
-		$file = fopen($upload_path.'/'.$filename, 'r');
 		try {
-			$url = $this->client->upload($prefix.$bucketFilename, $file, StorageSettings::privacy(), StorageSettings::cacheControl(), StorageSettings::expires());
+			$url = $this->client->upload($prefix.$bucketFilename, $upload_path.'/'.$filename, StorageSettings::privacy(), StorageSettings::cacheControl(), StorageSettings::expires());
 
 			$options = [];
 			$params = [];
@@ -850,9 +864,6 @@ class StorageTool extends ToolBase {
 				'bucketFilename' => $bucketFilename,
 				'privacy' => StorageSettings::privacy()
 			]);
-		}
-		finally {
-			fclose($file);
 		}
 
 		if(StorageSettings::deleteOnUpload()) {

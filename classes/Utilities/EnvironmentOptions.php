@@ -23,13 +23,17 @@ final class EnvironmentOptions {
 	/**
 	 * Fetches an option from WordPress or the environment.
 	 *
-	 * @param $optionName
-	 * @param string|array $envVariableName
+	 * @param string|null $optionName
+	 * @param string|array|null $envVariableName
 	 * @param bool $default
 	 *
 	 * @return array|false|mixed|string|null
 	 */
-	public static function Option($optionName, $envVariableName = null, $default = false) {
+	public static function Option($optionName = null, $envVariableName = null, $default = false) {
+		if (empty($optionName) && empty($envVariableName)) {
+			return $default;
+		}
+
 		if ($envVariableName == null) {
 			$envVariableName = str_replace('-','_', strtoupper($optionName));
 		}
@@ -46,6 +50,10 @@ final class EnvironmentOptions {
 			if ($envval) {
 				return $envval;
 			}
+		}
+
+		if (empty($optionName)) {
+			return $default;
 		}
 
 		return get_option($optionName, $default);

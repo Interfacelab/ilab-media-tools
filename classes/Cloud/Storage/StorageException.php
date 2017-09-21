@@ -24,4 +24,13 @@ if (!defined('ABSPATH')) { header('Location: /'); die; }
  */
 class StorageException extends \Exception {
 
+	/**
+	 * @param \Exception $ex
+	 *
+	 * @throws StorageException
+	 */
+	public static function ThrowFromOther($ex) {
+		throw new StorageException($ex->getMessage(), $ex->getCode(), $ex);
+	}
+
 }
