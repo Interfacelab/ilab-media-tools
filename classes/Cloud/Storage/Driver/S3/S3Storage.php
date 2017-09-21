@@ -313,6 +313,10 @@ class S3Storage implements StorageInterface {
 		return $this->bucket;
 	}
 
+	public function region() {
+		return $this->region;
+	}
+
 	public function exists( $key ) {
 		if (!$this->client) {
 			throw new InvalidStorageSettingsException('Storage settings are invalid');
@@ -482,11 +486,5 @@ class S3Storage implements StorageInterface {
 		}
 	}
 
-	//endregion
-
-	//region Direct Uploads
-	public function renderDirectUploadScripts() {
-		// TODO: Implement renderDirectUploadScripts() method.
-	}
 	//endregion
 }

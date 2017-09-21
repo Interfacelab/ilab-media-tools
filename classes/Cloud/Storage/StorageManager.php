@@ -21,6 +21,7 @@ use ILAB\MediaCloud\Utilities\EnvironmentOptions;
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
 final class StorageManager {
+	private static $driver = null;
 	private static $registry = [];
 	private static $instance = null;
 
@@ -35,15 +36,22 @@ final class StorageManager {
 			return self::$instance;
 		}
 
-		$driverName = EnvironmentOptions::Option('ilab-media-storage-provider','ILAB_CLOUD_STORAGE_PROVIDER', 's3');
-		if (!isset(self::$registry[$driverName])) {
-			throw new StorageException("Invalid driver '$driverName'");
+		if (!isset(self::$registry[self::driver()])) {
+			throw new StorageException("Invalid driver '".self::driver()."'");
 		}
 
-		$class = self::$registry[$driverName];
+		$class = self::$registry[self::driver()];
 		self::$instance = new $class();
 
 		return self::$instance;
+	}
+
+	public static function driver() {
+		if (!self::$driver) {
+			self::$driver = EnvironmentOptions::Option('ilab-media-storage-provider','ILAB_CLOUD_STORAGE_PROVIDER', 's3');
+		}
+
+		return self::$driver;
 	}
 
 	/**

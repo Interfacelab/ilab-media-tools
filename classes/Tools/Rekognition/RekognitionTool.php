@@ -13,6 +13,7 @@
 
 namespace ILAB\MediaCloud\Tools\Rekognition;
 
+use ILAB\MediaCloud\Cloud\Storage\StorageManager;
 use ILAB\MediaCloud\Tools\ToolBase;
 use function ILAB\MediaCloud\Utilities\json_response;
 use ILAB\MediaCloud\Utilities\View;
@@ -29,21 +30,49 @@ if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
  * Debugging tool.
  */
 class RekognitionTool extends ToolBase {
+	//region Class Variables
+	/** @var string|null */
 	protected $key = null;
+
+	/** @var string|null */
 	protected $secret = null;
+
+	/** @var string|null */
 	protected $region;
+
+	/** @var bool */
 	protected $detectLabels = false;
+
+	/** @var string|null */
 	protected $detectLabelsTax = 'post_tag';
+
+	/** @var int */
 	protected $detectLabelsConfidence = 50;
+
+	/** @var bool */
 	protected $detectExplicit = false;
+
+	/** @var bool */
 	protected $detectExplicitTax = 'post_tag';
+
+	/** @var int */
 	protected $detectExplicitConfidence = 50;
+
+	/** @var bool */
 	protected $detectCelebrities = false;
+
+	/** @var string|null */
 	protected $detectCelebritiesTax = 'post_tag';
+
+	/** @var bool */
 	protected $detectFaces = false;
+
+	/** @var array */
 	protected $ignoredTags = [];
+	//endregion
 
 
+	//region Constructor
 	public function __construct($toolName, $toolInfo, $toolManager) {
 		parent::__construct($toolName, $toolInfo, $toolManager);
 
@@ -51,8 +80,8 @@ class RekognitionTool extends ToolBase {
 
 		$this->key = $this->getOption('ilab-media-s3-access-key', 'ILAB_AWS_S3_ACCESS_KEY');
 		$this->secret = $this->getOption('ilab-media-s3-secret', 'ILAB_AWS_S3_ACCESS_SECRET');
-
 		$this->region = $this->getOption('ilab-media-s3-rekognition-region', 'ILAB_AWS_REKOGNITION_REGION', false);
+
 		$this->detectLabels = $this->getOption('ilab-media-s3-rekognition-detect-labels', 'ILAB_AWS_REKOGNITION_DETECT_LABELS', false);
 		$this->detectLabelsTax = $this->getOption('ilab-media-s3-rekognition-detect-labels-tax', 'ILAB_AWS_REKOGNITION_DETECT_LABELS_TAX', 'post_tag');
 		$this->detectLabelsConfidence = (int)$this->getOption('ilab-media-s3-rekognition-detect-labels-confidence', 'ILAB_AWS_REKOGNITION_DETECT_LABELS_CONFIDENCE', 50);
@@ -65,7 +94,6 @@ class RekognitionTool extends ToolBase {
 
 		$this->detectLabelsConfidence = min(100, max(0, $this->detectLabelsConfidence));
 		$this->detectExplicitConfidence = min(100, max(0, $this->detectExplicitConfidence));
-
 
 		$toIgnoreString = get_option('ilab-media-s3-rekognition-ignored-tags', '');
 		if (!empty($toIgnoreString)) {
@@ -103,67 +131,17 @@ class RekognitionTool extends ToolBase {
 
 		if (is_admin()) {
 			$this->setupAdmin();
-
-			add_action('wp_ajax_ilab_rekognizer_process_images', [$this,'processImages']);
-			add_action('wp_ajax_ilab_rekognizer_process_progress', [$this,'processProgress']);
-			add_action('wp_ajax_ilab_rekognizer_cancel_process', [$this,'cancelProcessMedia']);
-
-			add_action('admin_init',function(){
-				if ($this->enabled()) {
-					add_filter('bulk_actions-upload', function($actions){
-						$actions['ilab_rekognizer_process'] = 'Process with Rekognizer';
-						return $actions;
-					});
-
-					add_filter('handle_bulk_actions-upload', function($redirect_to, $action_name, $post_ids) {
-						if ('ilab_rekognizer_process' === $action_name) {
-							$posts_to_import = [];
-							if (count($post_ids) > 0) {
-								foreach($post_ids as $post_id) {
-									$meta = wp_get_attachment_metadata($post_id);
-									if (!empty($meta) && !isset($meta['s3'])) {
-										continue;
-									}
-
-									$mime = get_post_mime_type($post_id);
-									if (!in_array($mime, ['image/jpeg', 'image/jpg', 'image/png'])) {
-										continue;
-									}
-
-									$posts_to_import[] = $post_id;
-								}
-							}
-
-							if (count($posts_to_import) > 0) {
-								update_option('ilab_rekognizer_status', true);
-								update_option('ilab_rekognizer_total_count', count($posts_to_import));
-								update_option('ilab_rekognizer_current', 1);
-								update_option('ilab_rekognizer_should_cancel', false);
-
-								$process = new RekognizerProcess();
-
-								for($i = 0; $i < count($posts_to_import); ++$i) {
-									$process->push_to_queue(['index' => $i, 'post' => $posts_to_import[$i]]);
-								}
-
-								$process->save();
-								$process->dispatch();
-
-								return 'admin.php?page=media-tools-rekognizer-importer';
-							}
-						}
-
-						return $redirect_to;
-					}, 1000, 3);
-				}
-			});
 		}
 	}
+	//endregion
 
+	//region ToolBase Overrides
 	public function enabled() {
-		$penabled = parent::enabled();
+		if (!parent::enabled()) {
+			return false;
+		}
 
-		if (!$penabled) {
+		if (StorageManager::driver() != 's3') {
 			return false;
 		}
 
@@ -171,9 +149,8 @@ class RekognitionTool extends ToolBase {
 			return false;
 		}
 
-		$s3Tool = $this->toolManager->tools['storage'];
-		$enabled = $s3Tool->enabled();
-		if (!$enabled || $s3Tool->hasCustomEndPoint()) {
+		$client = StorageManager::storageInstance();
+		if (!$client->enabled()) {
 			return false;
 		}
 
@@ -181,13 +158,122 @@ class RekognitionTool extends ToolBase {
 	}
 
 	public function registerMenu($top_menu_slug) {
-		parent::registerMenu($top_menu_slug); // TODO: Change the autogenerated stub
+		parent::registerMenu($top_menu_slug);
 
 		if ($this->enabled()) {
 			add_submenu_page( $top_menu_slug, 'Rekognizer Importer', 'Rekognizer Importer', 'manage_options', 'media-tools-rekognizer-importer', [$this,'renderImporter']);
 		}
 	}
+	//endregion
 
+	//region Settings Helpers
+	/**
+	 * Returns a list of taxonomies for Attachments, used in the Rekognition settings page.
+	 * @return array
+	 */
+	public function attachmentTaxonomies() {
+		$taxonomies = [
+			'category' => 'Category',
+			'post_tag' => 'Tag'
+		];
+
+		$attachTaxes = get_object_taxonomies('attachment');
+		if (!empty($attachTaxes)) {
+			foreach($attachTaxes as $attachTax) {
+				if (!in_array($attachTax, ['post_tag', 'category'])) {
+					$taxonomies[$attachTax] = ucwords(str_replace('_', ' ', $attachTax));
+				}
+			}
+		}
+
+
+		return $taxonomies;
+	}
+	//endregion
+
+	//region Admin Setup
+	/**
+	 * Handles the Rekognition bulk import action
+	 *
+	 * @param string $redirect_to
+	 * @param string $action_name
+	 * @param array $post_ids
+	 *
+	 * @return string
+	 */
+	public function handleBulkAction($redirect_to, $action_name, $post_ids) {
+		if ('ilab_rekognizer_process' === $action_name) {
+			$posts_to_import = [];
+			if (count($post_ids) > 0) {
+				foreach($post_ids as $post_id) {
+					$meta = wp_get_attachment_metadata($post_id);
+					if (!empty($meta) && !isset($meta['s3'])) {
+						continue;
+					}
+
+					$mime = get_post_mime_type($post_id);
+					if (!in_array($mime, ['image/jpeg', 'image/jpg', 'image/png'])) {
+						continue;
+					}
+
+					$posts_to_import[] = $post_id;
+				}
+			}
+
+			if (count($posts_to_import) > 0) {
+				update_option('ilab_rekognizer_status', true);
+				update_option('ilab_rekognizer_total_count', count($posts_to_import));
+				update_option('ilab_rekognizer_current', 1);
+				update_option('ilab_rekognizer_should_cancel', false);
+
+				$process = new RekognizerProcess();
+
+				for($i = 0; $i < count($posts_to_import); ++$i) {
+					$process->push_to_queue(['index' => $i, 'post' => $posts_to_import[$i]]);
+				}
+
+				$process->save();
+				$process->dispatch();
+
+				return 'admin.php?page=media-tools-rekognizer-importer';
+			}
+		}
+
+		return $redirect_to;
+	}
+
+	/**
+	 * Admin setup
+	 */
+	public function setupAdmin() {
+		add_filter('ilab_s3_after_upload', [$this, 'processImageMeta'], 1000, 2);
+
+		add_action('wp_ajax_ilab_rekognizer_process_images', [$this,'processImages']);
+		add_action('wp_ajax_ilab_rekognizer_process_progress', [$this,'processProgress']);
+		add_action('wp_ajax_ilab_rekognizer_cancel_process', [$this,'cancelProcessMedia']);
+
+		add_action('admin_init',function(){
+			if ($this->enabled()) {
+				add_filter('bulk_actions-upload', function($actions){
+					$actions['ilab_rekognizer_process'] = 'Process with Rekognizer';
+					return $actions;
+				});
+
+				add_filter('handle_bulk_actions-upload', [$this,'handleBulkAction'], 1000, 3);
+			}
+		});
+	}
+	//endregion
+
+	//region Processing
+	/**
+	 * Process an image through Rekognition
+	 *
+	 * @param int $postID
+	 * @param array $meta
+	 *
+	 * @return array
+	 */
 	public function processImageMeta($postID, $meta) {
 		if (!$this->enabled()) {
 			return $meta;
@@ -250,9 +336,9 @@ class RekognitionTool extends ToolBase {
 					}
 
 					$this->processTags($tags, $this->detectLabelsTax, $postID);
-				}
 
-				Logger::info( 'Detect Labels', $tags);
+					Logger::info( 'Detect Labels', $tags);
+				}
 			} catch (AwsException $ex) {
 				Logger::error( 'Detect Labels Error', [ 'exception' =>$ex->getMessage()]);
 				return $meta;
@@ -268,7 +354,7 @@ class RekognitionTool extends ToolBase {
 							                                        'Name' => $s3['key']
 						                                        ]
 					                                        ],
-//					                                        'MinConfidence' => $this->detectExplicitConfidence
+					                                        //					                                        'MinConfidence' => $this->detectExplicitConfidence
 				                                        ]);
 
 				$labels = $result->get('ModerationLabels');
@@ -378,6 +464,13 @@ class RekognitionTool extends ToolBase {
 		return $meta;
 	}
 
+	/**
+	 * Process the tags found with Rekognition
+	 *
+	 * @param array $tags
+	 * @param string $tax
+	 * @param int $postID
+	 */
 	private function processTags($tags, $tax, $postID) {
 		if (empty($tags)) {
 			return;
@@ -418,30 +511,12 @@ class RekognitionTool extends ToolBase {
 			wp_set_object_terms($postID, $tagsToAdd, $tax, true);
 		}
 	}
+	//endregion
 
-	public function setupAdmin() {
-		add_filter('ilab_s3_after_upload', [$this, 'processImageMeta'], 1000, 2);
-	}
-
-	public function attachmentTaxonomies() {
-		$taxonomies = [
-			'category' => 'Category',
-			'post_tag' => 'Tag'
-		];
-
-		$attachTaxes = get_object_taxonomies('attachment');
-		if (!empty($attachTaxes)) {
-			foreach($attachTaxes as $attachTax) {
-				if (!in_array($attachTax, ['post_tag', 'category'])) {
-					$taxonomies[$attachTax] = ucwords(str_replace('_', ' ', $attachTax));
-				}
-			}
-		}
-
-
-		return $taxonomies;
-	}
-
+	//region Importer
+	/**
+	 * Renders the Rekognition Import UI
+	 */
 	public function renderImporter() {
 		$enabled = $this->enabled();
 
@@ -477,6 +552,9 @@ class RekognitionTool extends ToolBase {
 		]);
 	}
 
+	/**
+	 * Ajax callback to start the import process.
+	 */
 	public function processImages() {
 		global $wpdb;
 
@@ -525,6 +603,9 @@ SQL;
 		die;
 	}
 
+	/**
+	 * Ajax endpoint to get progress information
+	 */
 	public function processProgress() {
 		$shouldCancel = get_option('ilab_rekognizer_should_cancel', false);
 		$status = get_option('ilab_rekognizer_status', false);
@@ -543,10 +624,14 @@ SQL;
 		die;
 	}
 
+	/**
+	 * Cancels the Rekognition import process.
+	 */
 	public function cancelProcessMedia() {
 		update_option('ilab_rekognizer_should_cancel', 1);
 		RekognizerProcess::cancelAll();
 
-		return json_response(['status'=>'ok']);
+		json_response(['status'=>'ok']);
 	}
+	//endregion
 }

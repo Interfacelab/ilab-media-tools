@@ -50,6 +50,13 @@ interface StorageInterface {
 	public function bucket();
 
 	/**
+	 * Returns the name of the region this storage is using.
+	 *
+	 * @return string|null
+	 */
+	public function region();
+
+	/**
 	 * Determines if a file exists in a given bucket.
 	 *
 	 * @param $key
@@ -125,10 +132,4 @@ interface StorageInterface {
 	 * @return UploadInfo
 	 */
 	public function uploadUrl($key, $acl, $cacheControl = null, $expires = null);
-
-
-	/**
-	 * Renders the necessary scripts for handling direct uploads
-	 */
-	public function renderDirectUploadScripts();
 }
