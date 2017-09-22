@@ -6,7 +6,7 @@ Tested up to: 4.8.2
 License: GPLv3 or later
 Donate link: http://www2.jdrf.org/site/TR?fr_id=6912&pg=personal&px=11429802
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 2.0.0
+Stable tag: 2.0.1
 Requires PHP: 5.6
 
 Automatically upload media to Amazon S3 and integrate with Imgix, a real-time image processing CDN.  Boosts site performance and simplifies workflows.
@@ -93,6 +93,15 @@ No, I'm just one very enthusiastic customer.
 6. Imgix settings.
 
 == Changelog ==
+
+= 2.0.1 =
+* Major refactoring of the code base
+* Storage services are now "pluggable", meaning new ones can be added that aren't S3 compatible
+* Added native Google Cloud Storage support
+* Direct uploads to Google Cloud Storage
+* Added native Backblaze B2 support
+* Improved support for other S3 compatible services
+* Other misc. fixes
 
 = 2.0.0 =
 * Major refactoring of the code base
