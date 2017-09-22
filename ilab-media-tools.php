@@ -79,6 +79,7 @@ require_once('helpers/ilab-media-tool-geometry-helpers.php');
 \ILAB\MediaCloud\Cloud\Storage\StorageManager::registerDriver('do', \ILAB\MediaCloud\Cloud\Storage\Driver\S3\DigitalOceanStorage::class);
 \ILAB\MediaCloud\Cloud\Storage\StorageManager::registerDriver('other-s3', \ILAB\MediaCloud\Cloud\Storage\Driver\S3\OtherS3Storage::class);
 \ILAB\MediaCloud\Cloud\Storage\StorageManager::registerDriver('google', \ILAB\MediaCloud\Cloud\Storage\Driver\Google\GoogleStorage::class);
+\ILAB\MediaCloud\Cloud\Storage\StorageManager::registerDriver('backblaze', \ILAB\MediaCloud\Cloud\Storage\Driver\Backblaze\BackblazeStorage::class);
 
 // Make sure the NoticeManager is initialized
 \ILAB\MediaCloud\Utilities\NoticeManager::instance();

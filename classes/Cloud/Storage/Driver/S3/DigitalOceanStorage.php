@@ -37,6 +37,10 @@ class DigitalOceanStorage extends OtherS3Storage {
 	public function supportsDirectUploads() {
 		return false;
 	}
+
+	protected function settingsErrorOptionName() {
+		return 'ilab-do-settings-error';
+	}
 	//endregion
 
 	//region Client Creation

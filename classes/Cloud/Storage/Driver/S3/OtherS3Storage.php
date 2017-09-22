@@ -37,6 +37,10 @@ class OtherS3Storage extends S3Storage {
 	public function supportsDirectUploads() {
 		return false;
 	}
+
+	protected function settingsErrorOptionName() {
+		return 'ilab-other-s3-settings-error';
+	}
 	//endregion
 
 	//region Client Creation

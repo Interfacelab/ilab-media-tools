@@ -79,7 +79,7 @@ class GoogleStorage implements StorageInterface {
 			}
 		}
 
-		$this->settingsError = get_option('ilab-cloud-settings-error', false);
+		$this->settingsError = get_option('ilab-google-settings-error', false);
 
 		$this->client = $this->getClient();
 	}
@@ -91,7 +91,7 @@ class GoogleStorage implements StorageInterface {
 	}
 
 	public function validateSettings() {
-		delete_option('ilab-s3-settings-error');
+		delete_option('ilab-google-settings-error');
 		$this->settingsError = false;
 
 		$this->client = null;
@@ -114,7 +114,7 @@ class GoogleStorage implements StorageInterface {
 
 			if(!$valid) {
 				$this->settingsError = true;
-				update_option('ilab-s3-settings-error', true);
+				update_option('ilab-google-settings-error', true);
 			} else {
 				$this->client = $client;
 			}

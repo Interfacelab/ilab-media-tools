@@ -37,6 +37,10 @@ class MinioStorage extends OtherS3Storage {
 	public function supportsDirectUploads() {
 		return true;
 	}
+
+	protected function settingsErrorOptionName() {
+		return 'ilab-minio-settings-error';
+	}
 	//endregion
 
 	//region Client Creation

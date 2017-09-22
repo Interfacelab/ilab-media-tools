@@ -78,6 +78,15 @@ return [
 							"ilab-media-storage-provider" => ["backblaze"]
 						]
 					],
+					"ilab-media-backblaze-bucket-url" => [
+						"title" => "Bucket URL",
+						"description" => "Before you can use Backblaze B2, you'll need to specify the URL for your bucket.  You only need to specify the host part of the url, eg. <code>https://f001.backblazeb2.com/</code>.  You can read about how to determine that <a href='https://help.backblaze.com/hc/en-us/articles/217666928-Creating-a-Vanity-URL-with-B2?_ga=2.229535388.1860693768.1506013044-1312126929.1505517805' target='_blank'>here</a>.  If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_BACKBLAZE_BUCKET_URL</strong>",
+						"type" => "text-field",
+						"watch" => true,
+						"conditions" => [
+							"ilab-media-storage-provider" => ["backblaze"]
+						]
+					],
 					"ilab-media-google-credentials" => [
 						"title" => "Credentials",
 						"description" => "If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_CLOUD_GOOGLE_CREDENTIALS</strong>",
@@ -165,17 +174,26 @@ return [
 						"options" => [
 							"public-read" => "public-read",
 							"authenticated-read" => "authenticated-read"
+						],
+						"conditions" => [
+							"ilab-media-storage-provider" => ["!backblaze"]
 						]
 					],
 					"ilab-media-s3-cache-control" => [
 						"title" => "Cache Control",
 						"description" => "Sets the Cache-Control metadata for uploads, e.g. <code>public,max-age=2592000</code> - If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_AWS_S3_CACHE_CONTROL</strong>.",
-						"type" => "text-field"
+						"type" => "text-field",
+						"conditions" => [
+							"ilab-media-storage-provider" => ["!backblaze"]
+						]
 					],
 					"ilab-media-s3-expires" => [
 						"title" => "Content Expiration",
 						"description" => "Sets the Expire metadata for uploads.  This is the number of minutes from the date of upload. If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_AWS_S3_EXPIRES</strong>.",
-						"type" => "text-field"
+						"type" => "text-field",
+						"conditions" => [
+							"ilab-media-storage-provider" => ["!backblaze"]
+						]
 					],
 					"ilab-media-s3-upload-documents" => [
 						"title" => "Upload Non-image Files",

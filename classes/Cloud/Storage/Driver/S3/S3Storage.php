@@ -17,7 +17,6 @@
 namespace ILAB\MediaCloud\Cloud\Storage\Driver\S3;
 
 use FasterImage\FasterImage;
-use GuzzleHttp\Client;
 use ILAB\MediaCloud\Cloud\Storage\FileInfo;
 use ILAB\MediaCloud\Cloud\Storage\InvalidStorageSettingsException;
 use ILAB\MediaCloud\Cloud\Storage\StorageException;
@@ -95,7 +94,7 @@ class S3Storage implements StorageInterface {
 		}
 
 
-		$this->settingsError = get_option('ilab-cloud-settings-error', false);
+		$this->settingsError = get_option($this->settingsErrorOptionName(), false);
 
 		$region = EnvironmentOptions::Option('ilab-media-s3-region', [
 			'ILAB_AWS_S3_REGION',
@@ -115,8 +114,12 @@ class S3Storage implements StorageInterface {
 		return (StorageManager::driver() == 's3');
 	}
 
+	protected function settingsErrorOptionName() {
+		return 'ilab-s3-settings-error';
+	}
+
 	public function validateSettings() {
-		delete_option('ilab-s3-settings-error');
+		delete_option($this->settingsErrorOptionName());
 		$this->settingsError = false;
 
 		$this->client = null;
@@ -152,7 +155,7 @@ class S3Storage implements StorageInterface {
 
 			if(!$valid) {
 				$this->settingsError = true;
-				update_option('ilab-s3-settings-error', true);
+				update_option($this->settingsErrorOptionName(), true);
 			} else {
 				$this->client = $client;
 			}
