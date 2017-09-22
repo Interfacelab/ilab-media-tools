@@ -1,12 +1,12 @@
-=== Media Cloud by ILAB ===
+=== Media Cloud ===
 Contributors: interfacelab
-Tags: uploads, amazon, s3, amazon s3, imgix, media, cdn, rekognition, cloudfront, images, crop, image editing, image editor, media library, offload, offload s3, minio, google cloud storage, digital ocean spaces
+Tags: uploads, amazon, s3, amazon s3, imgix, media, cdn, rekognition, cloudfront, images, crop, image editing, image editor, media library, offload, offload s3, minio, google cloud storage, digital ocean spaces, backblaze
 Requires at least: 4.4
-Tested up to: 4.8.1
+Tested up to: 4.8.2
 License: GPLv3 or later
 Donate link: http://www2.jdrf.org/site/TR?fr_id=6912&pg=personal&px=11429802
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 1.5.3
+Stable tag: 2.0.0
 Requires PHP: 5.6
 
 Automatically upload media to Amazon S3 and integrate with Imgix, a real-time image processing CDN.  Boosts site performance and simplifies workflows.
@@ -23,7 +23,13 @@ Automatically copy media uploads to S3 (and S3 compatible services) and hosts yo
 = Integrate with Imgix =
 [Imgix](https://imgix.com) will radically change the way that you build your WordPress sites and themes.  This plugin is the best integration available for WordPress.  Upload your images to S3 with our S3 tool and then host the media with Imgix, providing you with real-time image processing and automatic format delivery.  Forget ImageMagick, Imgix is light years ahead in quality and speed.
 
-= Upload Directly To S3 =
+= Native support for Google Cloud Storage =
+Now supports using Google Cloud Storage for uploads without having to use Google's S3 compatible interop mode.  Supports direct uploads too.
+
+= Native Support For Backblaze B2 Cloud Storage =
+Now supports using Backblaze's new B2 Cloud Storage for uploads.
+
+= Upload Directly To S3, Minio and Google Cloud Storage =
 Directly upload your media and documents to S3, bypassing your WordPress server completely.  Note that this feature requires Imgix.
 
 = Automatically Tag and Categorize with Amazon Rekognition =
@@ -82,10 +88,20 @@ No, I'm just one very enthusiastic customer.
 1. Easy image cropping for all croppable image sizes defined in your theme.
 2. Make adjustments to your images like saturation, vibrancy, contrast when using Imgix.
 3. Stylize your images easily when using Imgix.
+3. Watermarking is easy and non-destructive, change the watermark at any time and all watermarked images will automatically update.
 4. Amazon S3 settings.
-5. Imgix settings.
+6. Imgix settings.
 
 == Changelog ==
+
+= 2.0.0 =
+* Major refactoring of the code base
+* Storage services are now "pluggable", meaning new ones can be added that aren't S3 compatible
+* Added native Google Cloud Storage support
+* Direct uploads to Google Cloud Storage
+* Added native Backblaze B2 support
+* Improved support for other S3 compatible services
+* Other misc. fixes
 
 = 1.5.3 =
 * Enabled Amazon S3 Transfer Acceleration for even faster uploads.  You should enable this ASAP.
