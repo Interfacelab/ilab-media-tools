@@ -274,7 +274,11 @@ class ImgixTool extends ToolBase {
 				$media_id = $params[$key];
 				unset($params[$key]);
 				$markMeta = wp_get_attachment_metadata($media_id);
-				$params[$info['imgix-param']] = '/'.$markMeta['file'];
+				if (isset($markMeta['s3'])) {
+					$params[$info['imgix-param']] = '/'.$markMeta['s3']['key'];
+                } else {
+					$params[$info['imgix-param']] = '/'.$markMeta['file'];
+                }
 			} else {
 				unset($params[$key]);
 				if(isset($info['dependents'])) {
