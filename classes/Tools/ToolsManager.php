@@ -75,6 +75,13 @@ class ToolsManager
 	    if (($maxTime > 0) && ($maxTime < 90)) {
 	    	NoticeManager::instance()->displayAdminNotice('warning',"The <code>max_execution_time</code> is set to a value that might be too low ($maxTime).  You should set it to about 90 seconds.  Additionally, if you are using Nginx or Apache, you may need to set the respective <code>fastcgi_read_timeout</code>, <code>request_terminate_timeout</code> or <code>TimeOut</code> settings too.", true,'ilab-media-tools-extime-notice');
 	    }
+
+	    $runTime = get_option('ilab_media_tools_run_time', 0);
+	    if ($runTime == 0) {
+	    	update_option('ilab_media_tools_run_time',microtime(true));
+	    } else if ((microtime(true) - floatval($runTime)) > 1209600) {
+		    NoticeManager::instance()->displayAdminNotice('info',"Thanks for using Media Cloud!  If you like it, please <a href='https://wordpress.org/support/plugin/ilab-media-tools/reviews/#new-post' target=_blank>leave a review</a>.  If you really like it, please consider donating to <a href='http://www2.jdrf.org/site/TR?fr_id=6912&pg=personal&px=11429802' target='_blank'>juvenile type 1 diabetes research</a>.  Thank you!", true,'ilab-media-tools-nag-notice');
+        }
     }
     //endregion
 
