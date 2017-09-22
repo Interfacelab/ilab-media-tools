@@ -87,6 +87,12 @@ class S3Storage implements StorageInterface {
 				'ILAB_CLOUD_ENDPOINT'
 			], false);
 
+			if (!empty($this->endpoint)) {
+				if (!preg_match( '#^[aA-zZ0-9]+\:\/\/#', $this->endpoint)) {
+					$this->endpoint = 'https://'.$this->endpoint;
+				}
+			}
+
 			$this->endPointPathStyle = EnvironmentOptions::Option('ilab-media-s3-use-path-style-endpoint', [
 				'ILAB_AWS_S3_ENDPOINT_PATH_STYLE',
 				'ILAB_CLOUD_ENDPOINT_PATH_STYLE'
