@@ -41,9 +41,22 @@ if (is_plugin_active('amazon-s3-and-cloudfront/wordpress-s3.php')) {
 
 	add_action( 'admin_notices', function () {
 		?>
-		<div class="notice notice-error is-dismissible">
-			<p><?php _e( 'ILAB Media Tools cannot be activated the same time as the <strong>Offload S3</strong>.  Please deactive one before activating the other.', 'ilab-media-tools' ); ?></p>
+		<div class="notice notice-error">
+			<p><?php _e( 'Media Cloud cannot be activated the same time as the <strong>Offload S3</strong>.  Please deactive one before activating the other.', 'ilab-media-tools' ); ?></p>
 		</div>
+		<?php
+	} );
+	return;
+}
+
+if (is_plugin_active('wp-stateless/wp-stateless-media.php')) {
+	deactivate_plugins( plugin_basename( __FILE__ ) );
+
+	add_action( 'admin_notices', function () {
+		?>
+        <div class="notice notice-error">
+            <p><?php _e( 'Media Cloud cannot be activated the same time as the <strong>WP-Stateless</strong>.  Please deactive one before activating the other.', 'ilab-media-tools' ); ?></p>
+        </div>
 		<?php
 	} );
 	return;
