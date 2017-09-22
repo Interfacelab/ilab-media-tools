@@ -28,7 +28,6 @@ var ilabAttachmentInfo = function($, uploader, attachmentInfo) {
         };
 
         $.post(ajaxurl, data, function(response){
-           console.log(response);
         });
     };
 
@@ -82,7 +81,6 @@ var ilabAttachmentInfo = function($, uploader, attachmentInfo) {
         };
 
         $.post(ajaxurl, data, function(response){
-            console.log(response);
             if (response.hasOwnProperty('data')) {
                 window.parent.send_to_editor(response.data);
             }
@@ -115,6 +113,7 @@ var ilabMediaUploadItem = function($, uploader, file) {
 
     this.loader = this.cell.find('.ilab-loader-container');
 
+
     if ((file.type.indexOf('image/')==0) && (file.size < (15 * 1024 * 1024))) {
         this.background.css({opacity: 0.33, 'background-image': 'url('+URL.createObjectURL(file)+')'});
     } else {
@@ -135,111 +134,53 @@ var ilabMediaUploadItem = function($, uploader, file) {
         this.cell.removeClass('ilab-upload-selected');
     };
 
-    this.startUpload = function() {
-        var data = {
-            "action": "ilab_upload_prepare",
-            "filename": file.name
-        };
+    this.updateProgress = function(amount) {
+        this.progressTrack.css({'width': (Math.floor(amount * 100) + '%')});
+    };
 
-        $.post(ajaxurl, data, function(response){
-            console.log(response);
-            if (response.status == 'ready') {
-                self.status.text('Uploading ...');
+    this.itemUploaded = function(success, importResponse) {
+        if (success) {
+            this.progress.css({'display': 'none'});
+            this.status.css({'display': 'none'});
+            this.background.css({'opacity':''});
 
-                var data = new FormData();
-                _.each(Object.keys(response.inputs), function(key){
-                    if (key != 'key') {
-                        data.append(key, response.inputs[key]);
-                    }
-                });
+            this.state = 'ready';
+            this.postId = importResponse.data.id;
+            if (importResponse.data.thumb) {
+                this.loader.css({"opacity": 1});
+                var image = new Image();
+                image.onload=function() {
+                    this.background.css({'background-image': 'url('+importResponse.data.thumb+')'});
+                    this.loader.css({"opacity": 0});
+                }.bind(this);
 
-                if (response.cacheControl != null) {
-                    data.append('Cache-Control', response.cacheControl);
-                }
-
-                if (response.expires != null) {
-                    data.append('Expires', response.expires);
-                }
-
-                var mimeType = file.type;
-                if (mimeType == 'application/x-photoshop') {
-                    mimeType = 'image/psd';
-                }
-
-                data.append('Content-Type', mimeType);
-                data.append('acl','public-read');
-                data.append('key',response.key);
-                data.append('file',file);
-
-
-                $.ajax({
-                    url: response.attr.action,
-                    method: 'POST',
-                    contentType: false,
-                    processData: false,
-                    data:data,
-                    xhr: function() {
-                        var xhr = $.ajaxSettings.xhr();
-                        xhr.upload.onprogress = function (e) {
-                            self.progressTrack.css({'width': (Math.floor(e.loaded / e.total * 100) + '%')});
-                        };
-                        return xhr;
-                    },
-                    success: function(successResponse) {
-                        var importData = {
-                            "action": "ilab_upload_import_s3_file",
-                            "key": response.key
-                        };
-
-                        $.post(ajaxurl, importData, function(importResponse){
-                            console.log(importResponse);
-                            if (importResponse.status == 'success') {
-                                self.progress.css({'display': 'none'});
-                                self.status.css({'display': 'none'});
-                                self.background.css({'opacity':''});
-
-                                self.state = 'ready';
-                                self.postId = importResponse.data.id;
-                                if (importResponse.data.thumb) {
-
-                                    self.loader.css({"opacity": 1});
-                                    var image = new Image();
-                                    image.onload=function() {
-                                        console.log('image loaded');
-                                        self.background.css({'background-image': 'url('+importResponse.data.thumb+')'});
-                                        self.loader.css({"opacity": 0});
-                                    };
-
-                                    image.src = importResponse.data.thumb;
-                                }
-
-                                self.cell.removeClass('no-mouse');
-                            } else {
-                                self.progress.css({'display': 'none'});
-                                self.status.text("Error.");
-                                self.cell.addClass('upload-error');
-
-                            }
-
-                            uploader.uploadFinished(self);
-                        });
-
-
-                    },
-                    error: function(response) {
-                        self.progress.css({'display': 'none'});
-                        self.status.text('Error uploading.');
-
-                        uploader.uploadFinished(self);
-                    }
-                })
-            } else {
-                uploader.uploadFinished(self);
-                self.progress.css({'display': 'none'});
-
-                self.status.text('Error uploading.');
+                image.src = importResponse.data.thumb;
             }
-        });
+
+            this.cell.removeClass('no-mouse');
+        } else {
+            this.progress.css({'display': 'none'});
+            this.status.text("Error.");
+            this.cell.addClass('upload-error');
+        }
+
+        uploader.uploadFinished(this);
+    };
+
+    this.itemUploadError = function() {
+        self.progress.css({'display': 'none'});
+        self.status.text('Error uploading.');
+
+        uploader.uploadFinished(self);
+    };
+
+    this.updateStatusText = function(text) {
+        this.status.text('Uploading ...');
+    };
+
+    this.startUpload = function() {
+        var uploader = new this.storageUploader($, this, file);
+        uploader.start();
     };
 
 
@@ -269,7 +210,6 @@ var ilabMediaUploadItem = function($, uploader, file) {
 var ilabMediaUploader = function($, settings) {
     var self = this;
 
-    console.log(settings);
     this.insertButton = $('#ilab-insert-button');
     this.settings = settings;
     this.uploadTarget = $('#ilab-video-upload-target');
@@ -321,7 +261,6 @@ var ilabMediaUploader = function($, settings) {
         };
 
         $.post(ajaxurl, data, function(response){
-            console.log(response);
             $('body').addClass('ilab-item-selected');
             self.attachmentInfo = new ilabAttachmentInfo($, self, response);
             self.insertButton.prop('disabled', false);
@@ -339,10 +278,7 @@ var ilabMediaUploader = function($, settings) {
     };
 
     this.addFile = function(file) {
-        console.log(file);
-
         if (file.type=='') {
-            console.log('Missing file type.');
             return false;
         }
 
@@ -354,7 +290,6 @@ var ilabMediaUploader = function($, settings) {
         }
 
         if (settings.allowedMimes.indexOf(mimeType) == -1) {
-            console.log('Mime-type '+mimeType+' not allowed.');
             return false;
         }
 
@@ -364,37 +299,27 @@ var ilabMediaUploader = function($, settings) {
 
         if (type == 'image') {
             if (!settings.imgixEnabled) {
-                console.log('Image files not allowed.');
                 return false;
             }
 
             if (['jpeg','gif','png'].indexOf(subType) == -1) {
                 if (!settings.extrasEnabled) {
-                    console.log('Non-standard image files not allowed.');
                     return false;
                 }
 
                 if (['psd','tiff','bmp'].indexOf(subType) == -1) {
-                    console.log('Invalid subtype.');
                     return false;
                 }
             }
         } else if (type == 'video') {
             if (!settings.videoEnabled) {
-                console.log('Video not allowed.');
                 return false;
             }
         } else {
             if (!settings.docsEnabled) {
-                console.log('Docs not allowed.');
                 return false;
             }
         }
-
-        console.log([
-            'accepted',
-            file
-        ]);
 
         self.waitingQueue.push(new ilabMediaUploadItem($, self, file));
     };
@@ -445,10 +370,6 @@ var ilabMediaUploader = function($, settings) {
         e.preventDefault();
         return false;
     });
-
-    //window.parent.send_to_editor('cool');
-
-    //console.log(window.parent.jQuery('.media-modal-close').trigger('click'));
 
     if (settings.insertMode) {
         $('body').addClass('ilab-upload-insert-mode');

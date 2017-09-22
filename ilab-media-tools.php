@@ -70,10 +70,19 @@ if (file_exists(ILAB_VENDOR_DIR.'/autoload.php')) {
 }
 
 // Helper functions
-require_once('helpers/ilab-media-tool-helpers.php');
 require_once('helpers/ilab-media-tool-wordpress-helpers.php');
 require_once('helpers/ilab-media-tool-geometry-helpers.php');
 
-require_once('classes/ilab-media-tools-manager.php');
-register_activation_hook(__FILE__,[ILabMediaToolsManager::instance(),'install']);
-register_deactivation_hook(__FILE__,[ILabMediaToolsManager::instance(),'uninstall']);
+// Register storage drivers
+\ILAB\MediaCloud\Cloud\Storage\StorageManager::registerDriver('s3', \ILAB\MediaCloud\Cloud\Storage\Driver\S3\S3Storage::class);
+\ILAB\MediaCloud\Cloud\Storage\StorageManager::registerDriver('minio', \ILAB\MediaCloud\Cloud\Storage\Driver\S3\MinioStorage::class);
+\ILAB\MediaCloud\Cloud\Storage\StorageManager::registerDriver('do', \ILAB\MediaCloud\Cloud\Storage\Driver\S3\DigitalOceanStorage::class);
+\ILAB\MediaCloud\Cloud\Storage\StorageManager::registerDriver('other-s3', \ILAB\MediaCloud\Cloud\Storage\Driver\S3\OtherS3Storage::class);
+\ILAB\MediaCloud\Cloud\Storage\StorageManager::registerDriver('google', \ILAB\MediaCloud\Cloud\Storage\Driver\Google\GoogleStorage::class);
+\ILAB\MediaCloud\Cloud\Storage\StorageManager::registerDriver('backblaze', \ILAB\MediaCloud\Cloud\Storage\Driver\Backblaze\BackblazeStorage::class);
+
+// Make sure the NoticeManager is initialized
+\ILAB\MediaCloud\Utilities\NoticeManager::instance();
+
+register_activation_hook(__FILE__,[ \ILAB\MediaCloud\Tools\ToolsManager::instance(), 'install']);
+register_deactivation_hook(__FILE__,[ \ILAB\MediaCloud\Tools\ToolsManager::instance(), 'uninstall']);

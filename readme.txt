@@ -7,6 +7,7 @@ License: GPLv3 or later
 Donate link: http://www2.jdrf.org/site/TR?fr_id=6912&pg=personal&px=11429802
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 Stable tag: 1.5.3
+Requires PHP: 5.6
 
 Automatically upload media to Amazon S3 and integrate with Imgix, a real-time image processing CDN.  Boosts site performance and simplifies workflows.
 
@@ -14,7 +15,7 @@ Automatically upload media to Amazon S3 and integrate with Imgix, a real-time im
 
 Media Cloud by ILAB is a suite of tools designed to enhance media handling in WordPress in a number of ways.
 
-**NOTE**: This plugin requires PHP 5.5x or higher (PHP 7.x preferred)
+**NOTE**: This plugin requires PHP 5.6x or higher (PHP 7.x preferred)
 
 = Upload to S3, Minio, Google Cloud Storage and Digital Ocean Spaces =
 Automatically copy media uploads to S3 (and S3 compatible services) and hosts your media directly from S3, CloudFront or any other CDN.  Additionally, easily import your existing media library to Amazon S3 with the push of a button.

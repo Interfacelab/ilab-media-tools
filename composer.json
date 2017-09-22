@@ -4,12 +4,10 @@
   "type": "wordpress-plugin",
   "license": "LGPL",
   "keywords": ["s3","imgix","cropping", "wordpress"],
-  "repositories": [
-    {
-      "type": "vcs",
-      "url": "https://github.com/interfacelab/ilab-aws-sdk"
-    }
-  ],
+  "repositories": [{
+    "type": "composer",
+    "url": "https://packages.interfacelab.io"
+  }],
   "authors": [
     {
       "name": "Jon Gilkison",
@@ -21,6 +19,16 @@
     "ilab/ilab-aws-sdk": "^0.1.0",
     "smalot/pdfparser": "^0.10.0",
     "fasterimage/fasterimage": "^1.1",
-    "monolog/monolog": "^1.23"
+    "monolog/monolog": "^1.23",
+    "google/cloud-storage": "^1.1",
+    "cwhite92/b2-sdk-php": "^1.3"
+  },
+  "autoload": {
+    "psr-4": {
+      "ILAB\\MediaCloud\\": "classes"
+    },
+    "files": [
+      "classes/Utilities/Helpers.php"
+    ]
   }
 }

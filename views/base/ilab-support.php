@@ -22,7 +22,12 @@
     <p>This plugin is free and will be free forever.  However, it's taken a lot of work to get it this far.  If this plugin is useful to you, please consider donating to my son's Juvenile Diabetes Research Foundation fundraiser.  He was diagnosed with type 1 diabetes last year at one year of age.  The JDRF is a research charity trying to find a cure for T1D.  They can use all the help they can get.</p>
     <a href="http://www2.jdrf.org/site/TR?fr_id=6912&pg=personal&px=11429802" target="_blank" class="button">Donate to Diabetes Research</a>
 
-	<h2>Environment Variables</h2>
+    <h2>Using S3 Compatible Services</h2>
+    <p>ILAB Media Cloud is compatible with any S3 compatible cloud storage server like Minio, Ceph RGW or Digital Ocean Spaces.</p>
+    <p>If you are using Minio, it's important that you specify the region (for example <code>us-east-1</code>) in your <code>/etc/minio/config.json</code> file on your Minio server. <strong>IMPORTANT:</strong> If you are using Minio, your bucket must have a public read policy set for the entire bucket.  See <a href='https://github.com/minio/minio/issues/3774' target=_blank>here</a> for more details.</p>
+
+
+    <h2>Environment Variables</h2>
 	<p>You can configure this plugin using the various pages, but it's highly recommended that you configure it through
 		environment variables.  This is particularly true if you are using Bedrock for Wordpress development.</p>
 	<p>Below is a list of all the environment variables you can use:</p>
