@@ -12,6 +12,7 @@
 
 namespace ILAB\MediaCloud\Tools;
 
+use ILAB\MediaCloud\Utilities\NoticeManager;
 use ILAB\MediaCloud\Utilities\View;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
@@ -69,6 +70,11 @@ class ToolsManager
 
 		    return $links;
 	    });
+
+	    $maxTime = ini_get('max_execution_time');
+	    if (($maxTime > 0) && ($maxTime < 90)) {
+	    	NoticeManager::instance()->displayAdminNotice('warning',"The <code>max_execution_time</code> is set to a value that might be too low ($maxTime).  You should set it to about 90 seconds.  Additionally, if you are using Nginx or Apache, you may need to set the respective <code>fastcgi_read_timeout</code>, <code>request_terminate_timeout</code> or <code>TimeOut</code> settings too.", true,'ilab-media-tools-extime-notice');
+	    }
     }
     //endregion
 
