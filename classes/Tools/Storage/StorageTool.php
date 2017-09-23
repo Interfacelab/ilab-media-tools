@@ -334,7 +334,7 @@ class StorageTool extends ToolBase {
 
 	/**
      * Filters the uploads directory data.  (https://core.trac.wordpress.org/browser/tags/4.8/src/wp-includes/functions.php#L1880)
-	 * 
+	 *
      * @param array $uploads
 	 * @return array
 	 */
