@@ -23,6 +23,7 @@ use ILAB\MediaCloud\Tools\ToolBase;
 use ILAB\MediaCloud\Utilities\EnvironmentOptions;
 use function ILAB\MediaCloud\Utilities\json_response;
 use ILAB\MediaCloud\Utilities\NoticeManager;
+use ILAB\MediaCloud\Utilities\Prefixer;
 use ILAB\MediaCloud\Utilities\View;
 use ILAB\MediaCloud\Tasks\StorageImportProcess;
 use ILAB\MediaCloud\Utilities\Logger;
@@ -108,6 +109,7 @@ class StorageTool extends ToolBase {
 			add_filter('image_downsize', [$this, 'imageDownsize'], 999, 3);
 			add_action('add_attachment', [$this, 'addAttachment'], 1000);
 			add_action('edit_attachment', [$this, 'editAttachment']);
+			add_filter('upload_dir', [$this, 'getUploadDir']);
 
 			add_filter('ilab_s3_process_crop', [$this, 'processCrop'], 10000, 4);
 
@@ -168,6 +170,8 @@ class StorageTool extends ToolBase {
 		if(!$data) {
 			return $data;
 		}
+
+		$imgixEnabled = apply_filters('ilab_imgix_enabled', false);
 
 		$mime = (isset($data['ilab-mime'])) ? $data['ilab-mime'] : null;
 		if($mime) {
@@ -236,6 +240,13 @@ class StorageTool extends ToolBase {
 						} else {
 							$data['sizes'][$key] = $this->processFile($upload_path, $file, $size, $id);
 						}
+
+						if ($imgixEnabled) {
+							if (!ilab_size_is_cropped($key)) {
+								$newSize = sizeToFitSize($data['width'], $data['height'], $size['width'] ?: 10000, $size['height'] ?: 10000);
+								$data['sizes'][$key]['height'] = $newSize[1];
+							}
+                        }
 					}
 				}
 
@@ -320,6 +331,22 @@ class StorageTool extends ToolBase {
 
 		return $id;
 	}
+
+	/**
+     * Filters the uploads directory data.  (https://core.trac.wordpress.org/browser/tags/4.8/src/wp-includes/functions.php#L1880)
+	 * 
+     * @param array $uploads
+	 * @return array
+	 */
+	public function getUploadDir($uploads) {
+		$prefix = StorageSettings::prefix(null);
+
+		$uploads['subdir'] = '/'.$prefix;
+		$uploads['path'] = $uploads['basedir'].'/'.$prefix;
+		$uploads['url'] = $uploads['baseurl'].'/'.$prefix;
+
+		return $uploads;
+    }
 
 	/**
 	 * Filters the data after a file has been uploaded to WordPress (https://core.trac.wordpress.org/browser/tags/4.8/src/wp-admin/includes/file.php#L416)
