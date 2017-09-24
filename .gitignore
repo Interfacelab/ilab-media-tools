@@ -1,3 +1,5 @@
 node_modules
 vendor
 composer.lock
+public/css/*.map
+public/js/*.map

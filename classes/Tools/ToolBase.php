@@ -268,7 +268,7 @@ abstract class ToolBase {
     {
 
         $result = View::render_view( 'base/ilab-settings.php', [
-            'title'=>$this->toolInfo['title'],
+            'title'=>$this->toolInfo['settings']['title'],
             'group'=>$this->options_group,
             'page'=>$this->options_page
         ]);

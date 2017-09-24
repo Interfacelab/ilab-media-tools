@@ -19,8 +19,8 @@ return [
 	/** Crop Tool */
 	"crop" => include ILAB_CONFIG_DIR.'/crop.config.php',
 	"storage" => include ILAB_CONFIG_DIR.'/storage.config.php',
-	"rekognition" => include ILAB_CONFIG_DIR.'/rekognition.config.php',
 	"imgix" => include ILAB_CONFIG_DIR.'/imgix.config.php',
 	"media-upload" => include ILAB_CONFIG_DIR.'/media-upload.config.php',
+	"rekognition" => include ILAB_CONFIG_DIR.'/rekognition.config.php',
 	"debugging" => include ILAB_CONFIG_DIR.'/debugging.config.php'
 ];

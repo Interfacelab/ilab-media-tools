@@ -1,0 +1,74 @@
+.setup-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-top: 40px;
+
+  .service-selection-grid {
+    //display: flex;
+    //flex-wrap: wrap;
+    //max-width: 66vw;
+
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-gap: 15px;
+    grid-auto-rows: 158px;
+
+    a {
+      border-radius: 5px;
+      background-color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+      border: 1px solid #eaeaea;
+      width: 128px;
+      height: 128px;
+      text-align: center;
+      text-decoration: none;
+      padding: 15px;
+      background-position: center calc(50% - 15px);
+      background-repeat: no-repeat;
+
+      transition: transform 0.5s ease-out;
+
+      &:hover {
+        transform: scale(1.1, 1.1);
+      }
+
+      &[data-service='s3'] {
+        grid-column: 1;
+        grid-row: 1;
+        background-image: url(../img/icon-service-s3.svg);
+      }
+
+      &[data-service='google'] {
+        grid-column: 2;
+        grid-row: 1;
+        background-image: url(../img/icon-service-google.svg);
+      }
+
+      &[data-service='minio'] {
+        grid-column: 3;
+        grid-row: 1;
+        background-image: url(../img/icon-service-minio.svg);
+      }
+      &[data-service='backblaze'] {
+        grid-column: 1;
+        grid-row: 2;
+        background-image: url(../img/icon-service-backblaze.svg);
+      }
+      &[data-service='do'] {
+        grid-column: 2;
+        grid-row: 2;
+        background-image: url(../img/icon-service-do.svg);
+      }
+      &[data-service='other-s3'] {
+        grid-column: 3;
+        grid-row: 2;
+        background-image: url(../img/icon-service-other-s3.svg);
+      }
+    }
+  }
+}

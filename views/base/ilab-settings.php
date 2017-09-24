@@ -1,13 +1,19 @@
-<div class="wrap">
-    <form action='options.php' method='post' autocomplete="off">
-        <?php
-        settings_fields( $group );
-        echo '<!-- hey -->';
-        do_settings_sections( $page );
-        echo '<!-- now -->';
-        submit_button();
-        ?>
-    </form>
+<div class="settings-container">
+    <header>
+        <img src="{{ILAB_PUB_IMG_URL}}/icon-cloud.svg">
+        <h1>{{$title}}</h1>
+    </header>
+    <div class="settings-body">
+        <form action='options.php' method='post' autocomplete="off">
+            <?php
+            settings_fields( $group );
+            echo '<!-- hey -->';
+            do_settings_sections( $page );
+            echo '<!-- now -->';
+            submit_button();
+            ?>
+        </form>
+    </div>
 </div>
 <script>
     (function($){

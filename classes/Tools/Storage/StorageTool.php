@@ -111,6 +111,8 @@ class StorageTool extends ToolBase {
 			add_action('edit_attachment', [$this, 'editAttachment']);
 			add_filter('upload_dir', [$this, 'getUploadDir']);
 
+            add_filter('the_content', [$this, 'filterContent'], 10000, 1);
+
 			add_filter('ilab_s3_process_crop', [$this, 'processCrop'], 10000, 4);
 
 			add_filter('ilab_s3_process_file_name', function($filename) {
@@ -503,7 +505,7 @@ class StorageTool extends ToolBase {
 			return $fail;
 		}
 
-		$url = $sizeMeta['s3']['url'];
+		$url = $this->getAttachmentURLFromMeta($sizeMeta);// $sizeMeta['s3']['url'];
 
 		$result = [
 			$url,
@@ -1010,7 +1012,7 @@ class StorageTool extends ToolBase {
 
 		add_action('admin_init', function() {
 			add_filter('bulk_actions-upload', function($actions) {
-				$actions['ilab_s3_import'] = 'Import to S3';
+				$actions['ilab_s3_import'] = 'Import to Cloud Storage';
 
 				return $actions;
 			});
@@ -1109,6 +1111,42 @@ class StorageTool extends ToolBase {
 			], 'attachment', 'side', 'low');
 		});
 	}
+
+	/**
+     * Filter the content to replace CDN
+	 * @param $content
+	 *
+	 * @return mixed
+	 */
+	public function filterContent($content) {
+		if (!preg_match_all( '/<img [^>]+>/', $content, $matches ) ) {
+			return $content;
+		}
+
+		$replacements = [];
+
+		foreach($matches[0] as $image) {
+		    if (preg_match("#wp-image-([0-9]+)#",$image, $idMatches)) {
+			    $id = $idMatches[1];
+
+			    if (!empty($id) && is_numeric($id)) {
+				    if (preg_match("#src=['\"]+([^'\"]+)['\"]+#",$image, $srcMatches)) {
+					    $replacements[$id] = $srcMatches[1];
+    			    }
+                }
+            }
+        }
+        
+        foreach($replacements as $id => $src) {
+		    $meta = wp_get_attachment_metadata($id);
+		    $url = $this->getAttachmentURLFromMeta($meta);
+		    if (!empty($url) && ($url != $src)) {
+		        $content = str_replace($src, $url, $content);
+            }
+        }
+
+		return $content;
+    }
 
 	/**
 	 * Renders the Cloud Storage metabox

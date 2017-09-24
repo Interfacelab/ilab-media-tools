@@ -30,7 +30,10 @@ use ILAB_Aws\S3\PostObjectV4;
 use ILAB_Aws\S3\S3Client;
 use ILAB_Aws\S3\S3MultiRegionClient;
 
-if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
+if(!defined('ABSPATH')) {
+	header('Location: /');
+	die;
+}
 
 class S3Storage implements StorageInterface {
 	//region Properties
@@ -69,7 +72,7 @@ class S3Storage implements StorageInterface {
 			'ILAB_CLOUD_BUCKET'
 		]);
 
-		$this->key    = EnvironmentOptions::Option('ilab-media-s3-access-key', [
+		$this->key = EnvironmentOptions::Option('ilab-media-s3-access-key', [
 			'ILAB_AWS_S3_ACCESS_KEY',
 			'ILAB_CLOUD_ACCESS_KEY'
 		]);
@@ -79,7 +82,7 @@ class S3Storage implements StorageInterface {
 			'ILAB_CLOUD_ACCESS_SECRET'
 		]);
 
-		if (StorageManager::driver() == 's3') {
+		if(StorageManager::driver() == 's3') {
 			$this->useTransferAcceleration = EnvironmentOptions::Option('ilab-media-s3-use-transfer-acceleration', 'ILAB_AWS_S3_TRANSFER_ACCELERATION', false);
 		} else {
 			$this->endpoint = EnvironmentOptions::Option('ilab-media-s3-endpoint', [
@@ -87,8 +90,8 @@ class S3Storage implements StorageInterface {
 				'ILAB_CLOUD_ENDPOINT'
 			], false);
 
-			if (!empty($this->endpoint)) {
-				if (!preg_match( '#^[aA-zZ0-9]+\:\/\/#', $this->endpoint)) {
+			if(!empty($this->endpoint)) {
+				if(!preg_match('#^[aA-zZ0-9]+\:\/\/#', $this->endpoint)) {
 					$this->endpoint = 'https://'.$this->endpoint;
 				}
 			}
@@ -140,9 +143,9 @@ class S3Storage implements StorageInterface {
 					try {
 						Logger::info("Bucket does not exist, trying to list buckets.");
 
-						$result  = $client->listBuckets();
+						$result = $client->listBuckets();
 						$buckets = $result->get('Buckets');
-						if( ! empty($buckets)) {
+						if(!empty($buckets)) {
 							foreach($buckets as $bucket) {
 								if($bucket['Name'] == $this->bucket) {
 									$valid = true;
@@ -154,7 +157,7 @@ class S3Storage implements StorageInterface {
 						Logger::info("Bucket does not exist.");
 					}
 					catch(AwsException $ex) {
-						Logger::error("Error insuring bucket exists.", [ 'exception' => $ex->getMessage() ]);
+						Logger::error("Error insuring bucket exists.", ['exception' => $ex->getMessage()]);
 					}
 				}
 			}
@@ -169,13 +172,15 @@ class S3Storage implements StorageInterface {
 	}
 
 	public function enabled() {
-		if (!($this->key && $this->secret && $this->bucket)) {
-			NoticeManager::instance()->displayAdminNotice('error',"To start using Cloud Storage, you will need to <a href='admin.php?page=media-tools-s3'>supply your AWS credentials.</a>.");
+		if(!($this->key && $this->secret && $this->bucket)) {
+			NoticeManager::instance()->displayAdminNotice('error', "To start using Cloud Storage, you will need to <a href='admin.php?page=media-tools-s3'>supply your AWS credentials.</a>.");
+
 			return false;
 		}
 
-		if ($this->settingsError) {
+		if($this->settingsError) {
 			NoticeManager::instance()->displayAdminNotice('error', 'Your AWS S3 settings are incorrect or the bucket does not exist.  Please verify your settings and update them.');
+
 			return false;
 		}
 
@@ -190,31 +195,32 @@ class S3Storage implements StorageInterface {
 	 * @return bool|string
 	 */
 	protected function getBucketRegion() {
-		if (!$this->enabled()) {
+		if(!$this->enabled()) {
 			return false;
 		}
 
 		$config = [
 			'version' => 'latest',
 			'credentials' => [
-				'key'    => $this->key,
+				'key' => $this->key,
 				'secret' => $this->secret
 			]
 		];
 
-		if (!empty($this->endpoint)) {
+		if(!empty($this->endpoint)) {
 			$config['endpoint'] = $this->endpoint;
-			if ($this->endPointPathStyle) {
+			if($this->endPointPathStyle) {
 				$config['use_path_style_endpoint'] = true;
 			}
 		}
 
-		$s3=new S3MultiRegionClient($config);
+		$s3 = new S3MultiRegionClient($config);
 		$region = false;
 		try {
 			$region = $s3->determineBucketRegion($this->bucket);
-		} catch (AwsException $ex) {
-			Logger::error( "AWS Error fetching region", [ 'exception' => $ex->getMessage()]);
+		}
+		catch(AwsException $ex) {
+			Logger::error("AWS Error fetching region", ['exception' => $ex->getMessage()]);
 		}
 
 		return $region;
@@ -225,49 +231,53 @@ class S3Storage implements StorageInterface {
 	 * @return S3MultiRegionClient|null
 	 */
 	protected function getS3MultiRegionClient() {
-		if (!$this->enabled()) {
+		if(!$this->enabled()) {
 			return null;
 		}
 
 		$config = [
 			'version' => 'latest',
 			'credentials' => [
-				'key'    => $this->key,
+				'key' => $this->key,
 				'secret' => $this->secret
 			]
 		];
 
-		if (!empty($this->endpoint)) {
+		if(!empty($this->endpoint)) {
 			$config['endpoint'] = $this->endpoint;
 
-			if ($this->endPointPathStyle) {
+			if($this->endPointPathStyle) {
 				$config['use_path_style_endpoint'] = true;
 			}
 		}
 
-		if ($this->useTransferAcceleration) {
+		if($this->useTransferAcceleration) {
 			$config['use_accelerate_endpoint'] = true;
 		}
 
-		$s3=new S3MultiRegionClient($config);
+		$s3 = new S3MultiRegionClient($config);
+
 		return $s3;
 	}
 
 	/**
 	 * Attempts to build the S3Client.  This requires a region be defined or determinable.
+	 *
 	 * @param bool $region
+	 *
 	 * @return S3Client|null
 	 */
 	protected function getS3Client($region = false) {
-		if (!$this->enabled()) {
+		if(!$this->enabled()) {
 			return null;
 		}
 
-		if (empty($region)) {
-			if (empty($this->region)) {
+		if(empty($region)) {
+			if(empty($this->region)) {
 				$this->region = $this->getBucketRegion();
-				if (empty($this->region)) {
-					Logger::info( "Could not get region from server.");
+				if(empty($this->region)) {
+					Logger::info("Could not get region from server.");
+
 					return null;
 				}
 
@@ -277,43 +287,44 @@ class S3Storage implements StorageInterface {
 			$region = $this->region;
 		}
 
-		if (empty($region)) {
+		if(empty($region)) {
 			return null;
 		}
 
 		$config = [
 			'version' => 'latest',
 			'credentials' => [
-				'key'    => $this->key,
+				'key' => $this->key,
 				'secret' => $this->secret
 			],
 			'region' => $region
 		];
 
-		if (!empty($this->endpoint)) {
+		if(!empty($this->endpoint)) {
 			$config['endpoint'] = $this->endpoint;
-			if ($this->endPointPathStyle) {
+			if($this->endPointPathStyle) {
 				$config['use_path_style_endpoint'] = true;
 			}
 		}
 
-		if ($this->useTransferAcceleration) {
+		if($this->useTransferAcceleration) {
 			$config['use_accelerate_endpoint'] = true;
 		}
 
-		$s3=new S3Client($config);
+		$s3 = new S3Client($config);
+
 		return $s3;
 	}
 
 
 	protected function getClient() {
-		if (!$this->enabled()) {
+		if(!$this->enabled()) {
 			return null;
 		}
 
 		$s3 = $this->getS3Client();
-		if (!$s3) {
-			Logger::info( 'Could not create regular client, creating multi-region client instead.');
+		if(!$s3) {
+			Logger::info('Could not create regular client, creating multi-region client instead.');
 			$s3 = $this->getS3MultiRegionClient();
 		}
 
@@ -334,16 +345,16 @@ class S3Storage implements StorageInterface {
 
 	}
 
-	public function exists( $key ) {
-		if (!$this->client) {
+	public function exists($key) {
+		if(!$this->client) {
 			throw new InvalidStorageSettingsException('Storage settings are invalid');
 		}
 
 		return $this->client->doesObjectExist($this->bucket, $key);
 	}
 
-	public function copy( $sourceKey, $destKey, $acl, $mime = false, $cacheControl = false, $expires = false ) {
-		if (!$this->client) {
+	public function copy($sourceKey, $destKey, $acl, $mime = false, $cacheControl = false, $expires = false) {
+		if(!$this->client) {
 			throw new InvalidStorageSettingsException('Storage settings are invalid');
 		}
 
@@ -355,127 +366,138 @@ class S3Storage implements StorageInterface {
 			'ACL' => $acl
 		];
 
-		if ($cacheControl) {
+		if($cacheControl) {
 			$copyOptions['CacheControl'] = $cacheControl;
 		}
 
-		if ($expires) {
+		if($expires) {
 			$copyOptions['Expires'] = $expires;
 		}
 
-		if ($mime) {
+		if($mime) {
 			$copyOptions['ContentType'] = $mime;
 		}
 
 		try {
 			$this->client->copyObject($copyOptions);
 		}
-		catch (AwsException $ex) {
-			Logger::error( 'S3 Error Copying Object', [ 'exception' =>$ex->getMessage(), 'options' =>$copyOptions]);
+		catch(AwsException $ex) {
+			Logger::error('S3 Error Copying Object', ['exception' => $ex->getMessage(), 'options' => $copyOptions]);
 			throw new StorageException($ex->getMessage(), $ex->getCode(), $ex);
 		}
 	}
 
-	public function upload( $key, $fileName, $acl, $cacheControl = false, $expires = false ) {
-		if (!$this->client) {
+	public function upload($key, $fileName, $acl, $cacheControl = false, $expires = false) {
+		if(!$this->client) {
 			throw new InvalidStorageSettingsException('Storage settings are invalid');
 		}
 
 		$params = [];
 		$options = [];
 
-		if ($cacheControl) {
+		if($cacheControl) {
 			$params['CacheControl'] = $cacheControl;
 		}
 
-		if ($expires) {
+		if($expires) {
 			$params['Expires'] = $expires;
 		}
 
-		if (!empty($params)) {
+		if(!empty($params)) {
 			$options['params'] = $params;
 		}
 
 		try {
 			$file = fopen($fileName, 'r');
 
-			Logger::startTiming( "Start Upload", [ 'file' => $key]);
-			$result = $this->client->upload($this->bucket,$key,$file, $acl, $options);
-			Logger::endTiming( "End Upload", [ 'file' => $key]);
+			Logger::startTiming("Start Upload", ['file' => $key]);
+			$result = $this->client->upload($this->bucket, $key, $file, $acl, $options);
+			Logger::endTiming("End Upload", ['file' => $key]);
 
 			fclose($file);
 
 			return $result->get('ObjectURL');
-		} catch (AwsException $ex) {
+		}
+		catch(AwsException $ex) {
 			fclose($file);
-			Logger::error( 'S3 Upload Error', [
+			Logger::error('S3 Upload Error', [
 				'exception' => $ex->getMessage(),
-			    'bucket' => $this->bucket,
+				'bucket' => $this->bucket,
 				'key' => $key,
-				'privacy' =>$acl,
-				'options' =>$options
+				'privacy' => $acl,
+				'options' => $options
 			]);
 
 			throw new StorageException($ex->getMessage(), $ex->getCode(), $ex);
 		}
 	}
 
-	public function delete( $key ) {
-		if (!$this->client) {
+	public function delete($key) {
+		if(!$this->client) {
 			throw new InvalidStorageSettingsException('Storage settings are invalid');
 		}
 
 		try {
-			$this->client->deleteObject(['Bucket' => $this->bucket, 'Key' => $this->key]);
-		} catch (AwsException $ex) {
-			Logger::error( 'S3 Delete File Error', [ 'exception' =>$ex->getMessage(), 'Bucket' =>$this->bucket, 'Key' =>$key]);
+			Logger::startTiming("Deleting '$key'");
+			$this->client->deleteObject(['Bucket' => $this->bucket, 'Key' => $key]);
+			Logger::endTiming("Deleted '$key'");
+		}
+		catch(AwsException $ex) {
+			Logger::error('S3 Delete File Error', [
+				'exception' => $ex->getMessage(),
+				'Bucket' => $this->bucket,
+				'Key' => $key
+			]);
 		}
 	}
 
-	public function info( $key ) {
-		if (!$this->client) {
+	public function info($key) {
+		if(!$this->client) {
 			throw new InvalidStorageSettingsException('Storage settings are invalid');
 		}
 
 		try {
-			$result = $this->client->headObject(['Bucket' => $this->bucket, 'Key'=>$key]);
+			$result = $this->client->headObject(['Bucket' => $this->bucket, 'Key' => $key]);
 			$length = $result->get('ContentLength');
 			$type = $result->get('ContentType');
-		} catch (AwsException $ex) {
+		}
+		catch(AwsException $ex) {
 			throw new StorageException($ex->getMessage(), $ex->getStatusCode(), $ex);
 		}
 
 		$presignedUrl = $this->presignedUrl($key);
 
 		$size = null;
-		if (strpos($type, 'image/') === 0) {
+		if(strpos($type, 'image/') === 0) {
 			$faster = new FasterImage();
 			$result = $faster->batch([$presignedUrl]);
 			$result = $result[$presignedUrl];
 			$size = $result['size'];
 		}
 
-		$fileInfo = new FileInfo($key,$presignedUrl, $length, $type, $size);
+		$fileInfo = new FileInfo($key, $presignedUrl, $length, $type, $size);
+
 		return $fileInfo;
 	}
 	//endregion
 
 	//region URLs
 	protected function presignedRequest($key) {
-		if (!$this->client) {
+		if(!$this->client) {
 			throw new InvalidStorageSettingsException('Storage settings are invalid');
 		}
 
 		$command = $this->client->getCommand('GetObject', ['Bucket' => $this->bucket, 'Key' => $key]);
+
 		return $this->client->createPresignedRequest($command, '+10 minutes');
 	}
 
-	public function presignedUrl( $key ) {
-		return (string)$this->presignedRequest($key)->getUri();
+	public function presignedUrl($key) {
+		return (string) $this->presignedRequest($key)->getUri();
 	}
 
-	public function url( $key ) {
-		if (!$this->client) {
+	public function url($key) {
+		if(!$this->client) {
 			throw new InvalidStorageSettingsException('Storage settings are invalid');
 		}
 
@@ -484,35 +506,36 @@ class S3Storage implements StorageInterface {
 	//endregion
 
 	//region Direct Uploads
-	public function uploadUrl($key, $acl, $mimeType=null, $cacheControl = null, $expires = null) {
+	public function uploadUrl($key, $acl, $mimeType = null, $cacheControl = null, $expires = null) {
 		try {
 			$optionsData = [
-				['bucket'=>$this->bucket],
+				['bucket' => $this->bucket],
 				['acl' => $acl],
 				['key' => $key],
 				['starts-with', '$Content-Type', '']
 			];
 
-			if (!empty($cacheControl)) {
+			if(!empty($cacheControl)) {
 				$optionsData[] = ['Cache-Control' => $cacheControl];
 			}
 
-			if (!empty($expires)) {
+			if(!empty($expires)) {
 				$optionsData[] = ['Expires' => $expires];
 			}
 
 			$postObject = new PostObjectV4($this->client, $this->bucket, [], $optionsData, '+15 minutes');
 
-			return new S3UploadInfo($key, $postObject,$acl, $cacheControl, $expires);
-		} catch (AwsException $ex) {
-			Logger::error( 'S3 Generate File Upload URL Error', [ 'exception' =>$ex->getMessage()]);
+			return new S3UploadInfo($key, $postObject, $acl, $cacheControl, $expires);
+		}
+		catch(AwsException $ex) {
+			Logger::error('S3 Generate File Upload URL Error', ['exception' => $ex->getMessage()]);
 			throw new StorageException($ex->getMessage(), $ex->getCode(), $ex);
 		}
 	}
 
 	public function enqueueUploaderScripts() {
 		add_action('admin_enqueue_scripts', function() {
-			wp_enqueue_script('ilab-media-upload-s3',ILAB_PUB_JS_URL.'/ilab-media-upload-s3.js',[],false,true);
+			wp_enqueue_script('ilab-media-upload-s3', ILAB_PUB_JS_URL.'/ilab-media-upload-s3.js', [], false, true);
 		});
 	}
 	//endregion

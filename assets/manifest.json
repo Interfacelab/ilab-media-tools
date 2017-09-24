@@ -11,6 +11,11 @@
         "js/ilab-media-upload.js"
       ]
     },
+    "ilab-media-setup.js": {
+      "files": [
+        "js/ilab-media-setup.js"
+      ]
+    },
     "ilab-media-upload-s3.js": {
       "files": [
         "js/ilab-media-upload-s3.js"
@@ -40,6 +45,9 @@
     },
     "ilab-modal.min.css": {
       "files": "styles/ilab-modal.scss"
+    },
+    "ilab-media-setup.min.css": {
+      "files": "styles/ilab-media-setup.scss"
     },
     "ilab-media-upload.min.css": {
       "files": "styles/ilab-media-upload.scss"
