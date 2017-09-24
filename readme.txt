@@ -61,11 +61,11 @@ https://www.youtube.com/watch?v=rOmziu30nPI
 
 1. Upload the plugin files to the `/wp-content/plugins/ilab-media-tools` directory, or install the plugin through the WordPress plugins screen directly.
 2. Activate the plugin through the 'Plugins' screen in WordPress
-3. Enable the tools you want through the *ILab Media Tools -> Tools* settings page.
-4. For S3, enter your AWS credentials in the *ILab Media Tools -> S3* Settings* page.
-5. For Imgix, enter your Imgix settings in the *ILab Media Tools -> Imgix Settings* page.
-6. Once your settings are complete, use the *ILab Media Tools -> S3 Importer* to import your current media library to
-   Amazon S3.
+3. For Cloud Storage, enter your credentials in the *Media Cloud -> Storage Settings* page.
+4. For Imgix, enter your Imgix settings in the *Media Cloud -> Imgix Settings* page.
+5. Enable the tools you want through the *Media Cloud -> Tools* settings page.
+6. Once your settings are complete, use the *Media Cloud -> Storage Importer* to import your current media library to
+   Amazon S3 or whatever storage service you are using.
 
 == Frequently Asked Questions ==
 
