@@ -69,4 +69,17 @@ final class StorageManager {
 	public static function registerDriver($identifier, $class) {
 		self::$registry[$identifier] = $class;
 	}
+
+	/**
+	 * @param $identifier
+	 *
+	 * @return StorageInterface
+	 */
+	public static function driverClass($identifier) {
+		if (!isset(self::$registry[$identifier])) {
+			return null;
+		}
+
+		return self::$registry[$identifier];
+	}
 }

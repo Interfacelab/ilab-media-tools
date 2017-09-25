@@ -1,0 +1,63 @@
+#ilab-s3-info-meta {
+  .inside {
+    padding: 0px 5px 10px 5px;
+
+    .info-panel-tabs {
+      margin: -7px -5px 0px -5px;
+      padding: 6px 10px 0px 10px;
+      background-color: rgba(0,0,0,0.125);
+
+      ul {
+        display: flex;
+        margin: 0px;
+        padding: 0px;
+        height: 100%;
+
+        li {
+          padding: 5px 10px;
+          font-size: 11px;
+          text-transform: uppercase;
+          margin: 0px;
+          margin-right: 10px;
+          display: block;
+          height: 100%;
+          background-color: rgba(0,0,0,0.0625);
+          cursor: pointer;
+          font-weight: bold;
+
+          &.active {
+            background-color: white;
+          }
+        }
+      }
+    }
+
+    .info-panel-contents {
+      padding: 15px 10px;
+      .info-line {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 15px;
+
+        h3, label {
+          font-size: 11px;
+          text-transform: uppercase;
+          margin: 0;
+          font-weight: bold;
+        }
+
+        label {
+          margin-bottom: 4px;
+        }
+
+        select {
+          font-size: 12px !important;
+        }
+      }
+
+      .info-size-selector {
+        margin-bottom: 15px;
+      }
+    }
+  }
+}

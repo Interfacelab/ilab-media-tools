@@ -20,6 +20,7 @@ use ILAB\MediaCloud\Cloud\Storage\StorageManager;
 use ILAB\MediaCloud\Cloud\Storage\StorageSettings;
 use ILAB\MediaCloud\Cloud\Storage\UploadInfo;
 use ILAB\MediaCloud\Tools\ToolBase;
+use function ILAB\MediaCloud\Utilities\arrayPath;
 use ILAB\MediaCloud\Utilities\EnvironmentOptions;
 use function ILAB\MediaCloud\Utilities\json_response;
 use ILAB\MediaCloud\Utilities\NoticeManager;
@@ -954,6 +955,8 @@ class StorageTool extends ToolBase {
 				<?php
 
 			});
+
+			wp_enqueue_script('ilab-media-storage-js', ILAB_PUB_JS_URL.'/ilab-media-storage.js', ['jquery'], false, true);
 		});
 	}
 
@@ -1168,41 +1171,72 @@ class StorageTool extends ToolBase {
             Not uploaded.
 			<?php
 		} else {
-			?>
-            <div class="misc-pub-section">
-                Bucket: <a href="https://console.aws.amazon.com/s3/buckets/<?php echo $meta['s3']['bucket'] ?>"
-                           target="_blank"><?php echo $meta['s3']['bucket'] ?></a>
-            </div>
-            <div class="misc-pub-section">
-                Path: <a
-                        href="https://console.aws.amazon.com/s3/buckets/<?php echo $meta['s3']['bucket'] ?>/<?php echo $meta['s3']['key'] ?>/details"
-                        target="_blank"><?php echo $meta['s3']['key'] ?></a>
-            </div>
-            <div class="misc-pub-section">
-                <label for="s3-access-acl">Access:</label>
-                <select id="s3-access-acl" name="s3-access-acl">
-                    <option value="public-read" <?php echo (isset($meta['s3']['privacy']) && ($meta['s3']['privacy'] == 'public-read')) ? 'selected' : '' ?>>
-                        Public
-                    </option>
-                    <option value="authenticated-read" <?php echo (isset($meta['s3']['privacy']) && ($meta['s3']['privacy'] == 'authenticated-read')) ? 'selected' : '' ?>>
-                        Authenticated Users
-                    </option>
-                </select>
-            </div>
-            <div class="misc-pub-section">
-                <label for="s3-cache-control">Cache-Control:</label>
-                <input type="text" class="widefat" name="s3-cache-control" id="s3-cache-control"
-                       value="<?php echo (isset($meta['s3']['options']) && isset($meta['s3']['options']['params']['CacheControl'])) ? $meta['s3']['options']['params']['CacheControl'] : '' ?>">
-            </div>
-            <div class="misc-pub-section">
-                <label for="s3-expires">Expires:</label>
-                <input type="text" class="widefat" name="s3-expires" id="s3-expires"
-                       value="<?php echo (isset($meta['s3']['options']) && isset($meta['s3']['options']['params']['Expires'])) ? $meta['s3']['options']['params']['Expires'] : '' ?>">
-            </div>
-            <div class="misc-pub-section">
-                <a href="<?php echo $meta['s3']['url'] ?>" target="_blank">View S3 URL</a></strong>
-            </div>
-			<?php
+			$clientClass = get_class($this->client);
+			$uploadDriverId = arrayPath($meta,'s3/provider',$clientClass::identifier());
+			$uploadDriver = StorageManager::driverClass($uploadDriverId);
+
+			$bucket = arrayPath($meta,'s3/bucket',null);
+			$key = arrayPath($meta,'s3/key',null);
+            $privacy = arrayPath($meta,'s3/privacy', 'public-read');
+			$cacheControl = arrayPath($meta, 's3/options/params/CacheControl', null);
+			$expires = arrayPath($meta, 's3/options/params/Expires', null);
+			$url = arrayPath($meta,'s3/url',null);
+            $publicUrl = $this->getAttachmentURLFromMeta($meta);
+
+			$sizes = [];
+			if($meta['sizes']) {
+			    foreach($meta['sizes'] as $sizeKey => $size) {
+			        $sizeData = [];
+
+			        $sizeData['uploaded'] = isset($size['s3']);
+
+			        $sizeData['name'] = ucwords(str_replace('_', ' ', str_replace('-', ' ', $sizeKey)));
+				    $sizeData['bucket'] = arrayPath($size,'s3/bucket',null);
+				    $sizeData['key'] = arrayPath($size,'s3/key',null);
+				    $sizeData['privacy'] = arrayPath($size,'s3/privacy', 'public-read');
+				    $sizeData['cacheControl'] = arrayPath($size, 's3/options/params/CacheControl', null);
+				    $sizeData['expires'] = arrayPath($size, 's3/options/params/Expires', null);
+				    $sizeData['url'] = arrayPath($size, 's3/url', null);
+				    $sizeData['publicUrl'] = $this->getAttachmentURLFromMeta($size);
+				    $sizeData['width'] = arrayPath($size,'width', 0);
+				    $sizeData['height'] = arrayPath($size,'height', 0);
+				    $sizeData['driverName'] = $uploadDriver::name();
+                    $sizeData['bucketLink'] = $uploadDriver::bucketLink($sizeData['bucket']);
+                    $sizeData['isSize'] = 1;
+                    $sizeData['pathLink'] = $uploadDriver::pathLink($sizeData['bucket'], $sizeData['key']);
+
+				    $sizes[$sizeKey] = $sizeData;
+                }
+            }
+
+            $wpSizes = ilab_get_image_sizes();
+			foreach($wpSizes as $wpSizeKey => $wpSize) {
+			    if (!isset($sizes[$wpSizeKey])) {
+				    $sizes[$wpSizeKey] = [
+					    'uploaded' => 0,
+				        'name' => ucwords(str_replace('_', ' ', str_replace('-', ' ', $wpSizeKey)))
+				    ];
+                }
+            }
+
+            $data = [
+	            'uploaded' => 1,
+	            'bucket' => $bucket,
+	            'key' => $key,
+	            'privacy' => $privacy,
+	            'cacheControl' => $cacheControl,
+	            'expires' => $expires,
+	            'url' => $url,
+	            'publicUrl' => $publicUrl,
+	            'width' => $meta['width'],
+	            'height' => $meta['height'],
+	            'driverName' => $uploadDriver::name(),
+	            'bucketLink' => $uploadDriver::bucketLink($bucket),
+	            'pathLink' => $uploadDriver::pathLink($bucket, $key),
+	            'sizes' => $sizes
+            ];
+
+            echo View::render_view('storage/info-panel.php', $data);
 		}
 
 	}

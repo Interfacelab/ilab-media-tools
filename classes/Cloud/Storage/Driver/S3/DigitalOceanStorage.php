@@ -33,6 +33,28 @@ class DigitalOceanStorage extends OtherS3Storage {
 
 	//endregion
 
+	//region Static Information Methods
+	public static function identifier() {
+		return 'do';
+	}
+
+	public static function name() {
+		return 'DigitalOcean Spaces';
+	}
+
+	public static function bucketLink($bucket) {
+		return "https://cloud.digitalocean.com/spaces/$bucket";
+	}
+
+	public static function pathLink($bucket, $key) {
+		$keyParts = explode('/', $key);
+		array_pop($keyParts);
+		$key = implode('/', $keyParts).'/';
+
+		return "https://cloud.digitalocean.com/spaces/{$bucket}?path={$key}";
+	}
+	//endregion
+
 	//region Enabled/Options
 	public function supportsDirectUploads() {
 		return false;
