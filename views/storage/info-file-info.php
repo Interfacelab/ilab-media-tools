@@ -2,9 +2,6 @@
 <div class="info-line">
 Not uploaded.
 </div>
-<!--<div class="button-row">-->
-<!--    <a href="#" class="button button-primary button-small">Regenerate</a>-->
-<!--</div>-->
 {% else %}
 <div class="info-line">
 	<h3>Dimensions</h3>
@@ -51,10 +48,10 @@ Not uploaded.
 	<input type="text" class="widefat" name="s3-expires" id="s3-expires" value="{{$expires}}">
 </div>
 {% endif %}
-<div class="button-row">
-	<a href="{{$url}}" class="button button-secondary button-small" target="_blank">Storage URL</a>
+<div class="links-row">
+	<a href="{{$url}}" target="_blank"><span class="dashicons dashicons-external"></span>Storage URL</a>
 	{% if (!empty($publicUrl) && ($publicUrl != $url)) %}
-	<a href="{{$publicUrl}}" class="button button-secondary button-small"  target="_blank">Public URL</a>
+	<a href="{{$publicUrl}}" target="_blank"><span class="dashicons dashicons-external"></span>Public URL</a>
 	{% endif %}
 </div>
 {% endif %}

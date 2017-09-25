@@ -11,6 +11,7 @@
 	        echo \ILAB\MediaCloud\Utilities\View::render_view('storage/info-file-info.php', [
 		        'uploaded' => 1,
 		        'bucket' => $bucket,
+		        'postId' => $postId,
 		        'key' => $key,
 		        'privacy' => $privacy,
 		        'cacheControl' => $cacheControl,
@@ -44,4 +45,10 @@
         <?php $firstSize = false; ?>
         {% endforeach %}
     </div>
+    {% if (!$imgixEnabled) %}
+    <div class="button-row">
+        <a data-post-id="{{$postId}}" data-imgix-enabled="{{($imgixEnabled) ? 'true': 'false'}}" href="#" class="ilab-info-regenerate-thumbnails button button-warning button-small">Regenerate Image</a>
+        <div id="ilab-info-regenerate-status" style="display:none;"><div class="spinner is-active"></div>Regenerating ...</div>
+    </div>
+    {% endif %}
 </div>

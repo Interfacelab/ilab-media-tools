@@ -47,4 +47,33 @@
             lastPanel = panel;
         }
     });
+
+    $('.ilab-info-regenerate-thumbnails').on('click', function(e){
+        var button = $(this);
+
+        if (button.data('imgix-enabled')) {
+            if (!confirm('You are currently using Imgix, which makes this function rather unnecessary.  Are you sure you want to continue?')) {
+                return false;
+            }
+        }
+
+        e.preventDefault();
+
+        button.css({display: 'none'});
+        $('#ilab-info-regenerate-status').css({display: ''});
+
+        $.post(ajaxurl, {
+            "action": "ilab_media_cloud_regenerate_file",
+            "post_id": button.data('post-id')
+        }, function(response){
+            button.css({display: ''});
+            $('#ilab-info-regenerate-status').css({display: 'none'});
+            if (response.status != 'success') {
+                alert(response.message);
+            }
+        });
+
+        return false;
+    });
 })(jQuery);
+

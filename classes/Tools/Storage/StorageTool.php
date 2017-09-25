@@ -19,6 +19,7 @@ use ILAB\MediaCloud\Cloud\Storage\StorageInterface;
 use ILAB\MediaCloud\Cloud\Storage\StorageManager;
 use ILAB\MediaCloud\Cloud\Storage\StorageSettings;
 use ILAB\MediaCloud\Cloud\Storage\UploadInfo;
+use ILAB\MediaCloud\Tasks\RegenerateThumbnailsProcess;
 use ILAB\MediaCloud\Tools\ToolBase;
 use function ILAB\MediaCloud\Utilities\arrayPath;
 use ILAB\MediaCloud\Utilities\EnvironmentOptions;
@@ -68,6 +69,7 @@ class StorageTool extends ToolBase {
 		parent::__construct($toolName, $toolInfo, $toolManager);
 
 		new StorageImportProcess();
+		new RegenerateThumbnailsProcess();
 
 		$this->displayBadges = EnvironmentOptions::Option('ilab-media-s3-display-s3-badge', null, true);
 		$this->mediaListIntegration = EnvironmentOptions::Option('ilab-cloud-storage-display-media-list', null, true);
@@ -84,6 +86,11 @@ class StorageTool extends ToolBase {
 			add_action('wp_ajax_ilab_s3_import_media', [$this, 'importMedia']);
 			add_action('wp_ajax_ilab_s3_import_progress', [$this, 'importProgress']);
 			add_action('wp_ajax_ilab_s3_cancel_import', [$this, 'cancelImportMedia']);
+
+			add_action('wp_ajax_ilab_media_cloud_regenerate_file', [$this, 'handleRegenerateFile']);
+			add_action('wp_ajax_ilab_media_cloud_regenerate_files', [$this, 'handleRegenerateFiles']);
+			add_action('wp_ajax_ilab_media_cloud_regenerate_progress', [$this, 'regenerateProgress']);
+			add_action('wp_ajax_ilab_media_cloud_cancel_regenerate', [$this, 'cancelRegenerateFiles']);
 		}
 	}
 	//endregion
@@ -152,6 +159,14 @@ class StorageTool extends ToolBase {
 				$this,
 				'renderImporter'
 			]);
+
+			$imgixEnabled = apply_filters('ilab_imgix_enabled', false);
+			if (!$imgixEnabled) {
+				add_submenu_page($top_menu_slug, 'Rebuild Thumbnails', 'Rebuild Thumbnails', 'manage_options', 'media-tools-cloud-regeneration', [
+					$this,
+					'renderRegenerator'
+				]);
+            }
 		}
 	}
 	//endregion
@@ -1171,6 +1186,8 @@ class StorageTool extends ToolBase {
             Not uploaded.
 			<?php
 		} else {
+		    $imgixEnabled = apply_filters('ilab_imgix_enabled', false);
+
 			$clientClass = get_class($this->client);
 			$uploadDriverId = arrayPath($meta,'s3/provider',$clientClass::identifier());
 			$uploadDriver = StorageManager::driverClass($uploadDriverId);
@@ -1190,6 +1207,7 @@ class StorageTool extends ToolBase {
 
 			        $sizeData['uploaded'] = isset($size['s3']);
 
+			        $sizeData['postId'] = $post->ID;
 			        $sizeData['name'] = ucwords(str_replace('_', ' ', str_replace('-', ' ', $sizeKey)));
 				    $sizeData['bucket'] = arrayPath($size,'s3/bucket',null);
 				    $sizeData['key'] = arrayPath($size,'s3/key',null);
@@ -1221,7 +1239,8 @@ class StorageTool extends ToolBase {
 
             $data = [
 	            'uploaded' => 1,
-	            'bucket' => $bucket,
+	            'postId' => $post->ID,
+                'bucket' => $bucket,
 	            'key' => $key,
 	            'privacy' => $privacy,
 	            'cacheControl' => $cacheControl,
@@ -1233,6 +1252,7 @@ class StorageTool extends ToolBase {
 	            'driverName' => $uploadDriver::name(),
 	            'bucketLink' => $uploadDriver::bucketLink($bucket),
 	            'pathLink' => $uploadDriver::pathLink($bucket, $key),
+                'imgixEnabled' => $imgixEnabled,
 	            'sizes' => $sizes
             ];
 
@@ -1241,6 +1261,186 @@ class StorageTool extends ToolBase {
 
 	}
 	//endregion
+
+    //region Regeneration
+	/**
+     * Regenerates an image's thumbnails and re-uploads them to the storage service.
+     *
+	 * @param $postId
+	 * @return bool|string
+	 */
+    public function regenerateFile($postId) {
+	    @set_time_limit(120);
+
+	    $fullsizepath = get_attached_file( $postId );
+	    if (!file_exists($fullsizepath)) {
+		    $fullsizepath = _load_image_to_edit_path($postId);
+	    }
+
+	    if (!file_exists($fullsizepath)) {
+		    if (strpos($fullsizepath, 'http') === 0) {
+			    $path = parse_url($fullsizepath, PHP_URL_PATH);
+			    $pathParts = explode('/', $path);
+			    $file = array_pop($pathParts);
+
+			    $uploadDirInfo = wp_upload_dir();
+
+			    $filepath = $uploadDirInfo['path'].'/'.$file;
+			    Logger::startTiming("Downloading fullsize '$fullsizepath' to '$filepath'");
+			    file_put_contents($filepath, file_get_contents($fullsizepath));
+			    Logger::endTiming("Finished downloading fullsize '$fullsizepath' to '$filepath'");
+
+			    if (!file_exists($filepath)) {
+			        return "File '$fullsizepath' could not be downloaded.";
+                }
+
+			    $fullsizepath = $filepath;
+		    } else {
+		        return "Local file '$fullsizepath' does not exist and is not a URL.";
+		    }
+	    }
+
+	    Logger::startTiming('Regenerating metadata ...', ['id' => $postId]);
+	    $metadata = wp_generate_attachment_metadata( $postId, $fullsizepath );
+	    Logger::endTiming('Regenerating metadata ...', ['id' => $postId]);
+
+	    wp_update_attachment_metadata($postId, $metadata);
+
+	    return true;
+    }
+
+	/**
+	 * Ajax endpoint for regenerating a single file
+	 */
+    public function handleRegenerateFile() {
+	    if (!is_admin()) {
+	        json_response(['status' => 'error', 'message' => 'Invalid security credentials.']);
+        }
+
+	    if (!isset($_POST['post_id'])) {
+		    json_response(['status' => 'error', 'message' => 'Missing post ID.']);
+	    }
+
+        $postId = intval($_POST['post_id']);
+	    if (!current_user_can('edit_post',$postId)) {
+		    Logger::info('User is attempting to edit a post that they do not have access to.', ['id' => $postId]);
+		    json_response(['status' => 'error', 'message' => 'User is attempting to edit a post that they do not have access to.']);
+        }
+
+        $result = $this->regenerateFile($postId);
+	    if ($result === true) {
+	        json_response(['status'=>'success']);
+        } else {
+	        json_response(['status' => 'error', 'message' => $result]);
+        }
+	}
+
+	/**
+	 * Renders the storage importer view
+	 */
+	public function renderRegenerator() {
+		$shouldCancel = get_option('ilab_cloud_regenerate_should_cancel', false);
+		$status = get_option('ilab_cloud_regenerate_status', false);
+		$total = get_option('ilab_cloud_regenerate_total_count', 0);
+		$current = get_option('ilab_cloud_regenerate_current', 1);
+		$currentFile = get_option('ilab_cloud_regenerate_current_file', '');
+
+		if($total == 0) {
+			$attachments = get_posts([
+				                         'post_type' => 'attachment',
+				                         'posts_per_page' => - 1
+			                         ]);
+
+			$total = count($attachments);
+		}
+
+		$progress = 0;
+
+		if($total > 0) {
+			$progress = ($current / $total) * 100;
+		}
+
+		echo View::render_view('storage/regenerator.php', [
+			'status' => ($status) ? 'running' : 'idle',
+			'total' => $total,
+			'progress' => $progress,
+			'current' => $current,
+			'currentFile' => $currentFile,
+			'enabled' => $this->enabled(),
+			'shouldCancel' => $shouldCancel
+		]);
+	}
+
+	/**
+	 * Ajax callback for import progress.
+	 */
+	public function regenerateProgress() {
+		$shouldCancel = get_option('ilab_cloud_regenerate_should_cancel', false);
+		$status = get_option('ilab_cloud_regenerate_status', false);
+		$total = get_option('ilab_cloud_regenerate_total_count', 0);
+		$current = get_option('ilab_cloud_regenerate_current', 0);
+		$currentFile = get_option('ilab_cloud_regenerate_current_file', '');
+
+		header('Content-type: application/json');
+		echo json_encode([
+			                 'status' => ($status) ? 'running' : 'idle',
+			                 'total' => (int) $total,
+			                 'current' => (int) $current,
+			                 'currentFile' => $currentFile,
+			                 'shouldCancel' => $shouldCancel
+		                 ]);
+		die;
+	}
+
+	/**
+	 * Ajax method to cancel the import
+	 */
+	public function cancelRegenerateFiles() {
+		update_option('ilab_cloud_regenerate_should_cancel', 1);
+		RegenerateThumbnailsProcess::cancelAll();
+
+		json_response(['status' => 'ok']);
+	}
+
+	/**
+	 * Ajax method to start the import.
+	 */
+	public function handleRegenerateFiles() {
+		$args = [
+			'post_type' => 'attachment',
+			'post_status' => 'inherit',
+			'nopaging' => true,
+			'post_mime_type' => 'image',
+			'fields' => 'ids',
+		];
+
+		$query = new \WP_Query($args);
+
+		if($query->post_count > 0) {
+			update_option('ilab_cloud_regenerate_status', true);
+			update_option('ilab_cloud_regenerate_total_count', $query->post_count);
+			update_option('ilab_cloud_regenerate_current', 1);
+			update_option('ilab_cloud_regenerate_should_cancel', false);
+
+			$process = new RegenerateThumbnailsProcess();
+
+			for($i = 0; $i < $query->post_count; ++ $i) {
+				$process->push_to_queue(['index' => $i, 'post' => $query->posts[$i]]);
+			}
+
+			$process->save();
+			$process->dispatch();
+		} else {
+			delete_option('ilab_cloud_regenerate_status');
+		}
+
+		header('Content-type: application/json');
+		echo '{"status":"running"}';
+		die;
+	}
+
+    //endregion
+
 
 	//region Importer
 	/**
