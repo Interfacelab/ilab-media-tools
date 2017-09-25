@@ -1,0 +1,128 @@
+#ilab-s3-info-meta {
+  .inside {
+    padding: 0px 5px 10px 5px;
+
+    .info-panel-tabs {
+      margin: -7px -5px 0px -5px;
+      padding: 6px 10px 0px 10px;
+      background-color: rgba(0,0,0,0.125);
+
+      ul {
+        display: flex;
+        margin: 0px;
+        padding: 0px;
+        height: 100%;
+
+        li {
+          padding: 5px 10px;
+          font-size: 11px;
+          text-transform: uppercase;
+          margin: 0px;
+          margin-right: 10px;
+          display: block;
+          height: 100%;
+          background-color: rgba(0,0,0,0.0625);
+          cursor: pointer;
+          font-weight: bold;
+
+          &.info-panel-missing-sizes {
+            color: #9e0000;
+          }
+
+          &.active {
+            background-color: white;
+          }
+        }
+      }
+    }
+
+    .info-panel-contents {
+      padding: 15px 10px 0px 10px;
+      .info-line {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 15px;
+
+        h3, label {
+          font-size: 11px;
+          text-transform: uppercase;
+          margin: 0;
+          font-weight: bold;
+        }
+
+        label {
+          margin-bottom: 4px;
+        }
+
+        select {
+          font-size: 12px !important;
+        }
+      }
+
+      .info-size-selector {
+        margin-bottom: 15px;
+      }
+
+      .button-row {
+        margin-bottom: 15px;
+        border-top: 1px solid #eaeaea;
+        padding-top: 15px;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+
+        #ilab-info-regenerate-status {
+          display: flex;
+          padding: 0;
+          justify-content: center;
+          align-items: center;
+          width: 100%;
+
+          .spinner {
+            float:none;
+            display: block;
+            margin: 0;
+            margin-right: 8px;
+            width: 16px;
+            height: 16px;
+            background-size: 16px 16px;
+          }
+
+          font-size: 12px;
+        }
+      }
+
+      .links-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(0,0,0,0.05);
+        border-radius: 8px;
+        padding: 10px 0px;
+        margin-bottom: 15px;
+
+        a {
+          color: black;
+          display: flex;
+          align-items: center;
+          margin-right: 20px;
+          text-decoration: none;
+          text-transform: uppercase;
+          font-weight: bold;
+          font-size: 11px;
+
+          &:last-of-type {
+            margin-right: 0px;
+          }
+
+          .dashicons {
+            margin-right: 3px;
+            width: 16px;
+            height: 16px;
+            font-size: 16px;
+          }
+        }
+      }
+    }
+  }
+}

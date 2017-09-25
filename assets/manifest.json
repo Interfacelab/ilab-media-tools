@@ -11,6 +11,11 @@
         "js/ilab-media-upload.js"
       ]
     },
+    "ilab-media-storage.js": {
+      "files": [
+        "js/ilab-media-storage.js"
+      ]
+    },
     "ilab-media-setup.js": {
       "files": [
         "js/ilab-media-setup.js"

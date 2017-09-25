@@ -74,6 +74,24 @@ class BackblazeStorage implements StorageInterface {
 	}
 	//endregion
 
+	//region Static Information Methods
+	public static function identifier() {
+		return 'backblaze';
+	}
+
+	public static function name() {
+		return 'Backblaze B2';
+	}
+
+	public static function bucketLink($bucket) {
+		return null;
+	}
+
+	public static function pathLink($bucket, $key) {
+		return null;
+	}
+	//endregion
+
 	//region Enabled/Options
 	public function supportsDirectUploads() {
 		return false;

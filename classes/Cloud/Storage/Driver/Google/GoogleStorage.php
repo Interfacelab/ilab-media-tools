@@ -85,6 +85,28 @@ class GoogleStorage implements StorageInterface {
 	}
 	//endregion
 
+	//region Static Information Methods
+	public static function identifier() {
+		return 'google';
+	}
+
+	public static function name() {
+		return 'Google Cloud Storage';
+	}
+
+	public static function bucketLink($bucket) {
+		return "https://console.cloud.google.com/storage/browser/$bucket";
+	}
+
+	public static function pathLink($bucket, $key) {
+		$keyParts = explode('/', $key);
+		array_pop($keyParts);
+		$key = implode('/', $keyParts).'/';
+
+		return "https://console.cloud.google.com/storage/browser/{$bucket}/{$key}";
+	}
+	//endregion
+
 	//region Enabled/Options
 	public function supportsDirectUploads() {
 		return true;

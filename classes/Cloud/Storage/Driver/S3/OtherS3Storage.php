@@ -33,6 +33,26 @@ class OtherS3Storage extends S3Storage {
 
 	//endregion
 
+	//region Static Information Methods
+	public static function identifier() {
+		return 'other-s3';
+	}
+
+	public static function name() {
+		return 'Other S3 Service';
+	}
+
+	public static function bucketLink($bucket) {
+		$instance = new self();
+		return $instance->endpoint;
+	}
+
+	public static function pathLink($bucket, $key) {
+		$instance = new self();
+		return $instance->endpoint;
+	}
+	//endregion
+
 	//region Enabled/Options
 	public function supportsDirectUploads() {
 		return false;

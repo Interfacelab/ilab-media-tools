@@ -20,6 +20,7 @@ use FasterImage\FasterImage;
 use ILAB\MediaCloud\Cloud\Storage\FileInfo;
 use ILAB\MediaCloud\Cloud\Storage\InvalidStorageSettingsException;
 use ILAB\MediaCloud\Cloud\Storage\StorageException;
+use ILAB\MediaCloud\Cloud\Storage\StorageSettings;
 use function ILAB\MediaCloud\Utilities\arrayPath;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
@@ -31,6 +32,30 @@ class MinioStorage extends OtherS3Storage {
 
 	//region Constructor
 
+	//endregion
+
+	//region Static Information Methods
+	public static function identifier() {
+		return 'minio';
+	}
+
+	public static function name() {
+		return 'Minio';
+	}
+
+	public static function bucketLink($bucket) {
+		$instance = new self();
+		return $instance->endpoint.'/minio/'.$bucket;
+	}
+
+	public static function pathLink($bucket, $key) {
+		$keyParts = explode('/', $key);
+		array_pop($keyParts);
+		$key = implode('/', $keyParts).'/';
+
+		$instance = new self();
+		return $instance->endpoint.'/minio/'.$bucket.'/'.$key;
+	}
 	//endregion
 
 	//region Enabled/Options

@@ -30,6 +30,37 @@ interface StorageInterface {
 	public function supportsDirectUploads();
 
 	/**
+	 * The identifier for the storage interface, eg 's3', 'do', etc.
+	 * @return string
+	 */
+	public static function identifier();
+
+	/**
+	 * The name of the storage interface, eg 'Amazon S3', etc.
+	 * @return mixed
+	 */
+	public static function name();
+
+	/**
+	 * Generates a link to the bucket.
+	 *
+	 * @param $bucket
+	 * @return string|null
+	 */
+	public static function bucketLink($bucket);
+
+	/**
+	 * Generates a link to the path
+	 *
+	 * @param $bucket
+	 * @param $key
+	 *
+	 * @return string|null
+	 */
+	public static function pathLink($bucket, $key);
+
+
+	/**
 	 * Insures that all the configuration settings are valid and that the storage is enabled.
 	 * @return bool
 	 */

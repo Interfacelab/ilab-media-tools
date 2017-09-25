@@ -118,6 +118,24 @@ class S3Storage implements StorageInterface {
 	}
 	//endregion
 
+	//region Static Information Methods
+	public static function identifier() {
+		return 's3';
+	}
+
+	public static function name() {
+		return 'Amazon S3';
+	}
+
+	public static function bucketLink($bucket) {
+		return "https://console.aws.amazon.com/s3/buckets/$bucket";
+	}
+
+	public static function pathLink($bucket, $key) {
+		return "https://console.aws.amazon.com/s3/buckets/{$bucket}/{$key}/details";
+	}
+	//endregion
+	
 	//region Enabled/Options
 	public function supportsDirectUploads() {
 		return (StorageManager::driver() == 's3');
