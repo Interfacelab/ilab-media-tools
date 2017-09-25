@@ -1,7 +1,7 @@
 <div class="info-panel-tabs">
     <ul>
         <li data-tab-target="info-panel-tab-original" class="active">Original File</li>
-        <li data-tab-target="info-panel-tab-sizes">Other Sizes ({{count($sizes)}})</li>
+        <li data-tab-target="info-panel-tab-sizes" class="{{(count($missingSizes)>0) ? 'info-panel-missing-sizes' : ''}}">Other Sizes ({{count($sizes)}})</li>
     </ul>
 </div>
 <div class="info-panel-contents">
@@ -32,9 +32,22 @@
         <div class="info-line info-size-selector">
             <label for="ilab-other-sizes">WordPress Size</label>
             <select id="ilab-other-sizes" name="ilab-other-sizes">
+                {%if (count($missingSizes) == 0) %}
                 {% foreach($sizes as $key => $size) %}
                 <option value="{{$key}}">{{$size['name']}}</option>
                 {% endforeach %}
+                {% else %}
+                <optgroup label="Existing Sizes">
+                    {% foreach($sizes as $key => $size) %}
+                    <option value="{{$key}}">{{$size['name']}}</option>
+                    {% endforeach %}
+                </optgroup>
+                <optgroup label="Missing Sizes">
+                    {% foreach($missingSizes as $key => $name) %}
+                    <option value="{{$key}}" disabled>{{$name}}</option>
+                    {% endforeach %}
+                </optgroup>
+                {% endif %}
             </select>
         </div>
         <?php $firstSize = true; ?>

@@ -1028,9 +1028,16 @@ class StorageTool extends ToolBase {
 			return;
 		}
 
+
 		add_action('admin_init', function() {
 			add_filter('bulk_actions-upload', function($actions) {
+				$imgixEnabled = apply_filters('ilab_imgix_enabled', false);
+
 				$actions['ilab_s3_import'] = 'Import to Cloud Storage';
+
+				if (!$imgixEnabled) {
+					$actions['ilab_regenerate_thumbnails'] = 'Regenerate Thumbnails';
+                }
 
 				return $actions;
 			});
@@ -1066,7 +1073,25 @@ class StorageTool extends ToolBase {
 
 						return 'admin.php?page=media-tools-s3-importer';
 					}
-				}
+				} else if ('ilab_regenerate_thumbnails' === $action_name) {
+					if(count($post_ids) > 0) {
+						update_option('ilab_cloud_regenerate_status', true);
+						update_option('ilab_cloud_regenerate_total_count', count($post_ids));
+						update_option('ilab_cloud_regenerate_current', 1);
+						update_option('ilab_cloud_regenerate_should_cancel', false);
+
+						$process = new RegenerateThumbnailsProcess();
+
+						for($i = 0; $i < count($post_ids); ++ $i) {
+							$process->push_to_queue(['index' => $i, 'post' => $post_ids[$i]]);
+						}
+
+						$process->save();
+						$process->dispatch();
+
+						return 'admin.php?page=media-tools-cloud-regeneration';
+					}
+                }
 
 				return $redirect_to;
 			}, 1000, 3);
@@ -1227,13 +1252,12 @@ class StorageTool extends ToolBase {
                 }
             }
 
+            $missingSizes = [];
+
             $wpSizes = ilab_get_image_sizes();
 			foreach($wpSizes as $wpSizeKey => $wpSize) {
 			    if (!isset($sizes[$wpSizeKey])) {
-				    $sizes[$wpSizeKey] = [
-					    'uploaded' => 0,
-				        'name' => ucwords(str_replace('_', ' ', str_replace('-', ' ', $wpSizeKey)))
-				    ];
+				    $missingSizes[$wpSizeKey] =  ucwords(str_replace('_', ' ', str_replace('-', ' ', $wpSizeKey)));
                 }
             }
 
@@ -1253,7 +1277,8 @@ class StorageTool extends ToolBase {
 	            'bucketLink' => $uploadDriver::bucketLink($bucket),
 	            'pathLink' => $uploadDriver::pathLink($bucket, $key),
                 'imgixEnabled' => $imgixEnabled,
-	            'sizes' => $sizes
+	            'sizes' => $sizes,
+                'missingSizes' => $missingSizes
             ];
 
             echo View::render_view('storage/info-panel.php', $data);

@@ -48,7 +48,7 @@
             </ol>
             <div style="margin-top: 2em;">
                 <?php if($enabled): ?>
-                <a href="#" class="ilab-ajax button">Import Uploads</a>
+                <a href="#" class="ilab-ajax button button-primary">Import Uploads</a>
                 <?php else: ?>
                     <strong class="tool-disabled">Please <a href="admin.php?page=media-tools-top">enable storage</a> before using this tool.</strong>
                 <?php endif ?>
@@ -62,7 +62,7 @@
             <div class="s3-importer-progress-container">
                 <div id="s3-importer-progress-bar"></div>
             </div>
-            <button id="s3-importer-cancel-import" title="Cancel">Cancel</button>
+            <button id="s3-importer-cancel-import" class="button button-warning" title="Cancel">Cancel Import</button>
         </div>
     </div>
 </div>

@@ -43,7 +43,7 @@
 			<p>If you don't have any of the source files on your WordPress server, this will download what it can from your storage service.  Obviously this can be very slow going if you are processsing a lot of images.  If you only want to regenerate thubmnails for a select group of images, use the bulk action in the media library's list view.</p>
 			<div style="margin-top: 2em;">
 				<?php if($enabled): ?>
-					<a href="#" class="ilab-ajax button">Regenerate Thumbnails</a>
+					<a href="#" class="ilab-ajax button button-primary">Regenerate Thumbnails</a>
 				<?php else: ?>
 					<strong class="tool-disabled">Please <a href="admin.php?page=media-tools-top">enable storage</a> before using this tool.</strong>
 				<?php endif ?>
@@ -57,7 +57,7 @@
 		<div class="s3-importer-progress-container">
 			<div id="s3-importer-progress-bar"></div>
 		</div>
-		<button id="s3-importer-cancel-import" title="Cancel">Cancel</button>
+		<button id="s3-importer-cancel-import" class="button button-warning" title="Cancel">Cancel Regeneration</button>
 	</div>
 </div>
 <script>

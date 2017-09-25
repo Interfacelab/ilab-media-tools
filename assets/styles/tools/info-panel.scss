@@ -25,6 +25,10 @@
           cursor: pointer;
           font-weight: bold;
 
+          &.info-panel-missing-sizes {
+            color: #9e0000;
+          }
+
           &.active {
             background-color: white;
           }
@@ -66,19 +70,6 @@
         display: flex;
         justify-content: flex-end;
         align-items: center;
-
-        .button-warning {
-          background: #dd9000;
-          border-color: #dd9000 #b97800 #b97800;
-          -webkit-box-shadow: 0 1px 0 #b97800;
-          box-shadow: 0 1px 0 #b97800;
-          color: #fff;
-          text-decoration: none;
-          text-shadow: 0 -1px 1px #b97800,
-          1px 0 1px #b97800,
-          0 1px 1px #b97800,
-          -1px 0 1px #b97800;
-        }
 
         #ilab-info-regenerate-status {
           display: flex;
