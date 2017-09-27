@@ -1,4 +1,11 @@
-{% if (!$uploaded) %}
+{% if ($imgixEnabled && !isset($topLevel)) %}
+<div class="info-line info-notice">
+    You are using Imgix which handles generating all of the additional sizes of images.
+</div>
+<div class="links-row">
+    <a href="{{$publicUrl}}" target="_blank"><span class="dashicons dashicons-external"></span>Public URL</a>
+</div>
+{% else if (!$uploaded) %}
 <div class="info-line">
 Not uploaded.
 </div>
@@ -29,6 +36,20 @@ Not uploaded.
 </div>
 {% if (!$isSize) %}
 <div class="info-line">
+    <label for="s3-access-acl">Access</label>
+    {{$privacy}}
+</div>
+<div class="info-line">
+    <label for="s3-cache-control">Cache-Control</label>
+    {{ (empty($cacheControl)) ? 'None' : $cacheControl }}
+</div>
+<div class="info-line">
+    <label for="s3-expires">Expires</label>
+    {{(empty($expires)) ? 'None' : $expires}}
+</div>
+{% if ($readOnly) %}
+{% else %}
+<div class="info-line">
 	<label for="s3-access-acl">Access</label>
 	<select id="s3-access-acl" name="s3-access-acl">
 		<option value="public-read" {{ ($privacy == 'public-read') ? 'selected' : '' }}>
@@ -47,6 +68,7 @@ Not uploaded.
 	<label for="s3-expires">Expires</label>
 	<input type="text" class="widefat" name="s3-expires" id="s3-expires" value="{{$expires}}">
 </div>
+{% endif %}
 {% endif %}
 <div class="links-row">
 	<a href="{{$url}}" target="_blank"><span class="dashicons dashicons-external"></span>Storage URL</a>
