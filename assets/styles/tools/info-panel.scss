@@ -189,6 +189,7 @@
     display: flex;
     justify-content: flex-end;
 
+
     & > div {
       width: 0;
       height: 0;
@@ -202,6 +203,8 @@
     width: 45px;
     display: flex;
     justify-content: flex-start;
+
+
     & > div {
       width: 0;
       height: 0;
@@ -213,6 +216,13 @@
   }
 
   &.popup-left {
+
+
+
+    .ilab-loader-container {
+      margin-left: 45px;
+    }
+
     .ilab-media-popup-arrow-left {
     }
 
@@ -222,6 +232,13 @@
   }
 
   &.popup-right {
+
+
+    .ilab-loader-container {
+      border: 1px solid red;
+      margin-right: 45px;
+    }
+
     .ilab-media-popup-arrow-left {
       display: none;
     }
@@ -233,6 +250,10 @@
 
 li.attachment {
   transition: opacity 0.3s ease-out, transform 0.3s ease-out, box-shadow 0.3s ease-out;
+  .ilab-loader-container {
+    z-index: 100;
+
+  }
 }
 
 li.attachment.info-focused {

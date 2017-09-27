@@ -84,6 +84,7 @@ ClientRect.prototype.containsPoint = function(x,y) {
 
     var canPopup = true;
 
+    var loader = $('<div class="ilab-loader-container"><div class="ilab-loader ilab-loader-dark"></div></div>');
     var popup = $('<div id="ilab-media-grid-info-popup" class="hidden" style="left:0px; top:0px;"></div>');
     var popupContent = $('<div class="ilab-media-grid-info-popup-content"></div>');
     var arrowLeft = $('<div class="ilab-media-popup-arrow-left"><div></div></div>');
@@ -106,86 +107,89 @@ ClientRect.prototype.containsPoint = function(x,y) {
         var img = $(this);
         var imgEle = this;
         var postId = img.data('post-id');
-        var data = {
-            "action": "ilab_s3_get_media_info",
-            "id": postId
-        };
 
-        $.post(ajaxurl, data, function(response, text){
-            if (response.length == 0) {
-                return;
-            }
+        popupActive = false;
 
-            popupActive = false;
-
-            $('li.attachment').each(function(){
-                var li = $(this);
-                if (li.data('id') == postId) {
-                    li.removeClass('info-unfocused');
-                    li.addClass('info-focused');
-                } else {
-                    li.removeClass('info-focused');
-                    li.addClass('info-unfocused');
-                }
-            });
-
-
-            var contents = $(response);
-            popupContent.text('');
-            popupContent.append(contents);
-            infoPanelSetup();
-
-            var bounds = imgEle.getBoundingClientRect();
-            var y = document.body.scrollTop + ((bounds.top + (bounds.height / 2)) - (popup.height()  / 2));
-            y -= 28;
-
-
-            var vh = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-            var vw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-            var dh = (document.body.scrollTop + vh) - 40;//$(document).height() - 40;
-
-            var arrowDelta = 0;
-            if (y + popup.height() > dh) {
-                arrowDelta = ((y + popup.height()) - dh);
-                y = dh - popup.height();
-            } else if (y < document.body.scrollTop) {
-                arrowDelta = y - document.body.scrollTop;
-                y = document.body.scrollTop;
-            }
-            else if (y  < 0) {
-                arrowDelta = y;
-                y = 0;
-            }
-
-            var left = bounds.left;
-            if (left + popup.width() < (vw - 10)) {
-                activeArrow = arrowLeft;
-                arrowLeft.css({transform: "translateY("+arrowDelta+"px)"});
-
-                popup.removeClass('popup-right');
-                popup.addClass('popup-left');
-                popup.css({
-                    left: bounds.left+'px',
-                    top: y+'px'
-                });
+        $('li.attachment').each(function(){
+            var li = $(this);
+            if (li.data('id') == postId) {
+                li.removeClass('info-unfocused');
+                li.addClass('info-focused');
             } else {
-                activeArrow = arrowRight;
-                popup.removeClass('popup-left');
-                popup.addClass('popup-right');
-                arrowRight.css({transform: "translateY("+arrowDelta+"px)"});
-                popup.css({
-                    left: (bounds.right - popup.width())+'px',
-                    top: y+'px'
-                });
+                li.removeClass('info-focused');
+                li.addClass('info-unfocused');
             }
+        });
 
-            popup.removeClass('hidden');
+        popupContent.text('');
+        popupContent.append(loader);
 
-            setTimeout(function(){
-                popupActive = true;
-            }, 500);
+        var bounds = imgEle.getBoundingClientRect();
+        var y = document.body.scrollTop + ((bounds.top + (bounds.height / 2)) - (popup.height()  / 2));
+        y -= 28;
 
-        }, 'html');
+        var vh = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+        var vw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+        var dh = (document.body.scrollTop + vh) - 40;//$(document).height() - 40;
+
+        var arrowDelta = 0;
+        if (y + popup.height() > dh) {
+            arrowDelta = ((y + popup.height()) - dh);
+            y = dh - popup.height();
+        } else if (y < document.body.scrollTop) {
+            arrowDelta = y - document.body.scrollTop;
+            y = document.body.scrollTop;
+        }
+        else if (y  < 0) {
+            arrowDelta = y;
+            y = 0;
+        }
+
+        var left = bounds.left;
+        if (left + popup.width() < (vw - 10)) {
+            activeArrow = arrowLeft;
+            arrowLeft.css({transform: "translateY("+arrowDelta+"px)"});
+
+            popup.removeClass('popup-right');
+            popup.addClass('popup-left');
+            popup.css({
+                left: bounds.left+'px',
+                top: y+'px'
+            });
+        } else {
+            activeArrow = arrowRight;
+            popup.removeClass('popup-left');
+            popup.addClass('popup-right');
+            arrowRight.css({transform: "translateY("+arrowDelta+"px)"});
+            popup.css({
+                left: (bounds.right - popup.width())+'px',
+                top: y+'px'
+            });
+        }
+
+        popup.removeClass('hidden');
+
+        setTimeout(function(){
+            var data = {
+                "action": "ilab_s3_get_media_info",
+                "id": postId
+            };
+
+            $.post(ajaxurl, data, function(response, text){
+                if (response.length == 0) {
+                    return;
+                }
+
+                var contents = $(response);
+                popupContent.text('');
+                popupContent.append(contents);
+                infoPanelSetup();
+
+                setTimeout(function(){
+                    popupActive = true;
+                }, 500);
+            }, 'html');
+        }, 300);
     });
 
     $(document).on('mousemove', function(e){
