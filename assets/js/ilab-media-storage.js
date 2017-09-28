@@ -107,6 +107,13 @@ ClientRect.prototype.containsPoint = function(x,y) {
         var img = $(this);
         var imgEle = this;
         var postId = img.data('post-id');
+        var type = img.data('mime-type');
+
+        if (type != 'image') {
+            popup.addClass('ilab-popup-document');
+        } else {
+            popup.removeClass('ilab-popup-document');
+        }
 
         popupActive = false;
 

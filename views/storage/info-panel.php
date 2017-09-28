@@ -33,12 +33,7 @@
 	        ]);
             ?>
         </div>
-        {% if (!$imgixEnabled) %}
-        <div class="button-row">
-            <a data-post-id="{{$postId}}" data-imgix-enabled="{{($imgixEnabled) ? 'true': 'false'}}" href="#" class="ilab-info-regenerate-thumbnails button button-warning button-small">Regenerate Image</a>
-            <div id="ilab-info-regenerate-status" style="display:none;"><div class="spinner is-active"></div>Regenerating ...</div>
-        </div>
-        {% endif %}
+
     </div>
     <div id="info-panel-tab-sizes" style="display: none;">
         <div class="info-line info-size-selector">
@@ -69,12 +64,11 @@
         </div>
         <?php $firstSize = false; ?>
         {% endforeach %}
-        {% if (!$imgixEnabled) %}
-        <div class="button-row">
-            <a data-post-id="{{$postId}}" data-imgix-enabled="{{($imgixEnabled) ? 'true': 'false'}}" href="#" class="ilab-info-regenerate-thumbnails button button-warning button-small">Regenerate Image</a>
-            <div id="ilab-info-regenerate-status" style="display:none;"><div class="spinner is-active"></div>Regenerating ...</div>
-        </div>
-        {% endif %}
     </div>
-
+    {% if (!$imgixEnabled && $enabled) %}
+    <div class="button-row">
+        <a data-post-id="{{$postId}}" data-imgix-enabled="{{($imgixEnabled) ? 'true': 'false'}}" href="#" class="ilab-info-regenerate-thumbnails button button-warning button-small">Regenerate Image</a>
+        <div id="ilab-info-regenerate-status" style="display:none;"><div class="spinner is-active"></div>Regenerating ...</div>
+    </div>
+    {% endif %}
 </div>

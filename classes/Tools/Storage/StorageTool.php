@@ -186,6 +186,9 @@ class StorageTool extends ToolBase {
 		}
 
 		if(!$data) {
+		    if (!empty($id)) {
+		        $file = get_attached_file($id);
+            }
 			return $data;
 		}
 
@@ -740,7 +743,7 @@ class StorageTool extends ToolBase {
 			$new_url = $this->getAttachmentURLFromMeta($meta);
 		}
 
-		if(!$new_url) {
+		if(empty($new_url)) {
 			$meta = get_post_meta($post_id, 'ilab_s3_info', true);
 			if($meta) {
 				$new_url = $this->getAttachmentURLFromMeta($meta);
@@ -1146,7 +1149,7 @@ class StorageTool extends ToolBase {
                         var txt = attachTemplate.text();
 
                         var search = '<div class="attachment-preview js--select-attachment type-{{ data.type }} subtype-{{ data.subtype }} {{ data.orientation }}">';
-                        var replace = '<div class="attachment-preview js--select-attachment type-{{ data.type }} subtype-{{ data.subtype }} {{ data.orientation }} <# if (data.hasOwnProperty("s3")) {#>has-s3<#}#>"><img data-post-id="{{data.id}}" src="<?php echo ILAB_PUB_IMG_URL.'/ilab-cloud-icon.svg'?>" width="29" height="18" class="ilab-s3-logo">\n';
+                        var replace = '<div class="attachment-preview js--select-attachment type-{{ data.type }} subtype-{{ data.subtype }} {{ data.orientation }} <# if (data.hasOwnProperty("s3")) {#>has-s3<#}#>"><img data-post-id="{{data.id}}" data-mime-type="{{data.type}}" src="<?php echo ILAB_PUB_IMG_URL.'/ilab-cloud-icon.svg'?>" width="29" height="18" class="ilab-s3-logo">\n';
                         txt = txt.replace(search, replace);
                         attachTemplate.text(txt);
                     }
@@ -1234,9 +1237,9 @@ class StorageTool extends ToolBase {
 	private function doRenderStorageInfoMeta($postId = null, $readOnly = false) {
 		global $post;
 
-		if (empty($postId)) {
-		    $postId = $post->ID;
-        }
+		if(empty($postId)) {
+			$postId = $post->ID;
+		}
 
 		$meta = wp_get_attachment_metadata($postId);
 		if(empty($meta)) {
@@ -1244,96 +1247,153 @@ class StorageTool extends ToolBase {
 		}
 
 		if(!isset($meta['s3'])) {
-			$meta = get_post_meta($post->ID, 'ilab_s3_info', true);
+			$meta = get_post_meta($postId, 'ilab_s3_info', true);
 		}
 
 		if(empty($meta) || !isset($meta['s3'])) {
 			?>
             Not uploaded.
 			<?php
-		} else {
-		    $imgixEnabled = apply_filters('ilab_imgix_enabled', false);
-
-			$clientClass = get_class($this->client);
-			$uploadDriverId = arrayPath($meta,'s3/provider',$clientClass::identifier());
-			$uploadDriver = StorageManager::driverClass($uploadDriverId);
-
-			$bucket = arrayPath($meta,'s3/bucket',null);
-			$key = arrayPath($meta,'s3/key',null);
-            $privacy = arrayPath($meta,'s3/privacy', 'public-read');
-			$cacheControl = arrayPath($meta, 's3/options/params/CacheControl', null);
-			$expires = arrayPath($meta, 's3/options/params/Expires', null);
-			$url = arrayPath($meta,'s3/url',null);
-            $publicUrl = wp_get_attachment_url($postId); //$this->getAttachmentURLFromMeta($meta);
-
-			$sizes = [];
-			if($meta['sizes']) {
-			    foreach($meta['sizes'] as $sizeKey => $size) {
-			        $sizeData = [];
-
-			        $sizeData['uploaded'] = isset($size['s3']);
-
-			        $sizeData['postId'] = $postId;
-			        $sizeData['readOnly'] = $readOnly;
-			        $sizeData['name'] = ucwords(str_replace('_', ' ', str_replace('-', ' ', $sizeKey)));
-				    $sizeData['bucket'] = arrayPath($size,'s3/bucket',null);
-				    $sizeData['key'] = arrayPath($size,'s3/key',null);
-				    $sizeData['privacy'] = arrayPath($size,'s3/privacy', 'public-read');
-				    $sizeData['cacheControl'] = arrayPath($size, 's3/options/params/CacheControl', null);
-				    $sizeData['expires'] = arrayPath($size, 's3/options/params/Expires', null);
-				    $sizeData['url'] = arrayPath($size, 's3/url', null);
-				    $sizeData['width'] = arrayPath($size,'width', 0);
-				    $sizeData['height'] = arrayPath($size,'height', 0);
-				    $sizeData['driverName'] = $uploadDriver::name();
-                    $sizeData['bucketLink'] = $uploadDriver::bucketLink($sizeData['bucket']);
-                    $sizeData['isSize'] = 1;
-                    $sizeData['pathLink'] = $uploadDriver::pathLink($sizeData['bucket'], $sizeData['key']);
-				    $sizeData['imgixEnabled'] = $imgixEnabled;
-
-				    $result = wp_get_attachment_image_src($postId, $sizeKey);
-				    if ($result && is_array($result) && (count($result) > 0)) {
-					    $sizeData['publicUrl'] = $result[0];
-				    } else {
-					    $sizeData['publicUrl'] = $this->getAttachmentURLFromMeta($size);
-                    }
-
-				    $sizes[$sizeKey] = $sizeData;
-                }
-            }
-
-            $missingSizes = [];
-
-            $wpSizes = ilab_get_image_sizes();
-			foreach($wpSizes as $wpSizeKey => $wpSize) {
-			    if (!isset($sizes[$wpSizeKey])) {
-				    $missingSizes[$wpSizeKey] =  ucwords(str_replace('_', ' ', str_replace('-', ' ', $wpSizeKey)));
-                }
-            }
-
-            $data = [
-	            'uploaded' => 1,
-	            'postId' => $postId,
-                'bucket' => $bucket,
-	            'key' => $key,
-	            'readOnly' => $readOnly,
-	            'privacy' => $privacy,
-	            'cacheControl' => $cacheControl,
-	            'expires' => $expires,
-	            'url' => $url,
-	            'publicUrl' => $publicUrl,
-	            'width' => $meta['width'],
-	            'height' => $meta['height'],
-	            'driverName' => $uploadDriver::name(),
-	            'bucketLink' => $uploadDriver::bucketLink($bucket),
-	            'pathLink' => $uploadDriver::pathLink($bucket, $key),
-                'imgixEnabled' => $imgixEnabled,
-	            'sizes' => $sizes,
-                'missingSizes' => $missingSizes
-            ];
-
-            echo View::render_view('storage/info-panel.php', $data);
+			die;
 		}
 
+		$type = arrayPath($meta, 'type', false);
+		if (empty($type)) {
+			$type = get_post_mime_type($postId);
+        }
+
+		if(strpos($type, 'image') === 0) {
+			$this->doRenderStoreageInfoMetaImage($postId, $meta, $readOnly);
+		} else {
+			$this->doRenderStorageinfoMetaDocument($postId, $meta, $readOnly);
+		}
+	}
+
+	private function doRenderStorageinfoMetaDocument($postId, $meta, $readOnly) {
+		$type = arrayPath($meta, 'type', false);
+		if (empty($type)) {
+			$type = get_post_mime_type($postId);
+		}
+
+		$enabled = $this->enabled() && (arrayPath($meta, 's3/provider', false)  == $this->client::identifier());
+
+		$clientClass = get_class($this->client);
+		$uploadDriverId = arrayPath($meta,'s3/provider',$clientClass::identifier());
+		$uploadDriver = StorageManager::driverClass($uploadDriverId);
+
+		$bucket = arrayPath($meta,'s3/bucket',null);
+		$key = arrayPath($meta,'s3/key',null);
+		$privacy = arrayPath($meta,'s3/privacy', 'public-read');
+		$cacheControl = arrayPath($meta, 's3/options/params/CacheControl', null);
+		$expires = arrayPath($meta, 's3/options/params/Expires', null);
+		$url = arrayPath($meta,'s3/url',null);
+		$publicUrl = wp_get_attachment_url($postId); //$this->getAttachmentURLFromMeta($meta);
+
+		$data = [
+			'uploaded' => 1,
+            'type' => $type,
+			'enabled' => $enabled,
+			'postId' => $postId,
+			'bucket' => $bucket,
+			'key' => $key,
+			'readOnly' => $readOnly,
+			'privacy' => $privacy,
+			'cacheControl' => $cacheControl,
+			'expires' => $expires,
+			'url' => $url,
+			'publicUrl' => $publicUrl,
+			'driverName' => $uploadDriver::name(),
+			'bucketLink' => $uploadDriver::bucketLink($bucket),
+			'pathLink' => $uploadDriver::pathLink($bucket, $key)
+		];
+
+		echo View::render_view('storage/document-info-panel.php', $data);
+	}
+
+	private function doRenderStoreageInfoMetaImage($postId, $meta, $readOnly) {
+        $imgixEnabled = apply_filters('ilab_imgix_enabled', false);
+
+        $enabled = $this->enabled() && (arrayPath($meta, 's3/provider', false)  == $this->client::identifier());
+
+        $clientClass = get_class($this->client);
+        $uploadDriverId = arrayPath($meta,'s3/provider',$clientClass::identifier());
+        $uploadDriver = StorageManager::driverClass($uploadDriverId);
+
+        $bucket = arrayPath($meta,'s3/bucket',null);
+        $key = arrayPath($meta,'s3/key',null);
+        $privacy = arrayPath($meta,'s3/privacy', 'public-read');
+        $cacheControl = arrayPath($meta, 's3/options/params/CacheControl', null);
+        $expires = arrayPath($meta, 's3/options/params/Expires', null);
+        $url = arrayPath($meta,'s3/url',null);
+        $publicUrl = wp_get_attachment_url($postId); //$this->getAttachmentURLFromMeta($meta);
+
+        $sizes = [];
+        if($meta['sizes']) {
+            foreach($meta['sizes'] as $sizeKey => $size) {
+                $sizeData = [];
+
+                $sizeData['uploaded'] = isset($size['s3']);
+                $sizeData['enabled'] = $enabled;
+                $sizeData['postId'] = $postId;
+                $sizeData['readOnly'] = $readOnly;
+                $sizeData['name'] = ucwords(str_replace('_', ' ', str_replace('-', ' ', $sizeKey)));
+                $sizeData['bucket'] = arrayPath($size,'s3/bucket',null);
+                $sizeData['key'] = arrayPath($size,'s3/key',null);
+                $sizeData['privacy'] = arrayPath($size,'s3/privacy', 'public-read');
+                $sizeData['cacheControl'] = arrayPath($size, 's3/options/params/CacheControl', null);
+                $sizeData['expires'] = arrayPath($size, 's3/options/params/Expires', null);
+                $sizeData['url'] = arrayPath($size, 's3/url', null);
+                $sizeData['width'] = arrayPath($size,'width', 0);
+                $sizeData['height'] = arrayPath($size,'height', 0);
+                $sizeData['driverName'] = $uploadDriver::name();
+                $sizeData['bucketLink'] = $uploadDriver::bucketLink($sizeData['bucket']);
+                $sizeData['isSize'] = 1;
+                $sizeData['pathLink'] = $uploadDriver::pathLink($sizeData['bucket'], $sizeData['key']);
+                $sizeData['imgixEnabled'] = $imgixEnabled;
+
+                $result = wp_get_attachment_image_src($postId, $sizeKey);
+                if ($result && is_array($result) && (count($result) > 0)) {
+                    $sizeData['publicUrl'] = $result[0];
+                } else {
+                    $sizeData['publicUrl'] = $this->getAttachmentURLFromMeta($size);
+                }
+
+                $sizes[$sizeKey] = $sizeData;
+            }
+        }
+
+        $missingSizes = [];
+
+        $wpSizes = ilab_get_image_sizes();
+        foreach($wpSizes as $wpSizeKey => $wpSize) {
+            if (!isset($sizes[$wpSizeKey])) {
+                $missingSizes[$wpSizeKey] =  ucwords(str_replace('_', ' ', str_replace('-', ' ', $wpSizeKey)));
+            }
+        }
+
+        $data = [
+            'uploaded' => 1,
+            'enabled' => $enabled,
+            'postId' => $postId,
+            'bucket' => $bucket,
+            'key' => $key,
+            'readOnly' => $readOnly,
+            'privacy' => $privacy,
+            'cacheControl' => $cacheControl,
+            'expires' => $expires,
+            'url' => $url,
+            'publicUrl' => $publicUrl,
+            'width' => $meta['width'],
+            'height' => $meta['height'],
+            'driverName' => $uploadDriver::name(),
+            'bucketLink' => $uploadDriver::bucketLink($bucket),
+            'pathLink' => $uploadDriver::pathLink($bucket, $key),
+            'imgixEnabled' => $imgixEnabled,
+            'sizes' => $sizes,
+            'missingSizes' => $missingSizes
+        ];
+
+        echo View::render_view('storage/info-panel.php', $data);
 	}
 	//endregion
 
