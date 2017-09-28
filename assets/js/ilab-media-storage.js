@@ -60,6 +60,8 @@ ClientRect.prototype.containsPoint = function(x,y) {
                 }
             }
 
+            $(document).trigger('ilab-regeneration-started');
+
             e.preventDefault();
 
             button.css({display: 'none'});
@@ -74,6 +76,7 @@ ClientRect.prototype.containsPoint = function(x,y) {
                 if (response.status != 'success') {
                     alert(response.message);
                 }
+                $(document).trigger('ilab-regeneration-ended');
             });
 
             return false;
@@ -83,6 +86,7 @@ ClientRect.prototype.containsPoint = function(x,y) {
     infoPanelSetup();
 
     var canPopup = true;
+    var canClose = true;
 
     var loader = $('<div class="ilab-loader-container"><div class="ilab-loader ilab-loader-dark"></div></div>');
     var popup = $('<div id="ilab-media-grid-info-popup" class="hidden" style="left:0px; top:0px;"></div>');
@@ -200,7 +204,7 @@ ClientRect.prototype.containsPoint = function(x,y) {
     });
 
     $(document).on('mousemove', function(e){
-        if (popupActive) {
+        if (popupActive && canClose) {
             var ar = activeArrow.get(0).getBoundingClientRect();
             ar.top -= 5;
             ar.bottom += 5;
@@ -224,6 +228,14 @@ ClientRect.prototype.containsPoint = function(x,y) {
                 }, 300);
             }
         }
+    });
+
+    $(document).on('ilab-regeneration-started', function() {
+       canClose = false;
+    });
+
+    $(document).on('ilab-regeneration-ended', function() {
+        canClose = true;
     });
 })(jQuery);
 

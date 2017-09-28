@@ -184,6 +184,10 @@
       }
     }
 
+    .button-row {
+      position: absolute;
+      bottom: 0px; right: 0px; left: 0px;
+    }
 
     .ilab-loader-container {
       display: flex;
@@ -193,7 +197,6 @@
       left: 0px; top: 0px; right: 0px; bottom: 0px;
       transition: opacity 0.5s;
     }
-
     .ilab-loader,
     .ilab-loader:after {
       border-radius: 50%;
