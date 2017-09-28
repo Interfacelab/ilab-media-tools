@@ -368,7 +368,7 @@ class StorageTool extends ToolBase {
 	 * @return array
 	 */
 	public function getUploadDir($uploads) {
-		$prefix = StorageSettings::prefix(null);
+		$prefix = trim(StorageSettings::prefix(null),'/');
 
 		$uploads['subdir'] = '/'.$prefix;
 		$uploads['path'] = $uploads['basedir'].'/'.$prefix;
