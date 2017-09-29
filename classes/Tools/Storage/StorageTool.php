@@ -901,12 +901,15 @@ class StorageTool extends ToolBase {
 				$options['params'] = $params;
 			}
 
+			$providerClass = get_class($this->client);
+			$providerId = $providerClass::identifier();
+
 			$data['s3'] = [
 				'url' => $url,
 				'bucket' => $this->client->bucket(),
 				'privacy' => StorageSettings::privacy(),
 				'key' => $prefix.$bucketFilename,
-                'provider' => $this->client::identifier(),
+                'provider' =>  $providerId,
 				'options' => $options
 			];
 
@@ -1275,7 +1278,10 @@ class StorageTool extends ToolBase {
 			$type = get_post_mime_type($postId);
 		}
 
-		$enabled = $this->enabled() && (arrayPath($meta, 's3/provider', false)  == $this->client::identifier());
+		$providerClass = get_class($this->client);
+		$providerId = $providerClass::identifier();
+
+		$enabled = $this->enabled() && (arrayPath($meta, 's3/provider', false)  == $providerId);
 
 		$clientClass = get_class($this->client);
 		$uploadDriverId = arrayPath($meta,'s3/provider',$clientClass::identifier());
@@ -1313,7 +1319,10 @@ class StorageTool extends ToolBase {
 	private function doRenderStoreageInfoMetaImage($postId, $meta, $readOnly) {
         $imgixEnabled = apply_filters('ilab_imgix_enabled', false);
 
-        $enabled = $this->enabled() && (arrayPath($meta, 's3/provider', false)  == $this->client::identifier());
+		$providerClass = get_class($this->client);
+		$providerId = $providerClass::identifier();
+
+        $enabled = $this->enabled() && (arrayPath($meta, 's3/provider', false)  == $providerId);
 
         $clientClass = get_class($this->client);
         $uploadDriverId = arrayPath($meta,'s3/provider',$clientClass::identifier());
