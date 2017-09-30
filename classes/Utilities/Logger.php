@@ -45,6 +45,10 @@ class Logger {
 					$realLevel = MonologLogger::ERROR;
 				}
 
+				if ( defined( 'WP_CLI' ) && \WP_CLI ) {
+					$realLevel = MonologLogger::ERROR;
+				}
+
 				$this->logger = new MonologLogger('ilab-media-tool');
 				$this->logger->pushHandler(new ErrorLogHandler(ErrorLogHandler::OPERATING_SYSTEM, $realLevel));
 

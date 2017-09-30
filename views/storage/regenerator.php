@@ -30,6 +30,18 @@
 	.force-cancel-help {
 		margin-top: 20px;
 	}
+
+    .wp-cli-callout {
+        padding: 10px;
+        background-color: rgba(0,0,0,0.0625);
+        margin-top: 20px;
+        border-radius: 8px;
+    }
+
+    .wp-cli-callout > h3 {
+        margin: 0; padding: 0;
+        font-size: 14px;
+    }
 </style>
 <div class="settings-container">
 	<header>
@@ -41,6 +53,13 @@
 			<p>This tool will rebuild all of the thumbnails for all of your images.</p>
 			<p>Depending on the number of items you have, this could take anywhere from a minute to several hours.  This process runs in the background until it's finished.  Once you've started the process, please check this page for progress.</p>
 			<p>If you don't have any of the source files on your WordPress server, this will download what it can from your storage service.  Obviously this can be very slow going if you are processsing a lot of images.  If you only want to regenerate thubmnails for a select group of images, use the bulk action in the media library's list view.</p>
+            <div class="wp-cli-callout">
+                <h3>Using WP-CLI</h3>
+                <p>You can run this importer process from the command line using WP-CLI:</p>
+                <code>
+                    wp mediacloud regenerate
+                </code>
+            </div>
 			<div style="margin-top: 2em;">
 				<?php if($enabled): ?>
 					<a href="#" class="ilab-ajax button button-primary">Regenerate Thumbnails</a>

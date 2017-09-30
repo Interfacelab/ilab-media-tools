@@ -30,6 +30,18 @@
     .force-cancel-help {
         margin-top: 20px;
     }
+
+    .wp-cli-callout {
+        padding: 10px;
+        background-color: rgba(0,0,0,0.0625);
+        margin-top: 20px;
+        border-radius: 8px;
+    }
+
+    .wp-cli-callout > h3 {
+        margin: 0; padding: 0;
+        font-size: 14px;
+    }
 </style>
 <div class="settings-container">
     <header>
@@ -43,7 +55,16 @@
             <p><strong>Note:</strong></p>
             <ol>
                 <li>You <strong>MUST HAVE</strong> Rekognizer enabled and working in <a href="admin.php?page=media-tools-top">Tools Settings</a> before running this task.</li>
+                <li>You <strong>MUST</strong> be using Amazon S3 for cloud storage.</li>
+                <li>Your S3 bucket must be in a region that Rekognition can be used in.</li>
             </ol>
+            <div class="wp-cli-callout">
+                <h3>Using WP-CLI</h3>
+                <p>You can run this importer process from the command line using WP-CLI:</p>
+                <code>
+                    wp rekognition process
+                </code>
+            </div>
             <div style="margin-top: 2em;">
                 <?php if($enabled): ?>
                 <a href="#" class="ilab-ajax button button-primary">Process Images</a>

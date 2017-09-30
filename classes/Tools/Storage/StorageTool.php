@@ -186,9 +186,6 @@ class StorageTool extends ToolBase {
 		}
 
 		if(!$data) {
-		    if (!empty($id)) {
-		        $file = get_attached_file($id);
-            }
 			return $data;
 		}
 
@@ -285,7 +282,7 @@ class StorageTool extends ToolBase {
 				}
 
 				if(isset($data['s3'])) {
-					$data = apply_filters('ilab_s3_after_upload', $id, $data);
+					$data = apply_filters('ilab_s3_after_upload', $data, $id);
 				}
 			}
 		}
@@ -1693,6 +1690,124 @@ class StorageTool extends ToolBase {
 		echo '{"status":"running"}';
 		die;
 	}
+
+	/**
+     * @param int $index
+	 * @param int $postId
+	 * @param ImportProgressDelegate|null $progressDelegate
+	 */
+	public function processImport($index, $postId, $progressDelegate) {
+		if ($progressDelegate) {
+		    $progressDelegate->updateCurrentIndex($index + 1);
+        }
+
+		$isDocument = false;
+
+		$data = wp_get_attachment_metadata($postId);
+
+		if (empty($data)) {
+			$isDocument = true;
+			$post_mime = get_post_mime_type($postId);
+			$upload_file = get_attached_file($postId);
+			$file = _wp_relative_upload_path($upload_file);
+
+			$fileName = basename($upload_file);
+			if ($progressDelegate) {
+				$progressDelegate->updateCurrentFileName($fileName);
+			}
+
+			$data = [ 'file' => $file ];
+
+			if (file_exists($upload_file)) {
+				$mime = null;
+
+				$ftype = wp_check_filetype($upload_file);
+				if (!empty($ftype) && isset($ftype['type'])) {
+					$mime  = $ftype['type'];
+				}
+
+				if ($mime == 'image/vnd.adobe.photoshop') {
+					$mime = 'application/vnd.adobe.photoshop';
+				}
+
+				$data['ilab-mime'] = $mime;
+				if ($mime != $post_mime) {
+					wp_update_post(['ID'=>$postId, 'post_mime_type' => $mime]);
+				}
+
+				$imagesize = getimagesize( $upload_file );
+				if ($imagesize) {
+					if (file_is_displayable_image($upload_file)) {
+						$data['width'] = $imagesize[0];
+						$data['height'] = $imagesize[1];
+						$data['sizes']=[
+							'full' => [
+								'file' => $data['file'],
+								'width' => $data['width'],
+								'height' => $data['height']
+							]
+						];
+
+						$isDocument = false;
+					}
+				}
+
+				if ($mime == 'application/pdf') {
+					$renderPDF = apply_filters('ilab_imgix_render_pdf', false);
+
+					set_error_handler(function($errno, $errstr, $errfile, $errline){
+						throw new \Exception($errstr);
+					}, E_RECOVERABLE_ERROR);
+
+					try {
+						$parser = new Parser();
+						$pdf = $parser->parseFile($upload_file);
+						$pages = $pdf->getPages();
+						if (count($pages)>0) {
+							$page = $pages[0];
+							$details = $page->getDetails();
+							if (isset($details['MediaBox'])) {
+								$data['width'] = $details['MediaBox'][2];
+								$data['height'] = $details['MediaBox'][3];
+
+								if ($renderPDF) {
+									$data['sizes']=[
+										'full' => [
+											'file' => $data['file'],
+											'width' => $data['width'],
+											'height' => $data['height']
+										]
+									];
+
+									$isDocument = false;
+								}
+							}
+						}
+					} catch (\Exception $ex) {
+						Logger::error( 'PDF Exception.',  [ 'postId' => $postId, 'exception' =>$ex->getMessage()]);
+					}
+
+					restore_error_handler();
+				}
+			}
+		} else {
+			$fileName = basename($data['file']);
+
+			if ($progressDelegate) {
+				$progressDelegate->updateCurrentFileName($fileName);
+			}
+		}
+
+
+		$data = $this->updateAttachmentMetadata($data, $postId);
+
+		if ($isDocument) {
+			update_post_meta($postId, 'ilab_s3_info', $data);
+		} else {
+			wp_update_attachment_metadata($postId, $data);
+		}
+	}
+
 	//endregion
 
 	//region Direct Upload Support

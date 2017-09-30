@@ -30,6 +30,18 @@
     .force-cancel-help {
         margin-top: 20px;
     }
+
+    .wp-cli-callout {
+        padding: 10px;
+        background-color: rgba(0,0,0,0.0625);
+        margin-top: 20px;
+        border-radius: 8px;
+    }
+
+    .wp-cli-callout > h3 {
+        margin: 0; padding: 0;
+        font-size: 14px;
+    }
 </style>
 <div class="settings-container">
     <header>
@@ -46,6 +58,13 @@
                 <li>This process DOES NOT delete your files on your server, you'll have to do that yourself manually.</li>
                 <li>You <strong>MUST HAVE</strong> storage enabled and working in <a href="admin.php?page=media-tools-top">Tools Settings</a> before running this task.</li>
             </ol>
+            <div class="wp-cli-callout">
+                <h3>Using WP-CLI</h3>
+                <p>You can run this importer process from the command line using WP-CLI:</p>
+                <code>
+                    wp mediacloud import
+                </code>
+            </div>
             <div style="margin-top: 2em;">
                 <?php if($enabled): ?>
                 <a href="#" class="ilab-ajax button button-primary">Import Uploads</a>
