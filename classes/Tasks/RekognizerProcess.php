@@ -60,7 +60,7 @@ class RekognizerProcess extends BackgroundProcess {
 
 
 		$rekognizerTool = ToolsManager::instance()->tools['rekognition'];
-		$data = $rekognizerTool->processImageMeta($post_id, $data);
+		$data = $rekognizerTool->processImageMeta($data, $post_id);
 		wp_update_attachment_metadata($post_id, $data);
 
 		return false;

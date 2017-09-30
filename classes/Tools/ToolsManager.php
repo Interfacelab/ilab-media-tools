@@ -88,7 +88,7 @@ class ToolsManager
 	//region Static Methods
     /**
      * Returns the singleton instance of the manager
-     * @return mixed
+     * @return ToolsManager
      */
     public static function instance()
     {

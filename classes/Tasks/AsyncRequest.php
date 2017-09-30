@@ -85,7 +85,11 @@ abstract class AsyncRequest {
 
 		Logger::info( "Background dispatching $url", $args);
 
-		return wp_remote_post( esc_url_raw( $url ), $args );
+		$rawUrl = esc_url_raw( $url );
+		Logger::info("Async call to $rawUrl", ['args' => $args]);
+		$result = wp_remote_post( $rawUrl, $args );
+		Logger::info("Async call complete.", ['url' => $rawUrl, 'result'=>$result]);
+		return $result;
 	}
 
 	/**

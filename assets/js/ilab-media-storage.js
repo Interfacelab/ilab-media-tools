@@ -1,6 +1,6 @@
-ClientRect.prototype.containsPoint = function(x,y) {
-  return ((x >= this.left) && (x <= this.right) && (y>=this.top) && (y<=this.bottom));
-};
+function clientRectContainsPoint(cr, x, y) {
+  return ((x >= cr.left) && (x <= cr.right) && (y>=cr.top) && (y<=cr.bottom));
+}
 
 (function($){
     var infoPanelSetup = function() {
@@ -211,7 +211,7 @@ ClientRect.prototype.containsPoint = function(x,y) {
             var pr = popupContent.get(0).getBoundingClientRect();
             var px = e.pageX;
             var py = e.pageY - document.body.scrollTop;
-            if (!ar.containsPoint(px, py) && !pr.containsPoint(px, py)) {
+            if (!clientRectContainsPoint(ar, px, py) && !clientRectContainsPoint(pr, px, py)) {
                 canPopup = false;
                 popupActive = false;
 

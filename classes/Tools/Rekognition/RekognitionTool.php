@@ -268,12 +268,12 @@ class RekognitionTool extends ToolBase {
 	/**
 	 * Process an image through Rekognition
 	 *
-	 * @param int $postID
 	 * @param array $meta
+	 * @param int $postID
 	 *
 	 * @return array
 	 */
-	public function processImageMeta($postID, $meta) {
+	public function processImageMeta($meta, $postID) {
 		if (!$this->enabled()) {
 			return $meta;
 		}

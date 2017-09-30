@@ -99,3 +99,7 @@ require_once('helpers/ilab-media-tool-geometry-helpers.php');
 
 register_activation_hook(__FILE__,[ \ILAB\MediaCloud\Tools\ToolsManager::instance(), 'install']);
 register_deactivation_hook(__FILE__,[ \ILAB\MediaCloud\Tools\ToolsManager::instance(), 'uninstall']);
+
+if ( defined( 'WP_CLI' ) && \WP_CLI ) {
+    \ILAB\MediaCloud\CLI\Storage\StorageCommands::Register();
+}
