@@ -6,7 +6,7 @@ Tested up to: 4.8.2
 License: GPLv3 or later
 Donate link: http://www2.jdrf.org/site/TR?fr_id=6912&pg=personal&px=11429802
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 2.0.6
+Stable tag: 2.0.7
 Requires PHP: 5.6
 
 Automatically upload media to Amazon S3 and integrate with Imgix, a real-time image processing CDN.  Boosts site performance and simplifies workflows.
@@ -40,6 +40,9 @@ When integrating with [Imgix](https://imgix.com), Media Cloud by ILAB provides t
 
 = Image Cropping =
 Media Cloud by ILAB ships with the most advanced image cropping tool available for WordPress, based on Chen Fengyuan's amazing Cropper plugin for jQuery.
+
+= WP-CLI Support =
+Import your media library to the cloud, regenerate thumbnails and process your library with Amazon Rekognition using WP-CLI commands.
 
 **Best of all you get this functionality for free.**
 
@@ -93,6 +96,12 @@ No, I'm just one very enthusiastic customer.
 6. Imgix settings.
 
 == Changelog ==
+
+= 2.0.7 =
+* Added WP-CLI support
+* Added WP-CLI command `wp mediacloud import` to import the media library to cloud storage from the command line.
+* Added WP-CLI command `wp mediacloud regenerate` to rebuild thumbnails for cloud storage from the command line.
+* Added WP-CLI command `wp rekognition process` to run the media library through Amazon Rekognition from the command line.
 
 = 2.0.6 =
 * Fix for PHP 5.6.  Was using a couple of PHP 7.x features.
