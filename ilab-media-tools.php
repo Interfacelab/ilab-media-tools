@@ -101,5 +101,6 @@ register_activation_hook(__FILE__,[ \ILAB\MediaCloud\Tools\ToolsManager::instanc
 register_deactivation_hook(__FILE__,[ \ILAB\MediaCloud\Tools\ToolsManager::instance(), 'uninstall']);
 
 if ( defined( 'WP_CLI' ) && \WP_CLI ) {
-    \ILAB\MediaCloud\CLI\Storage\StorageCommands::Register();
+	\ILAB\MediaCloud\CLI\Storage\StorageCommands::Register();
+	\ILAB\MediaCloud\CLI\Rekognition\RekognitionCommands::Register();
 }
