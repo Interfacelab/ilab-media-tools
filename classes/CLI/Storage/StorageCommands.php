@@ -81,9 +81,62 @@ class StorageCommands extends Command {
 			}
 
 			delete_option('ilab_s3_import_status');
-		} else {
-			delete_option('ilab_s3_import_status');
 		}
+	}
+
+	/**
+	 * Regenerate thumbnails
+	 *
+	 * @when after_wp_load
+	 *
+	 * @param $args
+	 * @param $assoc_args
+	 */
+	public function regenerate($args, $assoc_args) {
+		/** @var StorageTool $storageTool */
+		$storageTool = ToolsManager::instance()->tools['storage'];
+
+		if (!$storageTool || !$storageTool->enabled()) {
+			Command::Error('Storage tool is not enabled in Media Cloud or the settings are incorrect.');
+			return;
+		}
+
+		$postArgs = [
+			'post_type' => 'attachment',
+			'post_status' => 'inherit',
+			'nopaging' => true,
+			'post_mime_type' => 'image',
+			'fields' => 'ids',
+		];
+
+		$query = new \WP_Query($postArgs);
+
+		if($query->post_count > 0) {
+			update_option('ilab_cloud_regenerate_status', true);
+			update_option('ilab_cloud_regenerate_total_count', $query->post_count);
+			update_option('ilab_cloud_regenerate_current', 1);
+			update_option('ilab_cloud_regenerate_should_cancel', false);
+
+			Command::Info("Total posts found: %Y{$query->post_count}.", true);
+
+			$pd = new DefaultProgressDelegate();
+
+			for($i = 1; $i <= $query->post_count; $i++) {
+				$postId = $query->posts[$i - 1];
+				$upload_file = get_attached_file($postId);
+				$fileName = basename($upload_file);
+
+				update_option('ilab_cloud_regenerate_current_file', $fileName);
+				update_option('ilab_cloud_regenerate_current', $i);
+
+				Command::Info("%w[%C{$i}%w of %C{$query->post_count}%w] %NRegenerating thumbnails for %Y$fileName%N %w(%N$postId%w)%N ... ");
+				$storageTool->regenerateFile($postId);
+				Command::Info("%YDone%N.", true);
+			}
+
+			delete_option('ilab_cloud_regenerate_status');
+		}
+
 	}
 
 	public static function Register() {
