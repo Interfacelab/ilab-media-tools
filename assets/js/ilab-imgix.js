@@ -92,7 +92,7 @@ var ILabImageEdit=function($, settings){
         postData = this.focalPointEditor.save(postData);
         postData = this.faceEditor.save(postData);
 
-        console.log(postData);
+        // console.log(postData);
 
         data['image_id'] = self.settings.image_id;
         data['action'] = action;
@@ -152,7 +152,6 @@ var ILabImageEdit=function($, settings){
      * Requests a preview to be generated.
      */
     this.preview=function(){
-        console.log(this);
         if (self.previewsSuspended)
             return;
 
@@ -237,8 +236,5 @@ var ILabImageEdit=function($, settings){
     this.hideStatus=function(){
         self.modalContainer.find('.ilabm-status-container').addClass('is-hidden');
     };
-
-
-    console.log(this);
 };
 

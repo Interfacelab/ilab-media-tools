@@ -213,7 +213,4 @@ var ILabFaceEditor=function($, imgixEditor){
         }
     }
     //endregion
-
-
-    console.log(faces);
 };

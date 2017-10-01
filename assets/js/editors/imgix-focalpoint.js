@@ -100,12 +100,8 @@ var ILabFocalPointEditor=function($, imgixEditor){
             height: imageCb.height
         };
 
-        console.log(cb, imageCb, imageRect);
-
         imgixEditor.editorArea.on('mousemove', function(e){
             e.preventDefault();
-
-            console.log(e.clientX, e.clientY);
 
             var l = (e.clientX - cb.left);
             if (l<imageRect.left) {
