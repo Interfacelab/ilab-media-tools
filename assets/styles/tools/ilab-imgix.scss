@@ -383,6 +383,8 @@
   border: 3px solid white;
   filter: drop-shadow(0px 2px 3px black);
   opacity: 0.33;
+  z-index: 999;
+  cursor: pointer;
 
   span {
     display: block;
@@ -399,6 +401,7 @@
 
   &.active {
     opacity: 1.0;
+    z-index: 1000;
   }
 }
 

@@ -30,6 +30,7 @@ var ILabFaceEditor=function($, imgixEditor){
             faceBottom = Math.max(faceBottom, face.BoundingBox.Top + face.BoundingBox.Height);
 
             var faceData = {
+                index: faceIndex + 1,
                 left: face.BoundingBox.Left,
                 top: face.BoundingBox.Top,
                 right: face.BoundingBox.Left + face.BoundingBox.Width,
@@ -40,6 +41,16 @@ var ILabFaceEditor=function($, imgixEditor){
             };
 
             faces.push(faceData);
+
+            var self = this;
+            (function(fi){
+                faceData.element.on('click', function(e){
+                    currentFaceIndex = fi;
+                    self.displayFaces();
+                    $(document).trigger('change-faceindex', [fi]);
+                    imgixEditor.preview();
+                });
+            })(faceIndex + 1);
 
             imgixEditor.editorArea.append(faceData.element);
 

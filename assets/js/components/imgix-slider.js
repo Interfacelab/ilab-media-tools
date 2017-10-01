@@ -42,6 +42,11 @@
 
             $(document).trigger(sliderRef.param+'-changed', [sliderRef.slider.val()]);
         });
+
+        $(document).on('change-'+sliderRef.param, function(evt, newValue) {
+           sliderRef.slider.val(newValue);
+           sliderRef.valueLabel.text(newValue);
+        });
     };
 
     ImgixComponents.ImgixSlider.prototype.destroy=function() {
