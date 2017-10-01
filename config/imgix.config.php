@@ -354,7 +354,7 @@ return [
 					]
 				]
 			],
-			"smart-crop" => [
+			"focus-crop" => [
 				"--Focus" => [
 					"focalpoint" => [
 						"type" => "pillbox",

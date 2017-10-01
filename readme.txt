@@ -6,7 +6,7 @@ Tested up to: 4.8.2
 License: GPLv3 or later
 Donate link: http://www2.jdrf.org/site/TR?fr_id=6912&pg=personal&px=11429802
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 2.0.7
+Stable tag: 2.0.8
 Requires PHP: 5.6
 
 Automatically upload media to Amazon S3 and integrate with Imgix, a real-time image processing CDN.  Boosts site performance and simplifies workflows.
@@ -96,6 +96,11 @@ No, I'm just one very enthusiastic customer.
 6. Imgix settings.
 
 == Changelog ==
+
+= 2.0.8 =
+
+* Added support for Imgix's Focal Point Cropping (read about it here: https://docs.imgix.com/apis/url/size/crop).  Right now it only supports focal cropping to a point, however it can use faces that have been detected with the Amazon Rekognition feature of the plugin.  Yes, I know, Imgix has this feature using their face detection and I will add it in the future!
+* To use the new Focal Point Cropping, click on `Edit Image` in attachment details to open up the Imgix Image Editor.  Click on the "Focus Crop" tab and go to town.
 
 = 2.0.7 =
 * Added WP-CLI support
