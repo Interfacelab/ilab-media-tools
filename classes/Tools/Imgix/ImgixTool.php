@@ -14,6 +14,7 @@
 namespace ILAB\MediaCloud\Tools\Imgix;
 
 use ILAB\MediaCloud\Tools\ToolBase;
+use function ILAB\MediaCloud\Utilities\arrayPath;
 use ILAB\MediaCloud\Utilities\EnvironmentOptions;
 use function ILAB\MediaCloud\Utilities\gen_uuid;
 use function ILAB\MediaCloud\Utilities\json_response;
@@ -549,12 +550,67 @@ class ImgixTool extends ToolBase {
 					$params['h'] = $newSize[1];
 				}
 			}
+
+			if (isset($params['focalpoint'])) {
+                $params['crop'] = 'focalpoint';
+                if ($params['focalpoint'] == 'usefaces') {
+	                unset($params['fp-x']);
+	                unset($params['fp-y']);
+
+                    if (isset($meta['faces'])) {
+                        $faceindex = arrayPath($params,'faceindex', 0);
+                        if ((count($meta['faces'])>1) && ($faceindex == 0)) {
+                            $left = 900000;
+                            $top = 900000;
+                            $right = 0;
+                            $bottom = 0;
+
+                            foreach($meta['faces'] as $face) {
+                                $bb = $face['BoundingBox'];
+                                $left = min($left, $bb['Left']);
+                                $top = min($top, $bb['Top']);
+                                $right = max($right, $bb['Left'] + $bb['Width']);
+                                $bottom = max($bottom, $bb['Top'] + $bb['Height']);
+                            }
+
+	                        $params['fp-x'] = $left + (($right - $left) / 2.0);
+	                        $params['fp-y'] = $top + (($bottom - $top) / 2.0);
+                        } else {
+                            if ($faceindex == 0) {
+                                $faceindex = 1;
+                            }
+
+	                        $faceindex = min(count($meta['faces'])+1, $faceindex);
+                            $bb = $meta['faces'][$faceindex - 1]['BoundingBox'];
+
+	                        $params['fp-x'] = $bb['Left'] + ($bb['Width'] / 2.0);
+	                        $params['fp-y'] = $bb['Top'] + ($bb['Height'] / 2.0);
+                        }
+
+                    } else {
+                        unset($params['crop']);
+	                    unset($params['fp-z']);
+                    }
+                }
+            } else {
+				unset($params['fp-x']);
+				unset($params['fp-y']);
+				unset($params['fp-z']);
+            }
 		} else {
 			$newSize = sizeToFitSize($meta['width'], $meta['height'], $sizeInfo['width'] ?: 10000, $sizeInfo['height'] ?: 10000);
 			$params['w'] = $newSize[0];
 			$params['h'] = $newSize[1];
 			$params['fit'] = 'scale';
+
+			unset($params['fp-x']);
+			unset($params['fp-y']);
+			unset($params['fp-z']);
 		}
+
+		unset($params['focalpoint']);
+		unset($params['faceindex']);
+
 
 		if($mergeParams && is_array($mergeParams)) {
 			$params = array_merge($params, $mergeParams);
@@ -1033,6 +1089,7 @@ class ImgixTool extends ToolBase {
 				              ]);
 			}
 		}
+
 
 		die;
 	}

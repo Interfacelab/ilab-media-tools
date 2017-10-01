@@ -22,6 +22,7 @@
                     return;
 
                 sliderRef.slider.val(newVal);
+                $(document).trigger(sliderRef.param+'-changed', [newVal]);
                 sliderRef.slider.hide().show(0);
                 sliderRef.delegate.preview();
             }
@@ -38,6 +39,13 @@
         this.slider.on('change',function(){
             sliderRef.valueLabel.text(sliderRef.slider.val());
             sliderRef.delegate.preview();
+
+            $(document).trigger(sliderRef.param+'-changed', [sliderRef.slider.val()]);
+        });
+
+        $(document).on('change-'+sliderRef.param, function(evt, newValue) {
+           sliderRef.slider.val(newValue);
+           sliderRef.valueLabel.text(newValue);
         });
     };
 

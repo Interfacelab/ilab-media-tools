@@ -44,6 +44,8 @@
         "js/components/imgix-pillbox.js",
         "js/ilab-imgix-presets.js",
         "js/ilab-sidebar-tabs.js",
+        "js/editors/imgix-faces.js",
+        "js/editors/imgix-focalpoint.js",
         "js/ilab-imgix.js"
       ],
       "main": true

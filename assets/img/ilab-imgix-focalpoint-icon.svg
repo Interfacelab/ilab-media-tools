@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="26px" height="26px" viewBox="0 0 26 26" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 46.2 (44496) - http://www.bohemiancoding.com/sketch -->
+    <title>ilab-imgix-focalpoint-icon</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <circle id="path-1" cx="11.963" cy="12.0005" r="1.8395"></circle>
+        <polygon id="path-2" points="21.664 11.099 21.115 11.099 19.2605 11.099 18.416 11.099 16.561 11.099 16.561 12.9005 18.67 12.9005 19.2605 12.9005 21.115 12.9005 21.7365 12.9005 23.92 12.9005 23.92 11.099"></polygon>
+        <path d="M13.802,19.1115 L13.802,21.005 C17.4035,20.2725 20.238,17.4425 20.97,13.84 L19.0765,13.84 C18.4105,16.422 16.3825,18.4445 13.802,19.1115 Z" id="path-3"></path>
+        <polygon id="path-4" points="11.0425 18.5165 11.0425 19.295 11.0425 21.1525 11.0425 22.003 11.0425 23.958 12.8445 23.958 12.8445 22.118 12.8445 21.1535 12.8445 19.302 12.8445 18.4395 12.8445 16.6005 11.0425 16.6005"></polygon>
+        <path d="M4.8535,13.84 L2.956,13.84 C3.688,17.4405 6.52,20.2775 10.1225,21.009 L10.1225,19.1125 C7.5425,18.4465 5.5195,16.419 4.8535,13.84 Z" id="path-5"></path>
+        <polygon id="path-6" points="5.4855 12.9005 7.439 12.9005 7.439 11.099 5.275 11.099 4.6645 11.099 2.8095 11.099 2.2465 11.099 0.08 11.099 0.08 12.9005 1.884 12.9005 2.8095 12.9005 4.6645 12.9005"></polygon>
+        <path d="M10.123,4.892 L10.123,2.9945 C6.521,3.726 3.688,6.5585 2.955,10.161 L4.8485,10.161 C5.514,7.5795 7.5425,5.5575 10.123,4.892 Z" id="path-7"></path>
+        <polygon id="path-8" points="12.863 6.5765 12.863 4.7025 12.863 2.8475 12.863 2.284 12.863 0.0415 11.062 0.0415 11.062 1.9965 11.062 2.8475 11.062 4.7025 11.062 5.83 11.062 7.401 12.863 7.401"></polygon>
+        <path d="M19.076,10.161 L20.9695,10.161 C20.2385,6.5585 17.403,3.726 13.8015,2.9945 L13.8015,4.892 C16.3825,5.5575 18.4105,7.5795 19.076,10.161 Z" id="path-9"></path>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Desktop-HD" transform="translate(-829.000000, -595.000000)" fill-rule="nonzero">
+            <g id="ilab-imgix-focalpoint-icon" transform="translate(830.000000, 596.000000)">
+                <g id="Oval">
+                    <use fill="#FFFFFF" fill-rule="evenodd" xlink:href="#path-1"></use>
+                    <circle stroke-opacity="0.500141531" stroke="#000000" stroke-width="1" cx="11.963" cy="12.0005" r="2.3395"></circle>
+                </g>
+                <g id="Shape">
+                    <use fill="#FFFFFF" fill-rule="evenodd" xlink:href="#path-2"></use>
+                    <path stroke-opacity="0.500141531" stroke="#000000" stroke-width="1" d="M16.061,10.599 L24.42,10.599 L24.42,13.4005 L16.061,13.4005 L16.061,10.599 Z"></path>
+                </g>
+                <g id="Shape">
+                    <use fill="#FFFFFF" fill-rule="evenodd" xlink:href="#path-3"></use>
+                    <path stroke-opacity="0.500141531" stroke="#000000" stroke-width="1" d="M13.6768738,18.6274097 C16.0835445,18.0053406 17.9723622,16.1187215 18.5923467,13.7151177 L18.6891044,13.34 L21.5818135,13.34 L21.4599872,13.9395616 C20.6883074,17.7373438 17.7012289,20.7221825 13.9016535,21.4949686 L13.302,21.6169306 L13.302,18.724306 L13.6768738,18.6274097 Z"></path>
+                </g>
+                <g id="Shape">
+                    <use fill="#FFFFFF" fill-rule="evenodd" xlink:href="#path-4"></use>
+                    <path stroke-opacity="0.500141531" stroke="#000000" stroke-width="1" d="M10.5425,24.458 L10.5425,16.1005 L13.3445,16.1005 L13.3445,24.458 L10.5425,24.458 Z"></path>
+                </g>
+                <g id="Shape">
+                    <use fill="#FFFFFF" fill-rule="evenodd" xlink:href="#path-5"></use>
+                    <path stroke-opacity="0.500141531" stroke="#000000" stroke-width="1" d="M5.33761814,13.7149815 C5.95856255,16.1195095 7.84524272,18.0082595 10.2474731,18.6283701 L10.6225,18.7251794 L10.6225,21.6207303 L10.0230037,21.4990005 C6.22548585,20.7279015 3.23836427,17.7385392 2.46602356,13.9396147 L2.34411884,13.34 L5.24078306,13.34 L5.33761814,13.7149815 Z"></path>
+                </g>
+                <g id="Shape">
+                    <use fill="#FFFFFF" fill-rule="evenodd" xlink:href="#path-6"></use>
+                    <path stroke-opacity="0.500141531" stroke="#000000" stroke-width="1" d="M7.939,13.4005 L-0.42,13.4005 L-0.42,10.599 L7.939,10.599 L7.939,13.4005 Z"></path>
+                </g>
+                <g id="Shape">
+                    <use fill="#FFFFFF" fill-rule="evenodd" xlink:href="#path-7"></use>
+                    <path stroke-opacity="0.500141531" stroke="#000000" stroke-width="1" d="M10.2478624,5.37615842 C7.84130961,5.99679818 5.9521421,7.88286148 5.33267012,10.285817 L5.23594951,10.661 L2.34302006,10.661 L2.46503932,10.0613078 C3.23806199,6.26210705 6.22482499,3.27594133 10.0234905,2.50450219 L10.623,2.38275282 L10.623,5.27941203 L10.2478624,5.37615842 Z"></path>
+                </g>
+                <g id="Shape">
+                    <use fill="#FFFFFF" fill-rule="evenodd" xlink:href="#path-8"></use>
+                    <path stroke-opacity="0.500141531" stroke="#000000" stroke-width="1" d="M13.363,-0.4585 L13.363,7.901 L10.562,7.901 L10.562,-0.4585 L13.363,-0.4585 Z"></path>
+                </g>
+                <g id="Shape">
+                    <use fill="#FFFFFF" fill-rule="evenodd" xlink:href="#path-9"></use>
+                    <path stroke-opacity="0.500141531" stroke="#000000" stroke-width="1" d="M18.5918299,10.285817 C17.9722947,7.88261618 16.0834484,5.99674447 13.6766603,5.37616427 L13.3015,5.27943077 L13.3015,2.38273592 L13.9010228,2.50450489 C17.7003236,3.27618017 20.6887898,6.26330201 21.4595138,10.061569 L21.5811471,10.661 L18.6885505,10.661 L18.5918299,10.285817 Z"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

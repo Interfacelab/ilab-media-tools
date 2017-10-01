@@ -1179,6 +1179,10 @@ class StorageTool extends ToolBase {
 	 * @return mixed
 	 */
 	public function filterContent($content) {
+	    if (apply_filters('ilab_imgix_enabled', false)) {
+	        return $content;
+        }
+
 		if (!preg_match_all( '/<img [^>]+>/', $content, $matches ) ) {
 			return $content;
 		}
