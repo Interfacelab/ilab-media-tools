@@ -62,7 +62,7 @@
     <div class="imgix-params-section-{{$paramSection}} imgix-parameters-container is-hidden">
         {% for each($paramSectionInfo as $group => $groupParams) %}
         {% if (strpos($group,'--')!==0) %}
-        <h4>{{$group}}</h4>
+        <h4>{{str_replace('-',' ',$group)}}</h4>
         {% endif %}
         <div>
             {% foreach($groupParams as $param => $paramInfo) %}
@@ -104,6 +104,7 @@
             modal_id:'{{$modal_id}}',
             image_id:{{$image_id}},
             size:"{{$size}}",
+            meta:{{json_encode($meta,JSON_FORCE_OBJECT | JSON_PRETTY_PRINT)}},
             currentPreset:"{{$currentPreset}}",
             presets:{{json_encode($presets,JSON_FORCE_OBJECT | JSON_PRETTY_PRINT)}},
             settings:{{json_encode($settings,JSON_FORCE_OBJECT | JSON_PRETTY_PRINT)}}

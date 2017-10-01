@@ -1,21 +1,27 @@
 /**
- * Image Editing Module
+ * Image Editor Controller(-esque)
+ * @param {jQuery} $
+ * @param {object} settings
+ * @constructor
  */
-
 var ILabImageEdit=function($, settings){
+    var self=this;
+
     this.previewTimeout=null;
     this.previewsSuspended=false;
     this.parameters=[];
 
-    var self=this;
-
     this.settings=settings;
 
     this.modalContainer=$('#ilabm-container-'+settings.modal_id);
+    this.editorArea = this.modalContainer.find('.ilabm-editor-area');
     this.waitModal=this.modalContainer.find('.ilabm-preview-wait-modal');
     this.previewImage=this.modalContainer.find('.imgix-preview-image');
 
     this.presets=new ILabImgixPresets($,this,this.modalContainer);
+
+    this.focalPointEditor = new ILabFocalPointEditor($, this);
+    this.faceEditor= new ILabFaceEditor($, this);
 
     this.modalContainer.find('.imgix-button-reset-all').on('click',function(){
         self.resetAll();
@@ -83,13 +89,18 @@ var ILabImageEdit=function($, settings){
             postData=value.saveValue(postData);
         });
 
+        postData = this.focalPointEditor.save(postData);
+        postData = this.faceEditor.save(postData);
+
+        console.log(postData);
+
         data['image_id'] = self.settings.image_id;
         data['action'] = action;
         data['size'] = self.settings.size;
         data['settings']=postData;
 
         $.post(ajaxurl, data, callback);
-    }
+    };
 
     /**
      * Performs the actual request for a preview to be generated
@@ -141,6 +152,7 @@ var ILabImageEdit=function($, settings){
      * Requests a preview to be generated.
      */
     this.preview=function(){
+        console.log(this);
         if (self.previewsSuspended)
             return;
 
@@ -174,6 +186,7 @@ var ILabImageEdit=function($, settings){
 
             self.previewsSuspended=false;
             ILabModal.makeClean();
+            self.buildFocalPoint();
         };
 
         if (data.src)
@@ -197,7 +210,6 @@ var ILabImageEdit=function($, settings){
         self.previewsSuspended=false;
         self.preview();
     };
-
 
     this.apply=function(){
         self.displayStatus('Saving adjustments ...');
@@ -225,5 +237,8 @@ var ILabImageEdit=function($, settings){
     this.hideStatus=function(){
         self.modalContainer.find('.ilabm-status-container').addClass('is-hidden');
     };
+
+
+    console.log(this);
 };
 

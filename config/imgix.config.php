@@ -112,7 +112,19 @@ return [
 								"title" => "Remove Red Eye",
 								"default" => 0
 							]
-						]
+						],
+						"selected" => function($settings, $currentValue, $selectedOutput, $unselectedOutput){
+							if (isset($settings['auto'])) {
+								$parts=explode(',',$settings['auto']);
+								foreach($parts as $part) {
+									if ($part==$currentValue) {
+										return $selectedOutput;
+									}
+								}
+							}
+
+							return $unselectedOutput;
+						}
 					]
 				],
 				"Luminosity Controls" => [
@@ -339,6 +351,48 @@ return [
 						"min" => 0,
 						"max" => 200,
 						"default" => 100
+					]
+				]
+			],
+			"smart-crop" => [
+				"--Focus" => [
+					"focalpoint" => [
+						"type" => "pillbox",
+						"options" => [
+							"focalpoint" => [
+								"title" => "Focal Point",
+								"default" => 0
+							],
+							"usefaces" => [
+								"title" => "Use Faces",
+								"default" => 0
+							]
+						],
+						"selected" => function($settings, $currentValue, $selectedOutput, $unselectedOutput){
+							if (isset($settings['focalpoint']) && ($settings['focalpoint'] == $currentValue)) {
+								return $selectedOutput;
+							}
+
+							return $unselectedOutput;
+						}
+					]
+				],
+				"Focal Point" => [
+					"fp-z" => [
+						"title" => "Focal Point Zoom",
+						"type" => "slider",
+						"min" => 0,
+						"max" => 5,
+						"default" => 1
+					]
+				],
+				"Faces" => [
+					"faceindex" => [
+						"title" => "Face Index",
+						"type" => "slider",
+						"min" => 0,
+						"max" => 5,
+						"default" => 0
 					]
 				]
 			]

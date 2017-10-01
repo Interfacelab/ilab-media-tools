@@ -1034,6 +1034,7 @@ class ImgixTool extends ToolBase {
 			}
 		}
 
+
 		die;
 	}
 

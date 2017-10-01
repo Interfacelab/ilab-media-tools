@@ -22,18 +22,32 @@
                 {
                     pillboxRef.inputs[valueName].val(1);
                     button.addClass('pill-selected');
+
+                    $(document).trigger(valueName+'-selected');
                 }
                 else
                 {
                     pillboxRef.inputs[valueName].val(0);
                     button.removeClass('pill-selected');
+
+                    $(document).trigger(valueName+'-deselected');
                 }
 
                 pillboxRef.delegate.preview();
 
                 return false;
             });
+
+            $(document).on('change-'+valueName,function(evt, newValue){
+                pillboxRef.inputs[valueName].val((newValue) ? 1 : 0);
+                if (newValue) {
+                    button.addClass('pill-selected');
+                } else {
+                    button.removeClass('pill-selected');
+                }
+            });
         });
+
     };
 
     ImgixComponents.ImgixPillbox.prototype.destroy=function() {
