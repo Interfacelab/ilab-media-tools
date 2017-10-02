@@ -131,6 +131,14 @@ class RekognitionTool extends ToolBase {
 		if (is_admin()) {
 			$this->setupAdmin();
 		}
+
+		add_filter('ilab_rekognition_enabled', function($enabled){
+			return $this->enabled();
+		});
+
+		add_filter('ilab_rekognition_detects_faces', function($enabled){
+			return $this->detectFaces || $this->detectCelebrities;
+		});
 	}
 	//endregion
 

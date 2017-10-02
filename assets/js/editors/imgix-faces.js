@@ -181,6 +181,8 @@ var ILabFaceEditor=function($, imgixEditor){
             return;
         }
 
+        $(document).trigger('change-entropy', [false]);
+        $(document).trigger('change-edges', [false]);
         imgixEditor.focalPointEditor.disable();
         this.displayFaces();
     }.bind(this));
