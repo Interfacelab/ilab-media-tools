@@ -97,8 +97,12 @@ No, I'm just one very enthusiastic customer.
 
 == Changelog ==
 
-= 2.0.8 =
+= 2.0.9 =
+* Added support for detecting faces using Imgix's API.  You can enable this setting in the Imgix settings.  With the detected faces, you can use those in the `Focus Crop` settings of the image editor.  **Note** that Rekognition does a vastly superior job in detecting faces (sorry Imgix) and I would urge you to use that instead.  But if you aren't using Amazon S3 for storage, you'll have to use the Imgix face detection if you want to use the Focus Crop feature.
+* Added support for Imgix's Entropy and Edges cropping modes (https://docs.imgix.com/apis/url/size/crop).  You can access these in the image editor.
+* I'd like to take a moment to call out the admins of the Advanced WordPress group on Facebook.  I'm not sure if you are rejecting my posts because this free plugin competes (let's be honest, surpasses) with Offload S3 and he's a buddy of yours or what's going on with that.  I'm pretty sure this plugin is a testament to what I have to offer the AWP community.  So I'm really confused why my posts, none of which are self-promotional, keep getting bounced.  Your loss I guess.
 
+= 2.0.8 =
 * Added support for Imgix's Focal Point Cropping (read about it here: https://docs.imgix.com/apis/url/size/crop).  Right now it only supports focal cropping to a point, however it can use faces that have been detected with the Amazon Rekognition feature of the plugin.  Yes, I know, Imgix has this feature using their face detection and I will add it in the future!
 * To use the new Focal Point Cropping, click on `Edit Image` in attachment details to open up the Imgix Image Editor.  Click on the "Focus Crop" tab and go to town.
 
