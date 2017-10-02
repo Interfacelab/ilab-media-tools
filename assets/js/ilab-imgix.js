@@ -216,6 +216,8 @@ var ILabImageEdit=function($, settings){
         self.postAjax('ilab_imgix_save', {}, function(response) {
             self.hideStatus();
             ILabModal.makeClean();
+
+            alert("Adjustments have been saved.");
         });
     };
 
@@ -236,5 +238,19 @@ var ILabImageEdit=function($, settings){
     this.hideStatus=function(){
         self.modalContainer.find('.ilabm-status-container').addClass('is-hidden');
     };
+
+
+    $(document).on('edges-selected', function(e){
+        $(document).trigger('change-entropy', [false]);
+        this.faceEditor.disable();
+        this.focalPointEditor.disable();
+    }.bind(this));
+
+
+    $(document).on('entropy-selected', function(e){
+        $(document).trigger('change-edges', [false]);
+        this.faceEditor.disable();
+        this.focalPointEditor.disable();
+    }.bind(this));
 };
 

@@ -69,6 +69,8 @@ var ILabFocalPointEditor=function($, imgixEditor){
 
     //region UI Events
     $(document).on('focalpoint-selected', function(e){
+        $(document).trigger('change-entropy', [false]);
+        $(document).trigger('change-edges', [false]);
         imgixEditor.faceEditor.disable();
         canSetFocalPoint = true;
         this.buildFocalPoint();

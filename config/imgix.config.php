@@ -364,6 +364,7 @@ return [
 				"--Focus" => [
 					"focalpoint" => [
 						"type" => "pillbox",
+						"exclusive" => true,
 						"options" => [
 							"focalpoint" => [
 								"title" => "Focal Point",
@@ -371,6 +372,14 @@ return [
 							],
 							"usefaces" => [
 								"title" => "Use Faces",
+								"default" => 0
+							],
+							"entropy" => [
+								"title" => "Entropy",
+								"default" => 0
+							],
+							"edges" => [
+								"title" => "Edges",
 								"default" => 0
 							]
 						],

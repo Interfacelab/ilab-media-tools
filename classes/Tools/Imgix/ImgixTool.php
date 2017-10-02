@@ -563,45 +563,59 @@ class ImgixTool extends ToolBase {
 			}
 
 			if (isset($params['focalpoint'])) {
-                $params['crop'] = 'focalpoint';
-                if ($params['focalpoint'] == 'usefaces') {
-	                unset($params['fp-x']);
-	                unset($params['fp-y']);
+			    unset($params['rect']);
 
-                    if (isset($meta['faces'])) {
-                        $faceindex = arrayPath($params,'faceindex', 0);
-                        if ((count($meta['faces'])>1) && ($faceindex == 0)) {
-                            $left = 900000;
-                            $top = 900000;
-                            $right = 0;
-                            $bottom = 0;
+			    if ($params['focalpoint'] == 'entropy') {
+				    $params['crop'] = 'entropy';
+				    unset($params['fp-x']);
+				    unset($params['fp-y']);
+				    unset($params['fp-z']);
+                } else if ($params['focalpoint'] == 'edges') {
+				    $params['crop'] = 'edges';
+				    unset($params['fp-x']);
+				    unset($params['fp-y']);
+				    unset($params['fp-z']);
+                } else {
+				    $params['crop'] = 'focalpoint';
+				    if ($params['focalpoint'] == 'usefaces') {
+					    unset($params['fp-x']);
+					    unset($params['fp-y']);
 
-                            foreach($meta['faces'] as $face) {
-                                $bb = $face['BoundingBox'];
-                                $left = min($left, $bb['Left']);
-                                $top = min($top, $bb['Top']);
-                                $right = max($right, $bb['Left'] + $bb['Width']);
-                                $bottom = max($bottom, $bb['Top'] + $bb['Height']);
-                            }
+					    if (isset($meta['faces'])) {
+						    $faceindex = arrayPath($params,'faceindex', 0);
+						    if ((count($meta['faces'])>1) && ($faceindex == 0)) {
+							    $left = 900000;
+							    $top = 900000;
+							    $right = 0;
+							    $bottom = 0;
 
-	                        $params['fp-x'] = $left + (($right - $left) / 2.0);
-	                        $params['fp-y'] = $top + (($bottom - $top) / 2.0);
-                        } else {
-                            if ($faceindex == 0) {
-                                $faceindex = 1;
-                            }
+							    foreach($meta['faces'] as $face) {
+								    $bb = $face['BoundingBox'];
+								    $left = min($left, $bb['Left']);
+								    $top = min($top, $bb['Top']);
+								    $right = max($right, $bb['Left'] + $bb['Width']);
+								    $bottom = max($bottom, $bb['Top'] + $bb['Height']);
+							    }
 
-	                        $faceindex = min(count($meta['faces'])+1, $faceindex);
-                            $bb = $meta['faces'][$faceindex - 1]['BoundingBox'];
+							    $params['fp-x'] = $left + (($right - $left) / 2.0);
+							    $params['fp-y'] = $top + (($bottom - $top) / 2.0);
+						    } else {
+							    if ($faceindex == 0) {
+								    $faceindex = 1;
+							    }
 
-	                        $params['fp-x'] = $bb['Left'] + ($bb['Width'] / 2.0);
-	                        $params['fp-y'] = $bb['Top'] + ($bb['Height'] / 2.0);
-                        }
+							    $faceindex = min(count($meta['faces'])+1, $faceindex);
+							    $bb = $meta['faces'][$faceindex - 1]['BoundingBox'];
 
-                    } else {
-                        unset($params['crop']);
-	                    unset($params['fp-z']);
-                    }
+							    $params['fp-x'] = $bb['Left'] + ($bb['Width'] / 2.0);
+							    $params['fp-y'] = $bb['Top'] + ($bb['Height'] / 2.0);
+						    }
+
+					    } else {
+						    unset($params['crop']);
+						    unset($params['fp-z']);
+					    }
+				    }
                 }
             } else {
 				unset($params['fp-x']);
@@ -621,7 +635,6 @@ class ImgixTool extends ToolBase {
 
 		unset($params['focalpoint']);
 		unset($params['faceindex']);
-
 
 		if($mergeParams && is_array($mergeParams)) {
 			$params = array_merge($params, $mergeParams);
