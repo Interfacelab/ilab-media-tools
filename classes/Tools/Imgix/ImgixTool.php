@@ -48,6 +48,7 @@ class ImgixTool extends ToolBase {
 	protected $useHTTPS;
 	protected $enabledAlternativeFormats;
 	protected $renderPDF;
+	protected $detectFaces;
 	//endregion
 
     //region Constructor
@@ -135,6 +136,7 @@ class ImgixTool extends ToolBase {
 		$this->autoFormat = EnvironmentOptions::Option('ilab-media-imgix-auto-format');
 		$this->autoCompress = EnvironmentOptions::Option('ilab-media-imgix-auto-compress');
 		$this->enableGifs = EnvironmentOptions::Option('ilab-media-imgix-enable-gifs');
+		$this->detectFaces = EnvironmentOptions::Option('ilab-media-imgix-detect-faces', null, false);
 
 		$this->enabledAlternativeFormats = EnvironmentOptions::Option('ilab-media-imgix-enable-alt-formats');
 		$this->renderPDF = EnvironmentOptions::Option('ilab-media-imgix-render-pdf-files');
@@ -197,6 +199,10 @@ class ImgixTool extends ToolBase {
 
 		add_filter('imgix_build_srcset_url', [$this, 'buildSrcSetURL'], 0, 3);
 		add_filter('media_send_to_editor', [$this, 'mediaSendToEditor'], 0, 3);
+
+		if ($this->detectFaces) {
+			add_filter('ilab_s3_after_upload', [$this, 'processImageMeta'], 1000, 2);
+        }
 	}
 
 	public function registerSettings() {
@@ -412,10 +418,11 @@ class ImgixTool extends ToolBase {
 	 * @param bool $skipParams
 	 * @param array|null $mergeParams
 	 * @param array|null $newSize
+     * @param array|null $newMeta
 	 *
 	 * @return array|bool
 	 */
-	private function buildImgixImage($id, $size, $params = null, $skipParams = false, $mergeParams = null, $newSize = null) {
+	private function buildImgixImage($id, $size, $params = null, $skipParams = false, $mergeParams = null, $newSize = null, $newMeta=null) {
 		if(is_array($size)) {
 			return $this->buildSizedImgixImage($id, $size);
 		}
@@ -429,7 +436,11 @@ class ImgixTool extends ToolBase {
 			}
 
 			if(!$meta || empty($meta)) {
-				return false;
+			    if (!empty($newMeta)) {
+			        $meta = $newMeta;
+                } else {
+				    return false;
+                }
 			}
 		}
 
@@ -635,6 +646,65 @@ class ImgixTool extends ToolBase {
 		return $result;
 	}
 	//endregion
+
+    //region Face Detection
+	/**
+	 * Process an image through Rekognition
+	 *
+	 * @param array $meta
+	 * @param int $postID
+	 *
+	 * @return array
+	 */
+	public function processImageMeta($meta, $postID) {
+		if (!$this->enabled()) {
+			return $meta;
+		}
+
+        if (apply_filters('ilab_rekognition_enabled', false)) {
+		    if (apply_filters('ilab_rekognition_detects_faces', false)) {
+		        return $meta;
+            }
+        }
+
+		if (!isset($meta['s3'])) {
+			Logger::warning( "Post $postID is  missing 's3' metadata.", $meta);
+			return $meta;
+		}
+
+		$url = $this->buildImgixImage($postID, 'full',['fm' => 'json','faces'=>1],false,null,null,$meta);
+		if ($url && is_array($url)) {
+			$jsonString = file_get_contents($url[0]);
+			if (!empty($jsonString)) {
+				$data = json_decode($jsonString, true);
+
+				$pw = arrayPath($data,'PixelWidth',0);
+				$ph = arrayPath($data,'PixelHeight',0);
+
+				if (!empty($pw) && !empty($ph)) {
+				    $facesData = arrayPath($data,'Faces',[]);
+					$faces = [];
+				    foreach($facesData as $face) {
+					    $faces[] = [
+						    'BoundingBox' => [
+							    'Left' => floatval($face['bounds']['x']) / floatval($pw),
+							    'Top' => floatval($face['bounds']['y']) / floatval($ph),
+							    'Width' => floatval($face['bounds']['width']) / floatval($pw),
+							    'Height' => floatval($face['bounds']['height']) / floatval($ph),
+						    ]
+					    ];
+                    }
+
+					if (count($faces)>0) {
+						$meta['faces'] = $faces;
+					}
+                }
+            }
+		}
+
+		return $meta;
+	}
+    //endregion
 
     //region WordPress Hooks & Filters
 	/**
