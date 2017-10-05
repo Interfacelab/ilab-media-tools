@@ -1,12 +1,12 @@
 === Media Cloud ===
 Contributors: interfacelab
-Tags: uploads, amazon, s3, amazon s3, imgix, media, cdn, rekognition, cloudfront, images, crop, image editing, image editor, media library, offload, offload s3, minio, google cloud storage, digital ocean spaces, backblaze
+Tags: uploads, amazon, s3, imgix, minio, google cloud storage, digital ocean spaces, backblaze, wasabi, media, cdn, rekognition, cloudfront, images, crop, image editing, image editor, media library, offload, offload s3
 Requires at least: 4.4
 Tested up to: 4.8.2
 License: GPLv3 or later
 Donate link: http://www2.jdrf.org/site/TR?fr_id=6912&pg=personal&px=11429802
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 2.0.8
+Stable tag: 2.1.0
 Requires PHP: 5.6
 
 Automatically upload media to Amazon S3 and integrate with Imgix, a real-time image processing CDN.  Boosts site performance and simplifies workflows.
@@ -17,8 +17,8 @@ Media Cloud by ILAB is a suite of tools designed to enhance media handling in Wo
 
 **NOTE**: This plugin requires PHP 5.6x or higher (PHP 7.x preferred)
 
-= Upload to S3, Minio, Google Cloud Storage and Digital Ocean Spaces =
-Automatically copy media uploads to S3 (and S3 compatible services) and hosts your media directly from S3, CloudFront or any other CDN.  Additionally, easily import your existing media library to Amazon S3 with the push of a button.
+= Upload to S3, Minio, Google Cloud Storage, Wasabi and Digital Ocean Spaces =
+Automatically copy media uploads to the cloud and serve them directly from your cloud storage provider, CloudFront or any other CDN.  Additionally, easily import your existing media library with the push of a button.
 
 = Integrate with Imgix =
 [Imgix](https://imgix.com) will radically change the way that you build your WordPress sites and themes.  This plugin is the best integration available for WordPress.  Upload your images to S3 with our S3 tool and then host the media with Imgix, providing you with real-time image processing and automatic format delivery.  Forget ImageMagick, Imgix is light years ahead in quality and speed.
@@ -29,11 +29,11 @@ Now supports using Google Cloud Storage for uploads without having to use Google
 = Native Support For Backblaze B2 Cloud Storage =
 Now supports using Backblaze's new B2 Cloud Storage for uploads.
 
-= Upload Directly To S3, Minio and Google Cloud Storage =
-Directly upload your media and documents to S3, bypassing your WordPress server completely.  Note that this feature requires Imgix.
+= Upload Directly To S3, Minio, Wasabi and Google Cloud Storage =
+Directly upload your media and documents to the cloud, bypassing your WordPress server completely.  This feature requires Imgix.
 
 = Automatically Tag and Categorize with Amazon Rekognition =
-Use Amazon's latest AI tools to tag and categorize your images when uploading to S3.  With Rekognition, you can automatically detect objects, scenes, and faces in images.
+Use Amazon's latest AI tools to tag and categorize your images when uploading to Amazon S3.  With Rekognition, you can automatically detect objects, scenes, and faces in images.
 
 = Advanced Image Editing =
 When integrating with [Imgix](https://imgix.com), Media Cloud by ILAB provides the most advanced WordPress image editor.  Alter contrast, saturation, vibrancy and over 30 other image editing operations - in real time right inside the WordPress admin interface!  Completely non-destructive!
@@ -46,10 +46,10 @@ Import your media library to the cloud, regenerate thumbnails and process your l
 
 **Best of all you get this functionality for free.**
 
-* Upload to S3
-* Host media from S3 or any CDN that can connect to S3
+* Upload to any of a variety of cloud storage providers (Amazon S3, Google Cloud Storage, Minio, Wasabi, Backblaze, DigitalOcean Spaces or any other S3 compatible service)
+* Host your media directly from your cloud storage provider or specify a CDN
 * Integrate with Imgix media hosting
-* Direct uploads to S3
+* Direct uploads to the cloud, bypassing WordPress completely (Requires Imgix)
 * Use Amazon Rekognition to automatically tag and categorize images
 * Use third party cloud file providers that use S3 compatible APIs
 * Advanced image cropping tool
@@ -97,10 +97,15 @@ No, I'm just one very enthusiastic customer.
 
 == Changelog ==
 
+= 2.1.0 =
+* Added support for Wasabi (https://wasabi.com) storage service
+* Direct uploads via Wasabi (requires Imgix)
+* Fix for direct uploads failing
+* Fix for CSS issues on settings pages
+
 = 2.0.9 =
 * Added support for detecting faces using Imgix's API.  You can enable this setting in the Imgix settings.  With the detected faces, you can use those in the `Focus Crop` settings of the image editor.  **Note** that Rekognition does a vastly superior job in detecting faces (sorry Imgix) and I would urge you to use that instead.  But if you aren't using Amazon S3 for storage, you'll have to use the Imgix face detection if you want to use the Focus Crop feature.
 * Added support for Imgix's Entropy and Edges cropping modes (https://docs.imgix.com/apis/url/size/crop).  You can access these in the image editor.
-* I'd like to take a moment to call out the admins of the Advanced WordPress group on Facebook.  I'm not sure if you are rejecting my posts because this free plugin competes (let's be honest, surpasses) with Offload S3 and he's a buddy of yours or what's going on with that.  I'm pretty sure this plugin is a testament to what I have to offer the AWP community.  So I'm really confused why my posts, none of which are self-promotional, keep getting bounced.  Your loss I guess.
 
 = 2.0.8 =
 * Added support for Imgix's Focal Point Cropping (read about it here: https://docs.imgix.com/apis/url/size/crop).  Right now it only supports focal cropping to a point, however it can use faces that have been detected with the Amazon Rekognition feature of the plugin.  Yes, I know, Imgix has this feature using their face detection and I will add it in the future!
