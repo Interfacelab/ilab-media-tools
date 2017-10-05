@@ -42,6 +42,24 @@ interface StorageInterface {
 	public static function name();
 
 	/**
+	 * Return the endpoint that the storage interface uses
+	 * @return null|string
+	 */
+	public static function endpoint();
+
+	/**
+	 * The default region for this driver
+	 * @return null|string
+	 */
+	public static function defaultRegion();
+
+	/**
+	 * If using a custom endpoint, is it a path style endpoint
+	 * @return null|bool
+	 */
+	public static function pathStyleEndpoint();
+
+	/**
 	 * Generates a link to the bucket.
 	 *
 	 * @param $bucket

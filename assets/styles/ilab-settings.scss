@@ -22,7 +22,12 @@
 
     & > img {
       margin:0px 20px;
+      width: 126px;
+      height: 96px;
+      max-width: 126px;
+      max-height: 96px;
     }
+
     h1 {
       font-family: 'millarregular_4';
       text-transform: uppercase;

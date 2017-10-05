@@ -1928,7 +1928,7 @@ class StorageTool extends ToolBase {
 			return false;
 		}
 
-		$meta = apply_filters('ilab_s3_after_upload', $post, $meta);
+		$meta = apply_filters('ilab_s3_after_upload', $meta, $post);
 
 		add_post_meta($post, '_wp_attached_file', $fileInfo->key());
 		add_post_meta($post, '_wp_attachment_metadata', $meta);

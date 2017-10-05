@@ -94,6 +94,18 @@ class GoogleStorage implements StorageInterface {
 		return 'Google Cloud Storage';
 	}
 
+	public static function endpoint() {
+		return null;
+	}
+
+	public static function pathStyleEndpoint() {
+		return null;
+	}
+
+	public static function defaultRegion() {
+		return null;
+	}
+
 	public static function bucketLink($bucket) {
 		return "https://console.cloud.google.com/storage/browser/$bucket";
 	}

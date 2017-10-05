@@ -34,10 +34,11 @@ return [
 						"type" => "select",
 						"options" => [
 							"s3" => "Amazon S3",
+							'google' => 'Google Cloud Storage',
 							"minio" => "Minio",
+							"wasabi" => "Wasabi",
 							"do" => "DigitalOcean Spaces",
 							"other-s3" => "Other S3 Compatible Service",
-							'google' => 'Google Cloud Storage',
 							'backblaze' => 'BackBlaze B2 Cloud Storage',
 						],
 						"watch" => true
@@ -125,7 +126,7 @@ return [
 						],
 						"watch" => true,
 						"conditions" => [
-							"ilab-media-storage-provider" => ["!google", "!backblaze", "!do"]
+							"ilab-media-storage-provider" => ["!google", "!backblaze", "!do", "!wasabi"]
 						]
 					],
 					"ilab-media-s3-use-transfer-acceleration" => [
@@ -143,7 +144,7 @@ return [
 						"type" => "text-field",
 						"watch" => true,
 						"conditions" => [
-							"ilab-media-storage-provider" => ["!google", "!backblaze", "!s3"]
+							"ilab-media-storage-provider" => ["!google", "!backblaze", "!s3", "!wasabi"]
 						]
 					],
 					"ilab-media-s3-use-path-style-endpoint" => [
@@ -153,7 +154,7 @@ return [
 						"default" => true,
 						"watch" => true,
 						"conditions" => [
-							"ilab-media-storage-provider" => ["!google", "!backblaze", "!s3"]
+							"ilab-media-storage-provider" => ["!google", "!backblaze", "!s3", "!wasabi"]
 						]
 					]
 				]

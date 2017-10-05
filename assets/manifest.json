@@ -26,6 +26,11 @@
         "js/ilab-media-upload-s3.js"
       ]
     },
+    "ilab-media-upload-other-s3.js": {
+      "files": [
+        "js/ilab-media-upload-other-s3.js"
+      ]
+    },
     "ilab-media-upload-google.js": {
       "files": [
         "js/ilab-media-upload-google.js"

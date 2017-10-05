@@ -82,13 +82,19 @@ class S3Storage implements StorageInterface {
 			'ILAB_CLOUD_ACCESS_SECRET'
 		]);
 
+		$thisClass = get_class($this);
+
 		if(StorageManager::driver() == 's3') {
 			$this->useTransferAcceleration = EnvironmentOptions::Option('ilab-media-s3-use-transfer-acceleration', 'ILAB_AWS_S3_TRANSFER_ACCELERATION', false);
 		} else {
-			$this->endpoint = EnvironmentOptions::Option('ilab-media-s3-endpoint', [
-				'ILAB_AWS_S3_ENDPOINT',
-				'ILAB_CLOUD_ENDPOINT'
-			], false);
+			if ($thisClass::endpoint() !== null) {
+				$this->endpoint = $thisClass::endpoint();
+			} else {
+				$this->endpoint = EnvironmentOptions::Option('ilab-media-s3-endpoint', [
+					'ILAB_AWS_S3_ENDPOINT',
+					'ILAB_CLOUD_ENDPOINT'
+				], false);
+			}
 
 			if(!empty($this->endpoint)) {
 				if(!preg_match('#^[aA-zZ0-9]+\:\/\/#', $this->endpoint)) {
@@ -96,22 +102,29 @@ class S3Storage implements StorageInterface {
 				}
 			}
 
-			$this->endPointPathStyle = EnvironmentOptions::Option('ilab-media-s3-use-path-style-endpoint', [
-				'ILAB_AWS_S3_ENDPOINT_PATH_STYLE',
-				'ILAB_CLOUD_ENDPOINT_PATH_STYLE'
-			], true);
+			if ($thisClass::pathStyleEndpoint() !== null) {
+				$this->endPointPathStyle = $thisClass::pathStyleEndpoint();
+			} else {
+				$this->endPointPathStyle = EnvironmentOptions::Option('ilab-media-s3-use-path-style-endpoint', [
+					'ILAB_AWS_S3_ENDPOINT_PATH_STYLE',
+					'ILAB_CLOUD_ENDPOINT_PATH_STYLE'
+				], true);
+			}
 		}
-
 
 		$this->settingsError = get_option($this->settingsErrorOptionName(), false);
 
-		$region = EnvironmentOptions::Option('ilab-media-s3-region', [
-			'ILAB_AWS_S3_REGION',
-			'ILAB_CLOUD_REGION'
-		], 'auto');
+		if ($thisClass::defaultRegion() !== null) {
+			$this->region = $thisClass::defaultRegion();
+		} else {
+			$region = EnvironmentOptions::Option('ilab-media-s3-region', [
+				'ILAB_AWS_S3_REGION',
+				'ILAB_CLOUD_REGION'
+			], 'auto');
 
-		if($region != 'auto') {
-			$this->region = $region;
+			if($region != 'auto') {
+				$this->region = $region;
+			}
 		}
 
 		$this->client = $this->getClient();
@@ -126,6 +139,19 @@ class S3Storage implements StorageInterface {
 	public static function name() {
 		return 'Amazon S3';
 	}
+
+	public static function endpoint() {
+		return null;
+	}
+
+	public static function pathStyleEndpoint() {
+		return null;
+	}
+
+	public static function defaultRegion() {
+		return null;
+	}
+
 
 	public static function bucketLink($bucket) {
 		return "https://console.aws.amazon.com/s3/buckets/$bucket";
@@ -524,14 +550,26 @@ class S3Storage implements StorageInterface {
 	//endregion
 
 	//region Direct Uploads
+
+	/**
+	 * Returns the options data for generating the policy for uploads
+	 * @param $acl
+	 * @param $key
+	 *
+	 * @return array
+	 */
+	protected function getOptionsData($acl, $key) {
+		return [
+			['bucket' => $this->bucket],
+			['acl' => $acl],
+			['key' => $key],
+			['starts-with', '$Content-Type', '']
+		];
+	}
+
 	public function uploadUrl($key, $acl, $mimeType = null, $cacheControl = null, $expires = null) {
 		try {
-			$optionsData = [
-				['bucket' => $this->bucket],
-				['acl' => $acl],
-				['key' => $key],
-				['starts-with', '$Content-Type', '']
-			];
+			$optionsData = $this->getOptionsData($acl, $key);
 
 			if(!empty($cacheControl)) {
 				$optionsData[] = ['Cache-Control' => $cacheControl];

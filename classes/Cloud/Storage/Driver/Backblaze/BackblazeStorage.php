@@ -83,6 +83,18 @@ class BackblazeStorage implements StorageInterface {
 		return 'Backblaze B2';
 	}
 
+	public static function endpoint() {
+		return null;
+	}
+
+	public static function pathStyleEndpoint() {
+		return null;
+	}
+
+	public static function defaultRegion() {
+		return null;
+	}
+
 	public static function bucketLink($bucket) {
 		return null;
 	}
