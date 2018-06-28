@@ -50,6 +50,9 @@ class S3Storage implements StorageInterface {
 	protected $region = false;
 
 	/*** @var bool */
+	protected $useCredentialProvider = false;
+
+	/*** @var bool */
 	protected $settingsError = false;
 
 	/*** @var string */
@@ -80,6 +83,11 @@ class S3Storage implements StorageInterface {
 		$this->secret = EnvironmentOptions::Option('ilab-media-s3-secret', [
 			'ILAB_AWS_S3_ACCESS_SECRET',
 			'ILAB_CLOUD_ACCESS_SECRET'
+		]);
+
+		$this->useCredentialProvider = EnvironmentOptions::Option('ilab-media-s3-credential-provider', [
+			'ILAB_AWS_S3_USE_CREDENTIAL_PROVIDER',
+			'ILAB_CLOUD_USE_CREDENTIAL_PROVIDER'
 		]);
 
 		$thisClass = get_class($this);
@@ -216,7 +224,7 @@ class S3Storage implements StorageInterface {
 	}
 
 	public function enabled() {
-		if(!($this->key && $this->secret && $this->bucket)) {
+		if(!(($this->key && $this->secret) || $this->useCredentialProvider) && !$this->bucket)) {
 			NoticeManager::instance()->displayAdminNotice('error', "To start using Cloud Storage, you will need to <a href='admin.php?page=media-tools-s3'>supply your AWS credentials.</a>.");
 
 			return false;
@@ -250,6 +258,10 @@ class S3Storage implements StorageInterface {
 				'secret' => $this->secret
 			]
 		];
+
+		if($this->useCredentialProvider) {
+			$config['credentials'] = \ILAB_Aws\Credentials\CredentialProvider::defaultProvider();
+		}
 
 		if(!empty($this->endpoint)) {
 			$config['endpoint'] = $this->endpoint;

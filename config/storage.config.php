@@ -61,6 +61,15 @@ return [
 							"ilab-media-storage-provider" => ["!google", "!backblaze"]
 						]
 					],
+					"ilab-media-s3-credential-provider" => [
+						"title" => "Secret",
+						"description" => "If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_AWS_S3_ACCESS_SECRET</strong>",
+						"type" => "checkbox",
+						"watch" => false,
+						"conditions" => [
+							"ilab-media-storage-provider" => ["s3"]
+						]
+					],
 					"ilab-media-backblaze-account-id" => [
 						"title" => "Account Id",
 						"description" => "If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_BACKBLAZE_ACCOUNT_ID</strong>",
