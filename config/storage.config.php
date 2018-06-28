@@ -62,8 +62,8 @@ return [
 						]
 					],
 					"ilab-media-s3-credential-provider" => [
-						"title" => "Secret",
-						"description" => "If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_AWS_S3_ACCESS_SECRET</strong>",
+						"title" => "Use credential provider",
+						"description" => "If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_AWS_S3_USE_CREDENTIAL_PROVIDER</strong>",
 						"type" => "checkbox",
 						"watch" => false,
 						"conditions" => [
