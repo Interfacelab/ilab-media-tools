@@ -7,6 +7,14 @@ Automatically copy media uploads to S3 and hosts your media directly
 from S3 or CloudFront.  Additionally, easily import your existing
 media library to Amazon S3 with the push of a button.
 
+##### Uploading to Google Cloud Storage
+To upload your media to Google Cloud Storage, select "Google Cloud Storage" as your Storage Provider and then simply insert the JSON credentials object you can create with [Google Cloud Platform](https://console.cloud.google.com/apis/credentials) into the "Credentials" field. If you are supplying your credentials through a .env file, or envionrment variables, the key is: ILAB_CLOUD_GOOGLE_CREDENTIALS. The key ILAB_CLOUD_GOOGLE_CREDENTIALS must be an absolute path to the json file saved on your server (preferably in a non-publically accessible location).
+###### To create the JSON credentials object in Google Cloud Platform:
+1. Click "Create Credentials" -> Service Account Key. 
+2. Select your Service account (you may need to create a new service account if you don't already have one)
+3. Ensure JSON is selected
+4. Click "Create". If you are using
+
 ##### Integrate with Imgix
 [Imgix](https://imgix.com) will radically change the way that you build
 your WordPress sites and themes.  This plugin is the best integration
