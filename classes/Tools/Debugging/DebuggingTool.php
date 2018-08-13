@@ -27,12 +27,14 @@ class DebuggingTool extends ToolBase {
 	public function __construct( $toolName, $toolInfo, $toolManager ) {
 		parent::__construct( $toolName, $toolInfo, $toolManager );
 
-		$paperTrailEndPoint = $this->getOption('ilab-media-s3-debug-papertrail-endpoint', 'ILAB_MEDIA_S3_DEBUG_PAPERTRAIL_ENDPOINT', false);
-		$paperTrailPort = $this->getOption('ilab-media-s3-debug-papertrail-port', 'ILAB_MEDIA_S3_DEBUG_PAPERTRAIL_PORT', false);
+		if ( $this->enabled() ) {
+			$paperTrailEndPoint = $this->getOption('ilab-media-s3-debug-papertrail-endpoint', 'ILAB_MEDIA_S3_DEBUG_PAPERTRAIL_ENDPOINT', false);
+			$paperTrailPort = $this->getOption('ilab-media-s3-debug-papertrail-port', 'ILAB_MEDIA_S3_DEBUG_PAPERTRAIL_PORT', false);
 
-		if (!empty($paperTrailEndPoint) && !empty($paperTrailPort)) {
-			if (!function_exists('socket_create') && $this->enabled()) {
-				NoticeManager::instance()->displayAdminNotice('error', 'You have specified papertrail endpoint and ports, but you are missing the <a href="http://php.net/manual/en/book.sockets.php" target=_blank>php socket extension</a>.  Please install this extension to use remote logging.');
+			if (!empty($paperTrailEndPoint) && !empty($paperTrailPort)) {
+				if (!function_exists('socket_create') && $this->enabled()) {
+					NoticeManager::instance()->displayAdminNotice('error', 'You have specified papertrail endpoint and ports, but you are missing the <a href="http://php.net/manual/en/book.sockets.php" target=_blank>php socket extension</a>.  Please install this extension to use remote logging.');
+				}
 			}
 		}
 	}
