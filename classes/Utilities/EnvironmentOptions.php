@@ -41,13 +41,13 @@ final class EnvironmentOptions {
 		if (is_array($envVariableName)) {
 			foreach($envVariableName as $envVariable) {
 				$envval = getenv($envVariable);
-				if ($envval) {
+				if (!empty($envval)) {
 					return $envval;
 				}
 			}
 		} else {
 			$envval = getenv($envVariableName);
-			if ($envval) {
+			if (empty($envval)) {
 				return $envval;
 			}
 		}
