@@ -27,8 +27,8 @@ class DebuggingTool extends ToolBase {
 	public function __construct( $toolName, $toolInfo, $toolManager ) {
 		parent::__construct( $toolName, $toolInfo, $toolManager );
 
-		$paperTrailEndPoint = get_option('ilab-media-s3-debug-papertrail-endpoint', false);
-		$paperTrailPort = get_option('ilab-media-s3-debug-papertrail-port', false);
+		$paperTrailEndPoint = $this->getOption('ilab-media-s3-debug-papertrail-endpoint', 'ILAB_MEDIA_S3_DEBUG_PAPERTRAIL_ENDPOINT', false);
+		$paperTrailPort = $this->getOption('ilab-media-s3-debug-papertrail-port', 'ILAB_MEDIA_S3_DEBUG_PAPERTRAIL_PORT', false);
 
 		if (!empty($paperTrailEndPoint) && !empty($paperTrailPort)) {
 			if (!function_exists('socket_create') && $this->enabled()) {

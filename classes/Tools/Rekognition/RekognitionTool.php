@@ -94,7 +94,7 @@ class RekognitionTool extends ToolBase {
 		$this->detectLabelsConfidence = min(100, max(0, $this->detectLabelsConfidence));
 		$this->detectExplicitConfidence = min(100, max(0, $this->detectExplicitConfidence));
 
-		$toIgnoreString = get_option('ilab-media-s3-rekognition-ignored-tags', '');
+		$toIgnoreString = $this->getOption('ilab-media-s3-rekognition-ignored-tags', 'ILAB_AWS_REKOGNITION_IGNORED_TAGS', '');
 		if (!empty($toIgnoreString)) {
 			$toIgnore = explode(',', $toIgnoreString);
 			foreach($toIgnore as $ignoredTag) {

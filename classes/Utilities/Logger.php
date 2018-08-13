@@ -16,6 +16,7 @@ namespace ILAB\MediaCloud\Utilities;
 use Monolog\Handler\ErrorLogHandler;
 use Monolog\Handler\SyslogUdpHandler;
 use Monolog\Logger as MonologLogger;
+use ILAB\MediaCloud\Utilities\EnvironmentOptions;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
@@ -30,8 +31,7 @@ class Logger {
 
 	//region Constructor
 	public function __construct() {
-		$env = getenv('ILAB_MEDIA_DEBUGGING_ENABLED');
-		$enabled=get_option("ilab-media-tool-enabled-debugging", $env);
+		$enabled=EnvironmentOptions::Option("ilab-media-tool-enabled-debugging", 'ILAB_MEDIA_DEBUGGING_ENABLED', false);
 
 		if ($enabled) {
 			$level = get_option('ilab-media-s3-debug-logging-level', 'none');
@@ -52,8 +52,8 @@ class Logger {
 				$this->logger = new MonologLogger('ilab-media-tool');
 				$this->logger->pushHandler(new ErrorLogHandler(ErrorLogHandler::OPERATING_SYSTEM, $realLevel));
 
-				$paperTrailEndPoint = get_option('ilab-media-s3-debug-papertrail-endpoint', false);
-				$paperTrailPort = get_option('ilab-media-s3-debug-papertrail-port', false);
+				$paperTrailEndPoint = EnvironmentOptions::Option('ilab-media-s3-debug-papertrail-endpoint', 'ILAB_MEDIA_S3_DEBUG_PAPERTRAIL_ENDPOINT', false);
+				$paperTrailPort = EnvironmentOptions::Option('ilab-media-s3-debug-papertrail-port', 'ILAB_MEDIA_S3_DEBUG_PAPERTRAIL_PORT', false);
 
 				if (!empty($paperTrailEndPoint) && !empty($paperTrailPort)) {
 					if (function_exists('socket_create')) {

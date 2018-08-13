@@ -111,8 +111,8 @@ class S3Storage implements StorageInterface {
 				], true);
 			}
 		}
-
-		$this->settingsError = get_option($this->settingsErrorOptionName(), false);
+		
+		$this->settingsError = EnvironmentOptions::Option($this->settingsErrorOptionName(), 'ILAB_MEDIA_S3_SETTINGS_ERROR', false);
 
 		if ($thisClass::defaultRegion() !== null) {
 			$this->region = $thisClass::defaultRegion();

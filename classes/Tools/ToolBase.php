@@ -91,7 +91,7 @@ abstract class ToolBase {
 	    $this->only_when_enabled = false;
 
         if (isset($toolInfo['env'])) {
-        	$this->env_variable = $toolInfo['env'];
+            $this->env_variable = $toolInfo['env'];
         }
 
         if (isset($toolInfo['settings']) && !empty($toolInfo['settings'])) {
@@ -148,8 +148,7 @@ abstract class ToolBase {
      */
     public function enabled()
     {
-    	$env = ($this->env_variable) ? getenv($this->env_variable) : false;
-        $enabled=get_option("ilab-media-tool-enabled-$this->toolName", $env);
+        $enabled=$this->getOption("ilab-media-tool-enabled-$this->toolName", $this->env_variable, false);
 
         if ($enabled && isset($this->toolInfo['dependencies']))
         {
