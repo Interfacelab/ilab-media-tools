@@ -133,6 +133,33 @@ return [
 						}
 					]
 				],
+                "Flip" => [
+                    "flip" => [
+                        "type" => "pillbox",
+                        "options" => [
+                            "h" => [
+                                "title" => "Horizontal",
+                                "default" => 0
+                            ],
+                            "v" => [
+                                "title" => "Vertical",
+                                "default" => 0
+                            ]
+                        ],
+                        "selected" => function($settings, $currentValue, $selectedOutput, $unselectedOutput){
+                            if (isset($settings['flip'])) {
+                                $parts=explode(',',$settings['flip']);
+                                foreach($parts as $part) {
+                                    if ($part==$currentValue) {
+                                        return $selectedOutput;
+                                    }
+                                }
+                            }
+
+                            return $unselectedOutput;
+                        }
+                    ]
+                ],
 				"Luminosity Controls" => [
 					"bri" => [
 						"title" => "Brightness",

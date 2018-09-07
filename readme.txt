@@ -2,11 +2,11 @@
 Contributors: interfacelab
 Tags: uploads, amazon, s3, imgix, minio, google cloud storage, digital ocean spaces, backblaze, wasabi, media, cdn, rekognition, cloudfront, images, crop, image editing, image editor, media library, offload, offload s3
 Requires at least: 4.4
-Tested up to: 4.8.2
+Tested up to: 4.9.8
 License: GPLv3 or later
 Donate link: http://www2.jdrf.org/site/TR?fr_id=6912&pg=personal&px=11429802
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 2.1.0
+Stable tag: 2.1.1
 Requires PHP: 5.6
 
 Automatically upload media to Amazon S3 and integrate with Imgix, a real-time image processing CDN.  Boosts site performance and simplifies workflows.
@@ -96,6 +96,9 @@ No, I'm just one very enthusiastic customer.
 6. Imgix settings.
 
 == Changelog ==
+
+= 2.1.1 =
+* Added 'flip' imgix parameter to the image editor
 
 = 2.1.0 =
 * Added support for Wasabi (https://wasabi.com) storage service

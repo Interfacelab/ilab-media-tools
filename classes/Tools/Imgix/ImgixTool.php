@@ -244,6 +244,10 @@ class ImgixTool extends ToolBase {
 			unset($params['auto']);
 		}
 
+		if (isset($params['flip']) && (strpos($params['flip'], ',') > 0)) {
+		    $params['flip'] = 'hv';
+        }
+
 		if(!$format) {
 			if($this->autoCompress && $this->autoFormat) {
 				$auto[] = 'compress';
