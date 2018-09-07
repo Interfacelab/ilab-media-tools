@@ -433,6 +433,10 @@ class ImgixTool extends ToolBase {
 
 		$mimetype = get_post_mime_type($id);
 
+        if (!$this->renderPDF && ($mimetype == 'application/pdf')) {
+            return false;
+        }
+
 		$meta = wp_get_attachment_metadata($id);
 		if(!$meta || empty($meta)) {
 			if(($this->renderPDF && ($mimetype == 'application/pdf')) || ($this->enabledAlternativeFormats && ($mimetype == 'application/vnd.adobe.illustrator'))) {
