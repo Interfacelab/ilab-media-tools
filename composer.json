@@ -16,7 +16,7 @@
   ],
   "require" : {
     "imgix/imgix-php": "^1.0",
-    "smalot/pdfparser": "^0.10.0",
+    "smalot/pdfparser": "^0.13.2",
     "fasterimage/fasterimage": "^1.1",
     "monolog/monolog": "^1.23",
     "google/cloud-storage": "^1.1",
