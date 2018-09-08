@@ -362,6 +362,31 @@
   }
 }
 
+.imgix-pill-h {
+  & > span.icon {
+    background-image: url(../img/ilab-flip-horizontal-black.svg);
+  }
+}
+
+.imgix-pill-h.pill-selected {
+  & > span.icon {
+    background-image: url(../img/ilab-flip-horizontal-white.svg);
+  }
+}
+
+.imgix-pill-v {
+  & > span.icon {
+    background-image: url(../img/ilab-flip-vertical-black.svg);
+  }
+}
+
+.imgix-pill-v.pill-selected {
+  & > span.icon {
+    background-image: url(../img/ilab-flip-vertical-white.svg);
+  }
+}
+
+
 .imgix-preset-make-default-container {
   align-items: center;
   display: flex;

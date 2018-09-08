@@ -3,3 +3,4 @@ vendor
 composer.lock
 public/css/*.map
 public/js/*.map
+cropper.css

@@ -56,23 +56,23 @@
       "main": true
     },
     "ilab-modal.min.css": {
-      "files": "styles/ilab-modal.scss"
+      "files": "css/ilab-modal.scss"
     },
     "ilab-media-setup.min.css": {
-      "files": "styles/ilab-media-setup.scss"
+      "files": "css/ilab-media-setup.scss"
     },
     "ilab-media-upload.min.css": {
-      "files": "styles/ilab-media-upload.scss"
+      "files": "css/ilab-media-upload.scss"
     },
     "ilab-media-tools.min.css": {
       "files": [
         "vendor/cropper/dist/cropper.css",
-        "styles/ilab-media-tools.scss"
+        "css/ilab-media-tools.scss"
       ]
     },
     "ilab-media-tools.settings.min.css": {
       "files": [
-        "styles/ilab-settings.scss"
+        "css/ilab-settings.scss"
       ]
     },
     "images": {
@@ -84,6 +84,6 @@
     "dist": "../public/"
   },
   "config": {
-    "devUrl": "http://example.dev"
+    "devUrl": "http://cms.xandr.dev"
   }
 }
