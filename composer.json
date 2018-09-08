@@ -2,7 +2,7 @@
   "name" : "ilab/ilab-media-tools",
   "description": "Tools for cropping, uploading to S3, serving through Imgix",
   "type": "wordpress-plugin",
-  "license": "LGPL",
+  "license": "LGPL-3.0-or-later",
   "keywords": ["s3","imgix","cropping", "wordpress"],
   "repositories": [{
     "type": "composer",
