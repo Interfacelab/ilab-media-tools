@@ -13,6 +13,7 @@
 
 namespace ILAB\MediaCloud\Utilities;
 
+use ILAB\MediaCloud\CLI\Command;
 use Monolog\Handler\ErrorLogHandler;
 use Monolog\Handler\SyslogUdpHandler;
 use Monolog\Logger as MonologLogger;
@@ -26,15 +27,25 @@ class Logger {
 	private $context = [];
 
 	private $time = [];
+
+	private $useWPCLI = false;
 	//endregion
 
 	//region Constructor
 	public function __construct() {
+	    if (class_exists('\WP_CLI')) {
+	        $this->useWPCLI = (\WP_CLI::get_config('debug') == 'mediacloud');
+
+	        if ($this->useWPCLI) {
+                Command::Info('%WMedia Cloud Debugging Enabled', true);
+            }
+        }
+
 		$env = getenv('ILAB_MEDIA_DEBUGGING_ENABLED');
-		$enabled=get_option("ilab-media-tool-enabled-debugging", $env);
+		$enabled = ($this->useWPCLI) ?: get_option("ilab-media-tool-enabled-debugging", $env);
 
 		if ($enabled) {
-			$level = get_option('ilab-media-s3-debug-logging-level', 'none');
+			$level = get_option('ilab-media-s3-debug-logging-level', ($this->useWPCLI) ? 'info' : 'none');
 
 			if ($level != 'none') {
 				$realLevel = MonologLogger::INFO;
@@ -72,19 +83,31 @@ class Logger {
 
 	//region Protected Logging Methods
 	protected function doLogInfo($message, $context=[]) {
+	    if ($this->useWPCLI) {
+            Command::Info($message, true);
+        }
+
 		if ($this->logger) {
 			$this->logger->addInfo($message, array_merge($this->context, $context));
 		}
 	}
 
 	protected function doLogWarning($message, $context=[]) {
+        if ($this->useWPCLI) {
+            Command::Warn($message);
+        }
+
 		if ($this->logger) {
 			$this->logger->addWarning($message, array_merge($this->context, $context));
 		}
 	}
 
 	protected function doLogError($message, $context=[]) {
-		if ($this->logger) {
+        if ($this->useWPCLI) {
+            Command::Error($message." => ".((isset($context['exception'])) ? $context['exception'] : "No error message"));
+        }
+
+        if ($this->logger) {
 			$this->logger->addError($message, array_merge($this->context, $context));
 		}
 	}

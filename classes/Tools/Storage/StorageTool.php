@@ -262,6 +262,7 @@ class StorageTool extends ToolBase {
 
         if($this->client && $this->client->enabled()) {
             if(!isset($data['s3'])) {
+                Logger::info("\tProcessing main file {$data['file']}");
                 $data = $this->processFile($upload_path, $data['file'], $data, $id, $preserveFilePaths);
 
                 if(isset($data['sizes'])) {
@@ -284,6 +285,8 @@ class StorageTool extends ToolBase {
                             unset($size['prefix']);
                             $data['sizes'][$key]['s3'] = $data['s3'];
                         } else {
+
+                            Logger::info("\tProcessing thumbnail {$size['file']}");
                             $sizeData = $this->processFile($upload_path, $file, $size, $id, $preserveFilePaths);
 
                             if (!isset($sizeData['s3'])) {
@@ -896,6 +899,7 @@ class StorageTool extends ToolBase {
 	 */
 	private function processFile($upload_path, $filename, $data, $id = null, $preserveFilePath = false) {
 		if(!file_exists($upload_path.'/'.$filename)) {
+            Logger::error("\tFile $filename is missing.");
 			return $data;
 		}
 
@@ -914,7 +918,9 @@ class StorageTool extends ToolBase {
         $bucketFilename = array_pop($parts);
 
 		try {
-			$url = $this->client->upload($prefix.$bucketFilename, $upload_path.'/'.$filename, StorageSettings::privacy(), StorageSettings::cacheControl(), StorageSettings::expires());
+            Logger::info("\tUploading $filename to S3.");
+            $url = $this->client->upload($prefix.$bucketFilename, $upload_path.'/'.$filename, StorageSettings::privacy(), StorageSettings::cacheControl(), StorageSettings::expires());
+            Logger::info("\tFinished uploading $filename to S3.");
 
 			$options = [];
 			$params = [];

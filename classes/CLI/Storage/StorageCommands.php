@@ -22,6 +22,7 @@ use ILAB\MediaCloud\Tools\Storage\DefaultProgressDelegate;
 use ILAB\MediaCloud\Tools\Storage\ImportProgressDelegate;
 use ILAB\MediaCloud\Tools\Storage\StorageTool;
 use ILAB\MediaCloud\Tools\ToolsManager;
+use ILAB\MediaCloud\Utilities\Logger;
 
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
@@ -30,6 +31,8 @@ if (!defined('ABSPATH')) { header('Location: /'); die; }
  * @package ILAB\MediaCloud\CLI\Storage
  */
 class StorageCommands extends Command {
+    private $debugMode = false;
+
 	/**
 	 * Imports the media library to the cloud.
 	 *
@@ -39,6 +42,11 @@ class StorageCommands extends Command {
 	 * @param $assoc_args
 	 */
 	public function import($args, $assoc_args) {
+	    $this->debugMode = (\WP_CLI::get_config('debug') == 'mediacloud');
+
+	    // Force the logger to initialize
+	    Logger::instance();
+
 		/** @var StorageTool $storageTool */
 		$storageTool = ToolsManager::instance()->tools['storage'];
 
@@ -75,9 +83,11 @@ class StorageCommands extends Command {
 				$upload_file = get_attached_file($postId);
 				$fileName = basename($upload_file);
 
-				Command::Info("%w[%C{$i}%w of %C{$query->post_count}%w] %NImporting %Y$fileName%N %w(%N$postId%w)%N ... ");
+				Command::Info("%w[%C{$i}%w of %C{$query->post_count}%w] %NImporting %Y$fileName%N %w(Post ID %N$postId%w)%N ... ", $this->debugMode);
 				$storageTool->processImport($i - 1, $postId, $pd);
-				Command::Info("%YDone%N.", true);
+				if (!$this->debugMode) {
+                    Command::Info("%YDone%N.", true);
+                }
 			}
 
 			delete_option('ilab_s3_import_status');

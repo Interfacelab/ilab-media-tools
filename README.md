@@ -83,7 +83,65 @@ There are additional filters and actions that you can hook into for various purp
 | :----- | :----- | :----- |
 | ilab_imgix_setup | Called when imgix is setup/initialized | None |
 
+### Sample S3 Policy For WordPress
 
+Below is the minimum AWS IAM policy you can have for the plugin to function:
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:DeleteObjectTagging",
+                "s3:ListBucketMultipartUploads",
+                "s3:DeleteObjectVersion",
+                "s3:ListBucket",
+                "s3:DeleteObjectVersionTagging",
+                "s3:GetBucketAcl",
+                "s3:ListMultipartUploadParts",
+                "s3:PutObject",
+                "s3:GetObjectAcl",
+                "s3:GetObject",
+                "s3:AbortMultipartUpload",
+                "s3:DeleteObject",
+                "s3:GetBucketLocation",
+                "s3:PutObjectAcl"
+            ],
+            "Resource": [
+                "arn:aws:s3:::YOURBUCKET/*",
+                "arn:aws:s3:::YOURBUCKET"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": "s3:HeadBucket",
+            "Resource": "*"
+        }
+    ]
+}
+```
+
+Replace `YOURBUCKET` with the name of the bucket you want to enable access to.
+
+To allow direct uploads to S3 via the "Cloud Upload" feature, you must also configure CORS on your bucket.  This is the 
+recommended CORS configuration:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<CORSConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+    <CORSRule>
+        <AllowedOrigin>*</AllowedOrigin>
+        <AllowedMethod>GET</AllowedMethod>
+        <AllowedMethod>PUT</AllowedMethod>
+        <AllowedMethod>POST</AllowedMethod>
+        <AllowedMethod>HEAD</AllowedMethod>
+        <MaxAgeSeconds>3000</MaxAgeSeconds>
+        <AllowedHeader>*</AllowedHeader>
+    </CORSRule>
+</CORSConfiguration>
+```
 
 
 ## Frequently Asked Questions

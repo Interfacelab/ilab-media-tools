@@ -260,4 +260,15 @@
         </tbody>
     </table>
 
+    <h2>Sample S3 Policy For WordPress</h2>
+    <p>Below is the minimum AWS IAM policy you can have for the plugin to function:</p>
+    <script src="https://gist.github.com/jawngee/9cc2031f5ad154558b14e1fb395414cf.js"></script>
+    <p>Replace `YOURBUCKET` with the name of the bucket you want to enable access to.</p>
+
+    <h2>Direct Uploads</h2>
+    <p>To allow direct uploads to S3 via the "Cloud Upload" feature, you must also configure CORS on your bucket.  This is the
+        recommended CORS configuration:</p>
+    <script src="https://gist.github.com/jawngee/6fc89497e10d0915ab2dfac807aa01e1.js"></script>
+
+
 </div>
