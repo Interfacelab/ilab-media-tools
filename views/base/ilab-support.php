@@ -14,9 +14,9 @@
 <div class="wrap help-docs">
 	<h1>Help and Support</h1>
 
-	<h2>Support Forum</h2>
-	<p>Please use the Interfacelab Discourse site for all support requests.  You can also use the Wordpress support forums, but I don't check them very frequently.</p>
-	<a href="https://discourse.interfacelab.io/c/media-cloud" target="_blank" class="button">Visit Support Site</a>
+	<h2>Report a Bug</h2>
+    <p>Please click the button below to report a bug directly to our issue reporting system.  While you can open a topic on the WordPress.org site, we can respond quicker through our system as we don't check WordPress.org very often.</p>
+	<a href="#" id="media-cloud-report-bug" class="button">Report Bug</a>
 
     <h2>Donate</h2>
     <p>This plugin is free and will be free forever.  However, it's taken a lot of work to get it this far.  If this plugin is useful to you, please consider donating to my son's Juvenile Diabetes Research Foundation fundraiser.  He was diagnosed with type 1 diabetes last year at one year of age.  The JDRF is a research charity trying to find a cure for T1D.  They can use all the help they can get.</p>
@@ -271,4 +271,14 @@
     <script src="https://gist.github.com/jawngee/6fc89497e10d0915ab2dfac807aa01e1.js"></script>
 
 
+    <script type="text/javascript" src="https://interfacelab.atlassian.net/s/d41d8cd98f00b204e9800998ecf8427e-T/5f3v0s/b/22/a44af77267a987a660377e5c46e0fb64/_/download/batch/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector.js?locale=en-US&collectorId=ae2b6a04"></script>
+
+    <script type="text/javascript">window.ATL_JQ_PAGE_PROPS =  {
+            "triggerFunction": function(showCollectorDialog) {
+                //Requires that jQuery is available!
+                jQuery("#media-cloud-report-bug").click(function(e) {
+                    e.preventDefault();
+                    showCollectorDialog();
+                });
+            }};</script>
 </div>
