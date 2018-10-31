@@ -114,13 +114,23 @@ class StorageTool extends ToolBase {
                 return $this->updateAttachmentMetadata($data, $id);
             }, 1000, 2);
 
+            add_filter('wp_handle_upload_prefilter', function($file){
+                add_filter('upload_dir', [$this, 'getUploadDir']);
+                return $file;
+            });
+
 			add_action('delete_attachment', [$this, 'deleteAttachment'], 1000);
-			add_filter('wp_handle_upload', [$this, 'handleUpload'], 10000);
+			add_filter('wp_handle_upload', function ($upload, $context = 'upload') {
+                $result = $this->handleUpload($upload, $context);
+
+                remove_filter('upload_dir',  [$this, 'getUploadDir']);
+
+                return $result;
+            }, 10000);
 			add_filter('get_attached_file', [$this, 'getAttachedFile'], 10000, 2);
 			add_filter('image_downsize', [$this, 'imageDownsize'], 999, 3);
 			add_action('add_attachment', [$this, 'addAttachment'], 1000);
 			add_action('edit_attachment', [$this, 'editAttachment']);
-			add_filter('upload_dir', [$this, 'getUploadDir']);
 
             add_filter('the_content', [$this, 'filterContent'], 10000, 1);
 
@@ -421,7 +431,7 @@ class StorageTool extends ToolBase {
 	 * @return array
 	 */
 	public function handleUpload($upload, $context = 'upload') {
-		if(!isset($upload['file'])) {
+    	if(!isset($upload['file'])) {
 			return $upload;
 		}
 
