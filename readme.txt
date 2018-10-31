@@ -99,6 +99,8 @@ No, I'm just one very enthusiastic customer.
 
 = 2.1.6 =
 * Fix for importer.  Imported file's directory structure is retained when importing into S3.
+* Fix for compatibility with WooCommerce and a lot of other plugins
+
 
 = 2.1.5 =
 * Fix for crop tool
