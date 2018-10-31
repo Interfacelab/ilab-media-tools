@@ -539,7 +539,7 @@ class ImgixTool extends ToolBase {
 			}
 		}
 
-		if($sizeInfo['crop']) {
+		if(isset($sizeInfo['crop'])) {
 			$params['w'] = $sizeInfo['width'] ?: $sizeInfo['height'];
 			$params['h'] = $sizeInfo['height'] ?: $sizeInfo['width'];
 			$params['fit'] = 'crop';
@@ -631,7 +631,13 @@ class ImgixTool extends ToolBase {
 				unset($params['fp-z']);
             }
 		} else {
-			$newSize = sizeToFitSize($meta['width'], $meta['height'], $sizeInfo['width'] ?: 10000, $sizeInfo['height'] ?: 10000);
+            $mw = (isset($meta['width'])) ? $meta['width'] : 10000;
+            $mh = (isset($meta['height'])) ? $meta['height'] : 10000;
+
+            $w = (isset($sizeInfo['width'])) ? $sizeInfo['width'] : 10000;
+            $h = (isset($sizeInfo['height'])) ? $sizeInfo['height'] : 10000;
+
+			$newSize = sizeToFitSize($mw, $mh, $w, $h);
 			$params['w'] = $newSize[0];
 			$params['h'] = $newSize[1];
 			$params['fit'] = 'scale';

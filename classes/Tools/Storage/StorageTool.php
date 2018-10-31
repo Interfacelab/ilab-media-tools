@@ -715,16 +715,23 @@ class StorageTool extends ToolBase {
 			return $sources;
 		}
 
+		$allSizes = ilab_get_image_sizes();
+		$allSizesNames = array_keys($allSizes);
+
 		foreach($image_meta['sizes'] as $sizeName => $sizeData) {
 			$width = $sizeData['width'];
-			if(isset($sources[$width])) {
-				$src = wp_get_attachment_image_src($attachment_id, $sizeName);
+			if (isset($sources[$width])) {
+			    if (in_array($sizeName, $allSizesNames)) {
+                    $src = wp_get_attachment_image_src($attachment_id, $sizeName);
 
-				if(is_array($src)) {
-					$sources[$width]['url'] = $src[0];
-				} else {
-					unset($sources[$width]);
-				}
+                    if(is_array($src)) {
+                        $sources[$width]['url'] = $src[0];
+                    } else {
+                        unset($sources[$width]);
+                    }
+                } else {
+                    unset($sources[$width]);
+                }
 			}
 		}
 
