@@ -92,6 +92,8 @@ class StorageTool extends ToolBase {
 			add_action('wp_ajax_ilab_media_cloud_regenerate_progress', [$this, 'regenerateProgress']);
 			add_action('wp_ajax_ilab_media_cloud_cancel_regenerate', [$this, 'cancelRegenerateFiles']);
 		}
+
+		$this->testForBadPlugins();
 	}
 	//endregion
 
@@ -422,6 +424,25 @@ class StorageTool extends ToolBase {
 		return $uploads;
     }
 
+    private function fileIsDisplayableImage($file) {
+	    if (function_exists('file_is_displayable_image')) {
+	        return file_is_displayable_image($file);
+        } else {
+            $displayable_image_types = [IMAGETYPE_GIF, IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_BMP];
+
+            $info = @getimagesize($file);
+            if (empty($info)) {
+                $result = false;
+            } else if (!in_array($info[2], $displayable_image_types)) {
+                $result = false;
+            } else {
+                $result = true;
+            }
+
+            return apply_filters('file_is_displayable_image', $result, $file);
+        }
+    }
+
 	/**
 	 * Filters the data after a file has been uploaded to WordPress (https://core.trac.wordpress.org/browser/tags/4.8/src/wp-admin/includes/file.php#L416)
 	 *
@@ -439,7 +460,7 @@ class StorageTool extends ToolBase {
 			return $upload;
 		}
 
-		if(file_is_displayable_image($upload['file'])) {
+		if($this->fileIsDisplayableImage($upload['file'])) {
 			return $upload;
 		}
 

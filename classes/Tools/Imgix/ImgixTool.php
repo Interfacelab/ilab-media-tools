@@ -62,6 +62,8 @@ class ImgixTool extends ToolBase {
 	    add_filter('ilab_imgix_alternative_formats', function($enabled){
 	        return $this->enabledAlternativeFormats;
         });
+
+	    $this->testForBadPlugins();
     }
     //endregion
 

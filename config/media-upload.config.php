@@ -13,6 +13,7 @@
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
 return [
+    "name" => "Direct Uploads",
 	"title" => "Direct Uploads",
 	"description" => "Provides an easy to use tool for uploading media directly to Amazon S3, Minio or Google Cloud Storage.",
 	"class" => "ILAB\\MediaCloud\\Tools\\MediaUpload\\UploadTool",

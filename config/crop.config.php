@@ -13,6 +13,7 @@
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
 return [
+    "name" => "Image Crop",
 	"title" => "Image Crop",
 	"description" => "Provides an easy to use tool for manually cropping images for all image sizes.",
 	"class" => "ILAB\\MediaCloud\\Tools\\Crop\\CropTool",

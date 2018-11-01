@@ -13,6 +13,7 @@
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
 return [
+    "name" => "Storage",
 	"title" => "Storage",
 	"description" => "Automatically uploads media to Amazon S3, Google Cloud Storage, Backblaze, DigitalOcean Spaces and others.",
 	"class" => "ILAB\\MediaCloud\\Tools\\Storage\\StorageTool",

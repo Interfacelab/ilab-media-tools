@@ -139,6 +139,8 @@ class RekognitionTool extends ToolBase {
 		add_filter('ilab_rekognition_detects_faces', function($enabled){
 			return $this->detectFaces || $this->detectCelebrities;
 		});
+
+        $this->testForBadPlugins();
 	}
 	//endregion
 

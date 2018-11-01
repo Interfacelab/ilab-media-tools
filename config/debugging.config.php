@@ -13,6 +13,7 @@
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
 return [
+    "name" => "Media Cloud Debugging",
 	"title" => "Media Cloud Debugging",
 	"description" => "Enables logging for the plugin to track down issues.",
 	"class" => "ILAB\\MediaCloud\\Tools\\Debugging\\DebuggingTool",

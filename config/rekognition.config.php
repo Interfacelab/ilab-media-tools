@@ -14,6 +14,7 @@ if (!defined('ABSPATH')) { header('Location: /'); die; }
 
 
 return [
+    "name" => "Rekognition",
 	"title" => "Rekognition",
 	"description" => "Uses Amazon's Rekognition AI service to automatically tag your uploaded images.",
 	"class" => "ILAB\\MediaCloud\\Tools\\Rekognition\\RekognitionTool",

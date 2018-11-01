@@ -38,7 +38,13 @@ class UploadTool extends ToolBase {
 	private $client;
 	//endregion
 
-	//region ToolBase Overrides
+    public function __construct($toolName, $toolInfo, $toolManager) {
+        parent::__construct($toolName, $toolInfo, $toolManager);
+
+        $this->testForBadPlugins();
+    }
+
+    //region ToolBase Overrides
 	public function setup() {
 		parent::setup();
 

@@ -40,6 +40,12 @@ abstract class ToolBase {
     public  $toolName;
 
     /**
+     * Determines if bad plugins are installed.
+     * @var bool
+     */
+    protected $badPluginsInstalled = false;
+
+    /**
      * Tool manager that owns this tool's admin
      * @var ToolsManager
      */
@@ -120,6 +126,34 @@ abstract class ToolBase {
 	    });
     }
 
+    protected function testForBadPlugins() {
+        if (!$this->enabled()) {
+            return;
+        }
+
+        if (isset($this->toolInfo['badPlugins'])) {
+            $installedBad = [];
+            foreach($this->toolInfo['badPlugins'] as $name => $pluginFile) {
+                if (is_plugin_active($pluginFile)) {
+                    $this->badPluginsInstalled = true;
+                    $installedBad[] = $name;
+                }
+            }
+
+            if (count($installedBad) > 0) {
+                add_action( 'admin_notices', function () use ($installedBad) {
+                    $badPlugs = implode(', ', $installedBad);
+
+                    ?>
+                    <div class="notice notice-warning">
+                        <p><?php _e( $this->toolInfo['name'].' cannot be used at the same time as <strong>'.$badPlugs.'</strong>.  Please deactivate one before activating the other.', 'ilab-media-tools' ); ?></p>
+                    </div>
+                    <?php
+                } );
+            }
+        }
+    }
+
     /**
      * Perform any setup
      */
@@ -148,6 +182,10 @@ abstract class ToolBase {
      */
     public function enabled()
     {
+        if ($this->badPluginsInstalled) {
+            return false;
+        }
+
     	$env = ($this->env_variable) ? getenv($this->env_variable) : false;
         $enabled=get_option("ilab-media-tool-enabled-$this->toolName", $env);
 
