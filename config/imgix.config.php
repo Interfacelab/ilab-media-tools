@@ -26,7 +26,8 @@ return [
 		"ilab-imgix-helpers.php"
 	],
     "badPlugins" => [
-        "BuddyPress" => "buddypress/bp-loader.php"
+        "BuddyPress" => "buddypress/bp-loader.php",
+        "MetaSlider" => "ml-slider/ml-slider.php"
     ],
 	"settings" => [
 		"title" => "Imgix Settings",

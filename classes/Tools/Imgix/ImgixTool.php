@@ -371,7 +371,7 @@ class ImgixTool extends ToolBase {
             } else {
 		        $size[1] = 10000;
             }
-            
+
 		    $is_crop = false;
         }
 

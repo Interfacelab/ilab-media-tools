@@ -154,7 +154,7 @@ abstract class ToolBase {
                     ?>
                     <div class="notice notice-error" style="padding:10px;">
                         <div style="text-transform: uppercase; font-weight:bold; opacity: 0.8; margin-bottom: 0; padding-bottom: 0">Media Cloud</div>
-                        <p><?php echo "The following plugins don't work with Media Cloud ".$this->toolInfo['name']." and can cause serious issues.  Media Cloud ".$this->toolInfo['name']." has been disabled until these plugins have been deactivated:" ?></p>
+                        <p><?php echo "The following plugins don't work with Media Cloud ".$this->toolInfo['name']." features and can cause serious issues.  Media Cloud ".$this->toolInfo['name']." features have been disabled until these plugins have been deactivated:" ?></p>
                         <?php $this->generatePluginTable($installedBad) ?>
                     </div>
                     <?php
