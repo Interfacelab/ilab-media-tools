@@ -26,8 +26,10 @@ return [
 		"ilab-imgix-helpers.php"
 	],
     "badPlugins" => [
-        "BuddyPress" => "buddypress/bp-loader.php",
-        "MetaSlider" => "ml-slider/ml-slider.php"
+        "BuddyPress" => [
+            "plugin" => "buddypress/bp-loader.php",
+            "description" => "Uploading profile or cover images results in broken images."
+        ]
     ],
 	"settings" => [
 		"title" => "Imgix Settings",
