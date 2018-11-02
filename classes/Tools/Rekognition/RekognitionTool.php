@@ -141,6 +141,7 @@ class RekognitionTool extends ToolBase {
 		});
 
         $this->testForBadPlugins();
+        $this->testForUselessPlugins();
 	}
 	//endregion
 

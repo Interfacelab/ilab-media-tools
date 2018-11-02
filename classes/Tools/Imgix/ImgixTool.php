@@ -64,6 +64,7 @@ class ImgixTool extends ToolBase {
         });
 
 	    $this->testForBadPlugins();
+        $this->testForUselessPlugins();
     }
     //endregion
 

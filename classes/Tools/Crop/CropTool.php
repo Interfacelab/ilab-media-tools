@@ -36,6 +36,7 @@ class CropTool extends ToolBase
         $this->cropQuality = $this->getOption('ilab-media-crop-quality', null, 100);
 
         $this->testForBadPlugins();
+        $this->testForUselessPlugins();
     }
 
     /**

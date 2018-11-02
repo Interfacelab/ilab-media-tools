@@ -126,6 +126,15 @@ abstract class ToolBase {
 	    });
     }
 
+    private function generateDeactivateLink($pluginName, $plugin) {
+        $plugin = str_replace( '\/', '%2F', $plugin );
+
+        $url = sprintf( admin_url( 'plugins.php?action=deactivate&plugin=%s&plugin_status=all&paged=1&s' ), $plugin );
+        $_REQUEST['plugin'] = $plugin;
+        $url = wp_nonce_url( $url,  'deactivate-plugin_' . $plugin );
+        return $url;
+    }
+
     protected function testForBadPlugins() {
         if (!$this->enabled()) {
             return;
@@ -136,22 +145,62 @@ abstract class ToolBase {
             foreach($this->toolInfo['badPlugins'] as $name => $pluginFile) {
                 if (is_plugin_active($pluginFile)) {
                     $this->badPluginsInstalled = true;
-                    $installedBad[] = $name;
+                    $installedBad[$name] = $pluginFile;
                 }
             }
 
             if (count($installedBad) > 0) {
                 add_action( 'admin_notices', function () use ($installedBad) {
-                    $badPlugs = implode(', ', $installedBad);
-
                     ?>
-                    <div class="notice notice-warning">
-                        <p><?php _e( $this->toolInfo['name'].' cannot be used at the same time as <strong>'.$badPlugs.'</strong>.  Please deactivate one before activating the other.', 'ilab-media-tools' ); ?></p>
+                    <div class="notice notice-error" style="padding:10px;">
+                        <div style="text-transform: uppercase; font-weight:bold; opacity: 0.8; margin-bottom: 0; padding-bottom: 0">Media Cloud</div>
+                        <p><?php echo "The following plugins don't work with Media Cloud ".$this->toolInfo['name']." and can cause serious issues.  Media Cloud ".$this->toolInfo['name']." has been disabled until these plugins have been deactivated:" ?></p>
+                        <?php $this->generatePluginTable($installedBad) ?>
                     </div>
                     <?php
                 } );
             }
         }
+    }
+
+    protected function testForUselessPlugins() {
+        if (!$this->enabled()) {
+            return;
+        }
+
+        if (isset($this->toolInfo['uselessPlugins'])) {
+            $installedBad = [];
+            foreach($this->toolInfo['uselessPlugins'] as $name => $pluginFile) {
+                if (is_plugin_active($pluginFile)) {
+                    $installedBad[$name] = $pluginFile;
+                }
+            }
+
+            if (count($installedBad) > 0) {
+                add_action( 'admin_notices', function () use ($installedBad) {
+                    ?>
+                    <div class="notice notice-warning" style="padding:10px;">
+                        <div style="text-transform: uppercase; font-weight:bold; opacity: 0.8; margin-bottom: 0; padding-bottom: 0">Media Cloud</div>
+                        <p>The following plugins don't work well with <?php echo $this->toolInfo['name'] ?>.  Consider deactivating them because they are completely useless:</p>
+                        <?php $this->generatePluginTable($installedBad) ?>
+                    </div>
+                    <?php
+                } );
+            }
+        }
+    }
+
+    private function generatePluginTable($installedBad) {
+        ?>
+        <table>
+            <?php foreach($installedBad as $name => $plug) : ?>
+                <tr>
+                    <td style="font-weight:bold; padding:10px  30px 10px 0px;"><?php echo $name ?></td>
+                    <td style="font-weight:bold; padding:10px  0px 10px 0px;"><a class="button button-small" href="<?php echo $this->generateDeactivateLink($name, $plug)?>">Deactivate</a></td>
+                </tr>
+            <?php endforeach; ?>
+        </table>
+        <?php
     }
 
     /**

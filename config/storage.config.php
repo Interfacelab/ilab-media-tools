@@ -19,6 +19,14 @@ return [
 	"class" => "ILAB\\MediaCloud\\Tools\\Storage\\StorageTool",
 	"env" => "ILAB_MEDIA_S3_ENABLED",
 	"dependencies" => [],
+    "uselessPlugins" => [
+        "Imagify" => "imagify/imagify.php",
+        "EWWW Image Optimizer" => "ewww-image-optimizer/ewww-image-optimizer.php",
+        "ShortPixel Image Optimizer" => "shortpixel-image-optimiser/wp-shortpixel.php",
+        "Smush" => "wp-smushit/wp-smush.php",
+    ],
+    "badPlugins" => [
+    ],
 	"settings" => [
 		"title" => "Storage Settings",
 		"menu" => "Storage Settings",

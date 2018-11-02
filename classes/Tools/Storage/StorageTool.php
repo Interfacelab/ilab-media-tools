@@ -93,7 +93,8 @@ class StorageTool extends ToolBase {
 			add_action('wp_ajax_ilab_media_cloud_cancel_regenerate', [$this, 'cancelRegenerateFiles']);
 		}
 
-		$this->testForBadPlugins();
+        $this->testForBadPlugins();
+        $this->testForUselessPlugins();
 	}
 	//endregion
 
