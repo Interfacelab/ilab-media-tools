@@ -49,6 +49,9 @@ class ImgixTool extends ToolBase {
 	protected $enabledAlternativeFormats;
 	protected $renderPDF;
 	protected $detectFaces;
+
+	private $shouldCrop = false;
+
 	//endregion
 
     //region Constructor
@@ -166,6 +169,13 @@ class ImgixTool extends ToolBase {
 
 			return $editors;
 		});
+
+		// Fix for Foo Gallery
+        add_filter('foogallery_thumbnail_resize_args', function($args, $original_image_src, $thumbnail_object) {
+            $this->shouldCrop = true;
+            $args['force_use_original_thumb'] = true;
+            return $args;
+        }, 100000, 3);
 
 		if($this->enabledAlternativeFormats) {
 			add_filter('file_is_displayable_image', [$this, "fileIsDisplayableImage"], 0, 2);
@@ -350,6 +360,20 @@ class ImgixTool extends ToolBase {
 
 
 		$is_crop = ((count($size) >= 3) && ($size[2] == 'crop'));
+		if (!$is_crop && $this->shouldCrop) {
+		    $this->shouldCrop = false;
+		    $is_crop = true;
+        }
+
+        if ($is_crop && (($size[0] === 0) || ($size[1] === 0))) {
+		    if ($size[0] === 0) {
+		        $size[0] = 10000;
+            } else {
+		        $size[1] = 10000;
+            }
+            
+		    $is_crop = false;
+        }
 
 		if(isset($size['width'])) {
 			$size = [
