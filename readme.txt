@@ -6,7 +6,7 @@ Tested up to: 4.9.8
 License: GPLv3 or later
 Donate link: http://www2.jdrf.org/site/TR?fr_id=6912&pg=personal&px=11429802
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 2.1.7
+Stable tag: 2.1.8
 Requires PHP: 5.6
 
 Automatically upload media to Amazon S3 and integrate with Imgix, a real-time image processing CDN.  Boosts site performance and simplifies workflows.
@@ -86,6 +86,14 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 No, I'm just one very enthusiastic customer.
 
+= What plugins are not compatible with Media Cloud? =
+
+Currently, most image optimizing plugins are not compatible because most of them attempt to do the optimizing in the background *after* the media is uploaded.  Media Cloud actually intercepts the upload the process, so for image optimizers to work, they'll need to intercept the upload process too.
+
+Some gallery plugins sidestep WordPress's built-in media library and try to roll their own, for whatever reasons - none of which seem like good reasons to me.  NextGEN Gallery, maybe the most popular one of these types of plugins, does their own thing.  We've tried a couple of times to integrate with it, but their codebase is a mess and it's not a plugin we ever really use, so we gave up.
+
+We've tested a lot of media related plugins (sliders, image optimizers, media replace, etc) and most of them work (except for the ones mentioned above).  If you find a plugin that doesn't work, please report it in the support forum so we can add the warning to the plugin.
+
 == Screenshots ==
 
 1. Easy image cropping for all croppable image sizes defined in your theme.
@@ -96,6 +104,11 @@ No, I'm just one very enthusiastic customer.
 6. Imgix settings.
 
 == Changelog ==
+
+= 2.1.8 =
+* Compatibility fixes for Foo Gallery, Master Slider, Photo Gallery, and Smart Slider 3
+* Added warning and error notices for plugins that are incompatible with Media Cloud: NextGEN Gallery, Smush.it, ShortPixel Image Optimizer, MetaSlider, Imagify, and EWWW Image Optimizer.
+* Updated FAQ
 
 = 2.1.7 =
 * Fix for bbPress front-end user uploads.  Should fix issues with other front-end user uploads too.
