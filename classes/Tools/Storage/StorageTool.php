@@ -174,6 +174,15 @@ class StorageTool extends ToolBase {
 
 				return $filename;
 			}, 10000, 1);
+
+            $imgixEnabled = apply_filters('ilab_imgix_enabled', false);
+            if (!$imgixEnabled) {
+                add_filter('wp_image_editors', function($editors) {
+                    array_unshift($editors, '\ILAB\MediaCloud\Tools\Storage\StorageImageEditor');
+
+                    return $editors;
+                });
+            }
 		}
 
 		add_filter('wp_calculate_image_srcset', [$this, 'calculateSrcSet'], 10000, 5);
@@ -298,7 +307,9 @@ class StorageTool extends ToolBase {
         }
 
         if($this->client && $this->client->enabled()) {
-            if(!isset($data['s3'])) {
+            $ignoreExistingS3 = apply_filters('ilab_ignore_existing_s3_data', false, $id);
+
+            if($ignoreExistingS3 || !isset($data['s3'])) {
                 Logger::info("\tProcessing main file {$data['file']}");
                 $data = $this->processFile($upload_path, $data['file'], $data, $id, $preserveFilePaths);
 
@@ -326,7 +337,7 @@ class StorageTool extends ToolBase {
                             Logger::info("\tProcessing thumbnail {$size['file']}");
                             $sizeData = $this->processFile($upload_path, $file, $size, $id, $preserveFilePaths);
 
-                            if (!isset($sizeData['s3'])) {
+                            if ($ignoreExistingS3 || !isset($sizeData['s3'])) {
                                 foreach($data['sizes'] as $lookKey => $lookData) {
                                     if (isset($lookData['s3'])) {
                                         if ($lookData['file'] == $sizeData['file']) {
@@ -558,7 +569,9 @@ class StorageTool extends ToolBase {
 	 * @return null|string
 	 */
 	public function getAttachedFile($file, $attachment_id) {
-		if(!file_exists($file)) {
+	    $shouldOverride = apply_filters('ilab_should_override_attached_file', true, $attachment_id);
+
+		if(!file_exists($file) && $shouldOverride) {
 			$meta = wp_get_attachment_metadata($attachment_id);
 
 			$new_url = null;
@@ -923,6 +936,7 @@ class StorageTool extends ToolBase {
 
 		return "http://s3-$region.amazonaws.com/$bucket/$file";
 	}
+
 	//endregion
 
 	//region Crop Tool Related
@@ -1686,7 +1700,6 @@ class StorageTool extends ToolBase {
 	}
 
     //endregion
-
 
 	//region Importer
 	/**
