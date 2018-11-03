@@ -118,17 +118,41 @@ class StorageTool extends ToolBase {
             }, 1000, 2);
 
             add_filter('wp_handle_upload_prefilter', function($file){
-                add_filter('upload_dir', [$this, 'getUploadDir']);
+                $addFilter = true;
+                if (isset($_FILES['themezip'])) {
+                    $addFilter = ($file['name'] != $_FILES['themezip']['name']);
+                } else if (isset($_FILES['pluginzip'])) {
+                    $addFilter = ($file['name'] != $_FILES['pluginzip']['name']);
+                }
+
+                if ($addFilter) {
+                    add_filter('upload_dir', [$this, 'getUploadDir']);
+                }
+
                 return $file;
             });
 
 			add_action('delete_attachment', [$this, 'deleteAttachment'], 1000);
 			add_filter('wp_handle_upload', function ($upload, $context = 'upload') {
-                $result = $this->handleUpload($upload, $context);
+			    $handleUpload = true;
 
-                remove_filter('upload_dir',  [$this, 'getUploadDir']);
+                if (isset($_FILES['themezip'])) {
+                    $fileInfo = pathinfo($upload['file']);
+                    $handleUpload = ($fileInfo['basename'] != $_FILES['themezip']['name']);
+                } else if (isset($_FILES['pluginzip'])) {
+                    $fileInfo = pathinfo($upload['file']);
+                    $handleUpload = ($fileInfo['basename'] != $_FILES['pluginzip']['name']);
+                }
 
-                return $result;
+                if (!$handleUpload) {
+                    return $upload;
+                } else {
+                    $result = $this->handleUpload($upload, $context);
+
+                    remove_filter('upload_dir',  [$this, 'getUploadDir']);
+
+                    return $result;
+                }
             }, 10000);
 			add_filter('get_attached_file', [$this, 'getAttachedFile'], 10000, 2);
 			add_filter('image_downsize', [$this, 'imageDownsize'], 999, 3);

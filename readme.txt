@@ -105,6 +105,10 @@ We've tested a lot of media related plugins (sliders, image optimizers, media re
 
 == Changelog ==
 
+= 2.1.9 =
+* Added more Rekognition regions
+* When theme or plugin zip files are uploaded, skip handling them with Media Cloud
+
 = 2.1.8 =
 * Compatibility fixes for Foo Gallery, Master Slider, Photo Gallery, and Smart Slider 3
 * Added warning and error notices for plugins that are incompatible with Media Cloud: NextGEN Gallery, Smush.it, ShortPixel Image Optimizer, MetaSlider, Imagify, and EWWW Image Optimizer.
