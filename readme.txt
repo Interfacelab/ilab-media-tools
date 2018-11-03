@@ -6,7 +6,7 @@ Tested up to: 4.9.8
 License: GPLv3 or later
 Donate link: http://www2.jdrf.org/site/TR?fr_id=6912&pg=personal&px=11429802
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 2.1.8
+Stable tag: 2.1.11
 Requires PHP: 5.6
 
 Automatically upload media to Amazon S3 and integrate with Imgix, a real-time image processing CDN.  Boosts site performance and simplifies workflows.
@@ -105,7 +105,10 @@ We've tested a lot of media related plugins (sliders, image optimizers, media re
 
 == Changelog ==
 
-= 2.1.9 =
+= 2.1.11 =
+* Fixed a cropping related bug
+
+= 2.1.10 =
 * Using WordPress's image editor now works with Media Cloud.  Crops, rotations, etc. will be re-uploaded to S3.
 * Added more Rekognition regions
 * When theme or plugin zip files are uploaded, skip handling them with Media Cloud

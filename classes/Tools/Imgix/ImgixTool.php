@@ -566,7 +566,7 @@ class ImgixTool extends ToolBase {
 			}
 		}
 
-		if(isset($sizeInfo['crop'])) {
+		if(isset($sizeInfo['crop']) && !empty($sizeInfo['crop'])) {
 			$params['w'] = $sizeInfo['width'] ?: $sizeInfo['height'];
 			$params['h'] = $sizeInfo['height'] ?: $sizeInfo['width'];
 			$params['fit'] = 'crop';
