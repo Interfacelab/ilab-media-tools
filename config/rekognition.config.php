@@ -37,9 +37,14 @@ return [
 						"type" => "select",
 						"default" => "none",
 						"options" => [
-							"us-east-1" => "US East (Northern Virginia)",
+                            "us-east-1" => "US East (Northern Virginia)",
+                            "us-east-2" => "US East (Ohio)",
 							"us-west-2" => "US West (Oregon)",
-							"eu-west-1" => "EU (Ireland)",
+                            "eu-west-1" => "EU (Ireland)",
+                            "ap-south-1" => "Asia Pacific (Mumbai)",
+                            "ap-northeast-2" => "Asia Pacific (Seoul)",
+                            "ap-southeast-2" => "Asia Pacific (Sydney)",
+                            "ap-northeast-1" => "Asia Pacific (Tokyo)",
 							"us-gov-west-1" => "AWS GovCloud (US)"
 						]
 					],
