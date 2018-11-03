@@ -106,6 +106,7 @@ We've tested a lot of media related plugins (sliders, image optimizers, media re
 == Changelog ==
 
 = 2.1.9 =
+* Using WordPress's image editor now works with Media Cloud.  Crops, rotations, etc. will be re-uploaded to S3.
 * Added more Rekognition regions
 * When theme or plugin zip files are uploaded, skip handling them with Media Cloud
 
