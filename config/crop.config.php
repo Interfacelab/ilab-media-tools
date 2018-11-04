@@ -31,7 +31,8 @@ return [
 				"options" => [
 					"ilab-media-crop-quality" => [
 						"title" => "Crop Quality",
-						"type" => "number"
+						"type" => "number",
+                        "default" => 100
 					]
 				]
 			]

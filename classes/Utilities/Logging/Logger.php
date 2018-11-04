@@ -11,7 +11,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Utilities;
+namespace ILAB\MediaCloud\Utilities\Logging;
 
 use ILAB\MediaCloud\CLI\Command;
 use Monolog\Handler\ErrorLogHandler;
@@ -62,20 +62,7 @@ class Logger {
 
 				$this->logger = new MonologLogger('ilab-media-tool');
 				$this->logger->pushHandler(new ErrorLogHandler(ErrorLogHandler::OPERATING_SYSTEM, $realLevel));
-
-				$paperTrailEndPoint = get_option('ilab-media-s3-debug-papertrail-endpoint', false);
-				$paperTrailPort = get_option('ilab-media-s3-debug-papertrail-port', false);
-
-				if (!empty($paperTrailEndPoint) && !empty($paperTrailPort)) {
-					if (function_exists('socket_create')) {
-						$userId = get_option('ilab-media-s3-debug-papertrail-user-id', false);
-						if (!empty($userId)) {
-							$this->context=['user' => $userId];
-						}
-
-						$this->logger->pushHandler(new SyslogUdpHandler($paperTrailEndPoint, $paperTrailPort, LOG_USER, $realLevel));
-					}
-				}
+				$this->logger->pushHandler(new DatabaseLoggerHandler($realLevel));
 			}
 		}
 	}

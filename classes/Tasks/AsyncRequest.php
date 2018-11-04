@@ -2,7 +2,7 @@
 
 namespace ILAB\MediaCloud\Tasks;
 
-use ILAB\MediaCloud\Utilities\Logger;
+use ILAB\MediaCloud\Utilities\Logging\Logger;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 

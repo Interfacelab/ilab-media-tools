@@ -316,7 +316,7 @@ abstract class ToolBase {
                                 $this->registerCheckboxFieldSetting($option,$optionInfo['title'],$group,$description, $default, $conditions);
                                 break;
                             case 'number':
-                                $this->registerNumberFieldSetting($option,$optionInfo['title'],$group,$description, $conditions);
+                                $this->registerNumberFieldSetting($option,$optionInfo['title'],$group,$description, $default, $conditions);
                                 break;
 	                        case 'select':
 		                        $this->registerSelectSetting($option,$optionInfo['options'],$optionInfo['title'],$group,$description, $conditions);
@@ -501,15 +501,15 @@ abstract class ToolBase {
 	    ]);
     }
 
-    protected function registerNumberFieldSetting($option_name,$title,$settings_slug,$description=null, $conditions=null)
+    protected function registerNumberFieldSetting($option_name,$title,$settings_slug,$description=null, $default=false, $conditions=null)
     {
-        add_settings_field($option_name,$title,[$this,'renderNumberFieldSetting'],$this->options_page,$settings_slug,['option'=>$option_name,'description'=>$description, 'conditions' => $conditions]);
+        add_settings_field($option_name,$title,[$this,'renderNumberFieldSetting'],$this->options_page,$settings_slug,['option'=>$option_name,'description'=>$description, 'default' => $default, 'conditions' => $conditions]);
 
     }
 
     public function renderNumberFieldSetting($args)
     {
-        $value=get_option($args['option']);
+        $value=get_option($args['option'], $args['default']);
         echo "<input type=\"number\" min=\"0\" step=\"1\" name=\"{$args['option']}\" value=\"$value\">";
         if ($args['description'])
             echo "<p class='description'>".$args['description']."</p>";

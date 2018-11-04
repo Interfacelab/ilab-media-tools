@@ -22,7 +22,7 @@ use ILAB\MediaCloud\Tools\Storage\DefaultProgressDelegate;
 use ILAB\MediaCloud\Tools\Storage\ImportProgressDelegate;
 use ILAB\MediaCloud\Tools\Storage\StorageTool;
 use ILAB\MediaCloud\Tools\ToolsManager;
-use ILAB\MediaCloud\Utilities\Logger;
+use ILAB\MediaCloud\Utilities\Logging\Logger;
 
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 

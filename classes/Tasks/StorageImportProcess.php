@@ -15,7 +15,7 @@ namespace ILAB\MediaCloud\Tasks;
 
 use ILAB\MediaCloud\Tools\Storage\ImportProgressDelegate;
 use ILAB\MediaCloud\Tools\ToolsManager;
-use ILAB\MediaCloud\Utilities\Logger;
+use ILAB\MediaCloud\Utilities\Logging\Logger;
 use Smalot\PdfParser\Parser;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }

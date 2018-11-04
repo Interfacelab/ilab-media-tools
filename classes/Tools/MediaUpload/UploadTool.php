@@ -20,7 +20,7 @@ use ILAB\MediaCloud\Tools\ToolBase;
 use ILAB\MediaCloud\Utilities\EnvironmentOptions;
 use function ILAB\MediaCloud\Utilities\json_response;
 use ILAB\MediaCloud\Utilities\View;
-use ILAB\MediaCloud\Utilities\Logger;
+use ILAB\MediaCloud\Utilities\Logging\Logger;
 
 if(!defined('ABSPATH')) {
 	header('Location: /');

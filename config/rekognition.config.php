@@ -63,9 +63,9 @@ return [
 					],
 					"ilab-media-s3-rekognition-detect-labels-confidence" => [
 						"title" => "Detect Labels Confidence",
-						"description" => "The minimum confidence (0-100) required to apply the returned label as tags.  Default is 50.",
+						"description" => "The minimum confidence (0-100) required to apply the returned label as tags.  Default is 70.",
 						"type" => "number",
-						"default" => 50
+						"default" => 70
 					],
 					"ilab-media-s3-rekognition-detect-moderation-labels" => [
 						"title" => "Detect Moderation Labels",
@@ -82,9 +82,9 @@ return [
 					],
 					"ilab-media-s3-rekognition-detect-moderation-labels-confidence" => [
 						"title" => "Detect Moderation Labels Confidence",
-						"description" => "The minimum confidence (0-100) required to apply the returned label as tags.  Default is 50.",
+						"description" => "The minimum confidence (0-100) required to apply the returned label as tags.  Default is 70.",
 						"type" => "number",
-						"default" => 50
+						"default" => 70
 					],
 					"ilab-media-s3-rekognition-detect-celebrity" => [
 						"title" => "Detect Celebrity Faces",

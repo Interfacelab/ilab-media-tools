@@ -22,7 +22,7 @@ use ILAB\MediaCloud\Cloud\Storage\InvalidStorageSettingsException;
 use ILAB\MediaCloud\Cloud\Storage\StorageException;
 use ILAB\MediaCloud\Cloud\Storage\StorageSettings;
 use function ILAB\MediaCloud\Utilities\arrayPath;
-use ILAB\MediaCloud\Utilities\Logger;
+use ILAB\MediaCloud\Utilities\Logging\Logger;
 use ILAB_Aws\Exception\AwsException;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }

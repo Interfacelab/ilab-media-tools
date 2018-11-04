@@ -22,6 +22,7 @@ use ILAB\MediaCloud\Utilities\NoticeManager;
 use function ILAB\MediaCloud\Utilities\parse_req;
 use ILAB\MediaCloud\Utilities\View;
 use Imgix\UrlBuilder;
+use ILAB\MediaCloud\Utilities\Logging\Logger;
 
 if(!defined('ABSPATH')) {
 	header('Location: /');

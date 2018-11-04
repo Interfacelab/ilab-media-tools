@@ -28,7 +28,7 @@ use ILAB\MediaCloud\Utilities\NoticeManager;
 use ILAB\MediaCloud\Utilities\Prefixer;
 use ILAB\MediaCloud\Utilities\View;
 use ILAB\MediaCloud\Tasks\StorageImportProcess;
-use ILAB\MediaCloud\Utilities\Logger;
+use ILAB\MediaCloud\Utilities\Logging\Logger;
 use Smalot\PdfParser\Parser;
 
 if(!defined('ABSPATH')) {

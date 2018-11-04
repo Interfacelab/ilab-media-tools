@@ -42,21 +42,12 @@ return [
 							"error" => "Error"
 						]
 					],
-					"ilab-media-s3-debug-papertrail-endpoint" => [
-						"title" => "Papertrail Endpoint",
-						"description" => "If you are troubleshooting an issue with the developer of this plugin, he will likely give you the endpoint and port for remote logging.  Enter the endpoint here.",
-						"type" => "text-field"
+					"ilab-media-s3-debug-max-database-entries" => [
+						"title" => "Maximum Database Entries",
+						"description" => "The maximum number of log entries to keep in the database.  The default is 1000.",
+						"type" => "number",
+                        "default" => 1000
 					],
-					"ilab-media-s3-debug-papertrail-port" => [
-						"title" => "Papertrail Port",
-						"description" => "If you are troubleshooting an issue with the developer of this plugin, he will likely give you the endpoint and port for remote logging.  Enter the port here.",
-						"type" => "text-field"
-					],
-					"ilab-media-s3-debug-papertrail-user-id" => [
-						"title" => "Papertrail User Id",
-						"description" => "If you are troubleshooting an issue with the developer of this plugin, he will likely give you the endpoint and port for remote logging.  Enter your email here to help filter the logs.",
-						"type" => "text-field"
-					]
 				]
 			]
 		]

@@ -18,7 +18,7 @@ use ILAB\MediaCloud\Tools\ToolBase;
 use function ILAB\MediaCloud\Utilities\json_response;
 use ILAB\MediaCloud\Utilities\View;
 use ILAB\MediaCloud\Tasks\RekognizerProcess;
-use ILAB\MediaCloud\Utilities\Logger;
+use ILAB\MediaCloud\Utilities\Logging\Logger;
 use ILAB_Aws\Exception\AwsException;
 use ILAB_Aws\Rekognition\RekognitionClient;
 

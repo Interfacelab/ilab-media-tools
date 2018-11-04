@@ -14,7 +14,11 @@
 namespace ILAB\MediaCloud\Tools\Debugging;
 
 use ILAB\MediaCloud\Tools\ToolBase;
+use ILAB\MediaCloud\Utilities\Logging\DatabaseLogger;
+use ILAB\MediaCloud\Utilities\Logging\DatabaseLogTable;
 use ILAB\MediaCloud\Utilities\NoticeManager;
+use ILAB\MediaCloud\Utilities\PHPInfo;
+use ILAB\MediaCloud\Utilities\View;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
@@ -27,13 +31,62 @@ class DebuggingTool extends ToolBase {
 	public function __construct( $toolName, $toolInfo, $toolManager ) {
 		parent::__construct( $toolName, $toolInfo, $toolManager );
 
-		$paperTrailEndPoint = get_option('ilab-media-s3-debug-papertrail-endpoint', false);
-		$paperTrailPort = get_option('ilab-media-s3-debug-papertrail-port', false);
-
-		if (!empty($paperTrailEndPoint) && !empty($paperTrailPort)) {
-			if (!function_exists('socket_create') && $this->enabled()) {
-				NoticeManager::instance()->displayAdminNotice('error', 'You have specified papertrail endpoint and ports, but you are missing the <a href="http://php.net/manual/en/book.sockets.php" target=_blank>php socket extension</a>.  Please install this extension to use remote logging.');
-			}
-		}
+        if (isset($_REQUEST['page']) && ($_REQUEST['page'] == 'media-tools-debug-log') && isset($_POST['action'])) {
+            if ($_POST['action'] == 'csv') {
+                $this->generateCSV();
+            } else if ($_POST['action'] == 'bug') {
+                $this->generateBug();
+            }
+        }
 	}
+
+    public function registerMenu($top_menu_slug) {
+        parent::registerMenu($top_menu_slug);
+
+        if($this->enabled()) {
+            add_submenu_page($top_menu_slug, 'Debug Log', 'Debug Log', 'manage_options', 'media-tools-debug-log', [
+                $this,
+                'renderDebugLog'
+            ]);
+        }
+    }
+
+    public function renderDebugLog() {
+	    $table = new DatabaseLogTable();
+	    $table->prepare_items();
+
+        echo View::render_view('debug/log-viewer.php', [
+            'table' => $table
+        ]);
+    }
+
+    public function generateCSV() {
+	    $logger = new DatabaseLogger();
+
+        header('Content-Disposition: attachment;filename="media-cloud-log.csv";');
+        header('Content-Type: application/csv; charset=UTF-8');
+        echo $logger->csv();
+        die;
+    }
+
+    public function generateBug() {
+        $logger = new DatabaseLogger();
+
+        ob_start();
+        phpinfo();
+        $contents = ob_get_contents();
+        ob_clean();
+
+        $re = '/^\<tr\>\<td\s+class=\"e\">(.*)\<\/td\>\<td\s+class=\"v\"\>(.*)\<\/td\><\/tr>/msU';
+        preg_match_all($re, $contents, $matches, PREG_SET_ORDER, 0);
+
+        vomit($matches);
+
+        header('Content-Disposition: attachment;filename="media-cloud-log.csv";');
+        header('Content-Type: application/csv; charset=UTF-8');
+        echo $logger->csv();
+        die;
+
+    }
+
 }
