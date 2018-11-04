@@ -43,6 +43,16 @@
     }
 </style>
 <div class="wrap">
-    <h2>Debug Log</h2>
+    <h2>Media Cloud Debug Log</h2>
     <?php $table->display(); ?>
 </div>
+<script>
+    (function($){
+        $('#ilab-clear-log-form').on('submit', function(e) {
+           if (!confirm('Are you sure you want to clear this log?')) {
+               e.preventDefault();
+               return false;
+           }
+        });
+    })(jQuery);
+</script>

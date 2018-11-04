@@ -58,6 +58,7 @@ class NoticeManager {
 		}
 
 		$this->adminNotices[$message]=true;
+		$dismissibleAttr = '';
 		if ($dismissible) {
 			if ($dismissibleIdentifier) {
 				$dismissibleAttr = "data-dismissible='$dismissibleIdentifier' data-dismissible-length='$dismissibleLength'";
@@ -69,10 +70,10 @@ class NoticeManager {
 			$class = "notice notice-$type";
 		}
 
-		add_action('admin_notices',function() use($class,$message,$dismissibleAttr) {
+		add_action('admin_notices',function() use($class, $message, $dismissibleAttr) {
 			echo View::render_view( 'base/ilab-admin-notice.php', [
-				'class'=>$class,
-				'message'=>$message,
+				'class' => $class,
+				'message' => $message,
 				'identifier' => $dismissibleAttr
 			]);
 		});

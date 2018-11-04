@@ -96,8 +96,13 @@ class DatabaseLogTable extends \WP_List_Table {
 
         if ($which == 'top') {
             echo "<div class='log-options'>";
-            echo "<form method='post'><input type='hidden' name='action' value='csv'><input type='submit' style='display:inline-block' class='button button-primary' value='Export CSV'></form>&nbsp;";
-            echo "<form method='post'><input type='hidden' name='action' value='bug'><input type='submit' style='display:inline-block' class='button button-primary' value='Generate Bug Report'></form>&nbsp;";
+            echo "<form method='post'><input type='hidden' name='action' value='csv'><input type='submit' style='display:inline-block' class='button button-primary' value='Export CSV'></form>";
+            echo "&nbsp;";
+            echo "<form method='post'><input type='hidden' name='action' value='bug'><input type='submit' style='display:inline-block' class='button button-primary' value='Generate System Report'></form>";
+            echo "&nbsp;";
+            echo "&nbsp;";
+            echo "&nbsp;";
+            echo "<form id='ilab-clear-log-form' method='post'><input type='hidden' name='action' value='clear-log'><input type='submit' style='display:inline-block' class='button button-warning' value='Clear Log'></form>";
             echo "</div>";
         }
     }

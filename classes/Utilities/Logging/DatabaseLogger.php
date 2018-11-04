@@ -22,8 +22,13 @@ use ILAB\MediaCloud\Utilities\EnvironmentOptions;
  * @package ILAB\MediaCloud\Utilities
  */
 class DatabaseLogger {
+    /** @var bool  */
     private $enabled = false;
+
+    /** @var null|string  */
     private $table = null;
+
+    /** @var int  */
     private $limit = 1000;
 
     public function __construct() {
@@ -32,6 +37,8 @@ class DatabaseLogger {
         $this->insureTable();
         $this->pruneLog();
     }
+
+    //region Logging
 
     /**
      * Logs to the database
@@ -53,6 +60,9 @@ class DatabaseLogger {
         $query = $wpdb->prepare("insert into {$this->table} (date, channel, level, message, context) values (%s, %s, %s, %s, %s)", current_time('mysql', true), $channel, $level, $message, $context);
         $wpdb->query($query);
     }
+    //endregion
+
+    //region Database
 
     /**
      * Insures the table exists
@@ -114,6 +124,10 @@ SQL;
         $wpdb->query("delete from {$this->table}");
     }
 
+    // endregion
+
+    // region Exporting
+
     /**
      * Exports the log to CSV
      *
@@ -140,6 +154,10 @@ SQL;
         return $csv;
     }
 
+    // endregion
+
+    // region Querying
+
     public function getLogEntries($perPage = 50, $pageNumber = 1) {
         global $wpdb;
 
@@ -152,4 +170,6 @@ SQL;
         global $wpdb;
         return $wpdb->get_var("select count(id) from {$this->table}");
     }
+
+    // endregion
 }

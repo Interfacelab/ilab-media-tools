@@ -19,6 +19,7 @@ use ILAB\MediaCloud\Utilities\Logging\DatabaseLogTable;
 use ILAB\MediaCloud\Utilities\NoticeManager;
 use ILAB\MediaCloud\Utilities\PHPInfo;
 use ILAB\MediaCloud\Utilities\View;
+use Probe\ProviderFactory;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
@@ -31,13 +32,22 @@ class DebuggingTool extends ToolBase {
 	public function __construct( $toolName, $toolInfo, $toolManager ) {
 		parent::__construct( $toolName, $toolInfo, $toolManager );
 
-        if (isset($_REQUEST['page']) && ($_REQUEST['page'] == 'media-tools-debug-log') && isset($_POST['action'])) {
-            if ($_POST['action'] == 'csv') {
-                $this->generateCSV();
-            } else if ($_POST['action'] == 'bug') {
-                $this->generateBug();
+		if ($this->enabled()) {
+            if (isset($_REQUEST['page']) && ($_REQUEST['page'] == 'media-tools-debug-log') && isset($_POST['action'])) {
+                if ($_POST['action'] == 'csv') {
+                    $this->generateCSV();
+                } else if ($_POST['action'] == 'bug') {
+                    $this->generateBug();
+                } else if ($_POST['action'] == 'clear-log') {
+                    $this->clearLog();
+                }
             }
+
+            $link = "<a href='".admin_url('admin.php?page=media-tools-top')."'>turn it off</a>";
+            $message = "Media Cloud debugging is enabled.  This may affect performance.  Unless you are troubleshooting and issue, you should $link.  You can dismiss this notice and it'll be shown to you again in 24 hours.";
+            NoticeManager::instance()->displayAdminNotice('warning', $message,true, 'ilab-debug-tools-warning', 1);
         }
+
 	}
 
     public function registerMenu($top_menu_slug) {
@@ -70,23 +80,33 @@ class DebuggingTool extends ToolBase {
     }
 
     public function generateBug() {
-        $logger = new DatabaseLogger();
+	    $probe = ProviderFactory::create();
 
-        ob_start();
-        phpinfo();
-        $contents = ob_get_contents();
-        ob_clean();
+	    $probeData = [
+	        'OS' => trim($probe->getOsType()),
+            'OS Version' => trim($probe->getOsRelease()),
+            'OS Kernel' => trim($probe->getOsKernelVersion()),
+            'Server' => trim($probe->getServerSoftware()),
+            'PHP' => trim($probe->getPhpVersion()),
+            'PHP SAPI' => trim($probe->getPhpSapiName()),
+            'PHP Modules' => $probe->getPhpModules(),
+            'PHP Disabled Functions' => $probe->getPhpDisabledFunctions()
+        ];
 
-        $re = '/^\<tr\>\<td\s+class=\"e\">(.*)\<\/td\>\<td\s+class=\"v\"\>(.*)\<\/td\><\/tr>/msU';
-        preg_match_all($re, $contents, $matches, PREG_SET_ORDER, 0);
+        header('Content-Disposition: attachment;filename="media-cloud-debug.json";');
+        header('Content-Type: application/json; charset=UTF-8');
 
-        vomit($matches);
-
-        header('Content-Disposition: attachment;filename="media-cloud-log.csv";');
-        header('Content-Type: application/csv; charset=UTF-8');
-        echo $logger->csv();
+        echo json_encode($probeData, JSON_PRETTY_PRINT);
         die;
+    }
 
+    public function clearLog() {
+        $logger = new DatabaseLogger();
+        $logger->clearLog();
+
+        $location = admin_url('admin.php?page=media-tools-debug-log');
+        header("Location: $location", true, 302);
+        die;
     }
 
 }
