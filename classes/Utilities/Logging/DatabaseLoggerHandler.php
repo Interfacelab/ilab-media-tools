@@ -37,6 +37,10 @@ class DatabaseLoggerHandler extends AbstractProcessingHandler {
         if (isset($record['context']) && is_array($record['context']) && (count($record['context']) > 0)) {
             $flattenedContext = [];
             foreach($record['context'] as $key => $value) {
+                if (is_array($value)) {
+                    continue;
+                }
+
                 $flattenedContext[] = "$key = $value";
             }
 

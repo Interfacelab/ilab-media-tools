@@ -17,6 +17,7 @@
 namespace ILAB\MediaCloud\CLI\Rekognition;
 
 use ILAB\MediaCloud\CLI\Command;
+use ILAB\MediaCloud\Tasks\BatchManager;
 use ILAB\MediaCloud\Tools\Rekognition\RekognitionTool;
 use ILAB\MediaCloud\Tools\ToolsManager;
 
@@ -70,10 +71,13 @@ SQL;
 
 		$postCount = count($posts);
 		if($postCount > 0) {
-			update_option('ilab_rekognizer_status', true);
-			update_option('ilab_rekognizer_total_count', $postCount);
-			update_option('ilab_rekognizer_current', 1);
-			update_option('ilab_rekognizer_should_cancel', false);
+		    BatchManager::instance()->reset('rekognizer');
+
+
+            BatchManager::instance()->setStatus('rekognizer', true);
+            BatchManager::instance()->setTotalCount('rekognizer', $postCount);
+            BatchManager::instance()->setCurrent('rekognizer', 1);
+            BatchManager::instance()->setShouldCancel('rekognizer', false);
 
 			Command::Info("Total posts found: %Y{$postCount}.", true);
 
@@ -82,8 +86,8 @@ SQL;
 				$upload_file = get_attached_file($postId);
 				$fileName = basename($upload_file);
 
-				update_option('ilab_rekognizer_current_file', $fileName);
-				update_option('ilab_rekognizer_current', $i);
+                BatchManager::instance()->setCurrentFile('rekognizer', $fileName);
+                BatchManager::instance()->setCurrent('rekognizer', $i);
 
 				Command::Info("%w[%C{$i}%w of %C{$postCount}%w] %NProcessing %Y$fileName%N %w(%N$postId%w)%N ... ");
 
@@ -104,7 +108,7 @@ SQL;
 				Command::Info("%YDone%N.", true);
 			}
 
-			delete_option('ilab_rekognizer_status');
+            BatchManager::instance()->reset('rekognizer');
 		}
 	}
 

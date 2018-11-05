@@ -32,10 +32,12 @@ class StorageImportProcess extends BackgroundProcess implements ImportProgressDe
 
 	#region Task Related
 	protected function shouldHandle() {
-		return !get_option('ilab_s3_import_should_cancel', false);
+	    return !BatchManager::instance()->shouldCancel('storage');
 	}
 
 	public function task($item) {
+	    $startTime = microtime(true);
+
 		Logger::info( 'Start Task', $item);
 		if (!$this->shouldHandle()) {
 			Logger::info( 'Task cancelled', $item);
@@ -48,6 +50,10 @@ class StorageImportProcess extends BackgroundProcess implements ImportProgressDe
 		$s3tool = ToolsManager::instance()->tools['storage'];
 		$s3tool->processImport($index, $post_id, $this);
 
+        $endTime = microtime(true) - $startTime;
+
+        BatchManager::instance()->incrementTotalTime('storage', $endTime);
+
 		return false;
 	}
 
@@ -58,10 +64,7 @@ class StorageImportProcess extends BackgroundProcess implements ImportProgressDe
 
 	protected function complete() {
 		Logger::info( 'Task complete');
-		delete_option('ilab_s3_import_status');
-		delete_option('ilab_s3_import_total_count');
-		delete_option('ilab_s3_import_current');
-		delete_option('ilab_s3_import_current_file');
+		BatchManager::instance()->reset('storage');
 		parent::complete();
 	}
 
@@ -70,10 +73,7 @@ class StorageImportProcess extends BackgroundProcess implements ImportProgressDe
 
 		parent::cancel_process();
 
-		delete_option('ilab_s3_import_status');
-		delete_option('ilab_s3_import_total_count');
-		delete_option('ilab_s3_import_current');
-		delete_option('ilab_s3_import_current_file');
+        BatchManager::instance()->reset('storage');
 	}
 
 	public static function cancelAll() {
@@ -89,10 +89,7 @@ class StorageImportProcess extends BackgroundProcess implements ImportProgressDe
 			delete_option($batch->option_name);
 		}
 
-		delete_option('ilab_s3_import_status');
-		delete_option('ilab_s3_import_total_count');
-		delete_option('ilab_s3_import_current');
-		delete_option('ilab_s3_import_current_file');
+        BatchManager::instance()->reset('storage');
 
 		Logger::info( "Current cron", get_option( 'cron', []));
 		Logger::info( 'End cancel all processes');
@@ -101,11 +98,11 @@ class StorageImportProcess extends BackgroundProcess implements ImportProgressDe
 
 	#region ImportProgressDelegate
 	public function updateCurrentIndex($newIndex) {
-		update_option('ilab_s3_import_current', $newIndex);
+        BatchManager::instance()->setCurrent('storage', $newIndex);
 	}
 
 	public function updateCurrentFileName($newFile) {
-		update_option('ilab_s3_import_current_file', $newFile);
+        BatchManager::instance()->setCurrentFile('storage', $newFile);
 	}
 	#endregion
 }

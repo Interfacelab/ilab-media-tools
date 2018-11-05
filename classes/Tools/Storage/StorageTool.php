@@ -19,6 +19,7 @@ use ILAB\MediaCloud\Cloud\Storage\StorageInterface;
 use ILAB\MediaCloud\Cloud\Storage\StorageManager;
 use ILAB\MediaCloud\Cloud\Storage\StorageSettings;
 use ILAB\MediaCloud\Cloud\Storage\UploadInfo;
+use ILAB\MediaCloud\Tasks\BatchManager;
 use ILAB\MediaCloud\Tasks\RegenerateThumbnailsProcess;
 use ILAB\MediaCloud\Tools\ToolBase;
 use function ILAB\MediaCloud\Utilities\arrayPath;
@@ -1187,19 +1188,7 @@ class StorageTool extends ToolBase {
 					}
 
 					if(count($posts_to_import) > 0) {
-						update_option('ilab_s3_import_status', true);
-						update_option('ilab_s3_import_total_count', count($posts_to_import));
-						update_option('ilab_s3_import_current', 1);
-						update_option('ilab_s3_import_should_cancel', false);
-
-						$process = new StorageImportProcess();
-
-						for($i = 0; $i < count($posts_to_import); ++ $i) {
-							$process->push_to_queue(['index' => $i, 'post' => $posts_to_import[$i]]);
-						}
-
-						$process->save();
-						$process->dispatch();
+					    BatchManager::instance()->addToBatchAndRun('storage', $posts_to_import);
 
 						return 'admin.php?page=media-tools-s3-importer';
 					}
@@ -1523,6 +1512,19 @@ class StorageTool extends ToolBase {
 	//endregion
 
     //region Regeneration
+    private function loadImageToEditPath( $attachment_id, $size = 'full' ) {
+        $filepath = get_attached_file( $attachment_id );
+
+        if ( $filepath && file_exists( $filepath ) ) {
+            if ( 'full' != $size && ( $data = image_get_intermediate_size( $attachment_id, $size ) ) ) {
+                $filepath = apply_filters( 'load_image_to_edit_filesystempath', path_join( dirname( $filepath ), $data['file'] ), $attachment_id, $size );
+            }
+        } elseif ( function_exists( 'fopen' ) && true == ini_get( 'allow_url_fopen' ) ) {
+            $filepath = apply_filters( 'load_image_to_edit_attachmenturl', wp_get_attachment_url( $attachment_id ), $attachment_id, $size );
+        }
+        return apply_filters( 'load_image_to_edit_path', $filepath, $attachment_id, $size );
+    }
+
 	/**
      * Regenerates an image's thumbnails and re-uploads them to the storage service.
      *
@@ -1534,7 +1536,13 @@ class StorageTool extends ToolBase {
 
 	    $fullsizepath = get_attached_file( $postId );
 	    if (!file_exists($fullsizepath)) {
-		    $fullsizepath = _load_image_to_edit_path($postId);
+	        if (function_exists('_load_image_to_edit_path')) {
+                $fullsizepath = _load_image_to_edit_path($postId);
+            } else {
+	            Logger::warning("The function '_load_image_to_edit_path' does not exist, using internal implementation.");
+	            $fullsizepath = $this->loadImageToEditPath($postId);
+                Logger::warning("$postId => $fullsizepath");
+            }
 	    }
 
 	    if (!file_exists($fullsizepath)) {
@@ -1599,56 +1607,34 @@ class StorageTool extends ToolBase {
 	 * Renders the storage importer view
 	 */
 	public function renderRegenerator() {
-		$shouldCancel = get_option('ilab_cloud_regenerate_should_cancel', false);
-		$status = get_option('ilab_cloud_regenerate_status', false);
-		$total = get_option('ilab_cloud_regenerate_total_count', 0);
-		$current = get_option('ilab_cloud_regenerate_current', 1);
-		$currentFile = get_option('ilab_cloud_regenerate_current_file', '');
+	    $stats = BatchManager::instance()->stats('thumbnails');
 
-		if($total == 0) {
+		if($stats['total'] == 0) {
 			$attachments = get_posts([
 				                         'post_type' => 'attachment',
 				                         'posts_per_page' => - 1
 			                         ]);
 
-			$total = count($attachments);
+            $stats['total'] = count($attachments);
 		}
 
-		$progress = 0;
+        $stats['running'] =  ($stats['running']) ? 'running' : 'idle';
+        $stats['enabled'] = $this->enabled();
 
-		if($total > 0) {
-			$progress = ($current / $total) * 100;
-		}
-
-		echo View::render_view('storage/regenerator.php', [
-			'status' => ($status) ? 'running' : 'idle',
-			'total' => $total,
-			'progress' => $progress,
-			'current' => $current,
-			'currentFile' => $currentFile,
-			'enabled' => $this->enabled(),
-			'shouldCancel' => $shouldCancel
-		]);
+		echo View::render_view('storage/regenerator.php', $stats);
 	}
 
 	/**
 	 * Ajax callback for import progress.
 	 */
 	public function regenerateProgress() {
-		$shouldCancel = get_option('ilab_cloud_regenerate_should_cancel', false);
-		$status = get_option('ilab_cloud_regenerate_status', false);
-		$total = get_option('ilab_cloud_regenerate_total_count', 0);
-		$current = get_option('ilab_cloud_regenerate_current', 0);
-		$currentFile = get_option('ilab_cloud_regenerate_current_file', '');
+        $stats = BatchManager::instance()->stats('thumbnails');
+
+        $stats['running'] =  ($stats['running']) ? 'running' : 'idle';
+        $stats['enabled'] = $this->enabled();
 
 		header('Content-type: application/json');
-		echo json_encode([
-			                 'status' => ($status) ? 'running' : 'idle',
-			                 'total' => (int) $total,
-			                 'current' => (int) $current,
-			                 'currentFile' => $currentFile,
-			                 'shouldCancel' => $shouldCancel
-		                 ]);
+        echo json_encode($stats);
 		die;
 	}
 
@@ -1656,7 +1642,7 @@ class StorageTool extends ToolBase {
 	 * Ajax method to cancel the import
 	 */
 	public function cancelRegenerateFiles() {
-		update_option('ilab_cloud_regenerate_should_cancel', 1);
+	    BatchManager::instance()->setShouldCancel('thumbnails', true);
 		RegenerateThumbnailsProcess::cancelAll();
 
 		json_response(['status' => 'ok']);
@@ -1677,21 +1663,9 @@ class StorageTool extends ToolBase {
 		$query = new \WP_Query($args);
 
 		if($query->post_count > 0) {
-			update_option('ilab_cloud_regenerate_status', true);
-			update_option('ilab_cloud_regenerate_total_count', $query->post_count);
-			update_option('ilab_cloud_regenerate_current', 1);
-			update_option('ilab_cloud_regenerate_should_cancel', false);
-
-			$process = new RegenerateThumbnailsProcess();
-
-			for($i = 0; $i < $query->post_count; ++ $i) {
-				$process->push_to_queue(['index' => $i, 'post' => $query->posts[$i]]);
-			}
-
-			$process->save();
-			$process->dispatch();
+		    BatchManager::instance()->addToBatchAndRun('thumbnails', $query->posts);
 		} else {
-			delete_option('ilab_cloud_regenerate_status');
+		    BatchManager::instance()->reset('thumbnails');
 		}
 
 		header('Content-type: application/json');
@@ -1706,56 +1680,35 @@ class StorageTool extends ToolBase {
 	 * Renders the storage importer view
 	 */
 	public function renderImporter() {
-		$shouldCancel = get_option('ilab_s3_import_should_cancel', false);
-		$status = get_option('ilab_s3_import_status', false);
-		$total = get_option('ilab_s3_import_total_count', 0);
-		$current = get_option('ilab_s3_import_current', 1);
-		$currentFile = get_option('ilab_s3_import_current_file', '');
+	    $stats = BatchManager::instance()->stats('storage');
 
-		if($total == 0) {
+		if($stats['total'] == 0) {
 			$attachments = get_posts([
 				                         'post_type' => 'attachment',
 				                         'posts_per_page' => - 1
 			                         ]);
 
-			$total = count($attachments);
+            $stats['total'] = count($attachments);
 		}
 
-		$progress = 0;
+        $stats['running'] =  ($stats['running']) ? 'running' : 'idle';
+        $stats['enabled'] = $this->enabled();
 
-		if($total > 0) {
-			$progress = ($current / $total) * 100;
-		}
-
-		echo View::render_view('storage/ilab-storage-importer.php', [
-			'status' => ($status) ? 'running' : 'idle',
-			'total' => $total,
-			'progress' => $progress,
-			'current' => $current,
-			'currentFile' => $currentFile,
-			'enabled' => $this->enabled(),
-			'shouldCancel' => $shouldCancel
-		]);
+		echo View::render_view('storage/ilab-storage-importer.php', $stats);
 	}
 
 	/**
 	 * Ajax callback for import progress.
 	 */
 	public function importProgress() {
-		$shouldCancel = get_option('ilab_s3_import_should_cancel', false);
-		$status = get_option('ilab_s3_import_status', false);
-		$total = get_option('ilab_s3_import_total_count', 0);
-		$current = get_option('ilab_s3_import_current', 0);
-		$currentFile = get_option('ilab_s3_import_current_file', '');
+        $stats = BatchManager::instance()->stats('storage');
+
+        $stats['running'] =  ($stats['running']) ? 'running' : 'idle';
+        $stats['enabled'] = $this->enabled();
 
 		header('Content-type: application/json');
-		echo json_encode([
-			                 'status' => ($status) ? 'running' : 'idle',
-			                 'total' => (int) $total,
-			                 'current' => (int) $current,
-			                 'currentFile' => $currentFile,
-			                 'shouldCancel' => $shouldCancel
-		                 ]);
+        echo json_encode($stats);
+
 		die;
 	}
 
@@ -1763,7 +1716,7 @@ class StorageTool extends ToolBase {
 	 * Ajax method to cancel the import
 	 */
 	public function cancelImportMedia() {
-		update_option('ilab_s3_import_should_cancel', 1);
+	    BatchManager::instance()->setShouldCancel('storage', true);
 		StorageImportProcess::cancelAll();
 
 		json_response(['status' => 'ok']);
@@ -1787,21 +1740,9 @@ class StorageTool extends ToolBase {
 		$query = new \WP_Query($args);
 
 		if($query->post_count > 0) {
-			update_option('ilab_s3_import_status', true);
-			update_option('ilab_s3_import_total_count', $query->post_count);
-			update_option('ilab_s3_import_current', 1);
-			update_option('ilab_s3_import_should_cancel', false);
-
-			$process = new StorageImportProcess();
-
-			for($i = 0; $i < $query->post_count; ++ $i) {
-				$process->push_to_queue(['index' => $i, 'post' => $query->posts[$i]]);
-			}
-
-			$process->save();
-			$process->dispatch();
+		    BatchManager::instance()->addToBatchAndRun('storage', $query->posts);
 		} else {
-			delete_option('ilab_s3_import_status');
+		    BatchManager::instance()->reset('storage');
 		}
 
 		header('Content-type: application/json');

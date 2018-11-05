@@ -14,6 +14,7 @@
 namespace ILAB\MediaCloud\Tools\Rekognition;
 
 use ILAB\MediaCloud\Cloud\Storage\StorageManager;
+use ILAB\MediaCloud\Tasks\BatchManager;
 use ILAB\MediaCloud\Tools\ToolBase;
 use function ILAB\MediaCloud\Utilities\json_response;
 use ILAB\MediaCloud\Utilities\View;
@@ -231,19 +232,7 @@ class RekognitionTool extends ToolBase {
 			}
 
 			if (count($posts_to_import) > 0) {
-				update_option('ilab_rekognizer_status', true);
-				update_option('ilab_rekognizer_total_count', count($posts_to_import));
-				update_option('ilab_rekognizer_current', 1);
-				update_option('ilab_rekognizer_should_cancel', false);
-
-				$process = new RekognizerProcess();
-
-				for($i = 0; $i < count($posts_to_import); ++$i) {
-					$process->push_to_queue(['index' => $i, 'post' => $posts_to_import[$i]]);
-				}
-
-				$process->save();
-				$process->dispatch();
+			    BatchManager::instance()->addToBatchAndRun('rekognizer', $posts_to_import);
 
 				return 'admin.php?page=media-tools-rekognizer-importer';
 			}
@@ -528,38 +517,21 @@ class RekognitionTool extends ToolBase {
 	 * Renders the Rekognition Import UI
 	 */
 	public function renderImporter() {
-		$enabled = $this->enabled();
+		$stats = BatchManager::instance()->stats('rekognizer');
 
-		$shouldCancel = get_option('ilab_rekognizer_should_cancel', false);
-		$status = get_option('ilab_rekognizer_status', false);
-		$total = get_option('ilab_rekognizer_total_count', 0);
-		$current = get_option('ilab_rekognizer_current', 1);
-		$currentFile = get_option('ilab_rekognizer_current_file', '');
-
-		if ($total == 0) {
+		if ($stats['total'] == 0) {
 			$attachments = get_posts([
 				                         'post_type'=> 'attachment',
 				                         'posts_per_page' => -1
 			                         ]);
 
-			$total = count($attachments);
+            $stats['total'] = count($attachments);
 		}
 
-		$progress = 0;
+		$stats['running'] =  ($stats['running']) ? 'running' : 'idle';
+		$stats['enabled'] = $this->enabled();
 
-		if ($total > 0) {
-			$progress = ($current / $total) * 100;
-		}
-
-		echo View::render_view( 'rekognizer/ilab-rekognizer-processor.php', [
-			'status' => ($status) ? 'running' : 'idle',
-			'total' => $total,
-			'progress' => $progress,
-			'current' => $current,
-			'currentFile' => $currentFile,
-			'enabled' => $enabled,
-			'shouldCancel' => $shouldCancel
-		]);
+		echo View::render_view( 'rekognizer/ilab-rekognizer-processor.php', $stats);
 	}
 
 	/**
@@ -591,21 +563,9 @@ SQL;
 		}
 
 		if (count($posts) > 0) {
-			update_option('ilab_rekognizer_status', true);
-			update_option('ilab_rekognizer_total_count', count($posts));
-			update_option('ilab_rekognizer_current', 1);
-			update_option('ilab_rekognizer_should_cancel', false);
-
-			$process = new RekognizerProcess();
-
-			for($i = 0; $i < count($posts); ++$i) {
-				$process->push_to_queue(['index' => $i, 'post' => $posts[$i]]);
-			}
-
-			$process->save();
-			$process->dispatch();
+		    BatchManager::instance()->addToBatchAndRun('rekognizer', $posts);
 		} else {
-			delete_option('ilab_rekognizer_status');
+		    BatchManager::instance()->reset('rekognizer');
 		}
 
 		header('Content-type: application/json');
@@ -617,20 +577,11 @@ SQL;
 	 * Ajax endpoint to get progress information
 	 */
 	public function processProgress() {
-		$shouldCancel = get_option('ilab_rekognizer_should_cancel', false);
-		$status = get_option('ilab_rekognizer_status', false);
-		$total = get_option('ilab_rekognizer_total_count', 0);
-		$current = get_option('ilab_rekognizer_current', 0);
-		$currentFile = get_option('ilab_rekognizer_current_file', '');
+        $stats = BatchManager::instance()->stats('rekognizer');
+        $stats['running'] =  ($stats['running']) ? 'running' : 'idle';
 
 		header('Content-type: application/json');
-		echo json_encode([
-			                 'status' => ($status) ? 'running' : 'idle',
-			                 'total' => (int)$total,
-			                 'current' => (int)$current,
-			                 'currentFile' => $currentFile,
-			                 'shouldCancel' => $shouldCancel
-		                 ]);
+        echo json_encode($stats);
 		die;
 	}
 
@@ -638,7 +589,7 @@ SQL;
 	 * Cancels the Rekognition import process.
 	 */
 	public function cancelProcessMedia() {
-		update_option('ilab_rekognizer_should_cancel', 1);
+	    BatchManager::instance()->setShouldCancel('rekognizer', true);
 		RekognizerProcess::cancelAll();
 
 		json_response(['status'=>'ok']);

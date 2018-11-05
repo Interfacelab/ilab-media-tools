@@ -18,6 +18,7 @@ namespace ILAB\MediaCloud\CLI\Storage;
 
 use ILAB\MediaCloud\CLI\Command;
 use ILAB\MediaCloud\Cloud\Storage\StorageSettings;
+use ILAB\MediaCloud\Tasks\BatchManager;
 use ILAB\MediaCloud\Tools\Storage\DefaultProgressDelegate;
 use ILAB\MediaCloud\Tools\Storage\ImportProgressDelegate;
 use ILAB\MediaCloud\Tools\Storage\StorageTool;
@@ -69,10 +70,12 @@ class StorageCommands extends Command {
 		$query = new \WP_Query($postArgs);
 
 		if($query->post_count > 0) {
-			update_option('ilab_s3_import_status', true);
-			update_option('ilab_s3_import_total_count', $query->post_count);
-			update_option('ilab_s3_import_current', 1);
-			update_option('ilab_s3_import_should_cancel', false);
+		    BatchManager::instance()->reset('storage');
+
+            BatchManager::instance()->setStatus('storage', true);
+            BatchManager::instance()->setTotalCount('storage', $query->post_count);
+            BatchManager::instance()->setCurrent('storage', 1);
+            BatchManager::instance()->setShouldCancel('storage', false);
 
 			Command::Info("Total posts found: %Y{$query->post_count}.", true);
 
@@ -83,6 +86,9 @@ class StorageCommands extends Command {
 				$upload_file = get_attached_file($postId);
 				$fileName = basename($upload_file);
 
+                BatchManager::instance()->setCurrentFile('storage', $fileName);
+                BatchManager::instance()->setCurrent('storage', $i);
+
 				Command::Info("%w[%C{$i}%w of %C{$query->post_count}%w] %NImporting %Y$fileName%N %w(Post ID %N$postId%w)%N ... ", $this->debugMode);
 				$storageTool->processImport($i - 1, $postId, $pd);
 				if (!$this->debugMode) {
@@ -90,7 +96,7 @@ class StorageCommands extends Command {
                 }
 			}
 
-			delete_option('ilab_s3_import_status');
+			BatchManager::instance()->reset('storage');
 		}
 	}
 
@@ -122,10 +128,12 @@ class StorageCommands extends Command {
 		$query = new \WP_Query($postArgs);
 
 		if($query->post_count > 0) {
-			update_option('ilab_cloud_regenerate_status', true);
-			update_option('ilab_cloud_regenerate_total_count', $query->post_count);
-			update_option('ilab_cloud_regenerate_current', 1);
-			update_option('ilab_cloud_regenerate_should_cancel', false);
+            BatchManager::instance()->reset('thumbnails');
+
+            BatchManager::instance()->setStatus('thumbnails', true);
+            BatchManager::instance()->setTotalCount('thumbnails', $query->post_count);
+            BatchManager::instance()->setCurrent('thumbnails', 1);
+            BatchManager::instance()->setShouldCancel('thumbnails', false);
 
 			Command::Info("Total posts found: %Y{$query->post_count}.", true);
 
@@ -136,15 +144,15 @@ class StorageCommands extends Command {
 				$upload_file = get_attached_file($postId);
 				$fileName = basename($upload_file);
 
-				update_option('ilab_cloud_regenerate_current_file', $fileName);
-				update_option('ilab_cloud_regenerate_current', $i);
+                BatchManager::instance()->setCurrentFile('thumbnails', $fileName);
+                BatchManager::instance()->setCurrent('thumbnails', $i);
 
 				Command::Info("%w[%C{$i}%w of %C{$query->post_count}%w] %NRegenerating thumbnails for %Y$fileName%N %w(%N$postId%w)%N ... ");
 				$storageTool->regenerateFile($postId);
 				Command::Info("%YDone%N.", true);
 			}
 
-			delete_option('ilab_cloud_regenerate_status');
+            BatchManager::instance()->reset('thumbnails');
 		}
 
 	}

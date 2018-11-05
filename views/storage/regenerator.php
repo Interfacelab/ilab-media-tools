@@ -42,6 +42,10 @@
         margin: 0; padding: 0;
         font-size: 14px;
     }
+
+    #s3-timing-stats {
+        display: none;
+    }
 </style>
 <div class="settings-container">
 	<header>
@@ -71,7 +75,7 @@
 		<div id="s3-importer-progress" {{($status!="running") ? 'style="display:none"':''}}>
 		<div id="s3-importer-progress-text">
 			<p id="s3-importer-cancelling-text" style="display:{{($shouldCancel) ? 'block':'none'}}">Cancelling ... This may take a minute ...</p>
-			<p id="s3-importer-status-text" style="display:{{($shouldCancel) ? 'none':'block'}}">The thumbnail regeneration is currently running.  Regenerating thumbnails for '<span id="s3-importer-current-file">{{$currentFile}}</span>' (<span id="s3-importer-current">{{$current}}</span> of <span id="s3-importer-total">{{$total}}</span>).</p>
+            <p id="s3-importer-status-text" style="display:{{($shouldCancel) ? 'none':'block'}}">The thumbnail regeneration is currently running.  Regenerating thumbnails for '<span id="s3-importer-current-file">{{$currentFile}}</span>' (<span id="s3-importer-current">{{$current}}</span> of <span id="s3-importer-total">{{$total}}</span>).  <span id="s3-timing-stats"><span id="s3-timing-ppm">{{number_format($postsPerMinute, 1)}}</span> posts per minute, ETA: <span id="s3-timing-eta">{{number_format($eta, 2)}}</span>.</span></p>
 		</div>
 		<div class="s3-importer-progress-container">
 			<div id="s3-importer-progress-bar"></div>
@@ -154,9 +158,17 @@
                                 $('#s3-importer-progress-bar').css({width: progress+'%'});
                             }
 
+                            $('#s3-timing-stats').css({display: 'inline-block'});
+
                             $('#s3-importer-current').text(response.current);
                             $('#s3-importer-current-file').text(response.currentFile);
                             $('#s3-importer-total').text(response.total);
+                            $('#s3-timing-ppm').text(parseFloat(response.postsPerMinute).toFixed(1));
+
+                            var date = new Date();
+                            date.setSeconds(date.getSeconds() + (parseFloat(response.eta) * 60.0));
+
+                            $('#s3-timing-eta').text(date.toLocaleTimeString());
                         }
                     });
                 }

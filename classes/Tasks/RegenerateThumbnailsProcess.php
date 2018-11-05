@@ -28,10 +28,12 @@ class RegenerateThumbnailsProcess extends BackgroundProcess {
 	protected $action = 'ilab_cloud_regenerate_process';
 
 	protected function shouldHandle() {
-		return !get_option('ilab_cloud_regenerate_should_cancel', false);
+	    return !BatchManager::instance()->shouldCancel('thumbnails');
 	}
 
 	public function task($item) {
+        $startTime = microtime(true);
+
 		Logger::info( 'Start Task', $item);
 		if (!$this->shouldHandle()) {
 			Logger::info( 'Task cancelled', $item);
@@ -47,13 +49,17 @@ class RegenerateThumbnailsProcess extends BackgroundProcess {
 			$fileparts = explode('/', $fileName);
 			$fileName = array_pop($fileparts);
 
-			update_option('ilab_cloud_regenerate_current_file', $fileName);
+			BatchManager::instance()->setCurrentFile('thumbnails', $fileName);
 		}
 
-		update_option('ilab_cloud_regenerate_current', $index+1);
+
+		BatchManager::instance()->setCurrent('thumbnails', $index + 1);
 
 		$storageTool = ToolsManager::instance()->tools['storage'];
 		$storageTool->regenerateFile($post_id);
+
+        $endTime = microtime(true) - $startTime;
+        BatchManager::instance()->incrementTotalTime('thumbnails', $endTime);
 
 		return false;
 	}
@@ -65,10 +71,7 @@ class RegenerateThumbnailsProcess extends BackgroundProcess {
 
 	protected function complete() {
 		Logger::info( 'Task complete');
-		delete_option('ilab_cloud_regenerate_status');
-		delete_option('ilab_cloud_regenerate_total_count');
-		delete_option('ilab_cloud_regenerate_current');
-		delete_option('ilab_cloud_regenerate_current_file');
+		BatchManager::instance()->reset('thumbnails');
 		parent::complete();
 	}
 
@@ -77,10 +80,7 @@ class RegenerateThumbnailsProcess extends BackgroundProcess {
 
 		parent::cancel_process();
 
-		delete_option('ilab_cloud_regenerate_status');
-		delete_option('ilab_cloud_regenerate_total_count');
-		delete_option('ilab_cloud_regenerate_current');
-		delete_option('ilab_cloud_regenerate_current_file');
+        BatchManager::instance()->reset('thumbnails');
 	}
 
 	public static function cancelAll() {
@@ -96,10 +96,7 @@ class RegenerateThumbnailsProcess extends BackgroundProcess {
 			delete_option($batch->option_name);
 		}
 
-		delete_option('ilab_cloud_regenerate_status');
-		delete_option('ilab_cloud_regenerate_total_count');
-		delete_option('ilab_cloud_regenerate_current');
-		delete_option('ilab_cloud_regenerate_current_file');
+        BatchManager::instance()->reset('thumbnails');
 
 		Logger::info( "Current cron", get_option( 'cron', []));
 		Logger::info( 'End cancel all processes');

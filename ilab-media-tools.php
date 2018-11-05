@@ -98,6 +98,14 @@ require_once('helpers/ilab-media-tool-geometry-helpers.php');
 // Make sure the NoticeManager is initialized
 \ILAB\MediaCloud\Utilities\NoticeManager::instance();
 
+//Register Batch Processes
+\ILAB\MediaCloud\Tasks\BatchManager::registerBatchClass('storage', \ILAB\MediaCloud\Tasks\StorageImportProcess::class);
+\ILAB\MediaCloud\Tasks\BatchManager::registerBatchClass('rekognizer', \ILAB\MediaCloud\Tasks\RekognizerProcess::class);
+\ILAB\MediaCloud\Tasks\BatchManager::registerBatchClass('thumbnails', \ILAB\MediaCloud\Tasks\RegenerateThumbnailsProcess::class);
+
+//Insure batches are run if needed
+\ILAB\MediaCloud\Tasks\BatchManager::boot();
+
 register_activation_hook(__FILE__,[ \ILAB\MediaCloud\Tools\ToolsManager::instance(), 'install']);
 register_deactivation_hook(__FILE__,[ \ILAB\MediaCloud\Tools\ToolsManager::instance(), 'uninstall']);
 

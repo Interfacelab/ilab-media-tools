@@ -28,11 +28,12 @@ class RekognizerProcess extends BackgroundProcess {
 	protected $action = 'ilab_rekognizer_import_process';
 
 	protected function shouldHandle() {
-		$result = !get_option('ilab_rekognizer_should_cancel', false);
-		return $result;
+	    return !BatchManager::instance()->shouldCancel('rekognizer');
 	}
 
 	public function task($item) {
+        $startTime = microtime(true);
+
 		Logger::info( 'Start Task', $item);
 		if (!$this->shouldHandle()) {
 			Logger::info( 'Task cancelled', $item);
@@ -42,7 +43,8 @@ class RekognizerProcess extends BackgroundProcess {
 		$index = $item['index'];
 		$post_id = $item['post'];
 
-		update_option('ilab_rekognizer_current', $index+1);
+		BatchManager::instance()->setCurrent('rekognizer', $index + 1);
+
 		$data = wp_get_attachment_metadata($post_id);
 
 		if (empty($data)) {
@@ -56,12 +58,16 @@ class RekognizerProcess extends BackgroundProcess {
 		}
 
 		$fileName = basename($data['file']);
-		update_option('ilab_rekognizer_current_file', $fileName);
+		BatchManager::instance()->setCurrentFile('rekognizer', $fileName);
 
 
 		$rekognizerTool = ToolsManager::instance()->tools['rekognition'];
 		$data = $rekognizerTool->processImageMeta($data, $post_id);
 		wp_update_attachment_metadata($post_id, $data);
+
+
+        $endTime = microtime(true) - $startTime;
+        BatchManager::instance()->incrementTotalTime('rekognizer', $endTime);
 
 		return false;
 	}
@@ -73,10 +79,7 @@ class RekognizerProcess extends BackgroundProcess {
 
 	protected function complete() {
 		Logger::info( 'Task complete');
-		delete_option('ilab_rekognizer_status');
-		delete_option('ilab_rekognizer_total_count');
-		delete_option('ilab_rekognizer_current');
-		delete_option('ilab_rekognizer_current_file');
+		BatchManager::instance()->reset('rekognizer');
 		parent::complete();
 	}
 
@@ -85,10 +88,7 @@ class RekognizerProcess extends BackgroundProcess {
 
 		parent::cancel_process();
 
-		delete_option('ilab_rekognizer_status');
-		delete_option('ilab_rekognizer_total_count');
-		delete_option('ilab_rekognizer_current');
-		delete_option('ilab_rekognizer_current_file');
+        BatchManager::instance()->reset('rekognizer');
 	}
 
 	public static function cancelAll() {
@@ -104,10 +104,7 @@ class RekognizerProcess extends BackgroundProcess {
 			delete_option($batch->option_name);
 		}
 
-		delete_option('ilab_rekognizer_status');
-		delete_option('ilab_rekognizer_total_count');
-		delete_option('ilab_rekognizer_current');
-		delete_option('ilab_rekognizer_current_file');
+        BatchManager::instance()->reset('rekognizer');
 
 		Logger::info( "Current cron", get_option( 'cron', []));
 		Logger::info( 'End cancel all processes');
