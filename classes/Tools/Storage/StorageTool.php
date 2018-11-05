@@ -123,16 +123,24 @@ class StorageTool extends ToolBase {
 		parent::setup();
 
 		if($this->enabled()) {
-		    if (is_plugin_active('shortpixel-image-optimiser/wp-shortpixel.php')) {
-		        $this->usingImageOptimizer = true;
-		        $this->imageOptimizer = 'shortpixel';
+		    foreach($this->toolInfo['compatibleImageOptimizers'] as $key => $plugin) {
+                if (is_plugin_active($plugin)) {
+                    $this->usingImageOptimizer = true;
+                    $this->imageOptimizer = $key;
 
-                add_action('shortpixel_image_optimised', [$this, 'handleImageOptimizer']);
-                add_action('shortpixel_after_restore_image', [$this, 'handleImageOptimizer']);
+                    if ($key == 'shortpixel') {
+                        add_action('shortpixel_image_optimised', [$this, 'handleImageOptimizer']);
+                        add_action('shortpixel_after_restore_image', [$this, 'handleImageOptimizer']);
+                    } else if ($key == 'smush') {
+                        add_action('wp_smush_image_optimised', [$this, 'handleSmushImageOptimizer'], 1000, 2);
+                    }
+                }
             }
 
             add_filter('wp_update_attachment_metadata', function($data, $id) {
-                if ($this->usingImageOptimizer && ($this->imageOptimizer == 'shortpixel') && !$this->processingOptimized) {
+                $ignoreOptimizers = apply_filters('ilab_ignore_optimizers', false, $id);
+
+                if ($this->usingImageOptimizer && !$this->processingOptimized && !$ignoreOptimizers) {
                     return $data;
                 }
 
@@ -166,7 +174,7 @@ class StorageTool extends ToolBase {
                     $handleUpload = ($fileInfo['basename'] != $_FILES['pluginzip']['name']);
                 }
 
-                if ($this->usingImageOptimizer && ($this->imageOptimizer == 'shortpixel')) {
+                if ($this->usingImageOptimizer) {
                     $handleUpload = false;
                 }
 
@@ -2052,6 +2060,8 @@ class StorageTool extends ToolBase {
     //region Image Optimizer
 
     public function handleImageOptimizer($postId) {
+	    $this->processingOptimized = true;
+
 	    Logger::info('Handle Image Optimizer: '.$postId);
 
 
@@ -2064,6 +2074,10 @@ class StorageTool extends ToolBase {
         }, 10000, 2);
 
         $this->processImport(1,  $postId, null);
+    }
+
+    public function handleSmushImageOptimizer($postId, $stats) {
+	    $this->handleImageOptimizer($postId);
     }
 
     //endregion

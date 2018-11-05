@@ -39,6 +39,7 @@ class StorageImageEditor extends \WP_Image_Editor {
                 $this->attachmentId = $_POST['postid'];
                 add_filter('ilab_should_override_attached_file', [$this, 'shouldOverrideAttachedFile'], 10000, 2);
                 add_filter('ilab_ignore_existing_s3_data', [$this, 'shouldIgnoreExistingS3Data'], 10000, 2);
+                add_filter('ilab_ignore_optimizers', [$this, 'shouldIgnoreOptimizers'], 10000, 2);
             }
         }
     }
@@ -60,6 +61,18 @@ class StorageImageEditor extends \WP_Image_Editor {
     public function shouldIgnoreExistingS3Data($shouldIgnore, $attachment_id) {
         remove_filter('ilab_ignore_existing_s3_data', [$this, 'shouldIgnoreExistingS3Data']);
 
+        if ($shouldIgnore) {
+            return $shouldIgnore;
+        }
+
+        if ($attachment_id == $this->attachmentId) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function shouldIgnoreOptimizers($shouldIgnore, $attachment_id) {
         if ($shouldIgnore) {
             return $shouldIgnore;
         }
