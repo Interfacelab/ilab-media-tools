@@ -8,11 +8,11 @@
 	}
 
 	.s3-importer-progress-container {
-		display: relative;
+		position: relative;
 		width: 100%;
-		height: 18px;
-		background: lightgray;
-		border-radius: 8px;
+		height: 32px;
+		background: #AAA;
+		border-radius: 16px;
 		overflow: hidden;
 	}
 
@@ -46,41 +46,51 @@
     #s3-timing-stats {
         display: none;
     }
+
+    #s3-importer-status-text {
+        position: absolute;
+        left: 16px; top:0px; bottom: 0px; right: 16px;
+        display: flex;
+        align-items: center;
+        color: white;
+        font-weight: bold;
+    }
 </style>
 <div class="settings-container">
 	<header>
 		<img src="{{ILAB_PUB_IMG_URL}}/icon-cloud.svg">
-		<h1>Regenerate Thumbnails</h1>
+		<h1>{{$title}}</h1>
 	</header>
 	<div class="settings-body">
 		<div id="s3-importer-instructions" {{($status=="running") ? 'style="display:none"':''}}>
-			<p>This tool will rebuild all of the thumbnails for all of your images.</p>
-			<p>Depending on the number of items you have, this could take anywhere from a minute to several hours.  This process runs in the background until it's finished.  Once you've started the process, please check this page for progress.</p>
-			<p>If you don't have any of the source files on your WordPress server, this will download what it can from your storage service.  Obviously this can be very slow going if you are processsing a lot of images.  If you only want to regenerate thubmnails for a select group of images, use the bulk action in the media library's list view.</p>
+			{{$instructions}}
             <div class="wp-cli-callout">
                 <h3>Using WP-CLI</h3>
                 <p>You can run this importer process from the command line using WP-CLI:</p>
                 <code>
-                    wp mediacloud regenerate
+                    {{$commandLine}}
                 </code>
             </div>
 			<div style="margin-top: 2em;">
 				<?php if($enabled): ?>
-					<a href="#" class="ilab-ajax button button-primary">Regenerate Thumbnails</a>
+					<a href="#" class="ilab-ajax button button-primary">{{$commandTitle}}</a>
 				<?php else: ?>
-					<strong class="tool-disabled">Please <a href="admin.php?page=media-tools-top">enable storage</a> before using this tool.</strong>
+					<strong class="tool-disabled">Please <a href="admin.php?page=media-tools-top">{{$disabledText}}</a> before using this tool.</strong>
 				<?php endif ?>
 			</div>
 		</div>
 		<div id="s3-importer-progress" {{($status!="running") ? 'style="display:none"':''}}>
-		<div id="s3-importer-progress-text">
+		    <div id="s3-importer-progress-text">
 			<p id="s3-importer-cancelling-text" style="display:{{($shouldCancel) ? 'block':'none'}}">Cancelling ... This may take a minute ...</p>
-            <p id="s3-importer-status-text" style="display:{{($shouldCancel) ? 'none':'block'}}">The thumbnail regeneration is currently running.  Regenerating thumbnails for '<span id="s3-importer-current-file">{{$currentFile}}</span>' (<span id="s3-importer-current">{{$current}}</span> of <span id="s3-importer-total">{{$total}}</span>).  <span id="s3-timing-stats"><span id="s3-timing-ppm">{{number_format($postsPerMinute, 1)}}</span> posts per minute, ETA: <span id="s3-timing-eta">{{number_format($eta, 2)}}</span>.</span></p>
 		</div>
-		<div class="s3-importer-progress-container">
+	    	<div class="s3-importer-progress-container">
 			<div id="s3-importer-progress-bar"></div>
+            <div id="s3-importer-status-text" style="visibility:{{($shouldCancel) ? 'hidden':'visible'}}">
+                <div>Processing '<span id="s3-importer-current-file">{{$currentFile}}</span>' (<span id="s3-importer-current">{{$current}}</span> of <span id="s3-importer-total">{{$total}}</span>).  <span id="s3-timing-stats"><span id="s3-timing-ppm">{{number_format($postsPerMinute, 1)}}</span> posts per minute, ETA: <span id="s3-timing-eta">{{number_format($eta, 2)}}</span>.</span></div>
+            </div>
 		</div>
-		<button id="s3-importer-cancel-import" class="button button-warning" title="Cancel">Cancel Regeneration</button>
+    		<button id="s3-importer-cancel-import" class="button button-warning" title="Cancel">{{$cancelCommandTitle}}</button>
+        </div>
 	</div>
 </div>
 <script>
@@ -91,14 +101,14 @@
             $('#s3-importer-cancel-import').on('click', function(e){
                 e.preventDefault();
 
-                if (confirm("Are you sure you want to cancel the thumbnail regeneration?")) {
+                if (confirm("Are you sure you want to cancel?")) {
                     var data={
-                        action: 'ilab_media_cloud_cancel_regenerate'
+                        action: '{{$cancelAction}}'
                     };
 
                     $.post(ajaxurl,data,function(response){
                         $('#s3-importer-cancelling-text').css({'display':'block'});
-                        $('#s3-importer-status-text').css({'display':'none'});
+                        $('#s3-importer-status-text').css({'visibility':'hidden'});
                         $('#s3-importer-cancel-import').attr('disabled', true);
                         console.log(response);
                     });
@@ -117,14 +127,14 @@
                 importing=true;
 
                 var data={
-                    action: 'ilab_media_cloud_regenerate_files'
+                    action: '{{$startAction}}'
                 };
 
                 $.post(ajaxurl,data,function(response){
                     if (response.status == 'running') {
                         $('#s3-importer-cancel-import').attr('disabled', false);
                         $('#s3-importer-cancelling-text').css({'display':'none'});
-                        $('#s3-importer-status-text').css({'display':'block'});
+                        $('#s3-importer-status-text').css({'visibility':'visible'});
 
                         $('#s3-importer-instructions').css({display: 'none'});
                         $('#s3-importer-progress').css({display: 'block'});
@@ -136,16 +146,16 @@
             var checkStatus = function() {
                 if (importing) {
                     var data={
-                        action: 'ilab_media_cloud_regenerate_progress'
+                        action: '{{$progressAction}}'
                     };
 
                     $.post(ajaxurl,data,function(response){
                         if (response.shouldCancel) {
                             $('#s3-importer-cancelling-text').css({'display':'block'});
-                            $('#s3-importer-status-text').css({'display':'none'});
+                            $('#s3-importer-status-text').css({'visibility':'hidden'});
                         } else {
                             $('#s3-importer-cancelling-text').css({'display':'none'});
-                            $('#s3-importer-status-text').css({'display':'block'});
+                            $('#s3-importer-status-text').css({'visibility':'visible'});
                         }
 
                         if (response.status != 'running') {

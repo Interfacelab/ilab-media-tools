@@ -75,7 +75,6 @@ final class BatchManager {
                 });
 
                 add_action('ilab_media_tools_run_batch_hook', function(){
-                    Logger::info('Running ilab_media_tools_run_batch_hook');
                     BatchManager::instance()->dispatchBatchesIfNeeded();
                 });
 
@@ -272,7 +271,7 @@ final class BatchManager {
         if (($totalTime > 0) && ($current > 1)) {
             $postsPerSecond = ($totalTime / ($current - 1));
             if ($postsPerSecond > 0) {
-                $postsPerMinute = 60 / $postsPerMinute;
+                $postsPerMinute = 60 / $postsPerSecond;
                 $eta = ($total - $current) / $postsPerMinute;
             }
         }
@@ -280,7 +279,7 @@ final class BatchManager {
         return [
             'running' => $this->status($batch),
             'current' => $current,
-            'file' => $this->currentFile($batch),
+            'currentFile' => $this->currentFile($batch),
             'total' => $total,
             'totalTime' => $totalTime,
             'lastTime' => $this->lastTime($batch),
@@ -288,7 +287,7 @@ final class BatchManager {
             'eta' => $eta,
             'progress' => $progress,
             'postsPerMinute' => $postsPerMinute,
-            'cancelling' => $this->shouldCancel($batch)
+            'shouldCancel' => $this->shouldCancel($batch)
         ];
     }
 
@@ -347,12 +346,9 @@ final class BatchManager {
     public function dispatchBatchesIfNeeded() {
         foreach(static::$batchClasses as $batch => $batchClass) {
             if ($this->status($batch)) {
-                Logger::info("ilab_media_tools_run_batch_hook - $batch running");
                 $lastRun = $this->lastRun($batch);
-                Logger::info("ilab_media_tools_run_batch_hook - Last run ".(time() - $lastRun)." seconds ago.");
 
                 if ((time() - $lastRun) > 60) {
-                    Logger::info("ilab_media_tools_run_batch_hook - Restarting");
                     $this->setLastRun($batch, time());
 
                     /** @var BackgroundProcess $process */

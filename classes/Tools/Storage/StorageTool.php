@@ -1618,10 +1618,20 @@ class StorageTool extends ToolBase {
             $stats['total'] = count($attachments);
 		}
 
-        $stats['running'] =  ($stats['running']) ? 'running' : 'idle';
+        $stats['status'] =  ($stats['running']) ? 'running' : 'idle';
         $stats['enabled'] = $this->enabled();
 
-		echo View::render_view('storage/regenerator.php', $stats);
+        $stats['title'] = 'Regenerate Thumbnails';
+        $stats['instructions'] = View::render_view('importer/regeneration-instructions.php', []);
+        $stats['disabledText'] = 'enable Storage';
+        $stats['commandLine'] = 'wp mediacloud regenerate';
+        $stats['commandTitle'] = 'Regenerate Thumbnails';
+        $stats['cancelCommandTitle'] = 'Cancel Regeneration';
+        $stats['cancelAction'] = 'ilab_media_cloud_cancel_regenerate';
+        $stats['startAction'] = 'ilab_media_cloud_regenerate_files';
+        $stats['progressAction'] = 'ilab_media_cloud_regenerate_progress';
+
+		echo View::render_view('importer/importer.php', $stats);
 	}
 
 	/**
@@ -1630,7 +1640,7 @@ class StorageTool extends ToolBase {
 	public function regenerateProgress() {
         $stats = BatchManager::instance()->stats('thumbnails');
 
-        $stats['running'] =  ($stats['running']) ? 'running' : 'idle';
+        $stats['status'] =  ($stats['running']) ? 'running' : 'idle';
         $stats['enabled'] = $this->enabled();
 
 		header('Content-type: application/json');
@@ -1691,10 +1701,20 @@ class StorageTool extends ToolBase {
             $stats['total'] = count($attachments);
 		}
 
-        $stats['running'] =  ($stats['running']) ? 'running' : 'idle';
+        $stats['status'] =  ($stats['running']) ? 'running' : 'idle';
         $stats['enabled'] = $this->enabled();
 
-		echo View::render_view('storage/ilab-storage-importer.php', $stats);
+        $stats['title'] = 'Storage Importer';
+        $stats['instructions'] = View::render_view('importer/storage-importer-instructions.php', []);
+        $stats['disabledText'] = 'enable Storage';
+        $stats['commandLine'] = 'wp mediacloud import';
+        $stats['commandTitle'] = 'Import Uploads';
+        $stats['cancelCommandTitle'] = 'Cancel Import';
+        $stats['cancelAction'] = 'ilab_s3_cancel_import';
+        $stats['startAction'] = 'ilab_s3_import_media';
+        $stats['progressAction'] = 'ilab_s3_import_progress';
+
+		echo View::render_view('importer/importer.php', $stats);
 	}
 
 	/**
@@ -1703,7 +1723,7 @@ class StorageTool extends ToolBase {
 	public function importProgress() {
         $stats = BatchManager::instance()->stats('storage');
 
-        $stats['running'] =  ($stats['running']) ? 'running' : 'idle';
+        $stats['status'] =  ($stats['running']) ? 'running' : 'idle';
         $stats['enabled'] = $this->enabled();
 
 		header('Content-type: application/json');

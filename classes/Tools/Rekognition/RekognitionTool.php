@@ -528,10 +528,20 @@ class RekognitionTool extends ToolBase {
             $stats['total'] = count($attachments);
 		}
 
-		$stats['running'] =  ($stats['running']) ? 'running' : 'idle';
+        $stats['status'] =  ($stats['running']) ? 'running' : 'idle';
 		$stats['enabled'] = $this->enabled();
 
-		echo View::render_view( 'rekognizer/ilab-rekognizer-processor.php', $stats);
+        $stats['title'] = 'Rekognizer Importer';
+        $stats['disabledText'] = 'enable Rekognizer';
+        $stats['instructions'] = View::render_view('importer/rekognition-instructions.php', []);
+        $stats['commandLine'] = 'wp rekognition process';
+        $stats['commandTitle'] = 'Process Images';
+        $stats['cancelCommandTitle'] = 'Cancel Import';
+        $stats['cancelAction'] = 'ilab_rekognizer_cancel_process';
+        $stats['startAction'] = 'ilab_rekognizer_process_images';
+        $stats['progressAction'] = 'ilab_rekognizer_process_progress';
+
+        echo View::render_view('importer/importer.php', $stats);
 	}
 
 	/**
@@ -578,7 +588,7 @@ SQL;
 	 */
 	public function processProgress() {
         $stats = BatchManager::instance()->stats('rekognizer');
-        $stats['running'] =  ($stats['running']) ? 'running' : 'idle';
+        $stats['status'] =  ($stats['running']) ? 'running' : 'idle';
 
 		header('Content-type: application/json');
         echo json_encode($stats);
