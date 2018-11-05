@@ -4,3 +4,4 @@ composer.lock
 public/css/*.map
 public/js/*.map
 cropper.css
+rest-api.php
