@@ -28,10 +28,10 @@ return [
             "plugin" => "ewww-image-optimizer/ewww-image-optimizer.php",
             "description" => "This image optimizer attempts to optimize images in the background, after the upload has happened.  This is incompatible with how Media Cloud works."
         ],
-        "ShortPixel Image Optimizer" => [
-            "plugin" => "shortpixel-image-optimiser/wp-shortpixel.php",
-            "description" => "This image optimizer attempts to optimize images in the background, after the upload has happened.  This is incompatible with how Media Cloud works."
-        ],
+//        "ShortPixel Image Optimizer" => [
+//            "plugin" => "shortpixel-image-optimiser/wp-shortpixel.php",
+//            "description" => "This image optimizer attempts to optimize images in the background, after the upload has happened.  This is incompatible with how Media Cloud works."
+//        ],
         "Smush" => [
             "plugin" => "wp-smushit/wp-smush.php",
             "description" => "This image optimizer attempts to optimize images in the background, after the upload has happened.  This is incompatible with how Media Cloud works."

@@ -63,6 +63,15 @@ class StorageTool extends ToolBase {
 	/** @var StorageInterface|null */
 	private $client = null;
 
+	/** @var bool Flag if we are currently processing an optimized image */
+	private $processingOptimized = false;
+
+	/** @var bool Determines if the user is using an image optimizer */
+	private $usingImageOptimizer = false;
+
+    /** @var string The name of the image optimizer */
+    private $imageOptimizer = null;
+
 	//endregion
 
 	//region Constructor
@@ -114,7 +123,19 @@ class StorageTool extends ToolBase {
 		parent::setup();
 
 		if($this->enabled()) {
+		    if (is_plugin_active('shortpixel-image-optimiser/wp-shortpixel.php')) {
+		        $this->usingImageOptimizer = true;
+		        $this->imageOptimizer = 'shortpixel';
+
+                add_action('shortpixel_image_optimised', [$this, 'handleImageOptimizer']);
+                add_action('shortpixel_after_restore_image', [$this, 'handleImageOptimizer']);
+            }
+
             add_filter('wp_update_attachment_metadata', function($data, $id) {
+                if ($this->usingImageOptimizer && ($this->imageOptimizer == 'shortpixel') && !$this->processingOptimized) {
+                    return $data;
+                }
+
                 return $this->updateAttachmentMetadata($data, $id);
             }, 1000, 2);
 
@@ -143,6 +164,10 @@ class StorageTool extends ToolBase {
                 } else if (isset($_FILES['pluginzip'])) {
                     $fileInfo = pathinfo($upload['file']);
                     $handleUpload = ($fileInfo['basename'] != $_FILES['pluginzip']['name']);
+                }
+
+                if ($this->usingImageOptimizer && ($this->imageOptimizer == 'shortpixel')) {
+                    $handleUpload = false;
                 }
 
                 if (!$handleUpload) {
@@ -2024,4 +2049,22 @@ class StorageTool extends ToolBase {
 	}
 	//endregion
 
+    //region Image Optimizer
+
+    public function handleImageOptimizer($postId) {
+	    Logger::info('Handle Image Optimizer: '.$postId);
+
+
+        add_filter('ilab_ignore_existing_s3_data', function($shouldIgnore, $attachmentId) use ($postId) {
+            if ($postId == $attachmentId) {
+                return true;
+            }
+
+            return $shouldIgnore;
+        }, 10000, 2);
+
+        $this->processImport(1,  $postId, null);
+    }
+
+    //endregion
 }
