@@ -44,6 +44,9 @@ Media Cloud by ILAB ships with the most advanced image cropping tool available f
 = WP-CLI Support =
 Import your media library to the cloud, regenerate thumbnails and process your library with Amazon Rekognition using WP-CLI commands.
 
+= Compatible With Leading Image Optimizers =
+*New!* Compatible with Short Pixel, EWWW, Smush and Imagify image optimization plugins!
+
 **Best of all you get this functionality for free.**
 
 * Upload to any of a variety of cloud storage providers (Amazon S3, Google Cloud Storage, Minio, Wasabi, Backblaze, DigitalOcean Spaces or any other S3 compatible service)
@@ -88,11 +91,11 @@ No, I'm just one very enthusiastic customer.
 
 = What plugins are not compatible with Media Cloud? =
 
-Currently, most image optimizing plugins are not compatible because most of them attempt to do the optimizing in the background *after* the media is uploaded.  Media Cloud actually intercepts the upload the process, so for image optimizers to work, they'll need to intercept the upload process too.
-
 Some gallery plugins sidestep WordPress's built-in media library and try to roll their own, for whatever reasons - none of which seem like good reasons to me.  NextGEN Gallery, maybe the most popular one of these types of plugins, does their own thing.  We've tried a couple of times to integrate with it, but their codebase is a mess and it's not a plugin we ever really use, so we gave up.
 
 We've tested a lot of media related plugins (sliders, image optimizers, media replace, etc) and most of them work (except for the ones mentioned above).  If you find a plugin that doesn't work, please report it in the support forum so we can add the warning to the plugin.
+
+Note that image optimization plugins change how Media Cloud behaves.  When an image optimizer is being used, Media Cloud will not upload to S3 or wherever until after the optimization step occurs.  For must of these types of plugins, that optimization step is in the background and can be several minutes after you upload.  Until the optimization step is complete, your media will appear as local media.
 
 == Screenshots ==
 
