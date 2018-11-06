@@ -137,6 +137,9 @@ class StorageTool extends ToolBase {
                         add_action('ewww_image_optimizer_post_optimization', function($file, $type, $fullsize) {
                             $this->processingOptimized = true;
                         }, 1000, 3);
+                    } else if ($key == 'imagify') {
+                        add_action('after_imagify_optimize_attachment', [$this, 'handleImagifyImageOptimizer'], 1000, 2);
+                        add_action('after_imagify_restore_attachment', [$this, 'handleImageOptimizer']);
                     }
                 }
             }
@@ -2081,7 +2084,11 @@ class StorageTool extends ToolBase {
     }
 
     public function handleSmushImageOptimizer($postId, $stats) {
-	    $this->handleImageOptimizer($postId);
+        $this->handleImageOptimizer($postId);
+    }
+
+    public function handleImagifyImageOptimizer($postId, $data) {
+        $this->handleImageOptimizer($postId);
     }
 
     //endregion
