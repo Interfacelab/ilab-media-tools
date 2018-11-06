@@ -70,6 +70,10 @@ class NoticeManager {
 			$class = "notice notice-$type";
 		}
 
+		if (strpos(strtolower($message), "<p>") === false) {
+		    $message = "<p>$message</p>";
+        }
+
 		add_action('admin_notices',function() use($class, $message, $dismissibleAttr) {
 			echo View::render_view( 'base/ilab-admin-notice.php', [
 				'class' => $class,

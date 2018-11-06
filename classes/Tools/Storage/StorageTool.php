@@ -144,6 +144,10 @@ class StorageTool extends ToolBase {
                 }
             }
 
+            if ($this->usingImageOptimizer) {
+		        $this->displayOptimizerAdminNotice();
+            }
+
             add_filter('wp_update_attachment_metadata', function($data, $id) {
                 $ignoreOptimizers = apply_filters('ilab_ignore_optimizers', false, $id);
 
@@ -182,7 +186,11 @@ class StorageTool extends ToolBase {
                 }
 
                 if ($this->usingImageOptimizer) {
-                    $handleUpload = false;
+                    if (file_is_displayable_image($upload['file'])) {
+                        $handleUpload = false;
+                    } else {
+                        $this->processingOptimized = true;
+                    }
                 }
 
                 if (!$handleUpload) {
@@ -2089,6 +2097,17 @@ class StorageTool extends ToolBase {
 
     public function handleImagifyImageOptimizer($postId, $data) {
         $this->handleImageOptimizer($postId);
+    }
+
+    private function displayOptimizerAdminNotice() {
+	    $message = <<<Optimizer
+<p style='text-transform:uppercase; font-weight:bold; opacity: 0.8; margin-bottom:0; padding-bottom:0px;'>Image Optimizer Warning</p>
+<p>Image optimizer plugins often do the optimization step in the background, not actually during the upload process.</p>
+<p>Because of this, Media Cloud will not upload your images to your cloud storage provider <strong>until after the image is optimized</strong>.  This means 
+your uploaded images will appear as a local images until after the optimization process happens.  This can take several minutes.</p>
+Optimizer;
+
+        NoticeManager::instance()->displayAdminNotice('warning', $message, true, 'ilab-optimizer-'.$this->imageOptimizer.'-warning-forever');
     }
 
     //endregion
