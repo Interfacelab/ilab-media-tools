@@ -133,6 +133,10 @@ class StorageTool extends ToolBase {
                         add_action('shortpixel_after_restore_image', [$this, 'handleImageOptimizer']);
                     } else if ($key == 'smush') {
                         add_action('wp_smush_image_optimised', [$this, 'handleSmushImageOptimizer'], 1000, 2);
+                    } else if ($key == 'ewww') {
+                        add_action('ewww_image_optimizer_post_optimization', function($file, $type, $fullsize) {
+                            $this->processingOptimized = true;
+                        }, 1000, 3);
                     }
                 }
             }
