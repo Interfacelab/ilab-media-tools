@@ -1,6 +1,6 @@
 === Media Cloud ===
 Contributors: interfacelab
-Tags: uploads, amazon, s3, imgix, minio, google cloud storage, digital ocean spaces, backblaze, wasabi, media, cdn, rekognition, cloudfront, images, crop, image editing, image editor, media library, offload, offload s3
+Tags: uploads, amazon, s3, imgix, minio, google cloud storage, digital ocean spaces, wasabi, media, cdn, rekognition, cloudfront, images, crop, image editing, image editor, media library, offload, offload s3, filepicker, smush, ewww, imagify, shortpixel
 Requires at least: 4.4
 Tested up to: 4.9.8
 License: GPLv3 or later
