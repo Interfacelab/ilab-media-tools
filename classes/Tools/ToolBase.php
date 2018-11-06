@@ -169,11 +169,11 @@ abstract class ToolBase {
             return;
         }
 
-        if (isset($this->toolInfo['uselessPlugins'])) {
+        if (isset($this->toolInfo['incompatiblePlugins'])) {
             $installedBad = [];
             $installedBadNames = [];
 
-            foreach($this->toolInfo['uselessPlugins'] as $name => $plugin) {
+            foreach($this->toolInfo['incompatiblePlugins'] as $name => $plugin) {
                 if (is_plugin_active($plugin['plugin'])) {
                     $installedBad[$name] = $plugin;
                     $installedBadNames[] = sanitize_title($name);
