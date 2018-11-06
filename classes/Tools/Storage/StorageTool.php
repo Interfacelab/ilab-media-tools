@@ -1236,25 +1236,15 @@ class StorageTool extends ToolBase {
 					}
 
 					if(count($posts_to_import) > 0) {
+                        BatchManager::instance()->reset('storage');
 					    BatchManager::instance()->addToBatchAndRun('storage', $posts_to_import);
 
 						return 'admin.php?page=media-tools-s3-importer';
 					}
 				} else if ('ilab_regenerate_thumbnails' === $action_name) {
 					if(count($post_ids) > 0) {
-						update_option('ilab_cloud_regenerate_status', true);
-						update_option('ilab_cloud_regenerate_total_count', count($post_ids));
-						update_option('ilab_cloud_regenerate_current', 1);
-						update_option('ilab_cloud_regenerate_should_cancel', false);
-
-						$process = new RegenerateThumbnailsProcess();
-
-						for($i = 0; $i < count($post_ids); ++ $i) {
-							$process->push_to_queue(['index' => $i, 'post' => $post_ids[$i]]);
-						}
-
-						$process->save();
-						$process->dispatch();
+					    BatchManager::instance()->reset('thumbnails');
+					    BatchManager::instance()->addToBatchAndRun('thumbnails', $post_ids);
 
 						return 'admin.php?page=media-tools-cloud-regeneration';
 					}
