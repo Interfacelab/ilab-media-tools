@@ -82,11 +82,17 @@ return [
 						"description" => "Allows imgix to automatically compress your images.",
 						"type" => "checkbox"
 					],
-					"ilab-media-imgix-enable-alt-formats" => [
-						"title" => "Enable Alternative Formats",
-						"description" => "Allow uploads of Photoshop PSDs, TIFF images and Adobe Illustrator documents.  Note that if you enable this, you'll only be able to view them as images on your site while Imgix is enabled.  Basically, once you head down this path, you cannot go back.",
-						"type" => "checkbox"
-					],
+                    "ilab-media-imgix-enable-alt-formats" => [
+                        "title" => "Enable Alternative Formats",
+                        "description" => "Allow uploads of Photoshop PSDs, TIFF images and Adobe Illustrator documents.  Note that if you enable this, you'll only be able to view them as images on your site while Imgix is enabled.  Basically, once you head down this path, you cannot go back.",
+                        "type" => "checkbox"
+                    ],
+                    "ilab-media-imgix-generate-thumbnails" => [
+                        "title" => "Keep WordPress Thumbnails",
+                        "description" => "Because Imgix can dynamically create new sizes for existing images, having WordPress create thumbnails is potentially pointless, a probable waste of space and definitely slows down uploads.  However, if you plan to stop using Imgix, having those thumbnails on S3 or locally will save you having to regenerate thumbnails later.  <strong>IMPORTANT:</strong> Thumbnails will not be generated when you perform a direct upload because those uploads are sent directly to S3 without going through your WordPress server.",
+                        "type" => "checkbox",
+                        "default" => "true"
+                    ],
 					"ilab-media-imgix-render-pdf-files" => [
 						"title" => "Render PDF Files",
 						"description" => "Render PDF files as images.  Like the <em>Enable Alternative Formats</em>, once you enable this option, you'll only be able to see the PDFs as images while Imgix is enabled.",

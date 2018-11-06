@@ -50,6 +50,7 @@ class ImgixTool extends ToolBase {
 	protected $enabledAlternativeFormats;
 	protected $renderPDF;
 	protected $detectFaces;
+	protected $keepThumbnails;
 
 	private $shouldCrop = false;
 
@@ -147,6 +148,7 @@ class ImgixTool extends ToolBase {
 
 		$this->enabledAlternativeFormats = EnvironmentOptions::Option('ilab-media-imgix-enable-alt-formats');
 		$this->renderPDF = EnvironmentOptions::Option('ilab-media-imgix-render-pdf-files');
+        $this->keepThumbnails = EnvironmentOptions::Option('ilab-media-imgix-generate-thumbnails', null, true);
 
 		add_filter('wp_get_attachment_url', [$this, 'getAttachmentURL'], 10000, 2);
 		add_filter('wp_prepare_attachment_for_js', array($this, 'prepareAttachmentForJS'), 1000, 3);
@@ -165,11 +167,13 @@ class ImgixTool extends ToolBase {
 		add_action('wp_ajax_ilab_imgix_save_preset', [$this, 'savePreset']);
 		add_action('wp_ajax_ilab_imgix_delete_preset', [$this, 'deletePreset']);
 
-		add_filter('wp_image_editors', function($editors) {
-			array_unshift($editors, '\ILAB\MediaCloud\Tools\Imgix\ImgixImageEditor');
+		if (!$this->keepThumbnails) {
+            add_filter('wp_image_editors', function($editors) {
+                array_unshift($editors, '\ILAB\MediaCloud\Tools\Imgix\ImgixImageEditor');
 
-			return $editors;
-		});
+                return $editors;
+            });
+        }
 
 		// Fix for Foo Gallery
         add_filter('foogallery_thumbnail_resize_args', function($args, $original_image_src, $thumbnail_object) {
