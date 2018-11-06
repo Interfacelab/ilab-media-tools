@@ -6,7 +6,7 @@ Tested up to: 4.9.8
 License: GPLv3 or later
 Donate link: http://www2.jdrf.org/site/TR?fr_id=6912&pg=personal&px=11429802
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 2.1.14
+Stable tag: 2.1.15
 Requires PHP: 5.6
 
 Automatically upload media to Amazon S3 and integrate with Imgix, a real-time image processing CDN.  Boosts site performance and simplifies workflows.
@@ -104,6 +104,13 @@ We've tested a lot of media related plugins (sliders, image optimizers, media re
 6. Imgix settings.
 
 == Changelog ==
+
+= 2.1.15 =
+* Added compatibility for ShortPixel Image Optimizer
+* Added compatibility for EWW Image Optimizer
+* Added compatibility for Smush Image Optimizer (Note: Smush is not compatible with Media Cloud when using Imgix).
+* Added compatibility for Imagify Image Optimizer (The best we tested, btw)
+* Ability to keep WordPress generated thumbnails when using Imgix
 
 = 2.1.14 =
 * Media Cloud debugging now logs to database, no need to configure php.ini.
