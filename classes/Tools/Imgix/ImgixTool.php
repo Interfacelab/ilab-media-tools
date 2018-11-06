@@ -663,11 +663,11 @@ class ImgixTool extends ToolBase {
 				unset($params['fp-z']);
             }
 		} else {
-            $mw = (isset($meta['width'])) ? $meta['width'] : 10000;
-            $mh = (isset($meta['height'])) ? $meta['height'] : 10000;
+			$mw = !empty($meta['width']) ? $meta['width'] : 10000;
+			$mh = !empty($meta['height']) ? $meta['height'] : 10000;
 
-            $w = (isset($sizeInfo['width'])) ? $sizeInfo['width'] : 10000;
-            $h = (isset($sizeInfo['height'])) ? $sizeInfo['height'] : 10000;
+			$w = !empty($sizeInfo['width']) ? $sizeInfo['width'] : 10000;
+			$h = !empty($sizeInfo['height']) ? $sizeInfo['height'] : 10000;
 
 			$newSize = sizeToFitSize($mw, $mh, $w, $h);
 			$params['w'] = $newSize[0];
