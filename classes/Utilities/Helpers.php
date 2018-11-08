@@ -11,7 +11,9 @@
 // **********************************************************************
 
 namespace ILAB\MediaCloud\Utilities {
-	if (!defined('ABSPATH')) { header('Location: /'); die; }
+	// As this file is automatically included if loaded through autoloader
+	// do a check and avoid the direct access guard in that case.
+	if (!defined('ABSPATH') && empty($GLOBALS['__composer_autoload_files'])) { header('Location: /'); die; }
 
 	/**
 	 * Brute force debug tool
