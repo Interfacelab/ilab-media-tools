@@ -216,6 +216,7 @@ class ImgixTool extends ToolBase {
 		do_action('ilab_imgix_setup');
 
 		add_filter('imgix_build_srcset_url', [$this, 'buildSrcSetURL'], 0, 3);
+		add_filter('image_get_intermediate_size', [$this, 'imageGetIntermediateSize'], 0, 3);
 		add_filter('media_send_to_editor', [$this, 'mediaSendToEditor'], 0, 3);
 
 		if ($this->detectFaces) {
@@ -842,6 +843,22 @@ class ImgixTool extends ToolBase {
 		$result = $this->buildImgixImage($id, $size);
 
 		return $result;
+	}
+
+
+	/**
+	 * Filters the image data for intermediate sizes.
+	 *
+	 * @param array $data
+	 * @param int $post_idid
+	 * @param array|string $size
+	 *
+	 * @return array
+	 */
+	public function imageGetIntermediateSize($data, $post_id, $size) {
+		$data['url'] = $this->buildImgixImage($post_id, $size)[0];
+
+		return $data;
 	}
 
 	/**
