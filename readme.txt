@@ -6,7 +6,7 @@ Tested up to: 4.9.8
 License: GPLv3 or later
 Donate link: http://www2.jdrf.org/site/TR?fr_id=6912&pg=personal&px=11429802
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 2.1.15
+Stable tag: 2.1.16
 Requires PHP: 5.6
 
 Automatically upload media to Amazon S3 and integrate with Imgix, a real-time image processing CDN.  Boosts site performance and simplifies workflows.
@@ -107,6 +107,13 @@ Note that image optimization plugins change how Media Cloud behaves.  When an im
 6. Imgix settings.
 
 == Changelog ==
+
+= 2.1.16 =
+* Fix for image_intermediate_size to respect imgix URLs (thanks Tobias Alex-Petersen)
+* Fix for image scaling (thanks Tobias Alex-Petersen)
+* Support for WordPress's crop positions (thanks Zac M-W)
+* Support for defining default imgix parameters for sizes. Instead of using `add_image_size($name, $width, $height, $crop)`, use `addImigixImageSize($name, $width, $height, $crop, $imgixParams)`.
+* Support for adding imgix crop parameters when using `add_image_size`/`addImgixImageSize`. For example: `add_image_size('test', 120, 120, ['imgix' => ['faces']])` will set crop mode to `faces` for that image size.
 
 = 2.1.15 =
 * Added compatibility for ShortPixel Image Optimizer
