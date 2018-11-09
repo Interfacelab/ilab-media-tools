@@ -546,10 +546,21 @@ class ImgixTool extends ToolBase {
 			$metaSize = $meta['sizes'][$size];
 		}
 
+		$doCrop = !empty($sizeInfo['crop']);
+
 		if(!$params) {
 		    $sizeParams = (!empty($sizeInfo['imgix']) && is_array($sizeInfo['imgix'])) ? $sizeInfo['imgix'] : [];
+		    $sizeCropParams = (isset($sizeParams['crop'])) ? $sizeParams['crop'] : [];
+		    if (!empty($sizeCropParams)) {
+                if (is_string($sizeCropParams)) {
+                    $sizeCropParams = explode(',', $sizeCropParams);
+                    unset($sizeParams['crop']);
+                }
 
-			// get the settings for this image at this size
+                $doCrop = true;
+            }
+
+            // get the settings for this image at this size
 			if(isset($meta['imgix-size-params'][$size])) {
 				$params = array_merge($sizeParams, $meta['imgix-size-params'][$size]);
 			}
@@ -574,7 +585,7 @@ class ImgixTool extends ToolBase {
 			}
 		}
 
-		if(!empty($sizeInfo['crop'])) {
+		if ($doCrop) {
 			$params['w'] = $sizeInfo['width'] ?: $sizeInfo['height'];
 			$params['h'] = $sizeInfo['height'] ?: $sizeInfo['width'];
 			$params['fit'] = 'crop';
@@ -665,21 +676,24 @@ class ImgixTool extends ToolBase {
 				unset($params['fp-y']);
 				unset($params['fp-z']);
 
-                if (is_array($sizeInfo['crop'])) {
-                    $cropParams = [];
-                    if (!empty($sizeInfo['crop']['x_crop_position']) && ($sizeInfo['crop']['x_crop_position'] != 'center')) {
-                        $cropParams[] = $sizeInfo['crop']['x_crop_position'];
-                    }
-                    if (!empty($sizeInfo['crop']['y_crop_position']) && ($sizeInfo['crop']['y_crop_position'] != 'center')) {
-                        $cropParams[] = $sizeInfo['crop']['y_crop_position'];
-                    }
-                    if (!empty($sizeInfo['crop']['imgix']) && is_array($sizeInfo['crop']['imgix'])) {
-                        $cropParams = array_merge($cropParams, $sizeInfo['crop']['imgix']);
-                    }
+                $cropParams = [];
 
-                    if (!empty($cropParams)) {
-                        $params['crop'] = implode(",", $cropParams);
+                if (!empty($sizeInfo['crop']) && is_array($sizeInfo['crop'])) {
+                    list($cropX, $cropY) = $sizeInfo['crop'];
+                    if (!empty($cropX) && ($cropX != 'center')) {
+                        $cropParams[] = $cropX;
                     }
+                    if (!empty($cropY) && ($cropY != 'center')) {
+                        $cropParams[] = $cropY;
+                    }
+                }
+
+                if (!empty($sizeCropParams)) {
+                    $cropParams = array_merge($cropParams, $sizeCropParams);
+                }
+
+                if (!empty($cropParams)) {
+                    $params['crop'] = implode(",", $cropParams);
                 }
             }
 		} else {
