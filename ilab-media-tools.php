@@ -42,7 +42,7 @@ if (is_plugin_active('amazon-s3-and-cloudfront/wordpress-s3.php')) {
 	add_action( 'admin_notices', function () {
 		?>
 		<div class="notice notice-error">
-			<p><?php _e( 'Media Cloud cannot be activated the same time as the <strong>Offload S3</strong>.  Please deactive one before activating the other.', 'ilab-media-tools' ); ?></p>
+			<p><?php _e( 'Media Cloud cannot be activated the same time as <strong>Offload S3</strong>.  Please deactive one before activating the other.', 'ilab-media-tools' ); ?></p>
 		</div>
 		<?php
 	} );
