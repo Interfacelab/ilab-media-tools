@@ -93,6 +93,21 @@ class DebuggingTool extends ToolBase {
             'PHP Disabled Functions' => $probe->getPhpDisabledFunctions()
         ];
 
+	    $active = [];
+
+	    $activePlugins = get_option('active_plugins');
+
+	    $plugins = get_plugins();
+
+	    foreach($activePlugins as $activePlugin) {
+	        if (in_array($activePlugin, array_keys($plugins))) {
+	            $active[$activePlugin] = $plugins[$activePlugin];
+            }
+        }
+
+        $probeData['Must Use Plugins'] = get_mu_plugins();
+        $probeData['Plugins'] = $active;
+
         header('Content-Disposition: attachment;filename="media-cloud-debug.json";');
         header('Content-Type: application/json; charset=UTF-8');
 
