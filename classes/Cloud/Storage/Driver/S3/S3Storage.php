@@ -23,6 +23,7 @@ use ILAB\MediaCloud\Cloud\Storage\StorageException;
 use ILAB\MediaCloud\Cloud\Storage\StorageInterface;
 use ILAB\MediaCloud\Cloud\Storage\StorageManager;
 use ILAB\MediaCloud\Utilities\EnvironmentOptions;
+use ILAB\MediaCloud\Utilities\Logging\ErrorCollector;
 use ILAB\MediaCloud\Utilities\Logging\Logger;
 use ILAB\MediaCloud\Utilities\NoticeManager;
 use ILAB_Aws\Exception\AwsException;
@@ -127,7 +128,7 @@ class S3Storage implements StorageInterface {
 			}
 		}
 
-		$this->client = $this->getClient();
+		$this->client = $this->getClient(null);
 	}
 	//endregion
 
@@ -171,15 +172,19 @@ class S3Storage implements StorageInterface {
 		return 'ilab-s3-settings-error';
 	}
 
-	public function validateSettings() {
+    /**
+     * @param ErrorCollector|null $errorCollector
+     * @return bool
+     */
+    public function validateSettings($errorCollector = null) {
 		delete_option($this->settingsErrorOptionName());
 		$this->settingsError = false;
 
+        $valid = false;
 		$this->client = null;
 		if($this->enabled()) {
-			$client = $this->getClient();
+			$client = $this->getClient($errorCollector);
 
-			$valid = false;
 			if($client) {
 				if($client->doesBucketExist($this->bucket)) {
 					$valid = true;
@@ -198,10 +203,20 @@ class S3Storage implements StorageInterface {
 							}
 						}
 
-						Logger::info("Bucket does not exist.");
+						if (!$valid) {
+                            if ($errorCollector) {
+                                $errorCollector->addError("Bucket {$this->bucket} does not exist.");
+                            }
+
+                            Logger::info("Bucket does not exist.");
+                        }
 					}
 					catch(AwsException $ex) {
-						Logger::error("Error insuring bucket exists.", ['exception' => $ex->getMessage()]);
+                        if ($errorCollector) {
+                            $errorCollector->addError("Error insuring that {$this->bucket} exists.  Message: ".$ex->getMessage());
+                        }
+
+                        Logger::error("Error insuring bucket exists.", ['exception' => $ex->getMessage()]);
 					}
 				}
 			}
@@ -212,7 +227,13 @@ class S3Storage implements StorageInterface {
 			} else {
 				$this->client = $client;
 			}
-		}
+		} else {
+            if ($errorCollector) {
+                $errorCollector->addError("Account ID, account secret and/or the bucket are incorrect or missing.");
+            }
+        }
+
+		return $valid;
 	}
 
 	public function enabled() {
@@ -307,11 +328,12 @@ class S3Storage implements StorageInterface {
 	/**
 	 * Attempts to build the S3Client.  This requires a region be defined or determinable.
 	 *
-	 * @param bool $region
+     * @param bool $region
+     * @param ErrorCollector|null $errorCollector
 	 *
 	 * @return S3Client|null
 	 */
-	protected function getS3Client($region = false) {
+	protected function getS3Client($region = false, $errorCollector = null) {
 		if(!$this->enabled()) {
 			return null;
 		}
@@ -320,6 +342,10 @@ class S3Storage implements StorageInterface {
 			if(empty($this->region)) {
 				$this->region = $this->getBucketRegion();
 				if(empty($this->region)) {
+                    if ($errorCollector) {
+                        $errorCollector->addError('Could not determine region.');
+                    }
+
 					Logger::info("Could not get region from server.");
 
 					return null;
@@ -332,6 +358,10 @@ class S3Storage implements StorageInterface {
 		}
 
 		if(empty($region)) {
+            if ($errorCollector) {
+                $errorCollector->addError("Could not determine region or the region was not specified.");
+            }
+
 			return null;
 		}
 
@@ -361,15 +391,33 @@ class S3Storage implements StorageInterface {
 	}
 
 
-	protected function getClient() {
+    /**
+     * Gets the S3Client
+     * @param ErrorCollector|null $errorCollector
+     * @return S3Client|S3MultiRegionClient|null
+     */
+	protected function getClient($errorCollector = null) {
 		if(!$this->enabled()) {
+            if ($errorCollector) {
+                $errorCollector->addError("Account ID, account secret and/or the bucket are incorrect or missing.");
+            }
+
 			return null;
 		}
 
-		$s3 = $this->getS3Client();
+		$s3 = $this->getS3Client(false, $errorCollector);
 		if(!$s3) {
 			Logger::info('Could not create regular client, creating multi-region client instead.');
-			$s3 = $this->getS3MultiRegionClient();
+
+            if ($errorCollector) {
+                $errorCollector->addError("Could not create regular client, creating multi-region client instead.");
+            }
+
+            $s3 = $this->getS3MultiRegionClient();
+
+            if (!$s3 && $errorCollector) {
+                $errorCollector->addError("Could not create regular client, creating multi-region client instead.");
+            }
 		}
 
 		return $s3;

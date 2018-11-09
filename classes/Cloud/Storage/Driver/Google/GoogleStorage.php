@@ -27,6 +27,7 @@ use ILAB\MediaCloud\Cloud\Storage\StorageConstants;
 use ILAB\MediaCloud\Cloud\Storage\StorageException;
 use ILAB\MediaCloud\Cloud\Storage\StorageInterface;
 use ILAB\MediaCloud\Utilities\EnvironmentOptions;
+use ILAB\MediaCloud\Utilities\Logging\ErrorCollector;
 use ILAB\MediaCloud\Utilities\Logging\Logger;
 use ILAB\MediaCloud\Utilities\NoticeManager;
 use function PHPSTORM_META\type;
@@ -124,20 +125,29 @@ class GoogleStorage implements StorageInterface {
 		return true;
 	}
 
-	public function validateSettings() {
+    /**
+     * @param ErrorCollector|null $errorCollector
+     * @return bool
+     * @throws StorageException
+     */
+	public function validateSettings($errorCollector = null) {
 		delete_option('ilab-google-settings-error');
 		$this->settingsError = false;
 
 		$this->client = null;
+		$valid = false;
 		if($this->enabled()) {
-			$client = $this->getClient();
+			$client = $this->getClient($errorCollector);
 
-			$valid = false;
 			if($client) {
 				try {
 					if($client->bucket($this->bucket)->exists()) {
 						$valid = true;
 					} else {
+                        if ($errorCollector) {
+                            $errorCollector->addError("Bucket {$this->bucket} does not exist.");
+                        }
+
 						Logger::info("Bucket does not exist.");
 					}
 				} catch (ServiceException $ex) {
@@ -152,7 +162,13 @@ class GoogleStorage implements StorageInterface {
 			} else {
 				$this->client = $client;
 			}
-		}
+		} else {
+            if ($errorCollector) {
+                $errorCollector->addError("Google configuration is incorrect or missing.");
+            }
+        }
+
+		return $valid;
 	}
 
 	public function enabled() {
@@ -172,11 +188,16 @@ class GoogleStorage implements StorageInterface {
 
 	//region Client Creation
 	/**
+     * @param ErrorCollector|null $errorCollector
 	 * @return StorageClient|null
 	 */
-	protected function getClient() {
+	protected function getClient($errorCollector = null) {
 		if(!$this->enabled()) {
-			return null;
+            if ($errorCollector) {
+                $errorCollector->addError("Google configuration is incorrect or missing.");
+            }
+
+            return null;
 		}
 
 		$client = null;
@@ -188,6 +209,10 @@ class GoogleStorage implements StorageInterface {
 		}
 
 		if(!$client) {
+            if ($errorCollector) {
+                $errorCollector->addError("Google configuration is incorrect or missing.");
+            }
+
 			Logger::info('Could not create Google storage client.');
 		}
 

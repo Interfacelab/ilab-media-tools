@@ -14,6 +14,7 @@
 namespace ILAB\MediaCloud\Tasks;
 
 use function ILAB\MediaCloud\Utilities\json_response;
+use ILAB\MediaCloud\Utilities\Logging\ErrorCollector;
 use ILAB\MediaCloud\Utilities\Logging\Logger;
 use ILAB\MediaCloud\Utilities\NoticeManager;
 
@@ -429,7 +430,12 @@ final class BatchManager {
         }
     }
 
-    protected function testConnectivity() {
+    /**
+     * Tests connectivity to for the bulk importer
+     * @param ErrorCollector|null $errorCollector
+     * @return array|bool|\WP_Error
+     */
+    public function testConnectivity($errorCollector = null) {
         $url = add_query_arg(['action' => 'ilab_batch_test', 'nonce' => wp_create_nonce('ilab_batch_test')], admin_url('admin-ajax.php'));
         $args = [
             'timeout'   => 0.01,
@@ -443,15 +449,27 @@ final class BatchManager {
         $result = wp_remote_post($rawUrl, $args);
 
         if (is_wp_error($result)) {
+            if ($errorCollector) {
+                $errorCollector->addError("Could not connect to the server for bulk background processing.  The error was: ".$result->get_error_message());
+            }
+
             Logger::error("Testing connectivity to the site for background processing failed.  Error was: ".$result->get_error_message());
             return $result;
         } else if ($result['response']['code'] != 200) {
+            if ($errorCollector) {
+                $errorCollector->addError("Could not connect to the server for bulk background processing.  The server returned a {$result['response']['code']} response code.");
+            }
+
             Logger::error("Testing connectivity to the site for background processing failed.  Site returned a {$result['response']['code']} status.", ['body' => $result['body']]);
             return $result;
         }
 
         $json = json_decode($result['body'], true);
         if (empty($json) || !isset($json['test']) || (isset($json['test']) && ($json['test'] != 'worked'))) {
+            if ($errorCollector) {
+                $errorCollector->addError("Was able to connect to the server for bulk background processing but the JSON response was incorrect: ".$result['body']);
+            }
+
             Logger::error("Testing connectivity to the site for background processing failed.  Was able to connect to the site but the JSON response was not expected.", ['body' => $result['body']]);
             return new \WP_Error(500, "The server response from the connectivity test was not in the expected format.");
         }

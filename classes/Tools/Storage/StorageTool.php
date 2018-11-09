@@ -272,6 +272,19 @@ class StorageTool extends ToolBase {
 	}
 	//endregion
 
+    //region Client
+
+    /**
+     * The StorageInterface client for this storage tool
+     *
+     * @return StorageInterface|null
+     */
+    public function client() {
+        return $this->client;
+    }
+
+    //endregion
+
 	//region WordPress Upload/Attachment Hooks & Filters
 
     /**
@@ -2122,4 +2135,5 @@ Optimizer;
     }
 
     //endregion
+
 }

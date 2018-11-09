@@ -1528,4 +1528,18 @@ class ImgixTool extends ToolBase {
 		return $this->displayEditUI(1);
 	}
     //endregion
+
+    //region Testing
+
+    public function urlForKey($key) {
+        $imgix = new UrlBuilder($this->imgixDomains, $this->useHTTPS);
+
+        if($this->signingKey) {
+            $imgix->setSignKey($this->signingKey);
+        }
+
+        return $imgix->createURL($key, []);
+    }
+
+    //endregion
 }

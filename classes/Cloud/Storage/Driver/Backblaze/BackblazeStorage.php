@@ -24,6 +24,7 @@ use ILAB\MediaCloud\Cloud\Storage\InvalidStorageSettingsException;
 use ILAB\MediaCloud\Cloud\Storage\StorageException;
 use ILAB\MediaCloud\Cloud\Storage\StorageInterface;
 use ILAB\MediaCloud\Utilities\EnvironmentOptions;
+use ILAB\MediaCloud\Utilities\Logging\ErrorCollector;
 use ILAB\MediaCloud\Utilities\Logging\Logger;
 use ILAB\MediaCloud\Utilities\NoticeManager;
 
@@ -109,15 +110,20 @@ class BackblazeStorage implements StorageInterface {
 		return false;
 	}
 
-	public function validateSettings() {
+    /**
+     * @param ErrorCollector|null $errorCollector
+     * @return bool|void
+     */
+	public function validateSettings($errorCollector = null) {
 		delete_option('ilab-backblaze-settings-error');
 		$this->settingsError = false;
 
 		$this->client = null;
+		$valid = false;
+
 		if($this->enabled()) {
 			$client = $this->getClient();
 
-			$valid = false;
 			if($client) {
 				$buckets = $client->listBuckets();
 				foreach($buckets as $bucket) {
@@ -127,6 +133,12 @@ class BackblazeStorage implements StorageInterface {
 						break;
 					}
 				}
+
+				if (!$valid) {
+                    if ($errorCollector) {
+                        $errorCollector->addError("Unable to find bucket named {$this->bucket}.");
+                    }
+                }
 			}
 
 			if(!$valid) {
@@ -135,7 +147,11 @@ class BackblazeStorage implements StorageInterface {
 			} else {
 				$this->client = $client;
 			}
-		}
+		} else {
+            if ($errorCollector) {
+                $errorCollector->addError("Backblaze settings are missing or incorrect.");
+            }
+        }
 	}
 
 	public function enabled() {

@@ -16,6 +16,8 @@
 
 namespace ILAB\MediaCloud\Cloud\Storage;
 
+use ILAB\MediaCloud\Utilities\Logging\ErrorCollector;
+
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
 /**
@@ -87,9 +89,10 @@ interface StorageInterface {
 	/**
 	 * Validates settings.
 	 *
+     * @param ErrorCollector|null $errorCollector
 	 * @return bool
 	 */
-	public function validateSettings();
+	public function validateSettings($errorCollector = null);
 
 	/**
 	 * Returns the name of the bucket this storage is using.
