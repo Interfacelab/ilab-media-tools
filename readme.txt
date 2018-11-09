@@ -109,11 +109,14 @@ Note that image optimization plugins change how Media Cloud behaves.  When an im
 == Changelog ==
 
 = 2.1.16 =
-* Fix for image_intermediate_size to respect imgix URLs (thanks Tobias Alex-Petersen)
+* Fix for image_intermediate_size for imgix URLs (thanks Tobias Alex-Petersen)
 * Fix for image scaling (thanks Tobias Alex-Petersen)
 * Support for WordPress's crop positions (thanks Zac M-W)
 * Support for defining default imgix parameters for sizes. Instead of using `add_image_size($name, $width, $height, $crop)`, use `addImigixImageSize($name, $width, $height, $crop, $imgixParams)`.
-* Support for adding imgix crop parameters when using `add_image_size`/`addImgixImageSize`. For example: `add_image_size('test', 120, 120, ['imgix' => ['faces']])` will set crop mode to `faces` for that image size.
+* System report now includes active plugins and active must use plugins
+* Before running the importer, or bulk rebuilding thumbnails, first test that we can access the server without any issues.  If there is an issue it is displayed as an error to the end user.
+* Added Troubleshooter page that will help you troubleshoot any basic setup problems you might be having.  To turn on, enabled Media Cloud Debugging and then navigate to "Troubleshooter" in the admin navigation.
+
 
 = 2.1.15 =
 * Added compatibility for ShortPixel Image Optimizer
