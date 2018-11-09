@@ -123,6 +123,9 @@ class StorageTool extends ToolBase {
 		parent::setup();
 
 		if($this->enabled()) {
+            BatchManager::instance()->displayAnyErrors('storage');
+            BatchManager::instance()->displayAnyErrors('thumbnails');
+
 		    foreach($this->toolInfo['compatibleImageOptimizers'] as $key => $plugin) {
                 if (is_plugin_active($plugin)) {
                     $this->usingImageOptimizer = true;
@@ -1713,7 +1716,11 @@ class StorageTool extends ToolBase {
 		$query = new \WP_Query($args);
 
 		if($query->post_count > 0) {
-		    BatchManager::instance()->addToBatchAndRun('thumbnails', $query->posts);
+            try {
+                BatchManager::instance()->addToBatchAndRun('thumbnails', $query->posts);
+            } catch (\Exception $ex) {
+                json_response(["status"=>"error", "error" => $ex->getMessage()]);
+            }
 		} else {
 		    BatchManager::instance()->reset('thumbnails');
 		}
@@ -1800,7 +1807,11 @@ class StorageTool extends ToolBase {
 		$query = new \WP_Query($args);
 
 		if($query->post_count > 0) {
-		    BatchManager::instance()->addToBatchAndRun('storage', $query->posts);
+		    try {
+                BatchManager::instance()->addToBatchAndRun('storage', $query->posts);
+            } catch (\Exception $ex) {
+                json_response(["status"=>"error", "error" => $ex->getMessage()]);
+            }
 		} else {
 		    BatchManager::instance()->reset('storage');
 		}

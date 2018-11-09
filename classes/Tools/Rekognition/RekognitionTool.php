@@ -130,6 +130,7 @@ class RekognitionTool extends ToolBase {
 		}
 
 		if (is_admin()) {
+            BatchManager::instance()->displayAnyErrors('rekognizer');
 			$this->setupAdmin();
 		}
 
@@ -573,7 +574,11 @@ SQL;
 		}
 
 		if (count($posts) > 0) {
-		    BatchManager::instance()->addToBatchAndRun('rekognizer', $posts);
+            try {
+                BatchManager::instance()->addToBatchAndRun('rekognizer', $posts);
+            } catch (\Exception $ex) {
+                json_response(["status"=>"error", "error" => $ex->getMessage()]);
+            }
 		} else {
 		    BatchManager::instance()->reset('rekognizer');
 		}

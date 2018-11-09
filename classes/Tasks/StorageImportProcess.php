@@ -14,6 +14,7 @@
 namespace ILAB\MediaCloud\Tasks;
 
 use ILAB\MediaCloud\Tools\Storage\ImportProgressDelegate;
+use ILAB\MediaCloud\Tools\Storage\StorageTool;
 use ILAB\MediaCloud\Tools\ToolsManager;
 use ILAB\MediaCloud\Utilities\Logging\Logger;
 use Smalot\PdfParser\Parser;
@@ -38,6 +39,7 @@ class StorageImportProcess extends BackgroundProcess implements ImportProgressDe
 	public function task($item) {
 	    $startTime = microtime(true);
 
+
 		Logger::info( 'Start Task', $item);
 		if (!$this->shouldHandle()) {
 			Logger::info( 'Task cancelled', $item);
@@ -47,6 +49,7 @@ class StorageImportProcess extends BackgroundProcess implements ImportProgressDe
 		$index = $item['index'];
 		$post_id = $item['post'];
 
+		/** @var StorageTool $s3tool */
 		$s3tool = ToolsManager::instance()->tools['storage'];
 		$s3tool->processImport($index, $post_id, $this);
 

@@ -131,6 +131,10 @@
                 };
 
                 $.post(ajaxurl,data,function(response){
+                    if (response.status == 'error') {
+                        document.location.reload();
+                    }
+
                     if (response.status == 'running') {
                         $('#s3-importer-cancel-import').attr('disabled', false);
                         $('#s3-importer-cancelling-text').css({'display':'none'});
