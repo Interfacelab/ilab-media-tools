@@ -547,9 +547,11 @@ class ImgixTool extends ToolBase {
 		}
 
 		if(!$params) {
+		    $sizeParams = (!empty($sizeInfo['imgix']) && is_array($sizeInfo['imgix'])) ? $sizeInfo['imgix'] : [];
+
 			// get the settings for this image at this size
 			if(isset($meta['imgix-size-params'][$size])) {
-				$params = $meta['imgix-size-params'][$size];
+				$params = array_merge($sizeParams, $meta['imgix-size-params'][$size]);
 			}
 
 
@@ -559,20 +561,20 @@ class ImgixTool extends ToolBase {
 				$sizePresets = get_option('ilab-imgix-size-presets');
 
 				if($presets && $sizePresets && isset($sizePresets[$size]) && isset($presets[$sizePresets[$size]])) {
-					$params = $presets[$sizePresets[$size]]['settings'];
+					$params = array_merge($sizeParams, $presets[$sizePresets[$size]]['settings']);
 				}
 			}
 
 			// still no parameters?  use any that may have been assigned to the full size image
 			if((!$params || (count($params) == 0)) && (isset($meta['imgix-params']))) {
-				$params = $meta['imgix-params'];
+				$params = array_merge($sizeParams, $meta['imgix-params']);
 			} else if(!$params) // too bad so sad
 			{
-				$params = [];
+				$params = $sizeParams;
 			}
 		}
 
-		if(isset($sizeInfo['crop']) && !empty($sizeInfo['crop'])) {
+		if(!empty($sizeInfo['crop'])) {
 			$params['w'] = $sizeInfo['width'] ?: $sizeInfo['height'];
 			$params['h'] = $sizeInfo['height'] ?: $sizeInfo['width'];
 			$params['fit'] = 'crop';
@@ -662,6 +664,23 @@ class ImgixTool extends ToolBase {
 				unset($params['fp-x']);
 				unset($params['fp-y']);
 				unset($params['fp-z']);
+
+                if (is_array($sizeInfo['crop'])) {
+                    $cropParams = [];
+                    if (!empty($sizeInfo['crop']['x_crop_position']) && ($sizeInfo['crop']['x_crop_position'] != 'center')) {
+                        $cropParams[] = $sizeInfo['crop']['x_crop_position'];
+                    }
+                    if (!empty($sizeInfo['crop']['y_crop_position']) && ($sizeInfo['crop']['y_crop_position'] != 'center')) {
+                        $cropParams[] = $sizeInfo['crop']['y_crop_position'];
+                    }
+                    if (!empty($sizeInfo['crop']['imgix']) && is_array($sizeInfo['crop']['imgix'])) {
+                        $cropParams = array_merge($cropParams, $sizeInfo['crop']['imgix']);
+                    }
+
+                    if (!empty($cropParams)) {
+                        $params['crop'] = implode(",", $cropParams);
+                    }
+                }
             }
 		} else {
 			$mw = !empty($meta['width']) ? $meta['width'] : 10000;
@@ -856,7 +875,11 @@ class ImgixTool extends ToolBase {
 	 * @return array
 	 */
 	public function imageGetIntermediateSize($data, $post_id, $size) {
-		$data['url'] = $this->buildImgixImage($post_id, $size)[0];
+	    $result = $this->buildImgixImage($post_id, $size);
+
+	    if (is_array($result) && !empty($result)) {
+            $data['url'] = $result[0];
+        }
 
 		return $data;
 	}

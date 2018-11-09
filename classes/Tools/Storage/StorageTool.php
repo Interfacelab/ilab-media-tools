@@ -404,7 +404,9 @@ class StorageTool extends ToolBase {
 
                         if ($imgixEnabled) {
                             if (!ilab_size_is_cropped($key)) {
-                                $newSize = sizeToFitSize($data['width'], $data['height'], $size['width'] ?: 10000, $size['height'] ?: 10000);
+                                $w = !empty($size['width']) ? $size['width'] : 10000;
+                                $h = !empty($size['height']) ? $size['height'] : 10000;
+                                $newSize = sizeToFitSize($data['width'], $data['height'], $w, $h);
                                 $data['sizes'][$key]['height'] = $newSize[1];
                             }
                         }

@@ -31,7 +31,8 @@ function ilab_get_image_sizes($size = null) {
 			$sizes[$_size] = [
 				'width' => $_wp_additional_image_sizes[$_size]['width'],
 				'height' => $_wp_additional_image_sizes[$_size]['height'],
-				'crop' => !empty($_wp_additional_image_sizes[$_size]['crop'])
+                'crop' => $_wp_additional_image_sizes[$_size]['crop'],
+                'imgix' => (!empty($_wp_additional_image_sizes[$_size]['imgix'])) ? $_wp_additional_image_sizes[$_size]['imgix'] : null
 			];
 		}
 	}
@@ -49,11 +50,7 @@ function ilab_get_image_sizes($size = null) {
 
 function ilab_size_is_cropped($size) {
 	if (is_array($size)) {
-		if (isset($size['crop'])) {
-			return $size['crop'];
-		}
-
-		return false;
+	    return !empty($size['crop']);
 	}
 
 	$sizeInfo = ilab_get_image_sizes($size);
@@ -61,7 +58,7 @@ function ilab_size_is_cropped($size) {
 		return false;
 	}
 
-	return $sizeInfo['crop'];
+    return !empty($sizeInfo['crop']);
 }
 
 function relative_admin_url($path = '', $scheme = 'admin') {
