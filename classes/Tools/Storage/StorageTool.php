@@ -1242,14 +1242,22 @@ class StorageTool extends ToolBase {
 
 					if(count($posts_to_import) > 0) {
                         BatchManager::instance()->reset('storage');
-					    BatchManager::instance()->addToBatchAndRun('storage', $posts_to_import);
+                        try {
+                            BatchManager::instance()->addToBatchAndRun('storage', $posts_to_import);
+                        } catch (\Exception $ex) {
+                        }
+
 
 						return 'admin.php?page=media-tools-s3-importer';
 					}
 				} else if ('ilab_regenerate_thumbnails' === $action_name) {
 					if(count($post_ids) > 0) {
 					    BatchManager::instance()->reset('thumbnails');
-					    BatchManager::instance()->addToBatchAndRun('thumbnails', $post_ids);
+
+					    try {
+                            BatchManager::instance()->addToBatchAndRun('thumbnails', $post_ids);
+                        } catch (\Exception $ex) {
+                        }
 
 						return 'admin.php?page=media-tools-cloud-regeneration';
 					}

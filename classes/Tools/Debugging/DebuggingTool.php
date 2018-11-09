@@ -107,6 +107,7 @@ class DebuggingTool extends ToolBase {
 
         $probeData['Must Use Plugins'] = get_mu_plugins();
         $probeData['Plugins'] = $active;
+        $probeData['php.ini'] = ini_get_all(null, false);
 
         header('Content-Disposition: attachment;filename="media-cloud-debug.json";');
         header('Content-Type: application/json; charset=UTF-8');

@@ -443,16 +443,24 @@ final class BatchManager {
         $result = wp_remote_post($rawUrl, $args);
 
         if (is_wp_error($result)) {
+            Logger::error("Testing connectivity to the site for background processing failed.  Error was: ".$result->get_error_message());
             return $result;
         } else if ($result['response']['code'] != 200) {
+            Logger::error("Testing connectivity to the site for background processing failed.  Site returned a {$result['response']['code']} status.", ['body' => $result['body']]);
             return $result;
+        }
+
+        $json = json_decode($result['body'], true);
+        if (empty($json) || !isset($json['test']) || (isset($json['test']) && ($json['test'] != 'worked'))) {
+            Logger::error("Testing connectivity to the site for background processing failed.  Was able to connect to the site but the JSON response was not expected.", ['body' => $result['body']]);
+            return new \WP_Error(500, "The server response from the connectivity test was not in the expected format.");
         }
 
         return true;
     }
 
     public function testAccess() {
-        json_response(['status' => 'ok']);
+        json_response(['test' => 'worked']);
     }
 
 }
