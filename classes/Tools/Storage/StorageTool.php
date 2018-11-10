@@ -960,28 +960,51 @@ class StorageTool extends ToolBase {
 	}
 
 	/**
-	 * Attempts to get the url based on the S3/Storage metadata
-	 *
-	 * @param array $meta
-	 *
-	 * @return null|string
-	 */
+     * Attempts to get the url based on the S3/Storage metadata
+     * @param $meta
+     * @return null|string
+     * @throws StorageException
+     */
 	private function getAttachmentURLFromMeta($meta) {
-		if(isset($meta['s3']) && StorageSettings::cdn()) {
-			return StorageSettings::cdn().'/'.$meta['s3']['key'];
-		} else if(isset($meta['s3']) && isset($meta['s3']['url'])) {
-			if(isset($meta['file']) && StorageSettings::docCdn()) {
-				$ext = strtolower(pathinfo($meta['file'], PATHINFO_EXTENSION));
-				$image_exts = array('jpg', 'jpeg', 'jpe', 'gif', 'png');
-				if(!in_array($ext, $image_exts)) {
-					return trim(StorageSettings::docCdn(), '/').'/'.$meta['s3']['key'];
-				}
-			}
+	    if (!isset($meta['s3'])) {
+	        return null;
+        }
 
-			return $meta['s3']['url'];
-		}
+	    if ($this->client->usesSignedURLs()) {
+            $url = $this->client->url($meta['s3']['key']);
+            if (!empty(StorageSettings::cdn())) {
+                $cdnScheme = parse_url(StorageSettings::cdn(), PHP_URL_SCHEME);
+                $cdnHost = parse_url(StorageSettings::cdn(), PHP_URL_HOST);
 
-		return null;
+                $urlScheme =  parse_url($url, PHP_URL_SCHEME);
+                $urlHost = parse_url($url, PHP_URL_HOST);
+
+                return str_replace("{$urlScheme}://{$urlHost}", "{$cdnScheme}://{$cdnHost}", $url);
+            } else {
+                return $url;
+            }
+        } else {
+            if(StorageSettings::cdn()) {
+                return StorageSettings::cdn().'/'.$meta['s3']['key'];
+            } else if(isset($meta['s3']['url'])) {
+                if(isset($meta['file']) && StorageSettings::docCdn()) {
+                    $ext = strtolower(pathinfo($meta['file'], PATHINFO_EXTENSION));
+                    $image_exts = array('jpg', 'jpeg', 'jpe', 'gif', 'png');
+                    if(!in_array($ext, $image_exts)) {
+                        return trim(StorageSettings::docCdn(), '/').'/'.$meta['s3']['key'];
+                    }
+                }
+
+                return $meta['s3']['url'];
+            }
+
+            try {
+                return $this->client->url($meta['s3']['key']);
+            } catch (\Exception $ex) {
+                Logger::error("Error trying to generate url for {$meta['s3']['key']}.  Message:".$ex->getMessage());
+                return null;
+            }
+        }
 	}
 
 	/**

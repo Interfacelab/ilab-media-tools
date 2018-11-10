@@ -121,6 +121,10 @@ class GoogleStorage implements StorageInterface {
 	//endregion
 
 	//region Enabled/Options
+    public function usesSignedURLs() {
+        return false;
+    }
+
 	public function supportsDirectUploads() {
 		return true;
 	}

@@ -106,7 +106,11 @@ class BackblazeStorage implements StorageInterface {
 	//endregion
 
 	//region Enabled/Options
-	public function supportsDirectUploads() {
+    public function usesSignedURLs() {
+        return false;
+    }
+
+    public function supportsDirectUploads() {
 		return false;
 	}
 

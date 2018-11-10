@@ -79,6 +79,12 @@ interface StorageInterface {
 	 */
 	public static function pathLink($bucket, $key);
 
+    /**
+     * Returns true/false if this storage is using signed URLs.
+     *
+     * @return bool
+     */
+	public function usesSignedURLs();
 
 	/**
 	 * Insures that all the configuration settings are valid and that the storage is enabled.
@@ -157,6 +163,12 @@ interface StorageInterface {
 	 */
 	public function info($key);
 
+    /**
+     * Insures the ACL is set on the given key.
+     * @param $key
+     * @param $acl
+     * @return mixed
+     */
 	public function insureACL($key, $acl);
 
 	/**

@@ -108,6 +108,10 @@ Note that image optimization plugins change how Media Cloud behaves.  When an im
 
 == Changelog ==
 
+= 2.1.17 =
+* Added toggle to serve images from your storage provider using signed URLs (S3 only right now)
+
+
 = 2.1.16 =
 * Fix for image_intermediate_size for imgix URLs (thanks Tobias Alex-Petersen)
 * Fix for image scaling (thanks Tobias Alex-Petersen)

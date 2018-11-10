@@ -64,6 +64,13 @@ class S3Storage implements StorageInterface {
 
 	/*** @var S3Client|S3MultiRegionClient|null */
 	protected $client = null;
+
+	/** @var bool  */
+	protected $usePresignedURLs = false;
+
+	/** @var int  */
+	protected $presignedURLExpiration = 10;
+
 	//endregion
 
 	//region Constructor
@@ -87,6 +94,8 @@ class S3Storage implements StorageInterface {
 
 		if(StorageManager::driver() == 's3') {
 			$this->useTransferAcceleration = EnvironmentOptions::Option('ilab-media-s3-use-transfer-acceleration', 'ILAB_AWS_S3_TRANSFER_ACCELERATION', false);
+            $this->usePresignedURLs = EnvironmentOptions::Option('ilab-media-s3-use-presigned-urls', null, false);
+            $this->presignedURLExpiration = EnvironmentOptions::Option('ilab-media-s3-presigned-expiration', null, 10);
 		} else {
 			if ($thisClass::endpoint() !== null) {
 				$this->endpoint = $thisClass::endpoint();
@@ -164,7 +173,11 @@ class S3Storage implements StorageInterface {
 	//endregion
 	
 	//region Enabled/Options
-	public function supportsDirectUploads() {
+    public function usesSignedURLs() {
+	    return $this->usePresignedURLs;
+    }
+
+    public function supportsDirectUploads() {
 		return (StorageManager::driver() == 's3');
 	}
 
@@ -508,7 +521,11 @@ class S3Storage implements StorageInterface {
 
 			fclose($file);
 
-			return $result->get('ObjectURL');
+			if ($this->usePresignedURLs) {
+                return $this->presignedUrl($key);
+            } else {
+                return $result->get('ObjectURL');
+            }
 		}
 		catch(AwsException $ex) {
 			fclose($file);
@@ -581,11 +598,15 @@ class S3Storage implements StorageInterface {
 
 		$command = $this->client->getCommand('GetObject', ['Bucket' => $this->bucket, 'Key' => $key]);
 
-		return $this->client->createPresignedRequest($command, '+10 minutes');
+		return $this->client->createPresignedRequest($command, "+".((int)$this->presignedURLExpiration)." minutes");
 	}
 
 	public function presignedUrl($key) {
-		return (string) $this->presignedRequest($key)->getUri();
+	    $req = $this->presignedRequest($key);
+	    $uri = $req->getUri();
+	    $url = $uri->__toString();
+
+	    return $url;
 	}
 
 	public function url($key) {
@@ -593,7 +614,11 @@ class S3Storage implements StorageInterface {
 			throw new InvalidStorageSettingsException('Storage settings are invalid');
 		}
 
-		return $this->client->getObjectUrl($this->bucket, $key);
+		if ($this->usePresignedURLs) {
+		    return $this->presignedUrl($key);
+        } else {
+            return $this->client->getObjectUrl($this->bucket, $key);
+        }
 	}
 	//endregion
 

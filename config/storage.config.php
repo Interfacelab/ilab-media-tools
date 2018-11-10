@@ -175,7 +175,27 @@ return [
 						"conditions" => [
 							"ilab-media-storage-provider" => ["!google", "!backblaze", "!s3", "!wasabi"]
 						]
-					]
+					],
+                    "ilab-media-s3-use-presigned-urls" => [
+                        "title" => "Use Pre-Signed URLs",
+                        "description" => "Set to true to generate signed URLs that will expire within a specified time period.  You should use this if you've set the default ACL to private.",
+                        "type" => "checkbox",
+                        "default" => false,
+                        "watch" => true,
+                        "conditions" => [
+                            "ilab-media-storage-provider" => ["s3"]
+                        ]
+                    ],
+                    "ilab-media-s3-presigned-expiration" => [
+                        "title" => "Pre-Signed URL Expiration",
+                        "description" => "The number of minutes the signed URL is valid for.",
+                        "type" => "number",
+                        "default" => 10,
+                        "watch" => true,
+                        "conditions" => [
+                            "ilab-media-storage-provider" => ["s3"]
+                        ]
+                    ],
 				]
 			],
 			"ilab-media-s3-upload-handling-settings" => [

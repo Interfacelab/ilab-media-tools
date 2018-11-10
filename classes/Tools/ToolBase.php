@@ -509,10 +509,14 @@ abstract class ToolBase {
 
     public function renderNumberFieldSetting($args)
     {
-        $value=get_option($args['option'], $args['default']);
-        echo "<input type=\"number\" min=\"0\" step=\"1\" name=\"{$args['option']}\" value=\"$value\">";
-        if ($args['description'])
-            echo "<p class='description'>".$args['description']."</p>";
+        echo View::render_view('base/fields/number.php',[
+            'value' => get_option($args['option'], $args['default']),
+            'name' => $args['option'],
+            'min' => 1,
+            'max' => 1000,
+            'conditions' => $args['conditions'],
+            'description' => (isset($args['description'])) ? $args['description'] : false
+        ]);
     }
 
     protected function registerSelectSetting($option_name, $options, $title, $settings_slug, $description=null, $conditions=null)
