@@ -521,11 +521,7 @@ class S3Storage implements StorageInterface {
 
 			fclose($file);
 
-			if ($this->usePresignedURLs) {
-                return $this->presignedUrl($key);
-            } else {
-                return $result->get('ObjectURL');
-            }
+            return $result->get('ObjectURL');
 		}
 		catch(AwsException $ex) {
 			fclose($file);
