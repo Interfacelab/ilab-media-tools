@@ -110,7 +110,7 @@ Note that image optimization plugins change how Media Cloud behaves.  When an im
 
 = 2.1.17 =
 * Added toggle to serve images from your storage provider using signed URLs (S3 only right now)
-
+* Add option to serve GIFs from S3 (or whatever storage provider) instead of Imgix, if you have Imgix enabled.  Animated GIFs are a premium Imgix feature, so this option works around that a little.
 
 = 2.1.16 =
 * Fix for image_intermediate_size for imgix URLs (thanks Tobias Alex-Petersen)

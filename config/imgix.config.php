@@ -110,11 +110,18 @@ return [
 				"title" => "Imgix GIF Settings",
 				"description" => "Controls how animated gifs appear on the site.",
 				"options" => [
-					"ilab-media-imgix-enable-gifs" => [
-						"title" => "Enable GIFs",
-						"description" => "Enables support for animated GIFs.  If this is not enabled, any uploaded GIFs will be converted.",
-						"type" => "checkbox"
-					],
+                    "ilab-media-imgix-enable-gifs" => [
+                        "title" => "Enable GIFs",
+                        "description" => "Enables support for animated GIFs.  If this is not enabled, any uploaded GIFs will be converted.  <strong>Note that this is a feature of premium Imgix accounts only.  GIF support is not enabled on standard Imgix accounts by default.  Contact Imgix sales for more information.</strong>",
+                        "type" => "checkbox",
+                        "default" => false
+                    ],
+                    "ilab-media-imgix-skip-gifs" => [
+                        "title" => "Serve GIFs from Storage",
+                        "description" => "If this option is enabled, GIFs will be served straight from S3, or whatever storage provider you are using, and not from Imgix.  If <strong>Enable GIFs</strong> is enabled, this setting is ignored.",
+                        "type" => "checkbox",
+                        "default" => false
+                    ],
 					"ilab-media-imgix-no-gif-sizes" => [
 						"title" => "Disallow Animated GIFs for Sizes",
 						"description" => "List the sizes that aren't allowed to have animated GIFs.  These sizes will display jpegs instead.",

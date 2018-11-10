@@ -13,7 +13,9 @@
 
 namespace ILAB\MediaCloud\Tools\Imgix;
 
+use ILAB\MediaCloud\Tools\Storage\StorageTool;
 use ILAB\MediaCloud\Tools\ToolBase;
+use ILAB\MediaCloud\Tools\ToolsManager;
 use function ILAB\MediaCloud\Utilities\arrayPath;
 use ILAB\MediaCloud\Utilities\EnvironmentOptions;
 use function ILAB\MediaCloud\Utilities\gen_uuid;
@@ -43,6 +45,7 @@ class ImgixTool extends ToolBase {
 	protected $autoFormat;
 	protected $autoCompress;
 	protected $enableGifs;
+	protected $skipGifs;
 	protected $paramPropsByType;
 	protected $paramProps;
 	protected $noGifSizes;
@@ -144,6 +147,7 @@ class ImgixTool extends ToolBase {
 		$this->autoFormat = EnvironmentOptions::Option('ilab-media-imgix-auto-format');
 		$this->autoCompress = EnvironmentOptions::Option('ilab-media-imgix-auto-compress');
 		$this->enableGifs = EnvironmentOptions::Option('ilab-media-imgix-enable-gifs');
+		$this->skipGifs = EnvironmentOptions::Option('ilab-media-imgix-skip-gifs', null, false);
 		$this->detectFaces = EnvironmentOptions::Option('ilab-media-imgix-detect-faces', null, false);
 
 		$this->enabledAlternativeFormats = EnvironmentOptions::Option('ilab-media-imgix-enable-alt-formats');
@@ -832,12 +836,15 @@ class ImgixTool extends ToolBase {
 			}
 		}
 
-		foreach($response['sizes'] as $key => $sizeInfo) {
-			$res = $this->buildImgixImage($response['id'], $key);
-			if(is_array($res)) {
-				$response['sizes'][$key]['url'] = $res[0];
-			}
-		}
+		$generateUrls = !($this->skipGifs && ($attachment->post_mime_type == 'image/gif'));
+		if ($generateUrls) {
+            foreach($response['sizes'] as $key => $sizeInfo) {
+                $res = $this->buildImgixImage($response['id'], $key);
+                if(is_array($res)) {
+                    $response['sizes'][$key]['url'] = $res[0];
+                }
+            }
+        }
 
 		return $response;
 	}
@@ -850,6 +857,17 @@ class ImgixTool extends ToolBase {
 	 * @return string
 	 */
 	public function getAttachmentURL($url, $post_id) {
+	    if ($this->skipGifs) {
+	        $mimeType = get_post_mime_type($post_id);
+	        if ($mimeType == 'image/gif') {
+                /** @var StorageTool $storageTool */
+                $storageTool = ToolsManager::instance()->tools['storage'];
+
+                $gifURL = $storageTool->getAttachmentURL($url, $post_id);
+                return $gifURL;
+            }
+        }
+
 		$res = $this->buildImgixImage($post_id, 'full');
 		if(!$res || !is_array($res)) {
 			return $url;
@@ -863,16 +881,26 @@ class ImgixTool extends ToolBase {
 		return $new_url;
 	}
 
-	/**
-	 * Filters whether to preempt the output of image_downsize().  (https://core.trac.wordpress.org/browser/tags/4.8/src/wp-includes/media.php#L201)
-	 *
-	 * @param bool $fail
-	 * @param int $id
-	 * @param array|string $size
-	 *
-	 * @return bool|array
-	 */
+    /**
+     * Filters whether to preempt the output of image_downsize().  (https://core.trac.wordpress.org/browser/tags/4.8/src/wp-includes/media.php#L201)
+     * @param $fail
+     * @param $id
+     * @param $size
+     * @return array|bool
+     * @throws \ILAB\MediaCloud\Cloud\Storage\StorageException
+     */
 	public function imageDownsize($fail, $id, $size) {
+        if ($this->skipGifs) {
+            $mimeType = get_post_mime_type($id);
+            if ($mimeType == 'image/gif') {
+                /** @var StorageTool $storageTool */
+                $storageTool = ToolsManager::instance()->tools['storage'];
+
+                $result = $storageTool->forcedImageDownsize($fail, $id, $size);
+                return $result;
+            }
+        }
+
 		$result = $this->buildImgixImage($id, $size);
 
 		return $result;

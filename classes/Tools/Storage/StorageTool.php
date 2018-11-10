@@ -666,54 +666,65 @@ class StorageTool extends ToolBase {
 		return $file;
 	}
 
-	/**
-	 * Filters whether to preempt the output of image_downsize().  (https://core.trac.wordpress.org/browser/tags/4.8/src/wp-includes/media.php#L201)
-	 *
-	 * @param bool $fail
-	 * @param int $id
-	 * @param array|string $size
-	 *
-	 * @return bool|array
-	 */
+    /**
+     * Filters whether to preempt the output of image_downsize().  (https://core.trac.wordpress.org/browser/tags/4.8/src/wp-includes/media.php#L201)
+     * @param $fail
+     * @param $id
+     * @param $size
+     * @return array
+     * @throws StorageException
+     */
 	public function imageDownsize($fail, $id, $size) {
 		if(apply_filters('ilab_imgix_enabled', false)) {
 			return $fail;
 		}
 
-		if(empty($size) || empty($id) || is_array($size)) {
-			return $fail;
-		}
-
-		$meta = wp_get_attachment_metadata($id);
-
-		if(empty($meta)) {
-			return $fail;
-		}
-
-		if(!isset($meta['sizes'])) {
-			return $fail;
-		}
-
-		if(!isset($meta['sizes'][$size])) {
-			return $fail;
-		}
-
-		$sizeMeta = $meta['sizes'][$size];
-		if(!isset($sizeMeta['s3'])) {
-			return $fail;
-		}
-
-		$url = $this->getAttachmentURLFromMeta($sizeMeta);// $sizeMeta['s3']['url'];
-
-		$result = [
-			$url,
-			$sizeMeta['width'],
-			$sizeMeta['height'],
-			true
-		];
-
-		return $result;
+		return $this->forcedImageDownsize($fail, $id, $size);
 	}
+
+    /**
+     * Performs the image downsize regardless if Imgix is enabled or not.
+     * @param $fail
+     * @param $id
+     * @param $size
+     * @return array
+     * @throws StorageException
+     */
+	public function forcedImageDownsize($fail, $id, $size) {
+        if(empty($size) || empty($id) || is_array($size)) {
+            return $fail;
+        }
+
+        $meta = wp_get_attachment_metadata($id);
+
+        if(empty($meta)) {
+            return $fail;
+        }
+
+        if(!isset($meta['sizes'])) {
+            return $fail;
+        }
+
+        if(!isset($meta['sizes'][$size])) {
+            return $fail;
+        }
+
+        $sizeMeta = $meta['sizes'][$size];
+        if(!isset($sizeMeta['s3'])) {
+            return $fail;
+        }
+
+        $url = $this->getAttachmentURLFromMeta($sizeMeta);// $sizeMeta['s3']['url'];
+
+        $result = [
+            $url,
+            $sizeMeta['width'],
+            $sizeMeta['height'],
+            true
+        ];
+
+        return $result;
+    }
 
 	/**
 	 * Fires once an attachment has been added. (https://core.trac.wordpress.org/browser/tags/4.8/src/wp-includes/post.php#L3457)
