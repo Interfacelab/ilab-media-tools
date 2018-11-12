@@ -6,7 +6,7 @@ Tested up to: 4.9.8
 License: GPLv3 or later
 Donate link: http://www2.jdrf.org/site/TR?fr_id=6912&pg=personal&px=11429802
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 2.1.17
+Stable tag: 2.1.18
 Requires PHP: 5.6
 
 Automatically upload media to Amazon S3 and integrate with Imgix, a real-time image processing CDN.  Boosts site performance and simplifies workflows.
@@ -107,6 +107,11 @@ Note that image optimization plugins change how Media Cloud behaves.  When an im
 6. Imgix settings.
 
 == Changelog ==
+
+= 2.1.18 =
+* PHP 5.6 related fixes.
+* Added PHP version compatibilty check to the Troubleshooter tool
+* The Troubleshooter tool is always enabled (as long as Storage is enabled)
 
 = 2.1.17 =
 * Added toggle to serve images from your storage provider using signed URLs (S3 only right now)
