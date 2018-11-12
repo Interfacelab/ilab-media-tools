@@ -105,7 +105,13 @@ class StorageTool extends ToolBase {
 
         $this->testForBadPlugins();
         $this->testForUselessPlugins();
-	}
+
+
+        // Hate doing this but some WordPress installs are just f-cked
+        if (!function_exists('wp_generate_attachment_metadata')) {
+            require_once(ABSPATH.'wp-admin/includes/image.php');
+        }
+    }
 	//endregion
 
 	//region ToolBase Overrides

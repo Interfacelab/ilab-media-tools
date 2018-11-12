@@ -20,7 +20,7 @@ class DatabaseLoggerHandler extends AbstractProcessingHandler {
     /** @var DatabaseLogger|null Database logger */
     private $logger = null;
 
-    public function __construct(int $level = Logger::DEBUG, bool $bubble = true) {
+    public function __construct($level = 100, $bubble = true) {
         parent::__construct($level, $bubble);
 
         $this->logger = new DatabaseLogger();

@@ -29,7 +29,7 @@ class StorageImageEditor extends \WP_Image_Editor {
     private $imageEditor;
     private $attachmentId = null;
 
-    public function __construct(string $file) {
+    public function __construct($file) {
         parent::__construct($file);
 
         $this->imageEditor = (\WP_Image_Editor_GD::test()) ? new \WP_Image_Editor_GD($file) : new \WP_Image_Editor_Imagick($file);
