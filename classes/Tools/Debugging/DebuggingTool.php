@@ -162,29 +162,71 @@ class DebuggingTool extends ToolBase {
 
         $step = (int)$_POST['step'];
 
-	    if (($step < 1) || ($step > 6)) {
+	    if (($step < 1) || ($step > 7)) {
             json_response(['error' => 'Invalid step.']);
         }
 
         if ($step == 1) {
             // Step 1 - Make sure we can connect
-	        $this->testValidateClient();
+            $this->testEnvironment();
         } else if ($step == 2) {
+            // Step 1 - Make sure we can connect
+	        $this->testValidateClient();
+        } else if ($step == 3) {
             // Step 2 - Upload a file
 	        $this->testUploadClient();
-        } else if ($step == 3) {
+        } else if ($step == 4) {
             // Step 3 - File is publicly accessible
 	        $this->testPubliclyAccessible();
-        } else if ($step == 4) {
+        } else if ($step == 5) {
             // Step 4 - Delete file
 	        $this->testDeletingFiles();
-        } else if ($step == 5) {
+        } else if ($step == 6) {
             // Step 5 - Verify that the bulk importer process can work
             $this->testBulkImporter();
-        } else if ($step == 6) {
+        } else if ($step == 7) {
             // Step 6 - Test Imgix
             $this->testImgix();
         }
+    }
+
+    private function testEnvironment() {
+	    $warningOnly = false;
+	    $errors = [];
+
+	    $versionSystemParts = explode('+', phpversion());
+	    $version = $versionSystemParts[0];
+
+
+	    if (!defined('PHP_VERSION_ID') || (PHP_VERSION_ID < 56000)) {
+	        $warningOnly = false;
+	        $errors[] = "PHP version is out of date and probably not compatible. The version you are using is no longer updated by PHP maintainers.";
+        } else if (PHP_VERSION_ID < 70000) {
+            $warningOnly = true;
+            $errors[] = "PHP version is compatible but should be upgraded to 7.x as soon as possible.  The version you are using is no longer updated by PHP maintainers.";
+        }
+
+        $success = !(count($errors) > 0);
+	    if (!$success && $warningOnly) {
+	        $success = 3;
+        }
+
+        $html = View::render_view('debug/trouble-shooter-step.php', [
+            'success' => $success,
+            'title' => 'PHP Version Compatibility',
+            'success_message' => "Your version of PHP ($version) is compatible.",
+            'error_message' => "Your version of PHP ($version) is outdated.",
+            'errors' => $errors
+        ]);
+
+
+
+        $data = [
+            'html' => $html,
+            'next' => 2
+        ];
+
+        json_response($data);
     }
 
     private function testValidateClient() {
@@ -207,7 +249,7 @@ class DebuggingTool extends ToolBase {
         ];
 
         if ($isValid) {
-            $data['next'] = 2;
+            $data['next'] = 3;
         }
 
         json_response($data);
@@ -239,7 +281,7 @@ class DebuggingTool extends ToolBase {
         ];
 
         if (empty($errors)) {
-            $data['next'] = 3;
+            $data['next'] = 4;
         }
 
         json_response($data);
@@ -261,7 +303,6 @@ class DebuggingTool extends ToolBase {
             $errors[] = $ex->getMessage();
         }
 
-
         $html = View::render_view('debug/trouble-shooter-step.php', [
             'success' => empty($errors),
             'title' => 'Verify Uploaded File Is Publicly Accessible',
@@ -272,7 +313,7 @@ class DebuggingTool extends ToolBase {
 
         $data = [
             'html' => $html,
-            'next' => 4
+            'next' => 5
         ];
 
         json_response($data);
@@ -302,7 +343,7 @@ class DebuggingTool extends ToolBase {
 
         $data = [
             'html' => $html,
-            'next' => 5,
+            'next' => 6,
         ];
 
         json_response($data);
@@ -327,7 +368,7 @@ class DebuggingTool extends ToolBase {
 
         $imgixEnabled = apply_filters('ilab_imgix_enabled', false);
         if ($imgixEnabled) {
-            $data['next'] = 6;
+            $data['next'] = 7;
         }
 
         json_response($data);
