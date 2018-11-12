@@ -12,16 +12,11 @@
 
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
-/**
- * Configuration for ILab Media Tools
- */
 return [
-	/** Crop Tool */
-	"crop" => include ILAB_CONFIG_DIR.'/crop.config.php',
-	"storage" => include ILAB_CONFIG_DIR.'/storage.config.php',
-	"imgix" => include ILAB_CONFIG_DIR.'/imgix.config.php',
-	"media-upload" => include ILAB_CONFIG_DIR.'/media-upload.config.php',
-	"rekognition" => include ILAB_CONFIG_DIR.'/rekognition.config.php',
-	"debugging" => include ILAB_CONFIG_DIR.'/debugging.config.php',
-    "troubleshooting" => include ILAB_CONFIG_DIR.'/troubleshooting.config.php'
+    "name" => "Media Cloud Troubleshooting",
+	"title" => "Media Cloud Troubleshooting",
+	"description" => "Enables troubleshooter to double check that your settings work.",
+	"class" => "ILAB\\MediaCloud\\Tools\\Debugging\\TroubleshootingTool",
+	"dependencies" => [],
+	"env" => "ILAB_MEDIA_TROUBLESHOOTING_ENABLED",  // this is always enabled btw
 ];

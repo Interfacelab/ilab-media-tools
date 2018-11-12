@@ -12,6 +12,7 @@
 
 namespace ILAB\MediaCloud\Tools;
 
+use ILAB\MediaCloud\Tools\Debugging\TroubleshootingTool;
 use ILAB\MediaCloud\Utilities\NoticeManager;
 use ILAB\MediaCloud\Utilities\View;
 
@@ -41,6 +42,8 @@ class ToolsManager
             $this->tools[$toolName]=new $className($toolName,$toolInfo,$this);
         }
 
+        $this->tools['troubleshooting'] = new TroubleshootingTool('troubleshooting', $toolList['troubleshooting'], $this);
+
         foreach($this->tools as $key => $tool) {
             $tool->setup();
         }
@@ -54,7 +57,11 @@ class ToolsManager
             foreach($this->tools as $key => $tool)
             {
                 register_setting('ilab-media-tools',"ilab-media-tool-enabled-$key");
-                add_settings_field("ilab-media-tool-enabled-$key",$tool->toolInfo['title'],[$this,'renderToolSettings'],'media-tools-top','ilab-media-tools',['key'=>$key]);
+
+                if ($key != 'troubleshooting') {
+                    add_settings_field("ilab-media-tool-enabled-$key",$tool->toolInfo['title'],[$this,'renderToolSettings'],'media-tools-top','ilab-media-tools',['key'=>$key]);
+                }
+
 
                 $tool->registerMenu('media-tools-top');
                 $tool->registerSettings();
