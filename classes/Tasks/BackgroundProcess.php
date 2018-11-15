@@ -211,12 +211,25 @@ abstract class BackgroundProcess extends AsyncRequest {
 	 * in a background process.
 	 */
 	protected function is_process_running() {
-		if ( get_site_transient( $this->identifier . '_process_lock' ) ) {
-			// Process already running.
-			return true;
-		}
+	    $lockData = get_option($this->identifier . '_process_lock', null);
 
-		return false;
+	    if (!empty($lockData) || isset($lockData['expires'])) {
+            if (time() <= $lockData['expires']) {
+                Logger::info('Lock still active.  Expires in: '.($lockData['expires'] - time()));
+
+                return true;
+            } else {
+                Logger::info("Lock expired");
+            }
+        }
+
+        if (!empty($lockData)) {
+            delete_option($this->identifier . '_process_lock');
+        } else {
+            Logger::info('No lock data.');
+        }
+
+        return false;
 	}
 
 	/**
@@ -233,7 +246,7 @@ abstract class BackgroundProcess extends AsyncRequest {
 		$lock_duration = ( property_exists( $this, 'queue_lock_time' ) ) ? $this->queue_lock_time : 60; // 1 minute
 		$lock_duration = apply_filters( $this->identifier . '_queue_lock_time', $lock_duration );
 
-		set_site_transient( $this->identifier . '_process_lock', microtime(), $lock_duration );
+		update_option($this->identifier . '_process_lock', ['time' => microtime(), 'expires' => time() + $lock_duration]);
 	}
 
 	/**
@@ -245,7 +258,8 @@ abstract class BackgroundProcess extends AsyncRequest {
 	 */
 	protected function unlock_process() {
 		Logger::info( "Unlocking process {$this->identifier}");
-		delete_site_transient( $this->identifier . '_process_lock' );
+
+		delete_option($this->identifier . '_process_lock');
 
 		return $this;
 	}
