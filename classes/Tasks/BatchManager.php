@@ -13,6 +13,7 @@
 
 namespace ILAB\MediaCloud\Tasks;
 
+use ILAB\MediaCloud\Utilities\EnvironmentOptions;
 use function ILAB\MediaCloud\Utilities\json_response;
 use ILAB\MediaCloud\Utilities\Logging\ErrorCollector;
 use ILAB\MediaCloud\Utilities\Logging\Logger;
@@ -381,10 +382,11 @@ final class BatchManager {
                 $error = 'HTTP response code was '.$testResult['response']['code'];
             }
 
-            $errorMessage = "Site is unreachable or an error occurred.  Batch processing will not function.  If you are using basic authentication, you may need to disable it.  Error message was: $error";
-            $this->setErrorMessage($batch, $errorMessage);
+            $storageSettingsURL = admin_url('admin.php?page=media-tools-s3#ilab-media-s3-batch-settings');
+            $message = "There was an error attempting to run your batch.  Try changing the <strong>Connection Timeout</strong> in <a href='$storageSettingsURL'>Storage Settings</a> to a higher number like 0.1 or 1 to see if that helps.  The actual error was: $error";
+            $this->setErrorMessage($batch, $message);
 
-            throw new \Exception($errorMessage);
+            throw new \Exception($message);
         }
 
         $firstPostFile = get_attached_file($postIDs[0]);
@@ -437,8 +439,9 @@ final class BatchManager {
      */
     public function testConnectivity($errorCollector = null) {
         $url = add_query_arg(['action' => 'ilab_batch_test', 'nonce' => wp_create_nonce('ilab_batch_test')], admin_url('admin-ajax.php'));
+        $timeout = EnvironmentOptions::Option('ilab-media-s3-batch-timeout', null, 0.1);
         $args = [
-            'timeout'   => 0.01,
+            'timeout'   => $timeout,
             'blocking'  => true,
             'body'      => 'allo mate',
             'cookies'   => $_COOKIE,

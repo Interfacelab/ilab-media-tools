@@ -282,7 +282,7 @@ return [
                         "title" => "Connection Timeout",
                         "description" => "The number of seconds to wait for a response before the connection times out. If you are having issues with the batch importer process, or the troubleshooting tool is complaining about <code>cURL error 23</code>, try setting this to 0.1 or even 1.",
                         "type" => "number",
-                        "default" => 0.01,
+                        "default" => 0.1,
                         "increment" => 0.01,
                         "min" => 0.01,
                         "max" => 30

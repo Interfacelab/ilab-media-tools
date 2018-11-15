@@ -132,7 +132,7 @@ abstract class AsyncRequest {
 			return $this->post_args;
 		}
 
-		$timeout = EnvironmentOptions::Option('ilab-media-s3-batch-timeout', null, 0.01);
+		$timeout = EnvironmentOptions::Option('ilab-media-s3-batch-timeout', null, 0.1);
 		return array(
 			'timeout'   => $timeout,
 			'blocking'  => false,
