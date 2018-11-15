@@ -300,6 +300,9 @@ abstract class ToolBase {
                     	$conditions = arrayPath($optionInfo,'conditions',null);
                     	$placeholder = arrayPath($optionInfo,'placeholder',null);
                     	$default = arrayPath($optionInfo,'default',null);
+                        $increment = arrayPath($optionInfo,'increment',null);
+                        $min = arrayPath($optionInfo,'min',1);
+                        $max = arrayPath($optionInfo,'max',1000);
 
                         switch($optionInfo['type'])
                         {
@@ -316,7 +319,7 @@ abstract class ToolBase {
                                 $this->registerCheckboxFieldSetting($option,$optionInfo['title'],$group,$description, $default, $conditions);
                                 break;
                             case 'number':
-                                $this->registerNumberFieldSetting($option,$optionInfo['title'],$group,$description, $default, $conditions);
+                                $this->registerNumberFieldSetting($option,$optionInfo['title'],$group,$description, $default, $conditions, $min, $max, $increment);
                                 break;
 	                        case 'select':
 		                        $this->registerSelectSetting($option,$optionInfo['options'],$optionInfo['title'],$group,$description, $conditions);
@@ -399,6 +402,8 @@ abstract class ToolBase {
             return;
 
         $settingSection=$this->settingSections[$section['id']];
+
+        echo "<a name='{$section['id']}'></a>";
 
         if (is_array($settingSection['description'])) {
 			foreach($settingSection['description'] as $description) {
@@ -501,9 +506,9 @@ abstract class ToolBase {
 	    ]);
     }
 
-    protected function registerNumberFieldSetting($option_name,$title,$settings_slug,$description=null, $default=false, $conditions=null)
+    protected function registerNumberFieldSetting($option_name,$title,$settings_slug,$description=null, $default=false, $conditions=null,$min = 1, $max = 1000, $increment = null)
     {
-        add_settings_field($option_name,$title,[$this,'renderNumberFieldSetting'],$this->options_page,$settings_slug,['option'=>$option_name,'description'=>$description, 'default' => $default, 'conditions' => $conditions]);
+        add_settings_field($option_name,$title,[$this,'renderNumberFieldSetting'],$this->options_page,$settings_slug,['option'=>$option_name,'description'=>$description, 'default' => $default, 'conditions' => $conditions, 'min' => $min, 'max' => $max, 'inc' => $increment]);
 
     }
 
@@ -512,8 +517,9 @@ abstract class ToolBase {
         echo View::render_view('base/fields/number.php',[
             'value' => get_option($args['option'], $args['default']),
             'name' => $args['option'],
-            'min' => 1,
-            'max' => 1000,
+            'min' => $args['min'],
+            'max' => $args['max'],
+            'inc' => (!empty($args['inc'])) ? $args['inc'] : 1,
             'conditions' => $args['conditions'],
             'description' => (isset($args['description'])) ? $args['description'] : false
         ]);

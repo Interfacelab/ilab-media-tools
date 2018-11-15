@@ -1,5 +1,5 @@
 <div id="setting-{{$name}}" {{(($conditions) ? 'data-conditions="true"' : '')}}>
-<input size='40' type='number' id="{{$name}}" min="{{$min}}" max="{{$max}}" step="1" name='{{$name}}' value='{{$value}}'>
+<input size='40' type='number' id="{{$name}}" min="{{$min}}" max="{{$max}}" step="{{$inc}}" name='{{$name}}' value='{{$value}}'>
 {% if($description) %}
 <p class='description'>{{$description}}</p>
 {% endif %}

@@ -2,6 +2,7 @@
 
 namespace ILAB\MediaCloud\Tasks;
 
+use ILAB\MediaCloud\Utilities\EnvironmentOptions;
 use ILAB\MediaCloud\Utilities\Logging\Logger;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
@@ -131,8 +132,9 @@ abstract class AsyncRequest {
 			return $this->post_args;
 		}
 
+		$timeout = EnvironmentOptions::Option('ilab-media-s3-batch-timeout', null, 0.01);
 		return array(
-			'timeout'   => 0.01,
+			'timeout'   => $timeout,
 			'blocking'  => false,
 			'body'      => $this->data,
 			'cookies'   => $_COOKIE,

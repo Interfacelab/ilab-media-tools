@@ -258,22 +258,37 @@ return [
 					]
 				]
 			],
-			"ilab-media-s3-cdn-settings" => [
-				"title" => "CDN Settings",
-				"description" => "If you are using CloudFront, Fastly or another CDN, enter the CDN domain here.  If you are using Imgix, the <b>CDN Base URL</b> setting is ignored, but the <b>Document CDN Base URL</b> is not.  If both are left blank, Media Tools will use the cloud storage URLs.",
-				"options" => [
-					"ilab-media-s3-cdn-base" => [
-						"title" => "CDN Base URL",
-						"description" => "This is the base URL for your CDN for serving images, including the scheme (meaning the http/https part).  If you don't have a CDN, you can simply use the AWS S3 URL, eg <strong>https://s3-ap-southeast-1.amazonaws.com/your-bucket-name/</strong>.",
-						"type" => "text-field"
-					],
-					"ilab-doc-s3-cdn-base" => [
-						"title" => "Document CDN Base URL",
-						"description" => "This is the base URL for your CDN for serving non-image files, including the scheme (meaning the http/https part).  This is separated for your convenience.  If you don't specify a document CDN, it'll use the media/image CDN.",
-						"type" => "text-field"
-					]
-				]
-			],
+            "ilab-media-s3-cdn-settings" => [
+                "title" => "CDN Settings",
+                "description" => "If you are using CloudFront, Fastly or another CDN, enter the CDN domain here.  If you are using Imgix, the <b>CDN Base URL</b> setting is ignored, but the <b>Document CDN Base URL</b> is not.  If both are left blank, Media Tools will use the cloud storage URLs.",
+                "options" => [
+                    "ilab-media-s3-cdn-base" => [
+                        "title" => "CDN Base URL",
+                        "description" => "This is the base URL for your CDN for serving images, including the scheme (meaning the http/https part).  If you don't have a CDN, you can simply use the AWS S3 URL, eg <strong>https://s3-ap-southeast-1.amazonaws.com/your-bucket-name/</strong>.",
+                        "type" => "text-field"
+                    ],
+                    "ilab-doc-s3-cdn-base" => [
+                        "title" => "Document CDN Base URL",
+                        "description" => "This is the base URL for your CDN for serving non-image files, including the scheme (meaning the http/https part).  This is separated for your convenience.  If you don't specify a document CDN, it'll use the media/image CDN.",
+                        "type" => "text-field"
+                    ]
+                ]
+            ],
+            "ilab-media-s3-batch-settings" => [
+                "title" => "Batch Processing Settings",
+                "description" => "These options control aspects of batch processing tasks like importer, thumbnail regeneration and Rekognition processing.",
+                "options" => [
+                    "ilab-media-s3-batch-timeout" => [
+                        "title" => "Connection Timeout",
+                        "description" => "The number of seconds to wait for a response before the connection times out. If you are having issues with the batch importer process, or the troubleshooting tool is complaining about <code>cURL error 23</code>, try setting this to 0.1 or even 1.",
+                        "type" => "number",
+                        "default" => 0.01,
+                        "increment" => 0.01,
+                        "min" => 0.01,
+                        "max" => 30
+                    ]
+                ]
+            ],
 			"ilab-media-s3-display-settings" => [
 				"title" => "Display Settings",
 				"description" => "",

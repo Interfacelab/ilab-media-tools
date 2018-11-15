@@ -270,12 +270,13 @@ class TroubleshootingTool extends ToolBase {
         $errorCollector = new ErrorCollector();
         BatchManager::instance()->testConnectivity($errorCollector);
 
+        $storageSettingsURL = admin_url('admin.php?page=media-tools-s3#ilab-media-s3-batch-settings');
 
         $html = View::render_view('debug/trouble-shooter-step.php', [
-            'success' => !$errorCollector->hasErrors(),
+            'success' => false,//!$errorCollector->hasErrors(),
             'title' => 'Test Bulk Importer',
             'success_message' => "Your WordPress server configuration supports background processing.",
-            'error_message' => "Your WordPress server configuration does not support background processing.  The bulk importer will not work.",
+            'error_message' => "Your WordPress server configuration does not support background processing.  The bulk importer will not work.  Try changing the <strong>Connection Timeout</strong> setting in <a href='$storageSettingsURL'>Storage Settings</a> to a higher value like 0.1 or 0.5.",
             'errors' => $errorCollector->errors()
         ]);
 
