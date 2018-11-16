@@ -46,6 +46,7 @@ abstract class BatchTool {
         $this->mediaListIntegration = EnvironmentOptions::Option('ilab-cloud-storage-display-media-list', null, true);
 
         if(is_admin()) {
+
             add_action('wp_ajax_'.$this->startActionName(), [$this, 'startAction']);
             add_action('wp_ajax_'.$this->progressActionName(), [$this, 'progressAction']);
             add_action('wp_ajax_'.$this->nextBatchActionName(), [$this, 'nextBatchAction']);
@@ -298,6 +299,8 @@ abstract class BatchTool {
      * Renders the batch tool
      */
     public function renderBatchTool() {
+        wp_enqueue_style('ilab-media-importer-css', ILAB_PUB_CSS_URL.'/ilab-media-importer.min.css');
+
         $data = BatchManager::instance()->stats($this->batchIdentifier());
 
         $postData = $this->getImportBatch(1);

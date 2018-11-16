@@ -75,6 +75,11 @@
         "css/ilab-settings.scss"
       ]
     },
+    "ilab-media-importer.min.css": {
+      "files": [
+        "css/ilab-media-importer.scss"
+      ]
+    },
     "images": {
       "files": ["img/**/*"]
     }
@@ -84,6 +89,6 @@
     "dist": "../public/"
   },
   "config": {
-    "devUrl": "http://cms.xandr.dev"
+    "devUrl": "http://dev.heavymetal.group"
   }
 }

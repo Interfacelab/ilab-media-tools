@@ -1,94 +1,5 @@
 <style>
-    #s3-importer-progress {
-        padding: 24px;
-        background: #ddd;
-        border-radius: 8px;
-    }
 
-    #s3-importer-progress > button {
-        margin-top: 20px;
-    }
-
-    .s3-importer-progress-container {
-        position: relative;
-        width: 100%;
-        height: 32px;
-        background: #AAA;
-        border-radius: 16px;
-        overflow: hidden;
-    }
-
-    #s3-importer-progress-bar {
-        background-color: #3a84e6;
-        height: 100%;
-    width: {{$progress}}%;
-    }
-
-    .tool-disabled {
-        padding: 10px 15px;
-        border: 1px solid #df8403;
-    }
-
-    .force-cancel-help {
-        margin-top: 20px;
-    }
-
-    .wp-cli-callout {
-        padding: 10px;
-        background: #ddd;
-        margin-top: 20px;
-        border-radius: 8px;
-    }
-
-    .wp-cli-callout > h3 {
-        margin: 0; padding: 0;
-        font-size: 14px;
-    }
-
-    .wp-cli-callout > code {
-        background-color: #bbb;
-        padding: 5px;
-    }
-
-    #s3-timing-stats {
-        display: none;
-    }
-
-    #s3-importer-status-text {
-        position: absolute;
-        left: 16px; top:0px; bottom: 0px; right: 16px;
-        display: flex;
-        align-items: center;
-        color: white;
-        font-weight: bold;
-    }
-
-    #s3-importer-thumbnails {
-        position: relative;
-        width: 100%;
-        height: 150px;
-        margin-bottom: 15px;
-    }
-
-    #s3-importer-thumbnails-container {
-        display: flex;
-        position: absolute;
-        left: 0px; top:0px; right: 0px; bottom:0px;
-        overflow: hidden;
-    }
-
-    #s3-importer-thumbnails-container > img {
-        margin-right: 10px;
-    }
-
-    #s3-importer-thumbnails-fade {
-        background: -moz-linear-gradient(left, rgba(221,221,221,0) 0%, rgba(221,221,221,1) 95%, rgba(221,221,221,1) 100%); /* FF3.6-15 */
-        background: -webkit-linear-gradient(left, rgba(221,221,221,0) 0%,rgba(221,221,221,1) 95%,rgba(221,221,221,1) 100%); /* Chrome10-25,Safari5.1-6 */
-        background: linear-gradient(to right, rgba(221,221,221,0) 0%,rgba(221,221,221,1) 95%,rgba(221,221,221,1) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-
-        position: absolute;
-        left: 150px; top:0px; right: 0px; bottom:0px;
-    }
 </style>
 <div class="settings-container">
     <header>
@@ -103,7 +14,7 @@
             {{$instructions}}
             <div class="wp-cli-callout">
                 <h3>Using WP-CLI</h3>
-                <p>You can run this importer process from the command line using WP-CLI:</p>
+                <p>You can run this importer process from the command line using <a href="https://wp-cli.org" target="_blank">WP-CLI</a>:</p>
                 <code>
                     {{$commandLine}}
                 </code>
@@ -124,14 +35,15 @@
                 <div id="s3-importer-thumbnails-container">
                 </div>
                 <div id="s3-importer-thumbnails-fade"></div>
+                <img id="s3-importer-thumbnails-cloud" src="{{ILAB_PUB_IMG_URL}}/icon-cloud.svg">
             </div>
             <div class="s3-importer-progress-container">
-                <div id="s3-importer-progress-bar"></div>
+                <div id="s3-importer-progress-bar" style="width: {{$progress}}%;"></div>
                 <div id="s3-importer-status-text" style="visibility:{{($shouldCancel) ? 'hidden':'visible'}}">
                     <div>Processing '<span id="s3-importer-current-file">{{$currentFile}}</span>' (<span id="s3-importer-current">{{$current}}</span> of <span id="s3-importer-total">{{$total}}</span>).  <span id="s3-timing-stats"><span id="s3-timing-ppm">{{number_format($postsPerMinute, 1)}}</span> posts per minute, ETA: <span id="s3-timing-eta">{{number_format($eta, 2)}}</span>.</span></div>
                 </div>
             </div>
-            <button id="s3-importer-cancel-import" class="button button-warning" title="Cancel">{{$cancelCommandTitle}}</button>
+            <button id="s3-importer-cancel-import" class="button button-whoa" title="Cancel">{{$cancelCommandTitle}}</button>
         </div>
     </div>
 </div>
