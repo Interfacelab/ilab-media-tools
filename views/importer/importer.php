@@ -210,6 +210,7 @@
                             $('#s3-importer-instructions').css({display: 'block'});
                             $('#s3-importer-progress').css({display: 'none'});
                             $('#s3-importer-manual-warning').css('display', 'none');
+                            document.location.reload();
                         }
                     });
 
@@ -388,6 +389,7 @@
                             importing = false;
                             $('#s3-importer-instructions').css({display: 'block'});
                             $('#s3-importer-progress').css({display: 'none'});
+                            document.location.reload();
                         } else {
                             if (response.total > 0) {
                                 var progress = (response.current / response.total) * 100;

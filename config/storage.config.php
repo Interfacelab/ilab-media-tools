@@ -38,7 +38,8 @@ return [
         ]
     ],
     "batchTools" => [
-        "\\ILAB\\MediaCloud\\Tools\\Storage\\Batch\\ImportStorageBatchTool"
+        "\\ILAB\\MediaCloud\\Tools\\Storage\\Batch\\ImportStorageBatchTool",
+        "\\ILAB\\MediaCloud\\Tools\\Storage\\Batch\\ThumbnailBatchTool"
     ],
 	"settings" => [
 		"title" => "Storage Settings",
