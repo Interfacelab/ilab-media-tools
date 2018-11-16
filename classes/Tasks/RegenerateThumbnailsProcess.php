@@ -43,6 +43,8 @@ class RegenerateThumbnailsProcess extends BackgroundProcess {
 		$index = $item['index'];
 		$post_id = $item['post'];
 
+        BatchManager::instance()->setCurrentID('thumbnails', $post_id);
+
 		$fileName = get_attached_file( $post_id);
 
 		if ($fileName) {

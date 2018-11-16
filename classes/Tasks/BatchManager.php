@@ -133,6 +133,24 @@ final class BatchManager {
     }
 
     /**
+     * Returns the ID of the item currently being processed
+     * @param $batch
+     * @return int
+     */
+    public function currentID($batch) {
+        return get_option("ilab_media_tools_{$batch}_current_id", 0);
+    }
+
+    /**
+     * Sets the current index being processed
+     * @param $batch
+     * @param int $index
+     */
+    public function setCurrentID($batch, $id) {
+        update_option("ilab_media_tools_{$batch}_current_id", $id);
+    }
+
+    /**
      * Returns the file name of the current item being processed
      * @param $batch
      * @return string|null
@@ -315,6 +333,8 @@ final class BatchManager {
         return [
             'running' => $this->status($batch),
             'current' => $current,
+            'currentID' => $this->currentID($batch),
+            'thumb' => (!empty($this->currentID($batch))) ? wp_get_attachment_thumb_url($this->currentID($batch)) : null,
             'currentFile' => $this->currentFile($batch),
             'total' => $total,
             'totalTime' => $totalTime,

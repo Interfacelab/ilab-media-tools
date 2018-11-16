@@ -1801,7 +1801,7 @@ class StorageTool extends ToolBase {
     //endregion
 
 	//region Importer
-    protected function getImportBatch($page) {
+    protected function getImportBatch($page, $forceImages = false) {
         $args = [
             'post_type' => 'attachment',
             'post_status' => 'inherit',
@@ -1810,7 +1810,13 @@ class StorageTool extends ToolBase {
             'paged' => $page
         ];
 
-        if(!StorageSettings::uploadDocuments()) {
+        if ($page == -1) {
+            unset($args['posts_per_page']);
+            unset($args['paged']);
+            $args['nopaging'] = true;
+        }
+
+        if($forceImages || !StorageSettings::uploadDocuments()) {
             $args['post_mime_type'] = 'image';
         }
 
@@ -1924,32 +1930,31 @@ class StorageTool extends ToolBase {
 	 * Ajax method to start the import.
 	 */
 	public function importMedia() {
-		$args = [
-			'post_type' => 'attachment',
-			'post_status' => 'inherit',
-			'nopaging' => true,
-			'fields' => 'ids',
-		];
+	    $posts = $this->getImportBatch(-1);
 
-		if(!StorageSettings::uploadDocuments()) {
-			$args['post_mime_type'] = 'image';
-		}
-
-		$query = new \WP_Query($args);
-
-		if($query->post_count > 0) {
+		if($posts['total'] > 0) {
 		    try {
-                BatchManager::instance()->addToBatchAndRun('storage', $query->posts);
+		        $postIDs = [];
+		        foreach($posts['posts'] as $post) {
+                    $postIDs[] = $post['id'];
+                }
+
+                BatchManager::instance()->addToBatchAndRun('storage', $postIDs);
             } catch (\Exception $ex) {
                 json_response(["status"=>"error", "error" => $ex->getMessage()]);
             }
 		} else {
 		    BatchManager::instance()->reset('storage');
+		    json_response(['status' => 'finished']);
 		}
 
-		header('Content-type: application/json');
-		echo '{"status":"running"}';
-		die;
+		$data = [
+		    'status' => 'running',
+            'total' => $posts['total'],
+            'first' => $posts['posts'][0]
+        ];
+
+		json_response($data);
 	}
 
 	/**
