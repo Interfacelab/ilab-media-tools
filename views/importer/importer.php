@@ -412,7 +412,12 @@
             });
 
             if (importing) {
-                checkStatus();
+                if (backgroundImport) {
+                    checkStatus();
+                } else {
+                    importing = false;
+                    startImport();
+                }
             }
         });
     })(jQuery);

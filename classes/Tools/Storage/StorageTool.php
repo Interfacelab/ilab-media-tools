@@ -1296,13 +1296,7 @@ class StorageTool extends ToolBase {
 					}
 
 					if(count($posts_to_import) > 0) {
-                        BatchManager::instance()->reset('storage');
-                        try {
-                            BatchManager::instance()->addToBatchAndRun('storage', $posts_to_import);
-                        } catch (\Exception $ex) {
-                        }
-
-
+					    set_site_transient('ilab-importer-selection', $posts_to_import, 10);
 						return 'admin.php?page=media-tools-s3-importer';
 					}
 				} else if ('ilab_regenerate_thumbnails' === $action_name) {
@@ -1802,28 +1796,45 @@ class StorageTool extends ToolBase {
 
 	//region Importer
     protected function getImportBatch($page, $forceImages = false) {
-        $args = [
-            'post_type' => 'attachment',
-            'post_status' => 'inherit',
-            'posts_per_page' => 100,
-            'fields' => 'ids',
-            'paged' => $page
-        ];
+	    $total = 0;
+	    $pages = 1;
+	    $shouldRun = false;
 
-        if ($page == -1) {
-            unset($args['posts_per_page']);
-            unset($args['paged']);
-            $args['nopaging'] = true;
+	    $postIds = get_site_transient('ilab-importer-selection');
+	    if (!empty($postIds)) {
+	        delete_site_transient('ilab-importer-selection');
+	        $total = count($postIds);
+	        $shouldRun = true;
+        } else {
+            $args = [
+                'post_type' => 'attachment',
+                'post_status' => 'inherit',
+                'posts_per_page' => 100,
+                'fields' => 'ids',
+                'paged' => $page
+            ];
+
+            if ($page == -1) {
+                unset($args['posts_per_page']);
+                unset($args['paged']);
+                $args['nopaging'] = true;
+            }
+
+            if($forceImages || !StorageSettings::uploadDocuments()) {
+                $args['post_mime_type'] = 'image';
+            }
+
+            $query = new \WP_Query($args);
+
+            $postIds = $query->posts;
+
+            $total = (int)$query->found_posts;
+            $pages = $query->max_num_pages;
         }
 
-        if($forceImages || !StorageSettings::uploadDocuments()) {
-            $args['post_mime_type'] = 'image';
-        }
-
-        $query = new \WP_Query($args);
 
         $posts = [];
-        foreach($query->posts as $post) {
+        foreach($postIds as $post) {
             $posts[] = [
                 'id' => $post,
                 'title' => pathinfo(get_attached_file($post), PATHINFO_BASENAME),
@@ -1833,8 +1844,9 @@ class StorageTool extends ToolBase {
 
         return [
             'posts' =>$posts,
-            'total' => (int)$query->found_posts,
-            'pages' => (int)$query->max_num_pages
+            'total' => $total,
+            'pages' => $pages,
+            'shouldRun' => $shouldRun
         ];
     }
 
@@ -1866,9 +1878,12 @@ class StorageTool extends ToolBase {
             }
         }
 
-        $stats['status'] =  ($stats['running']) ? 'running' : 'idle';
+        if ($postData['shouldRun']) {
+	        $stats['status'] = 'running';
+        } else {
+            $stats['status'] =  ($stats['running']) ? 'running' : 'idle';
+        }
         $stats['enabled'] = $this->enabled();
-
         $stats['title'] = 'Storage Importer';
         $stats['instructions'] = View::render_view('importer/storage-importer-instructions.php', ['background' => $background]);
         $stats['disabledText'] = 'enable Storage';
