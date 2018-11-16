@@ -270,10 +270,20 @@ abstract class BatchTool {
 
         $posts = [];
         foreach($postIds as $post) {
+            $thumb = wp_get_attachment_image_src($post, 'thumbnail', true);
+
+            $thumbUrl = null;
+            $icon = false;
+            if (!empty($thumb)) {
+                $thumbUrl = $thumb[0];
+                $icon = (($thumb[1] != 150) && ($thumb[2] != 150));
+            }
+
             $posts[] = [
                 'id' => $post,
                 'title' => pathinfo(get_attached_file($post), PATHINFO_BASENAME),
-                'thumb' => wp_get_attachment_thumb_url($post)
+                'thumb' => $thumbUrl,
+                'icon' => $icon
             ];
         }
 

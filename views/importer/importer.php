@@ -64,22 +64,32 @@
             const backgroundImport = {{ ($background) ? 'true' : 'false' }};
             var postsToImport = {{ json_encode($posts, JSON_PRETTY_PRINT) }};
 
-            const displayNextThumbnail = function(thumbUrl) {
-                if (displayedThumbs.length > 0) {
+            const displayNextThumbnail = function(thumbUrl, icon) {
+                if (thumbUrl == null) {
+                    return;
+                }
+                
+                if (!icon && (displayedThumbs.length > 0)) {
                     if (displayedThumbs[displayedThumbs.length - 1].attr('src') == thumbUrl) {
                         return;
                     }
                 }
 
-                const image = $('<img src="'+thumbUrl+'">');
+                var image = null;
+                if (!icon) {
+                    image = $('<img src="'+thumbUrl+'">');
+                } else {
+                    image = $('<div class="s3-importer-image-icon"><img src="'+thumbUrl+'"></div>');
+                }
+
                 image.hide().prependTo('#s3-importer-thumbnails-container').fadeIn();
                 displayedThumbs.push(image);
+
                 if (displayedThumbs.length >= 20) {
                     var firstImage = displayedThumbs.shift();
                     firstImage.remove();
                     console.log(displayedThumbs.length);
                 }
-                // $('#s3-importer-thumbnails-container').prepend(image);
             }
 
             const nextBatch = function(callback) {
@@ -131,7 +141,7 @@
 
                 totalIndex++;
 
-                displayNextThumbnail(postsToImport[currentIndex].thumb);
+                displayNextThumbnail(postsToImport[currentIndex].thumb, postsToImport[currentIndex].icon);
 
                 $('#s3-importer-status-text').css({'visibility':'visible'});
                 $('#s3-importer-current').text((totalIndex + 1));
@@ -213,7 +223,7 @@
                         $('#s3-importer-instructions').css({display: 'none'});
                         $('#s3-importer-progress').css({display: 'block'});
 
-                        displayNextThumbnail(postsToImport[0].thumb);
+                        displayNextThumbnail(postsToImport[0].thumb, postsToImport[0].icon);
 
                         $('#s3-importer-status-text').css({'visibility':'visible'});
                         $('#s3-importer-current').text(1);
@@ -234,7 +244,7 @@
                             $('#s3-importer-instructions').css({display: 'none'});
                             $('#s3-importer-progress').css({display: 'block'});
 
-                            displayNextThumbnail(response.first.thumb);
+                            displayNextThumbnail(response.first.thumb, response.first.icon);
 
                             totalItems = response.total;
                             $('#s3-importer-status-text').css({'visibility':'visible'});
