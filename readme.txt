@@ -6,7 +6,7 @@ Tested up to: 4.9.8
 License: GPLv3 or later
 Donate link: http://www2.jdrf.org/site/TR?fr_id=6912&pg=personal&px=11429802
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 2.1.18
+Stable tag: 2.1.19
 Requires PHP: 5.6
 
 Automatically upload media to Amazon S3 and integrate with Imgix, a real-time image processing CDN.  Boosts site performance and simplifies workflows.
@@ -100,13 +100,21 @@ Note that image optimization plugins change how Media Cloud behaves.  When an im
 == Screenshots ==
 
 1. Easy image cropping for all croppable image sizes defined in your theme.
-2. Make adjustments to your images like saturation, vibrancy, contrast when using Imgix.
-3. Stylize your images easily when using Imgix.
-3. Watermarking is easy and non-destructive, change the watermark at any time and all watermarked images will automatically update.
-4. Amazon S3 settings.
-6. Imgix settings.
+2. Bulk import your assets to S3 (a free feature in Media Cloud that costs money in other S3 plugins)
+3. Make adjustments to your images like saturation, vibrancy, contrast when using Imgix.
+4. Stylize your images easily when using Imgix.
+5. Watermarking is easy and non-destructive, change the watermark at any time and all watermarked images will automatically update.
+6. Amazon S3 settings.
+7. Imgix settings.
 
 == Changelog ==
+
+= 2.1.19 =
+* Completely revamped the importer, thumbnail regeneration and batch rekognition processor.
+* Added a setting in Storage Settings that allows you to specify the connection timeout for background processing for the importer and other batch tools.  This could be helpful in some hosting situations.  If you've been getting the `cURL 28` error, try increasing this setting.
+* Added a setting in Storage Settings to do the batch importing in the browser, instead of in the background on the server.  This is more reliable as the browser is directing the batch, **HOWEVER**, you cannot close the browser window while a batch is running.  If you cannot get background batch processing working, turn this on.
+* Revamped the importer interface.  It now shows the thumbnail of the image that it currently being processed.
+
 
 = 2.1.18 =
 * PHP 5.6 related fixes.
