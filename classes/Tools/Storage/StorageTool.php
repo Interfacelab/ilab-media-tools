@@ -92,19 +92,6 @@ class StorageTool extends ToolBase {
 
 		add_filter('ilab_cloud_import_from_storage', [$this, 'importImageAttachmentFromStorage'], 10, 1);
 
-		if(is_admin()) {
-//			add_action('wp_ajax_ilab_s3_import_media', [$this, 'importMedia']);
-//            add_action('wp_ajax_ilab_s3_import_progress', [$this, 'importProgress']);
-//            add_action('wp_ajax_ilab_s3_import_next_batch_data', [$this, 'importNextBatchData']);
-//            add_action('wp_ajax_ilab_s3_import_manual', [$this, 'importManual']);
-//			add_action('wp_ajax_ilab_s3_cancel_import', [$this, 'cancelImportMedia']);
-//
-//			add_action('wp_ajax_ilab_media_cloud_regenerate_file', [$this, 'handleRegenerateFile']);
-//			add_action('wp_ajax_ilab_media_cloud_regenerate_files', [$this, 'handleRegenerateFiles']);
-//			add_action('wp_ajax_ilab_media_cloud_regenerate_progress', [$this, 'regenerateProgress']);
-//			add_action('wp_ajax_ilab_media_cloud_cancel_regenerate', [$this, 'cancelRegenerateFiles']);
-		}
-
         $this->testForBadPlugins();
         $this->testForUselessPlugins();
 
@@ -258,25 +245,6 @@ class StorageTool extends ToolBase {
         } catch (StorageException $ex) {
             NoticeManager::instance()->displayAdminNotice('error', 'There is a serious issue with your storage settings.  Please check them and try again.');
         }
-	}
-
-	public function registerMenu($top_menu_slug) {
-		parent::registerMenu($top_menu_slug);
-
-		if($this->enabled()) {
-//			add_submenu_page($top_menu_slug, 'Storage Importer', 'Storage Importer', 'manage_options', 'media-tools-s3-importer', [
-//				$this,
-//				'renderImporter'
-//			]);
-//
-//			$imgixEnabled = apply_filters('ilab_imgix_enabled', false);
-//			if (!$imgixEnabled) {
-//				add_submenu_page($top_menu_slug, 'Rebuild Thumbnails', 'Rebuild Thumbnails', 'manage_options', 'media-tools-cloud-regeneration', [
-//					$this,
-//					'renderRegenerator'
-//				]);
-//            }
-		}
 	}
 	//endregion
 
@@ -638,10 +606,10 @@ class StorageTool extends ToolBase {
 	/**
 	 * Filters the attached file based on the given ID (https://core.trac.wordpress.org/browser/tags/4.8/src/wp-includes/post.php#L293)
 	 *
-	 * @param string $file
-	 * @param int $attachment_id
-	 *
-	 * @return null|string
+     * @param $file
+     * @param $attachment_id
+     * @return null|string
+     * @throws StorageException
 	 */
 	public function getAttachedFile($file, $attachment_id) {
 	    $shouldOverride = apply_filters('ilab_should_override_attached_file', true, $attachment_id);
@@ -928,6 +896,7 @@ class StorageTool extends ToolBase {
 	 * @param int $post_id
 	 *
 	 * @return string
+     * @throws StorageException
 	 */
 	public function getAttachmentURL($url, $post_id) {
 		$meta = wp_get_attachment_metadata($post_id);
@@ -1183,7 +1152,6 @@ class StorageTool extends ToolBase {
 	private function hookupUI() {
 		$this->hookAttachmentDetails();
 		$this->hookMediaList();
-		$this->hookBulkActions();
 		$this->hookStorageInfoMetabox();
 		$this->hookMediaGrid();
 	}
@@ -1256,68 +1224,6 @@ class StorageTool extends ToolBase {
 	}
 
 	/**
-	 * Adds bulk actions to the media list view.
-	 */
-	private function hookBulkActions() {
-		if(!$this->enabled()) {
-			return;
-		}
-
-		if(!$this->mediaListIntegration) {
-			return;
-		}
-
-
-		add_action('admin_init', function() {
-			add_filter('bulk_actions-upload', function($actions) {
-//				$imgixEnabled = apply_filters('ilab_imgix_enabled', false);
-//
-//				$actions['ilab_s3_import'] = 'Import to Cloud Storage';
-//
-//				if (!$imgixEnabled) {
-//					$actions['ilab_regenerate_thumbnails'] = 'Regenerate Thumbnails';
-//                }
-
-				return $actions;
-			});
-
-			add_filter('handle_bulk_actions-upload', function($redirect_to, $action_name, $post_ids) {
-//				if('ilab_s3_import' === $action_name) {
-//					$posts_to_import = [];
-//					if(count($post_ids) > 0) {
-//						foreach($post_ids as $post_id) {
-//							$meta = wp_get_attachment_metadata($post_id);
-//							if(!empty($meta) && isset($meta['s3'])) {
-//								continue;
-//							}
-//
-//							$posts_to_import[] = $post_id;
-//						}
-//					}
-//
-//					if(count($posts_to_import) > 0) {
-//					    set_site_transient('ilab-importer-selection', $posts_to_import, 10);
-//						return 'admin.php?page=media-tools-s3-importer';
-//					}
-//				} else if ('ilab_regenerate_thumbnails' === $action_name) {
-//					if(count($post_ids) > 0) {
-//					    BatchManager::instance()->reset('thumbnails');
-//
-//					    try {
-//                            BatchManager::instance()->addToBatchAndRun('thumbnails', $post_ids);
-//                        } catch (\Exception $ex) {
-//                        }
-//
-//						return 'admin.php?page=media-tools-cloud-regeneration';
-//					}
-//                }
-
-				return $redirect_to;
-			}, 1000, 3);
-		});
-	}
-
-	/**
 	 * Displays a cloud icon on items in the media grid.
 	 */
 	private function hookMediaGrid() {
@@ -1381,6 +1287,7 @@ class StorageTool extends ToolBase {
 	 * @param $content
 	 *
 	 * @return mixed
+     * @throws StorageException
 	 */
 	public function filterContent($content) {
 	    if (apply_filters('ilab_imgix_enabled', false)) {
@@ -1676,304 +1583,9 @@ class StorageTool extends ToolBase {
 
 	    return true;
     }
-
-	/**
-	 * Ajax endpoint for regenerating a single file
-	 */
-    public function handleRegenerateFile() {
-	    if (!is_admin()) {
-	        json_response(['status' => 'error', 'message' => 'Invalid security credentials.']);
-        }
-
-	    if (!isset($_POST['post_id'])) {
-		    json_response(['status' => 'error', 'message' => 'Missing post ID.']);
-	    }
-
-        $postId = intval($_POST['post_id']);
-	    if (!current_user_can('edit_post',$postId)) {
-		    Logger::info('User is attempting to edit a post that they do not have access to.', ['id' => $postId]);
-		    json_response(['status' => 'error', 'message' => 'User is attempting to edit a post that they do not have access to.']);
-        }
-
-        $result = $this->regenerateFile($postId);
-	    if ($result === true) {
-	        json_response(['status'=>'success']);
-        } else {
-	        json_response(['status' => 'error', 'message' => $result]);
-        }
-	}
-
-	/**
-	 * Renders the storage importer view
-	 */
-	public function renderRegenerator() {
-	    $stats = BatchManager::instance()->stats('thumbnails');
-
-		if($stats['total'] == 0) {
-			$attachments = get_posts([
-				                         'post_type' => 'attachment',
-				                         'posts_per_page' => - 1
-			                         ]);
-
-            $stats['total'] = count($attachments);
-		}
-
-        $stats['posts'] = [];
-        $stats['pages'] = 1;
-
-        $stats['status'] =  ($stats['running']) ? 'running' : 'idle';
-        $stats['enabled'] = $this->enabled();
-
-        $stats['title'] = 'Regenerate Thumbnails';
-        $stats['instructions'] = View::render_view('importer/regeneration-instructions.php', []);
-        $stats['disabledText'] = 'enable Storage';
-        $stats['commandLine'] = 'wp mediacloud regenerate';
-        $stats['commandTitle'] = 'Regenerate Thumbnails';
-        $stats['cancelCommandTitle'] = 'Cancel Regeneration';
-        $stats['cancelAction'] = 'ilab_media_cloud_cancel_regenerate';
-        $stats['startAction'] = 'ilab_media_cloud_regenerate_files';
-        $stats['progressAction'] = 'ilab_media_cloud_regenerate_progress';
-        $stats['nextBatchAction'] = 'ilab_s3_import_next_batch_data';
-        $stats['background'] = true;
-
-		echo View::render_view('importer/importer.php', $stats);
-	}
-
-	/**
-	 * Ajax callback for import progress.
-	 */
-	public function regenerateProgress() {
-        $stats = BatchManager::instance()->stats('thumbnails');
-
-        $stats['status'] =  ($stats['running']) ? 'running' : 'idle';
-        $stats['enabled'] = $this->enabled();
-
-		header('Content-type: application/json');
-        echo json_encode($stats);
-		die;
-	}
-
-	/**
-	 * Ajax method to cancel the import
-	 */
-	public function cancelRegenerateFiles() {
-	    BatchManager::instance()->setShouldCancel('thumbnails', true);
-		RegenerateThumbnailsProcess::cancelAll();
-
-		json_response(['status' => 'ok']);
-	}
-
-	/**
-	 * Ajax method to start the import.
-	 */
-	public function handleRegenerateFiles() {
-		$args = [
-			'post_type' => 'attachment',
-			'post_status' => 'inherit',
-			'nopaging' => true,
-			'post_mime_type' => 'image',
-			'fields' => 'ids',
-		];
-
-		$query = new \WP_Query($args);
-
-		if($query->post_count > 0) {
-            try {
-                BatchManager::instance()->addToBatchAndRun('thumbnails', $query->posts);
-            } catch (\Exception $ex) {
-                json_response(["status"=>"error", "error" => $ex->getMessage()]);
-            }
-		} else {
-		    BatchManager::instance()->reset('thumbnails');
-		}
-
-		header('Content-type: application/json');
-		echo '{"status":"running"}';
-		die;
-	}
-
     //endregion
 
 	//region Importer
-    protected function getImportBatch($page, $forceImages = false) {
-	    $total = 0;
-	    $pages = 1;
-	    $shouldRun = false;
-
-	    $postIds = get_site_transient('ilab-importer-selection');
-	    if (!empty($postIds)) {
-	        delete_site_transient('ilab-importer-selection');
-	        $total = count($postIds);
-	        $shouldRun = true;
-        } else {
-            $args = [
-                'post_type' => 'attachment',
-                'post_status' => 'inherit',
-                'posts_per_page' => 100,
-                'fields' => 'ids',
-                'paged' => $page
-            ];
-
-            if ($page == -1) {
-                unset($args['posts_per_page']);
-                unset($args['paged']);
-                $args['nopaging'] = true;
-            }
-
-            if($forceImages || !StorageSettings::uploadDocuments()) {
-                $args['post_mime_type'] = 'image';
-            }
-
-            $query = new \WP_Query($args);
-
-            $postIds = $query->posts;
-
-            $total = (int)$query->found_posts;
-            $pages = $query->max_num_pages;
-        }
-
-
-        $posts = [];
-        foreach($postIds as $post) {
-            $posts[] = [
-                'id' => $post,
-                'title' => pathinfo(get_attached_file($post), PATHINFO_BASENAME),
-                'thumb' => wp_get_attachment_thumb_url($post)
-            ];
-        }
-
-        return [
-            'posts' =>$posts,
-            'total' => $total,
-            'pages' => $pages,
-            'shouldRun' => $shouldRun
-        ];
-    }
-
-    public function importNextBatchData() {
-	    $page = isset($_POST['page']) ? (int)$_POST['page'] : 1;
-
-	    $postData = $this->getImportBatch($page);
-
-	    json_response($postData);
-    }
-
-	/**
-	 * Renders the storage importer view
-	 */
-	public function renderImporter() {
-	    $stats = BatchManager::instance()->stats('storage');
-
-        $postData = $this->getImportBatch(1);
-        $stats['posts'] = $postData['posts'];
-        $stats['pages'] = $postData['pages'];
-
-	    $background = EnvironmentOptions::Option('ilab-media-s3-batch-background-processing', null, true);
-
-	    if (!$background) {
-            $stats['total'] = $postData['total'];
-        } else {
-            if($stats['total'] == 0) {
-                $stats['total'] = $postData['total'];
-            }
-        }
-
-        if ($postData['shouldRun']) {
-	        $stats['status'] = 'running';
-        } else {
-            $stats['status'] =  ($stats['running']) ? 'running' : 'idle';
-        }
-        $stats['enabled'] = $this->enabled();
-        $stats['title'] = 'Storage Importer';
-        $stats['instructions'] = View::render_view('importer/storage-importer-instructions.php', ['background' => $background]);
-
-        $stats['disabledText'] = 'enable Storage';
-        $stats['commandLine'] = 'wp mediacloud import';
-        $stats['commandTitle'] = 'Import Uploads';
-        $stats['cancelCommandTitle'] = 'Cancel Import';
-
-        $stats['cancelAction'] = 'ilab_s3_cancel_import';
-        $stats['startAction'] = 'ilab_s3_import_media';
-        $stats['manualAction'] = 'ilab_s3_import_manual';
-        $stats['progressAction'] = 'ilab_s3_import_progress';
-        $stats['nextBatchAction'] = 'ilab_s3_import_next_batch_data';
-        $stats['background'] = $background;
-
-		echo View::render_view('importer/importer.php', $stats);
-	}
-
-	public function importManual() {
-	    if (!isset($_POST['post_id'])) {
-	        BatchManager::instance()->setErrorMessage('storage', 'Missing required post data.');
-	        json_response([
-	            'status' => 'error'
-            ]);
-        }
-
-//        $pid = $_POST['post_id'];
-//        $this->processImport(0, $pid, null);
-
-        json_response([
-            "status" => 'ok'
-        ]);
-    }
-
-	/**
-	 * Ajax callback for import progress.
-	 */
-	public function importProgress() {
-        $stats = BatchManager::instance()->stats('storage');
-
-        $stats['status'] =  ($stats['running']) ? 'running' : 'idle';
-        $stats['enabled'] = $this->enabled();
-
-		header('Content-type: application/json');
-        echo json_encode($stats);
-
-		die;
-	}
-
-	/**
-	 * Ajax method to cancel the import
-	 */
-	public function cancelImportMedia() {
-	    BatchManager::instance()->setShouldCancel('storage', true);
-		StorageImportProcess::cancelAll();
-
-		json_response(['status' => 'ok']);
-	}
-
-	/**
-	 * Ajax method to start the import.
-	 */
-	public function importMedia() {
-	    $posts = $this->getImportBatch(-1);
-
-		if($posts['total'] > 0) {
-		    try {
-		        $postIDs = [];
-		        foreach($posts['posts'] as $post) {
-                    $postIDs[] = $post['id'];
-                }
-
-                BatchManager::instance()->addToBatchAndRun('storage', $postIDs);
-            } catch (\Exception $ex) {
-                json_response(["status"=>"error", "error" => $ex->getMessage()]);
-            }
-		} else {
-		    BatchManager::instance()->reset('storage');
-		    json_response(['status' => 'finished']);
-		}
-
-		$data = [
-		    'status' => 'running',
-            'total' => $posts['total'],
-            'first' => $posts['posts'][0]
-        ];
-
-		json_response($data);
-	}
-
 	/**
      * @param int $index
 	 * @param int $postId
@@ -2124,6 +1736,7 @@ class StorageTool extends ToolBase {
 	 * @param FileInfo $fileInfo
 	 *
 	 * @return array|bool
+     * @throws StorageException
 	 */
 	public function importImageAttachmentFromStorage($fileInfo) {
 		if(!$this->client || !$this->client->enabled()) {
