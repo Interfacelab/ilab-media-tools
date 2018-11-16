@@ -146,7 +146,7 @@
             var totalItems = {{$total}};
             var manualStart = 0;
             var fromSelection = {{($fromSelection) ? 'true' : 'false'}};
-
+            var autoStart = {{($shouldRun) ? 'true' : 'false'}};
             var displayedThumbs = [];
 
             const backgroundImport = {{ ($background) ? 'true' : 'false' }};
@@ -437,9 +437,11 @@
                 return false;
             });
 
-            if (importing) {
+            if (autoStart && importing) {
                 importing = false;
                 startImport();
+            } else if (importing && backgroundImport) {
+                checkStatus();
             }
         });
     })(jQuery);

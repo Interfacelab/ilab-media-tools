@@ -173,7 +173,7 @@ class RekognitionTool extends ToolBase {
 		parent::registerMenu($top_menu_slug);
 
 		if ($this->enabled()) {
-			add_submenu_page( $top_menu_slug, 'Rekognizer Importer', 'Rekognizer Importer', 'manage_options', 'media-tools-rekognizer-importer', [$this,'renderImporter']);
+//			add_submenu_page( $top_menu_slug, 'Rekognizer Importer', 'Rekognizer Importer', 'manage_options', 'media-tools-rekognizer-importer', [$this,'renderImporter']);
 		}
 	}
 	//endregion
@@ -248,18 +248,18 @@ class RekognitionTool extends ToolBase {
 	public function setupAdmin() {
 		add_filter('ilab_s3_after_upload', [$this, 'processImageMeta'], 1000, 2);
 
-		add_action('wp_ajax_ilab_rekognizer_process_images', [$this,'processImages']);
-		add_action('wp_ajax_ilab_rekognizer_process_progress', [$this,'processProgress']);
-		add_action('wp_ajax_ilab_rekognizer_cancel_process', [$this,'cancelProcessMedia']);
+//		add_action('wp_ajax_ilab_rekognizer_process_images', [$this,'processImages']);
+//		add_action('wp_ajax_ilab_rekognizer_process_progress', [$this,'processProgress']);
+//		add_action('wp_ajax_ilab_rekognizer_cancel_process', [$this,'cancelProcessMedia']);
 
 		add_action('admin_init',function(){
 			if ($this->enabled()) {
-				add_filter('bulk_actions-upload', function($actions){
-					$actions['ilab_rekognizer_process'] = 'Process with Rekognizer';
-					return $actions;
-				});
-
-				add_filter('handle_bulk_actions-upload', [$this,'handleBulkAction'], 1000, 3);
+//				add_filter('bulk_actions-upload', function($actions){
+//					$actions['ilab_rekognizer_process'] = 'Process with Rekognizer';
+//					return $actions;
+//				});
+//
+//				add_filter('handle_bulk_actions-upload', [$this,'handleBulkAction'], 1000, 3);
 			}
 		});
 	}

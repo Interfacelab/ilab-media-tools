@@ -319,6 +319,7 @@ abstract class BatchTool {
         } else {
             $data['status'] =  ($data['running']) ? 'running' : 'idle';
         }
+        $data['shouldRun'] = $postData['shouldRun'];
         $data['enabled'] = $this->enabled();
         $data['title'] = $this->title();
         $data['instructions'] = View::render_view($this->instructionView(), ['background' => $background]);

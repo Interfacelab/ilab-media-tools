@@ -20,6 +20,9 @@ return [
 	"class" => "ILAB\\MediaCloud\\Tools\\Rekognition\\RekognitionTool",
 	"dependencies" => ["storage"],
 	"env" => "ILAB_MEDIA_REKOGNITION_ENABLED",
+    "batchTools" => [
+        "\\ILAB\\MediaCloud\\Tools\\Rekognition\\Batch\\ImportRekognitionTool"
+    ],
 	"settings" => [
 		"title" => "Rekognition Settings",
 		"menu" => "Rekognition Settings",
