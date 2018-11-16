@@ -37,6 +37,9 @@ return [
             "description" => "This plugin rolls their own non-standard image resizing functionality which is incompatible with Media Cloud. They should be using WordPress's <code>image_downsize()</code> function."
         ]
     ],
+    "batchTools" => [
+        "\\ILAB\\MediaCloud\\Tools\\Storage\\Batch\\ImportStorageBatchTool"
+    ],
 	"settings" => [
 		"title" => "Storage Settings",
 		"menu" => "Storage Settings",

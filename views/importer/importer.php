@@ -145,6 +145,7 @@
             var totalPages = {{$pages}};
             var totalItems = {{$total}};
             var manualStart = 0;
+            var fromSelection = {{($fromSelection) ? 'true' : 'false'}};
 
             var displayedThumbs = [];
 
@@ -280,9 +281,32 @@
                 $('#s3-importer-thumbnails-container').empty();
 
                 if (backgroundImport) {
-                    const data={
+                    var data={
                         action: '{{$startAction}}'
                     };
+
+                    if (fromSelection) {
+                        postIds = [];
+                        for(var i=0; i<postsToImport.length; i++) {
+                            postIds.push(postsToImport[i].id);
+                        }
+
+                        data['selection'] = postIds;
+
+                        $('#s3-importer-cancel-import').attr('disabled', false);
+                        $('#s3-importer-cancelling-text').css({'display':'none'});
+                        $('#s3-importer-status-text').css({'visibility':'visible'});
+
+                        $('#s3-importer-instructions').css({display: 'none'});
+                        $('#s3-importer-progress').css({display: 'block'});
+
+                        displayNextThumbnail(postsToImport[0].thumb);
+
+                        $('#s3-importer-status-text').css({'visibility':'visible'});
+                        $('#s3-importer-current').text(1);
+                        $('#s3-importer-current-file').text(postsToImport[0].title);
+                        $('#s3-importer-total').text(totalItems);
+                    }
 
                     $.post(ajaxurl,data,function(response){
                         if (response.status == 'error') {
@@ -412,12 +436,8 @@
             });
 
             if (importing) {
-                if (backgroundImport) {
-                    checkStatus();
-                } else {
-                    importing = false;
-                    startImport();
-                }
+                importing = false;
+                startImport();
             }
         });
     })(jQuery);

@@ -93,16 +93,16 @@ class StorageTool extends ToolBase {
 		add_filter('ilab_cloud_import_from_storage', [$this, 'importImageAttachmentFromStorage'], 10, 1);
 
 		if(is_admin()) {
-			add_action('wp_ajax_ilab_s3_import_media', [$this, 'importMedia']);
-            add_action('wp_ajax_ilab_s3_import_progress', [$this, 'importProgress']);
-            add_action('wp_ajax_ilab_s3_import_next_batch_data', [$this, 'importNextBatchData']);
-            add_action('wp_ajax_ilab_s3_import_manual', [$this, 'importManual']);
-			add_action('wp_ajax_ilab_s3_cancel_import', [$this, 'cancelImportMedia']);
-
-			add_action('wp_ajax_ilab_media_cloud_regenerate_file', [$this, 'handleRegenerateFile']);
-			add_action('wp_ajax_ilab_media_cloud_regenerate_files', [$this, 'handleRegenerateFiles']);
-			add_action('wp_ajax_ilab_media_cloud_regenerate_progress', [$this, 'regenerateProgress']);
-			add_action('wp_ajax_ilab_media_cloud_cancel_regenerate', [$this, 'cancelRegenerateFiles']);
+//			add_action('wp_ajax_ilab_s3_import_media', [$this, 'importMedia']);
+//            add_action('wp_ajax_ilab_s3_import_progress', [$this, 'importProgress']);
+//            add_action('wp_ajax_ilab_s3_import_next_batch_data', [$this, 'importNextBatchData']);
+//            add_action('wp_ajax_ilab_s3_import_manual', [$this, 'importManual']);
+//			add_action('wp_ajax_ilab_s3_cancel_import', [$this, 'cancelImportMedia']);
+//
+//			add_action('wp_ajax_ilab_media_cloud_regenerate_file', [$this, 'handleRegenerateFile']);
+//			add_action('wp_ajax_ilab_media_cloud_regenerate_files', [$this, 'handleRegenerateFiles']);
+//			add_action('wp_ajax_ilab_media_cloud_regenerate_progress', [$this, 'regenerateProgress']);
+//			add_action('wp_ajax_ilab_media_cloud_cancel_regenerate', [$this, 'cancelRegenerateFiles']);
 		}
 
         $this->testForBadPlugins();
@@ -264,18 +264,18 @@ class StorageTool extends ToolBase {
 		parent::registerMenu($top_menu_slug);
 
 		if($this->enabled()) {
-			add_submenu_page($top_menu_slug, 'Storage Importer', 'Storage Importer', 'manage_options', 'media-tools-s3-importer', [
-				$this,
-				'renderImporter'
-			]);
-
-			$imgixEnabled = apply_filters('ilab_imgix_enabled', false);
-			if (!$imgixEnabled) {
-				add_submenu_page($top_menu_slug, 'Rebuild Thumbnails', 'Rebuild Thumbnails', 'manage_options', 'media-tools-cloud-regeneration', [
-					$this,
-					'renderRegenerator'
-				]);
-            }
+//			add_submenu_page($top_menu_slug, 'Storage Importer', 'Storage Importer', 'manage_options', 'media-tools-s3-importer', [
+//				$this,
+//				'renderImporter'
+//			]);
+//
+//			$imgixEnabled = apply_filters('ilab_imgix_enabled', false);
+//			if (!$imgixEnabled) {
+//				add_submenu_page($top_menu_slug, 'Rebuild Thumbnails', 'Rebuild Thumbnails', 'manage_options', 'media-tools-cloud-regeneration', [
+//					$this,
+//					'renderRegenerator'
+//				]);
+//            }
 		}
 	}
 	//endregion
@@ -1270,47 +1270,47 @@ class StorageTool extends ToolBase {
 
 		add_action('admin_init', function() {
 			add_filter('bulk_actions-upload', function($actions) {
-				$imgixEnabled = apply_filters('ilab_imgix_enabled', false);
-
-				$actions['ilab_s3_import'] = 'Import to Cloud Storage';
-
-				if (!$imgixEnabled) {
-					$actions['ilab_regenerate_thumbnails'] = 'Regenerate Thumbnails';
-                }
+//				$imgixEnabled = apply_filters('ilab_imgix_enabled', false);
+//
+//				$actions['ilab_s3_import'] = 'Import to Cloud Storage';
+//
+//				if (!$imgixEnabled) {
+//					$actions['ilab_regenerate_thumbnails'] = 'Regenerate Thumbnails';
+//                }
 
 				return $actions;
 			});
 
 			add_filter('handle_bulk_actions-upload', function($redirect_to, $action_name, $post_ids) {
-				if('ilab_s3_import' === $action_name) {
-					$posts_to_import = [];
-					if(count($post_ids) > 0) {
-						foreach($post_ids as $post_id) {
-							$meta = wp_get_attachment_metadata($post_id);
-							if(!empty($meta) && isset($meta['s3'])) {
-								continue;
-							}
-
-							$posts_to_import[] = $post_id;
-						}
-					}
-
-					if(count($posts_to_import) > 0) {
-					    set_site_transient('ilab-importer-selection', $posts_to_import, 10);
-						return 'admin.php?page=media-tools-s3-importer';
-					}
-				} else if ('ilab_regenerate_thumbnails' === $action_name) {
-					if(count($post_ids) > 0) {
-					    BatchManager::instance()->reset('thumbnails');
-
-					    try {
-                            BatchManager::instance()->addToBatchAndRun('thumbnails', $post_ids);
-                        } catch (\Exception $ex) {
-                        }
-
-						return 'admin.php?page=media-tools-cloud-regeneration';
-					}
-                }
+//				if('ilab_s3_import' === $action_name) {
+//					$posts_to_import = [];
+//					if(count($post_ids) > 0) {
+//						foreach($post_ids as $post_id) {
+//							$meta = wp_get_attachment_metadata($post_id);
+//							if(!empty($meta) && isset($meta['s3'])) {
+//								continue;
+//							}
+//
+//							$posts_to_import[] = $post_id;
+//						}
+//					}
+//
+//					if(count($posts_to_import) > 0) {
+//					    set_site_transient('ilab-importer-selection', $posts_to_import, 10);
+//						return 'admin.php?page=media-tools-s3-importer';
+//					}
+//				} else if ('ilab_regenerate_thumbnails' === $action_name) {
+//					if(count($post_ids) > 0) {
+//					    BatchManager::instance()->reset('thumbnails');
+//
+//					    try {
+//                            BatchManager::instance()->addToBatchAndRun('thumbnails', $post_ids);
+//                        } catch (\Exception $ex) {
+//                        }
+//
+//						return 'admin.php?page=media-tools-cloud-regeneration';
+//					}
+//                }
 
 				return $redirect_to;
 			}, 1000, 3);
@@ -1886,10 +1886,12 @@ class StorageTool extends ToolBase {
         $stats['enabled'] = $this->enabled();
         $stats['title'] = 'Storage Importer';
         $stats['instructions'] = View::render_view('importer/storage-importer-instructions.php', ['background' => $background]);
+
         $stats['disabledText'] = 'enable Storage';
         $stats['commandLine'] = 'wp mediacloud import';
         $stats['commandTitle'] = 'Import Uploads';
         $stats['cancelCommandTitle'] = 'Cancel Import';
+
         $stats['cancelAction'] = 'ilab_s3_cancel_import';
         $stats['startAction'] = 'ilab_s3_import_media';
         $stats['manualAction'] = 'ilab_s3_import_manual';

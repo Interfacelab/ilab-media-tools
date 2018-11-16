@@ -83,6 +83,12 @@ abstract class ToolBase {
     protected $only_when_enabled;
 
     /**
+     * List of batch tools for this tool
+     * @var BatchTool[]
+     */
+    protected $batchTools = [];
+
+    /**
      * Creates a new instance.  Subclasses should do any setup dependent on being enabled in setup()
      * @param $toolName
      * @param $toolInfo
@@ -121,6 +127,11 @@ abstract class ToolBase {
                 require_once(ILAB_HELPERS_DIR.'/'.$helper);
         }
 
+        if (isset($toolInfo['batchTools'])) {
+            foreach($toolInfo['batchTools'] as $className) {
+                $this->batchTools[] = new $className($this);
+            }
+        }
 
 	    add_action('admin_enqueue_scripts', function(){
 		    wp_enqueue_style('ilab-media-settings-css', ILAB_PUB_CSS_URL . '/ilab-media-tools.settings.min.css' );
@@ -213,8 +224,10 @@ abstract class ToolBase {
     /**
      * Perform any setup
      */
-    public function setup()
-    {
+    public function setup() {
+        foreach($this->batchTools as $batchTool) {
+            $batchTool->setup();
+        }
     }
 
     /**
@@ -355,6 +368,15 @@ abstract class ToolBase {
 
         $settings=$this->toolInfo['settings'];
         add_submenu_page( $top_menu_slug, $settings['title'], $settings['menu'], 'manage_options', $this->options_page, [$this,'renderSettings']);
+
+        foreach($this->batchTools as $batchTool) {
+            if ($batchTool->enabled()) {
+                add_submenu_page($top_menu_slug, $batchTool->pageTitle(), $batchTool->menuTitle(), $batchTool->capabilityRequirement(), $batchTool->menuSlug(), [
+                    $batchTool,
+                    'renderBatchTool'
+                ]);
+            }
+        }
     }
 
 
