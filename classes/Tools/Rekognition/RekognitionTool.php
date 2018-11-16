@@ -529,6 +529,9 @@ class RekognitionTool extends ToolBase {
             $stats['total'] = count($attachments);
 		}
 
+		$stats['posts'] = [];
+		$stats['pages'] = 1;
+
         $stats['status'] =  ($stats['running']) ? 'running' : 'idle';
 		$stats['enabled'] = $this->enabled();
 
@@ -541,6 +544,8 @@ class RekognitionTool extends ToolBase {
         $stats['cancelAction'] = 'ilab_rekognizer_cancel_process';
         $stats['startAction'] = 'ilab_rekognizer_process_images';
         $stats['progressAction'] = 'ilab_rekognizer_process_progress';
+        $stats['nextBatchAction'] = 'ilab_s3_import_next_batch_data';
+        $stats['background'] = true;
 
         echo View::render_view('importer/importer.php', $stats);
 	}

@@ -94,7 +94,9 @@ class StorageTool extends ToolBase {
 
 		if(is_admin()) {
 			add_action('wp_ajax_ilab_s3_import_media', [$this, 'importMedia']);
-			add_action('wp_ajax_ilab_s3_import_progress', [$this, 'importProgress']);
+            add_action('wp_ajax_ilab_s3_import_progress', [$this, 'importProgress']);
+            add_action('wp_ajax_ilab_s3_import_next_batch_data', [$this, 'importNextBatchData']);
+            add_action('wp_ajax_ilab_s3_import_manual', [$this, 'importManual']);
 			add_action('wp_ajax_ilab_s3_cancel_import', [$this, 'cancelImportMedia']);
 
 			add_action('wp_ajax_ilab_media_cloud_regenerate_file', [$this, 'handleRegenerateFile']);
@@ -1722,6 +1724,9 @@ class StorageTool extends ToolBase {
             $stats['total'] = count($attachments);
 		}
 
+        $stats['posts'] = [];
+        $stats['pages'] = 1;
+
         $stats['status'] =  ($stats['running']) ? 'running' : 'idle';
         $stats['enabled'] = $this->enabled();
 
@@ -1734,6 +1739,8 @@ class StorageTool extends ToolBase {
         $stats['cancelAction'] = 'ilab_media_cloud_cancel_regenerate';
         $stats['startAction'] = 'ilab_media_cloud_regenerate_files';
         $stats['progressAction'] = 'ilab_media_cloud_regenerate_progress';
+        $stats['nextBatchAction'] = 'ilab_s3_import_next_batch_data';
+        $stats['background'] = true;
 
 		echo View::render_view('importer/importer.php', $stats);
 	}
@@ -1794,36 +1801,99 @@ class StorageTool extends ToolBase {
     //endregion
 
 	//region Importer
+    protected function getImportBatch($page) {
+        $args = [
+            'post_type' => 'attachment',
+            'post_status' => 'inherit',
+            'posts_per_page' => 100,
+            'fields' => 'ids',
+            'paged' => $page
+        ];
+
+        if(!StorageSettings::uploadDocuments()) {
+            $args['post_mime_type'] = 'image';
+        }
+
+        $query = new \WP_Query($args);
+
+        $posts = [];
+        foreach($query->posts as $post) {
+            $posts[] = [
+                'id' => $post,
+                'title' => pathinfo(get_attached_file($post), PATHINFO_BASENAME),
+                'thumb' => wp_get_attachment_thumb_url($post)
+            ];
+        }
+
+        return [
+            'posts' =>$posts,
+            'total' => (int)$query->found_posts,
+            'pages' => (int)$query->max_num_pages
+        ];
+    }
+
+    public function importNextBatchData() {
+	    $page = isset($_POST['page']) ? (int)$_POST['page'] : 1;
+
+	    $postData = $this->getImportBatch($page);
+
+	    json_response($postData);
+    }
+
 	/**
 	 * Renders the storage importer view
 	 */
 	public function renderImporter() {
 	    $stats = BatchManager::instance()->stats('storage');
 
-		if($stats['total'] == 0) {
-			$attachments = get_posts([
-				                         'post_type' => 'attachment',
-				                         'posts_per_page' => - 1
-			                         ]);
+        $postData = $this->getImportBatch(1);
+        $stats['posts'] = $postData['posts'];
+        $stats['pages'] = $postData['pages'];
 
-            $stats['total'] = count($attachments);
-		}
+	    $background = EnvironmentOptions::Option('ilab-media-s3-batch-background-processing', null, true);
+
+	    if (!$background) {
+            $stats['total'] = $postData['total'];
+        } else {
+            if($stats['total'] == 0) {
+                $stats['total'] = $postData['total'];
+            }
+        }
 
         $stats['status'] =  ($stats['running']) ? 'running' : 'idle';
         $stats['enabled'] = $this->enabled();
 
         $stats['title'] = 'Storage Importer';
-        $stats['instructions'] = View::render_view('importer/storage-importer-instructions.php', []);
+        $stats['instructions'] = View::render_view('importer/storage-importer-instructions.php', ['background' => $background]);
         $stats['disabledText'] = 'enable Storage';
         $stats['commandLine'] = 'wp mediacloud import';
         $stats['commandTitle'] = 'Import Uploads';
         $stats['cancelCommandTitle'] = 'Cancel Import';
         $stats['cancelAction'] = 'ilab_s3_cancel_import';
         $stats['startAction'] = 'ilab_s3_import_media';
+        $stats['manualAction'] = 'ilab_s3_import_manual';
         $stats['progressAction'] = 'ilab_s3_import_progress';
+        $stats['nextBatchAction'] = 'ilab_s3_import_next_batch_data';
+        $stats['background'] = $background;
 
 		echo View::render_view('importer/importer.php', $stats);
 	}
+
+	public function importManual() {
+	    if (!isset($_POST['post_id'])) {
+	        BatchManager::instance()->setErrorMessage('storage', 'Missing required post data.');
+	        json_response([
+	            'status' => 'error'
+            ]);
+        }
+
+//        $pid = $_POST['post_id'];
+//        $this->processImport(0, $pid, null);
+
+        json_response([
+            "status" => 'ok'
+        ]);
+    }
 
 	/**
 	 * Ajax callback for import progress.
