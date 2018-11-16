@@ -43,6 +43,8 @@ class RekognizerProcess extends BackgroundProcess {
 		$index = $item['index'];
 		$post_id = $item['post'];
 
+        BatchManager::instance()->setCurrentID('rekognizer', $post_id);
+
 		BatchManager::instance()->setCurrent('rekognizer', $index + 1);
 
 		$data = wp_get_attachment_metadata($post_id);

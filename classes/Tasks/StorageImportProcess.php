@@ -49,6 +49,8 @@ class StorageImportProcess extends BackgroundProcess implements ImportProgressDe
 		$index = $item['index'];
 		$post_id = $item['post'];
 
+		BatchManager::instance()->setCurrentID('storage', $post_id);
+
 		/** @var StorageTool $s3tool */
 		$s3tool = ToolsManager::instance()->tools['storage'];
 		$s3tool->processImport($index, $post_id, $this);

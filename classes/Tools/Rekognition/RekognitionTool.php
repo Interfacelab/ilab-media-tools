@@ -131,7 +131,7 @@ class RekognitionTool extends ToolBase {
 
 		if (is_admin()) {
             BatchManager::instance()->displayAnyErrors('rekognizer');
-			$this->setupAdmin();
+            add_filter('ilab_s3_after_upload', [$this, 'processImageMeta'], 1000, 2);
 		}
 
 		add_filter('ilab_rekognition_enabled', function($enabled){
@@ -168,14 +168,6 @@ class RekognitionTool extends ToolBase {
 
 		return ($this->detectLabels || $this->detectFaces || $this->detectExplicit || $this->detectCelebrities);
 	}
-
-	public function registerMenu($top_menu_slug) {
-		parent::registerMenu($top_menu_slug);
-
-		if ($this->enabled()) {
-			add_submenu_page( $top_menu_slug, 'Rekognizer Importer', 'Rekognizer Importer', 'manage_options', 'media-tools-rekognizer-importer', [$this,'renderImporter']);
-		}
-	}
 	//endregion
 
 	//region Settings Helpers
@@ -200,68 +192,6 @@ class RekognitionTool extends ToolBase {
 
 
 		return $taxonomies;
-	}
-	//endregion
-
-	//region Admin Setup
-	/**
-	 * Handles the Rekognition bulk import action
-	 *
-	 * @param string $redirect_to
-	 * @param string $action_name
-	 * @param array $post_ids
-	 *
-	 * @return string
-	 */
-	public function handleBulkAction($redirect_to, $action_name, $post_ids) {
-		if ('ilab_rekognizer_process' === $action_name) {
-			$posts_to_import = [];
-			if (count($post_ids) > 0) {
-				foreach($post_ids as $post_id) {
-					$meta = wp_get_attachment_metadata($post_id);
-					if (!empty($meta) && !isset($meta['s3'])) {
-						continue;
-					}
-
-					$mime = get_post_mime_type($post_id);
-					if (!in_array($mime, ['image/jpeg', 'image/jpg', 'image/png'])) {
-						continue;
-					}
-
-					$posts_to_import[] = $post_id;
-				}
-			}
-
-			if (count($posts_to_import) > 0) {
-			    BatchManager::instance()->addToBatchAndRun('rekognizer', $posts_to_import);
-
-				return 'admin.php?page=media-tools-rekognizer-importer';
-			}
-		}
-
-		return $redirect_to;
-	}
-
-	/**
-	 * Admin setup
-	 */
-	public function setupAdmin() {
-		add_filter('ilab_s3_after_upload', [$this, 'processImageMeta'], 1000, 2);
-
-		add_action('wp_ajax_ilab_rekognizer_process_images', [$this,'processImages']);
-		add_action('wp_ajax_ilab_rekognizer_process_progress', [$this,'processProgress']);
-		add_action('wp_ajax_ilab_rekognizer_cancel_process', [$this,'cancelProcessMedia']);
-
-		add_action('admin_init',function(){
-			if ($this->enabled()) {
-				add_filter('bulk_actions-upload', function($actions){
-					$actions['ilab_rekognizer_process'] = 'Process with Rekognizer';
-					return $actions;
-				});
-
-				add_filter('handle_bulk_actions-upload', [$this,'handleBulkAction'], 1000, 3);
-			}
-		});
 	}
 	//endregion
 
@@ -510,104 +440,6 @@ class RekognitionTool extends ToolBase {
 		if (!empty($tagsToAdd)) {
 			wp_set_object_terms($postID, $tagsToAdd, $tax, true);
 		}
-	}
-	//endregion
-
-	//region Importer
-	/**
-	 * Renders the Rekognition Import UI
-	 */
-	public function renderImporter() {
-		$stats = BatchManager::instance()->stats('rekognizer');
-
-		if ($stats['total'] == 0) {
-			$attachments = get_posts([
-				                         'post_type'=> 'attachment',
-				                         'posts_per_page' => -1
-			                         ]);
-
-            $stats['total'] = count($attachments);
-		}
-
-        $stats['status'] =  ($stats['running']) ? 'running' : 'idle';
-		$stats['enabled'] = $this->enabled();
-
-        $stats['title'] = 'Rekognizer Importer';
-        $stats['disabledText'] = 'enable Rekognizer';
-        $stats['instructions'] = View::render_view('importer/rekognition-instructions.php', []);
-        $stats['commandLine'] = 'wp rekognition process';
-        $stats['commandTitle'] = 'Process Images';
-        $stats['cancelCommandTitle'] = 'Cancel Import';
-        $stats['cancelAction'] = 'ilab_rekognizer_cancel_process';
-        $stats['startAction'] = 'ilab_rekognizer_process_images';
-        $stats['progressAction'] = 'ilab_rekognizer_process_progress';
-
-        echo View::render_view('importer/importer.php', $stats);
-	}
-
-	/**
-	 * Ajax callback to start the import process.
-	 */
-	public function processImages() {
-		global $wpdb;
-
-		$sql = <<<SQL
-			select 
-				posts.ID
-			from
-				{$wpdb->posts} posts
-			where
-				posts.post_type = 'attachment'
-			and
-				posts.post_status = 'inherit'
-			and
-				posts.post_mime_type in ('image/jpeg', 'image/jpg', 'image/png')
-			and
-				posts.ID in (select post_id from wp_postmeta where meta_key = '_wp_attachment_metadata' and meta_value like '%s:2:"s3";a:%');
-SQL;
-
-		$rows = $wpdb->get_results($sql);
-
-		$posts = [];
-		foreach($rows as $row) {
-			$posts[] = $row->ID;
-		}
-
-		if (count($posts) > 0) {
-            try {
-                BatchManager::instance()->addToBatchAndRun('rekognizer', $posts);
-            } catch (\Exception $ex) {
-                json_response(["status"=>"error", "error" => $ex->getMessage()]);
-            }
-		} else {
-		    BatchManager::instance()->reset('rekognizer');
-		}
-
-		header('Content-type: application/json');
-		echo '{"status":"running"}';
-		die;
-	}
-
-	/**
-	 * Ajax endpoint to get progress information
-	 */
-	public function processProgress() {
-        $stats = BatchManager::instance()->stats('rekognizer');
-        $stats['status'] =  ($stats['running']) ? 'running' : 'idle';
-
-		header('Content-type: application/json');
-        echo json_encode($stats);
-		die;
-	}
-
-	/**
-	 * Cancels the Rekognition import process.
-	 */
-	public function cancelProcessMedia() {
-	    BatchManager::instance()->setShouldCancel('rekognizer', true);
-		RekognizerProcess::cancelAll();
-
-		json_response(['status'=>'ok']);
 	}
 	//endregion
 }

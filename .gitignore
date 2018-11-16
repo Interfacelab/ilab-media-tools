@@ -5,3 +5,4 @@ public/css/*.map
 public/js/*.map
 cropper.css
 rest-api.php
+package-lock.json

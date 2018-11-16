@@ -68,13 +68,13 @@ function clientRectContainsPoint(cr, x, y) {
             $('#ilab-info-regenerate-status').css({display: ''});
 
             $.post(ajaxurl, {
-                "action": "ilab_media_cloud_regenerate_file",
+                "action": "ilab_regenerate_thumbnails_manual",
                 "post_id": button.data('post-id')
             }, function(response){
                 button.css({display: ''});
                 $('#ilab-info-regenerate-status').css({display: 'none'});
-                if (response.status != 'success') {
-                    alert(response.message);
+                if (response.status != 'ok') {
+                    alert("There was a problem trying to regenerate the thumbnails.  Please try again.");
                 }
                 $(document).trigger('ilab-regeneration-ended');
             });

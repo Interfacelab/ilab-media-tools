@@ -133,6 +133,24 @@ final class BatchManager {
     }
 
     /**
+     * Returns the ID of the item currently being processed
+     * @param $batch
+     * @return int
+     */
+    public function currentID($batch) {
+        return get_option("ilab_media_tools_{$batch}_current_id", 0);
+    }
+
+    /**
+     * Sets the current index being processed
+     * @param $batch
+     * @param int $index
+     */
+    public function setCurrentID($batch, $id) {
+        update_option("ilab_media_tools_{$batch}_current_id", $id);
+    }
+
+    /**
      * Returns the file name of the current item being processed
      * @param $batch
      * @return string|null
@@ -312,9 +330,25 @@ final class BatchManager {
             }
         }
 
+
+
+        $thumbUrl = null;
+        $icon = false;
+
+        if (!empty($this->currentID($batch))) {
+            $thumb = wp_get_attachment_image_src($this->currentID($batch), 'thumbnail', true);
+            if (!empty($thumb)) {
+                $thumbUrl = $thumb[0];
+                $icon = (($thumb[1] != 150) && ($thumb[2] != 150));
+            }
+        }
+
         return [
             'running' => $this->status($batch),
             'current' => $current,
+            'currentID' => $this->currentID($batch),
+            'thumb' => $thumbUrl,
+            'icon' => $icon,
             'currentFile' => $this->currentFile($batch),
             'total' => $total,
             'totalTime' => $totalTime,

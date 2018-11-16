@@ -37,6 +37,10 @@ return [
             "description" => "This plugin rolls their own non-standard image resizing functionality which is incompatible with Media Cloud. They should be using WordPress's <code>image_downsize()</code> function."
         ]
     ],
+    "batchTools" => [
+        "\\ILAB\\MediaCloud\\Tools\\Storage\\Batch\\ImportStorageBatchTool",
+        "\\ILAB\\MediaCloud\\Tools\\Storage\\Batch\\ThumbnailBatchTool"
+    ],
 	"settings" => [
 		"title" => "Storage Settings",
 		"menu" => "Storage Settings",
@@ -286,7 +290,13 @@ return [
                         "increment" => 0.01,
                         "min" => 0.01,
                         "max" => 30
-                    ]
+                    ],
+                    "ilab-media-s3-batch-background-processing" => [
+                        "title" => "Process In Background",
+                        "description" => "When this is selected, batch processing happens asynchronously in the background on your WordPress server.  However, some server configuration and hosting setups do not support this type of background processing.  If you set this to false/off, the import is processed in your browser via ajax.  This client-side ajax method is very slow and requires that the importer page be open during the entire import process.",
+                        "type" => "checkbox",
+                        "default" => true
+                    ],
                 ]
             ],
 			"ilab-media-s3-display-settings" => [
