@@ -6,7 +6,7 @@ Tested up to: 4.9.8
 License: GPLv3 or later
 Donate link: http://www2.jdrf.org/site/TR?fr_id=6912&pg=personal&px=11429802
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 2.1.19
+Stable tag: 2.1.20
 Requires PHP: 5.6
 
 Automatically upload media to Amazon S3 and integrate with Imgix, a real-time image processing CDN.  Boosts site performance and simplifies workflows.
@@ -108,6 +108,11 @@ Note that image optimization plugins change how Media Cloud behaves.  When an im
 7. Imgix settings.
 
 == Changelog ==
+
+= 2.1.20 =
+* Fixed EWWW Image Optimizer compatibility
+* Fixed compatibility with Offload S3 when transition to Media Cloud from that plugin
+* Fixed a bug for when you have the `wp-cli/wp-cli` package installed via composer when using Bedrock
 
 = 2.1.19 =
 * Completely revamped the importer, thumbnail regeneration and batch rekognition processor.
