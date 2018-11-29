@@ -33,7 +33,7 @@ class Logger {
 
 	//region Constructor
 	public function __construct() {
-	    if (class_exists('\WP_CLI')) {
+	    if (defined( 'WP_CLI' ) && class_exists('\WP_CLI')) {
 	        $this->useWPCLI = (\WP_CLI::get_config('debug') == 'mediacloud');
 
 	        if ($this->useWPCLI) {
@@ -56,7 +56,7 @@ class Logger {
 					$realLevel = MonologLogger::ERROR;
 				}
 
-				if ( defined( 'WP_CLI' ) && \WP_CLI ) {
+                if (defined( 'WP_CLI' ) && class_exists('\WP_CLI')) {
 					$realLevel = MonologLogger::ERROR;
 				}
 
