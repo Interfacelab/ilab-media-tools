@@ -1060,7 +1060,7 @@ class StorageTool extends ToolBase {
 		$bucket = $info[0]['bucket'];
 		$file = $info[0]['key'];
 
-		return "http://s3-$region.amazonaws.com/$bucket/$file";
+		return "https://s3-$region.amazonaws.com/$bucket/$file";
 	}
 
 	//endregion
