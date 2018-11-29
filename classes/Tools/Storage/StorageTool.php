@@ -686,9 +686,19 @@ class StorageTool extends ToolBase {
             return $fail;
         }
 
+        $isOffloadS3 = (arrayPath($meta, 's3/provider', null) == 'aws');
+
         $sizeMeta = $meta['sizes'][$size];
         if(!isset($sizeMeta['s3'])) {
-            return $fail;
+            if ($isOffloadS3) {
+                if ($this->fixOffloadS3Meta($id, $meta)) {
+                    return $this->forcedImageDownsize($fail, $id, $size);
+                } else {
+                    return $fail;
+                }
+            } else {
+                return $fail;
+            }
         }
 
         $url = $this->getAttachmentURLFromMeta($sizeMeta);// $sizeMeta['s3']['url'];
@@ -703,7 +713,44 @@ class StorageTool extends ToolBase {
         return $result;
     }
 
-	/**
+    private function fixOffloadS3Meta($postId, $meta) {
+        if (empty($meta['s3'])) {
+            return false;
+        }
+
+        $meta['s3']['provider'] = 's3';
+
+        $mimetype = get_post_mime_type($postId);
+        $meta['s3']['mime-type'] = $mimetype;
+
+        $url = parse_url($meta['s3']['url']);
+        $path = pathinfo($url['path']);
+
+        $baseUrl = "{$url['scheme']}://{$url['host']}{$path['dirname']}/";
+
+        $path = pathinfo($meta['s3']['key']);
+        $baseKey = $path['dirname'].'/';
+
+        foreach($meta['sizes'] as $size => $sizeData) {
+            $sizeS3 = $meta['s3'];
+            $sizeS3['url'] = $baseUrl.$sizeData['file'];
+            $sizeS3['key'] = $baseKey.$sizeData['file'];
+            $sizeS3['options'] = [];
+            $sizeS3['mime-type'] = $sizeData['mime-type'];
+            $sizeData['s3'] = $sizeS3;
+
+            $meta['sizes'][$size] = $sizeData;
+        }
+
+        $shouldSkip = $this->skipUpdate;
+        $this->skipUpdate = true;
+        wp_update_attachment_metadata($postId, $meta);
+        $this->skipUpdate = $shouldSkip;
+
+        return true;
+    }
+
+    /**
 	 * Fires once an attachment has been added. (https://core.trac.wordpress.org/browser/tags/4.8/src/wp-includes/post.php#L3457)
 	 *
 	 * @param int $post_id
@@ -1301,24 +1348,46 @@ class StorageTool extends ToolBase {
 
 		$replacements = [];
 
-		foreach($matches[0] as $image) {
-		    if (preg_match("#wp-image-([0-9]+)#",$image, $idMatches)) {
-			    $id = $idMatches[1];
+        foreach($matches[0] as $image) {
+            if (preg_match('/class\s*=\s*(?:[\"\']{1})([^\"\']+)(?:[\"\']{1})/m', $image, $matches)) {
+                $classes = explode(' ', $matches[1]);
 
-			    if (!empty($id) && is_numeric($id)) {
-				    if (preg_match("#src=['\"]+([^'\"]+)['\"]+#",$image, $srcMatches)) {
-					    $replacements[$id] = $srcMatches[1];
-    			    }
+                $size = null;
+                $id = null;
+
+                foreach($classes as $class) {
+                    if (strpos($class, 'wp-image-') === 0) {
+                        $parts = explode('-', $class);
+                        $id = array_pop($parts);
+                    } else if (strpos($class, 'size-') === 0) {
+                        $size = str_replace('size-', '', $class);
+                    }
+                }
+
+                if (!empty($id) && is_numeric($id)) {
+                    if (preg_match("#src=['\"]+([^'\"]+)['\"]+#",$image, $srcMatches)) {
+                        $replacements[$id] = [
+                            'src' => $srcMatches[1],
+                            'size' => $size
+                        ];
+                    }
                 }
             }
         }
-        
-        foreach($replacements as $id => $src) {
-		    $meta = wp_get_attachment_metadata($id);
-		    $url = $this->getAttachmentURLFromMeta($meta);
-		    if (!empty($url) && ($url != $src)) {
-		        $content = str_replace($src, $url, $content);
+
+        foreach($replacements as $id => $data) {
+            if (empty($data['size'])) {
+                $meta = wp_get_attachment_metadata($id);
+                $url = $this->getAttachmentURLFromMeta($meta);
+            } else {
+                $url = $this->forcedImageDownsize(false, $id, $data['size']);
             }
+
+            if (empty($url) || ($url[0] == $data['src'])) {
+                continue;
+            }
+
+            $content = str_replace($data['src'], $url[0], $content);
         }
 
 		return $content;
