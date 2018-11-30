@@ -24,6 +24,7 @@ use function ILAB\MediaCloud\Utilities\json_response;
 use ILAB\MediaCloud\Utilities\Logging\DatabaseLogger;
 use ILAB\MediaCloud\Utilities\Logging\DatabaseLogTable;
 use ILAB\MediaCloud\Utilities\Logging\ErrorCollector;
+use ILAB\MediaCloud\Utilities\Logging\Logger;
 use ILAB\MediaCloud\Utilities\NoticeManager;
 use ILAB\MediaCloud\Utilities\View;
 use Probe\ProviderFactory;
@@ -40,6 +41,8 @@ class DebuggingTool extends ToolBase {
 		parent::__construct( $toolName, $toolInfo, $toolManager );
 
 		if ($this->enabled()) {
+            Logger::instance();
+
             if (isset($_REQUEST['page']) && ($_REQUEST['page'] == 'media-tools-debug-log') && isset($_POST['action'])) {
                 if ($_POST['action'] == 'csv') {
                     $this->generateCSV();

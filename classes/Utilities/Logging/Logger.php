@@ -64,12 +64,46 @@ class Logger {
 				$this->logger->pushHandler(new ErrorLogHandler(ErrorLogHandler::OPERATING_SYSTEM, $realLevel));
 				$this->logger->pushHandler(new DatabaseLoggerHandler($realLevel));
 			}
+
+            set_error_handler(function($errno, $errstr, $errfile, $errline, $errContext) {
+                $this->logSystemError($errno, $errstr, $errfile, $errline);
+                return false;
+            });
+
+            register_shutdown_function(function(){
+                $lastError = error_get_last();
+                if (!empty($lastError)) {
+                    $this->logSystemError($lastError['type'], $lastError['message'], $lastError['file'], $lastError['line']);
+                }
+            });
 		}
 	}
 	//endregion
 
 	//region Protected Logging Methods
-	protected function doLogInfo($message, $context=[]) {
+    protected function logSystemError($type, $message, $file, $line) {
+        switch($type) {
+            case E_ERROR:
+            case E_USER_ERROR:
+            case E_RECOVERABLE_ERROR:
+            case E_PARSE:
+            case E_CORE_ERROR:
+            case E_COMPILE_ERROR:
+                $this->doLogError($message, ['file' => $file, 'line' => $line]);
+                break;
+            case E_WARNING:
+            case E_CORE_WARNING:
+            case E_COMPILE_WARNING:
+            case E_USER_WARNING:
+                $this->doLogWarning($message, ['file' => $file, 'line' => $line]);
+                break;
+            default:
+                $this->doLogInfo($message, ['file' => $file, 'line' => $line]);
+                break;
+        }
+    }
+
+    protected function doLogInfo($message, $context=[]) {
 	    if ($this->useWPCLI) {
             Command::Info($message, true);
         }
