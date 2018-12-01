@@ -287,28 +287,42 @@ abstract class ToolBase {
     /**
      * Register any settings
      */
-    public function registerSettings()
-    {
+    public function registerSettings() {
         if (!isset($this->toolInfo['settings']['groups']))
             return;
 
+        $watch = !empty($this->toolInfo['settings']['watch']);
+        if ($watch) {
+            add_action("pre_update_option", function ($value, $option, $old_value) {
+                if (!get_transient("settings_changed_".$this->toolName)) {
+                    set_transient("settings_changed_".$this->toolName, true);
+                }
+
+                return $value;
+            }, 10, 3);
+        }
+
+
         $groups=$this->toolInfo['settings']['groups'];
-        foreach($groups as $group => $groupInfo)
-        {
+        foreach($groups as $group => $groupInfo) {
+            $groupWatch = !empty($groupInfo['watch']);
+
             $this->registerSettingsSection($group,$groupInfo['title'],$groupInfo['description']);
-            if (isset($groupInfo['options']))
-            {
-                foreach($groupInfo['options'] as $option => $optionInfo)
-                {
+            if (isset($groupInfo['options']))  {
+                foreach($groupInfo['options'] as $option => $optionInfo)  {
+                    $optionWatch = !empty($optionInfo['watch']);
+
                     $this->registerSetting($option);
-                    if (isset($optionInfo['watch']) && $optionInfo['watch']) {
+
+                    if ($groupWatch || $optionWatch) {
                         add_action("update_option_$option", function ($setting, $oldValue=null, $newValue=null) {
-                            set_transient("settings_changed_".$this->toolName, true);
+                            if (!get_transient("settings_changed_".$this->toolName)) {
+                                set_transient("settings_changed_".$this->toolName, true);
+                            }
                         }, 10, 3);
                     }
 
-                    if (isset($optionInfo['type']))
-                    {
+                    if (isset($optionInfo['type']))  {
                     	$description = arrayPath($optionInfo,'description',null);
                     	$conditions = arrayPath($optionInfo,'conditions',null);
                     	$placeholder = arrayPath($optionInfo,'placeholder',null);
@@ -317,8 +331,7 @@ abstract class ToolBase {
                         $min = arrayPath($optionInfo,'min',1);
                         $max = arrayPath($optionInfo,'max',1000);
 
-                        switch($optionInfo['type'])
-                        {
+                        switch($optionInfo['type'])  {
                             case 'text-field':
                                 $this->registerTextFieldSetting($option,$optionInfo['title'],$group,$description,$placeholder,$conditions);
                                 break;

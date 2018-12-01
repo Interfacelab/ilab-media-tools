@@ -154,9 +154,12 @@ class GoogleStorage implements StorageInterface {
 
 						Logger::info("Bucket does not exist.");
 					}
-				} catch (ServiceException $ex) {
+				} catch (\Exception $ex) {
+                    if ($errorCollector) {
+                        $errorCollector->addError("Error insuring that {$this->bucket} exists.  Message: ".$ex->getMessage());
+                    }
+
 					Logger::error("Google Storage Error", ['exception' => $ex->getMessage()]);
-					StorageException::ThrowFromOther($ex);
 				}
 			}
 
@@ -182,7 +185,7 @@ class GoogleStorage implements StorageInterface {
 		}
 
 		if($this->settingsError) {
-			NoticeManager::instance()->displayAdminNotice('error', 'Your Google Storage settings are incorrect or the bucket does not exist.  Please verify your settings and update them.');
+			NoticeManager::instance()->displayAdminNotice('error', "Your Google Storage settings are incorrect, or your account doesn't have the correct permissions or the bucket does not exist.  Please verify your settings and update them.");
 			return false;
 		}
 

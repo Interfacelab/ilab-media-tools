@@ -46,6 +46,7 @@ return [
 		"menu" => "Storage Settings",
 		"options-page" => "media-tools-s3",
 		"options-group" => "ilab-media-s3",
+        "watch" => true,
 		"groups" => [
 			"ilab-media-s3-aws-settings" => [
 				"title" => "Storage Settings",
@@ -64,13 +65,11 @@ return [
 							"other-s3" => "Other S3 Compatible Service",
 							'backblaze' => 'BackBlaze B2 Cloud Storage',
 						],
-						"watch" => true
 					],
 					"ilab-media-s3-access-key" => [
 						"title" => "Access Key",
 						"description" => "If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_AWS_S3_ACCESS_KEY</strong>",
 						"type" => "text-field",
-						"watch" => true,
 						"conditions" => [
 							"ilab-media-storage-provider" => ["!google", "!backblaze"]
 						]
@@ -79,7 +78,6 @@ return [
 						"title" => "Secret",
 						"description" => "If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_AWS_S3_ACCESS_SECRET</strong>",
 						"type" => "password",
-						"watch" => true,
 						"conditions" => [
 							"ilab-media-storage-provider" => ["!google", "!backblaze"]
 						]
@@ -88,7 +86,6 @@ return [
 						"title" => "Account Id",
 						"description" => "If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_BACKBLAZE_ACCOUNT_ID</strong>",
 						"type" => "text-field",
-						"watch" => true,
 						"conditions" => [
 							"ilab-media-storage-provider" => ["backblaze"]
 						]
@@ -97,7 +94,6 @@ return [
 						"title" => "Key",
 						"description" => "If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_BACKBLAZE_KEY</strong>",
 						"type" => "password",
-						"watch" => true,
 						"conditions" => [
 							"ilab-media-storage-provider" => ["backblaze"]
 						]
@@ -106,7 +102,6 @@ return [
 						"title" => "Bucket URL",
 						"description" => "Before you can use Backblaze B2, you'll need to specify the URL for your bucket.  You only need to specify the host part of the url, eg. <code>https://f001.backblazeb2.com/</code>.  You can read about how to determine that <a href='https://help.backblaze.com/hc/en-us/articles/217666928-Creating-a-Vanity-URL-with-B2?_ga=2.229535388.1860693768.1506013044-1312126929.1505517805' target='_blank'>here</a>.  If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_BACKBLAZE_BUCKET_URL</strong>",
 						"type" => "text-field",
-						"watch" => true,
 						"conditions" => [
 							"ilab-media-storage-provider" => ["backblaze"]
 						]
@@ -115,7 +110,6 @@ return [
 						"title" => "Credentials",
 						"description" => "If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_CLOUD_GOOGLE_CREDENTIALS</strong>",
 						"type" => "text-area",
-						"watch" => true,
 						"conditions" => [
 							"ilab-media-storage-provider" => ["google"]
 						]
@@ -124,7 +118,6 @@ return [
 						"title" => "Bucket",
 						"description" => "If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_AWS_S3_BUCKET</strong>",
 						"type" => "text-field",
-						"watch" => true
 					],
 					"ilab-media-s3-region" => [
 						"title" => "Region",
@@ -147,7 +140,6 @@ return [
 							'eu-west-2' => 'EU (London)',
 							'sa-east-1' => 'South America (São Paulo)',
 						],
-						"watch" => true,
 						"conditions" => [
 							"ilab-media-storage-provider" => ["!google", "!backblaze", "!do", "!wasabi"]
 						]
@@ -165,7 +157,6 @@ return [
 						"title" => "Custom Endpoint URL",
 						"description" => "If you are supplying this value through a .env file, or environment variables, the key is: <strong>ILAB_AWS_S3_ENDPOINT</strong>",
 						"type" => "text-field",
-						"watch" => true,
 						"conditions" => [
 							"ilab-media-storage-provider" => ["!google", "!backblaze", "!s3", "!wasabi"]
 						]
@@ -175,7 +166,6 @@ return [
 						"description" => "Set to true to send requests to an S3 path style endpoint by default.  If this is unchecked, requests will be sent to something like <code>https://your-bucket-name.your-s3-server.com/</code>, which is likely not to work.",
 						"type" => "checkbox",
 						"default" => true,
-						"watch" => true,
 						"conditions" => [
 							"ilab-media-storage-provider" => ["!google", "!backblaze", "!s3", "!wasabi"]
 						]
@@ -185,7 +175,6 @@ return [
                         "description" => "Set to true to generate signed URLs that will expire within a specified time period.  You should use this if you've set the default ACL to private.",
                         "type" => "checkbox",
                         "default" => false,
-                        "watch" => true,
                         "conditions" => [
                             "ilab-media-storage-provider" => ["s3"]
                         ]
@@ -195,7 +184,6 @@ return [
                         "description" => "The number of minutes the signed URL is valid for.",
                         "type" => "number",
                         "default" => 10,
-                        "watch" => true,
                         "conditions" => [
                             "ilab-media-storage-provider" => ["s3"]
                         ]

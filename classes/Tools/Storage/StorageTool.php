@@ -1120,6 +1120,9 @@ class StorageTool extends ToolBase {
 
 		if (!$preserveFilePath && !isset($data['prefix']) && !$shouldUseCustomPrefix) {
             $prefix = trailingslashit(pathinfo($data['file'], PATHINFO_DIRNAME));
+            if ($prefix == './') {
+                $prefix = trailingslashit(pathinfo($filename, PATHINFO_DIRNAME));
+            }
         } else {
             $prefix = ($preserveFilePath && isset($data['prefix'])) ? $data['prefix'].DIRECTORY_SEPARATOR : StorageSettings::prefix($id);
         }
