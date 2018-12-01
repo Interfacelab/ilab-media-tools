@@ -6,7 +6,7 @@ Tested up to: 4.9.8
 License: GPLv3 or later
 Donate link: http://www2.jdrf.org/site/TR?fr_id=6912&pg=personal&px=11429802
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 2.1.21
+Stable tag: 2.1.22
 Requires PHP: 5.6
 
 Automatically upload media to Amazon S3 and integrate with Imgix, a real-time image processing CDN.  Boosts site performance and simplifies workflows.
@@ -108,6 +108,11 @@ Note that image optimization plugins change how Media Cloud behaves.  When an im
 7. Imgix settings.
 
 == Changelog ==
+
+= 2.1.22 =
+* Fix for thumbnails not being uploaded when using a custom `upload_dir` filter
+* Fix for situations where your storage credentials don't work but you are unable to get Media Cloud "unstuck" from thinking the settings are bad
+* Fix for the troubleshooter tool not being available if storage settings are turned off
 
 = 2.1.21 =
 * Debug logger will now log all php errors and warnings
