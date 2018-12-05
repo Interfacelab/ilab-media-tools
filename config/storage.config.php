@@ -205,7 +205,7 @@ return [
 						"type" => "select",
 						"options" => [
 							"public-read" => "public-read",
-							"authenticated-read" => "authenticated-read"
+							"authenticated-read" => "authenticated-read",
 							"" => "Leave ACL Blank"
 						],
 						"conditions" => [
