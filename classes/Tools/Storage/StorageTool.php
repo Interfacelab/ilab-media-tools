@@ -1354,6 +1354,10 @@ class StorageTool extends ToolBase {
 	        return $content;
         }
 
+        if (!apply_filters('ilab_media_cloud_filter_content', true)) {
+            return $content;
+        }
+
 		if (!preg_match_all( '/<img [^>]+>/', $content, $matches ) ) {
 			return $content;
 		}
@@ -1392,7 +1396,7 @@ class StorageTool extends ToolBase {
                 $meta = wp_get_attachment_metadata($id);
                 $url = $this->getAttachmentURLFromMeta($meta);
             } else {
-                $url = $this->forcedImageDownsize(false, $id, $data['size']);
+                $url = image_downsize($id, $data['size']);
             }
 
             if (empty($url) || ($url[0] == $data['src'])) {
