@@ -1419,7 +1419,7 @@ class StorageTool extends ToolBase {
 	        if (empty($url) || ($url == $data['src'])) {
                 continue;
             }
-            
+
             $content = str_replace($data['src'], $url, $content);
         }
 

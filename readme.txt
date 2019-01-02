@@ -2,11 +2,11 @@
 Contributors: interfacelab
 Tags: uploads, amazon, s3, imgix, minio, google cloud storage, digital ocean spaces, wasabi, media, cdn, rekognition, cloudfront, images, crop, image editing, image editor, media library, offload, offload s3, filepicker, smush, ewww, imagify, shortpixel
 Requires at least: 4.4
-Tested up to: 4.9.8
+Tested up to: 5.0.2
 License: GPLv3 or later
 Donate link: http://www2.jdrf.org/site/TR?fr_id=6912&pg=personal&px=11429802
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 2.1.23
+Stable tag: 2.1.30
 Requires PHP: 5.6
 
 Automatically upload media to Amazon S3 and integrate with Imgix, a real-time image processing CDN.  Boosts site performance and simplifies workflows.
@@ -108,6 +108,9 @@ Note that image optimization plugins change how Media Cloud behaves.  When an im
 7. Imgix settings.
 
 == Changelog ==
+
+= 2.1.30 =
+* Fix for images inserted via Gutenberg
 
 = 2.1.23 =
 * Fix for non-image uploads not uploading
