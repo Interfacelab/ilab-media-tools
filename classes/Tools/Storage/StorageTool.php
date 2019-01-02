@@ -1350,10 +1350,6 @@ class StorageTool extends ToolBase {
      * @throws StorageException
 	 */
 	public function filterContent($content) {
-	    if (apply_filters('ilab_imgix_enabled', false)) {
-	        return $content;
-        }
-
         if (!apply_filters('ilab_media_cloud_filter_content', true)) {
             return $content;
         }
@@ -1380,6 +1376,23 @@ class StorageTool extends ToolBase {
                     }
                 }
 
+                if (!empty($id) && empty($size)) {
+                    if (preg_match('/sizes=[\'"]+\(max-(width|height)\:\s*([0-9]+)px/m', $image, $sizeMatches)) {
+                        $which = $sizeMatches[1];
+                        $px = $sizeMatches[2];
+
+	                    $meta = wp_get_attachment_metadata($id);
+	                    if (!empty($meta['sizes'])) {
+	                        foreach($meta['sizes'] as $sizeKey => $sizeData) {
+                                if ($sizeData[$which] == $px) {
+                                    $size = $sizeKey;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
                 if (!empty($id) && is_numeric($id)) {
                     if (preg_match("#src=['\"]+([^'\"]+)['\"]+#",$image, $srcMatches)) {
                         $replacements[$id] = [
@@ -1399,11 +1412,15 @@ class StorageTool extends ToolBase {
                 $url = image_downsize($id, $data['size']);
             }
 
-            if (empty($url) || ($url[0] == $data['src'])) {
+	        if (is_array($url)) {
+		        $url = $url[0];
+	        }
+
+	        if (empty($url) || ($url == $data['src'])) {
                 continue;
             }
-
-            $content = str_replace($data['src'], $url[0], $content);
+            
+            $content = str_replace($data['src'], $url, $content);
         }
 
 		return $content;
