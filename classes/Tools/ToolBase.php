@@ -255,7 +255,14 @@ abstract class ToolBase {
             return false;
         }
 
-    	$env = ($this->env_variable) ? getenv($this->env_variable) : false;
+        $env = false;
+        if ($this->env_variable) {
+            if (defined($this->env_variable)) {
+                $env = constant($this->env_variable);
+            } else {
+                $env = getenv($this->env_variable);
+            }
+        }
         $enabled=get_option("ilab-media-tool-enabled-$this->toolName", $env);
 
         if ($enabled && isset($this->toolInfo['dependencies']))
