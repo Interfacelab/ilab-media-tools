@@ -1128,7 +1128,9 @@ class StorageTool extends ToolBase {
         } else {
             $prefix = ($preserveFilePath && isset($data['prefix'])) ? $data['prefix'].DIRECTORY_SEPARATOR : StorageSettings::prefix($id);
         }
-
+		
+		$prefix = apply_filters( 'ilab_storage_prefix', $prefix );
+		
         $parts = explode('/', $filename);
         $bucketFilename = array_pop($parts);
 
