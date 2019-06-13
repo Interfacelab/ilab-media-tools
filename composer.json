@@ -4,10 +4,7 @@
   "type": "wordpress-plugin",
   "license": "LGPL-3.0-or-later",
   "keywords": ["s3","imgix","cropping", "wordpress"],
-  "repositories": [{
-    "type": "composer",
-    "url": "https://packages.interfacelab.io"
-  }],
+  "repositories": [],
   "authors": [
     {
       "name": "Jon Gilkison",
