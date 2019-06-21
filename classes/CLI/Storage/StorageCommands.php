@@ -86,11 +86,16 @@ class StorageCommands extends Command {
 				$upload_file = get_attached_file($postId);
 				$fileName = basename($upload_file);
 
-                BatchManager::instance()->setCurrentFile('storage', $fileName);
-                BatchManager::instance()->setCurrent('storage', $i);
+				if(!is_file($upload_file)) {
+                    Command::Info("%w[%C{$i}%w of %C{$query->post_count}%w] %Skipping file - file not found - %Y$upload_file%N %w(Post ID %N$postId%w)%N ... ", $this->debugMode);
+                } else {
 
-				Command::Info("%w[%C{$i}%w of %C{$query->post_count}%w] %NImporting %Y$fileName%N %w(Post ID %N$postId%w)%N ... ", $this->debugMode);
-				$storageTool->processImport($i - 1, $postId, $pd);
+                    BatchManager::instance()->setCurrentFile('storage', $fileName);
+                    BatchManager::instance()->setCurrent('storage', $i);
+
+                    Command::Info("%w[%C{$i}%w of %C{$query->post_count}%w] %NImporting %Y$fileName%N %w(Post ID %N$postId%w)%N ... ", $this->debugMode);
+                    $storageTool->processImport($i - 1, $postId, $pd);
+                }
 				if (!$this->debugMode) {
                     Command::Info("%YDone%N.", true);
                 }

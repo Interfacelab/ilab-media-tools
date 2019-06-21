@@ -1716,7 +1716,7 @@ class StorageTool extends ToolBase {
 
 			$data = [ 'file' => $file ];
 
-			if (file_exists($upload_file)) {
+			if (is_file($upload_file)) {
 				$mime = null;
 
 				$ftype = wp_check_filetype($upload_file);
