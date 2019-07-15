@@ -41,7 +41,11 @@ class Logger {
             }
         }
 
-		$env = getenv('ILAB_MEDIA_DEBUGGING_ENABLED');
+        if (defined('ILAB_MEDIA_DEBUGGING_ENABLED')) {
+            $env = constant('ILAB_MEDIA_DEBUGGING_ENABLED');
+        } else {
+            $env = getenv('ILAB_MEDIA_DEBUGGING_ENABLED');
+        }
 		$enabled = ($this->useWPCLI) ?: get_option("ilab-media-tool-enabled-debugging", $env);
 
 		if ($enabled) {
