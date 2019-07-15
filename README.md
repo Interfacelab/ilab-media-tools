@@ -168,3 +168,10 @@ thing to happen to WordPress and web development in the history of ever.
 ##### Are you a paid shill for Imgix?
 
 No, I'm just one very enthusiastic customer.
+
+##### Existing images are still served from a local URL instead of the remote one
+
+ Only new uploads while Media Cloud plugin is enabled will be served with the new remote remote storage used.
+
+
+
