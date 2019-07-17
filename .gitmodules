@@ -1,3 +1,0 @@
-[submodule "assets/vendor/cropper"]
-	path = assets/vendor/cropper
-	url = git@github.com:fengyuanchen/cropper.git

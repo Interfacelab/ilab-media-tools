@@ -2,7 +2,7 @@
 
 namespace ILAB\MediaCloud\Tasks;
 
-use ILAB\MediaCloud\Utilities\EnvironmentOptions;
+use ILAB\MediaCloud\Utilities\Environment;
 use ILAB\MediaCloud\Utilities\Logging\Logger;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
@@ -84,13 +84,7 @@ abstract class AsyncRequest {
 		$url  = add_query_arg( $this->get_query_args(), $this->get_query_url() );
 		$args = $this->get_post_args();
 
-		Logger::info( "Background dispatching $url", $args);
-
-		$rawUrl = esc_url_raw( $url );
-		Logger::info("Async call to $rawUrl", ['args' => $args]);
-		$result = wp_remote_post( $rawUrl, $args );
-		Logger::info("Async call complete.", ['url' => $rawUrl, 'result'=>$result]);
-		return $result;
+		return BatchManager::postRequest($url, $args);
 	}
 
 	/**
@@ -132,13 +126,10 @@ abstract class AsyncRequest {
 			return $this->post_args;
 		}
 
-		$timeout = EnvironmentOptions::Option('ilab-media-s3-batch-timeout', null, 0.1);
 		return array(
-			'timeout'   => $timeout,
 			'blocking'  => false,
 			'body'      => $this->data,
 			'cookies'   => $_COOKIE,
-			'sslverify' => apply_filters( 'https_local_ssl_verify', false ),
 		);
 	}
 

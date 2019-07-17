@@ -67,3 +67,11 @@ function relative_admin_url($path = '', $scheme = 'admin') {
 
 	return str_replace($site, '', $url);
 }
+
+function ilab_admin_url($path = '', $scheme = 'admin') {
+	if (is_multisite() && \ILAB\MediaCloud\Utilities\Environment::NetworkMode()) {
+		return network_admin_url($path, $scheme);
+	} else {
+		return admin_url($path, $scheme);
+	}
+}

@@ -14,20 +14,15 @@
 namespace ILAB\MediaCloud\Tools\Debugging;
 
 use FasterImage\FasterImage;
-use ILAB\MediaCloud\Cloud\Storage\StorageException;
-use ILAB\MediaCloud\Cloud\Storage\StorageSettings;
+use ILAB\MediaCloud\Storage\StorageSettings;
 use ILAB\MediaCloud\Tasks\BatchManager;
 use ILAB\MediaCloud\Tools\Imgix\ImgixTool;
 use ILAB\MediaCloud\Tools\Storage\StorageTool;
-use ILAB\MediaCloud\Tools\ToolBase;
+use ILAB\MediaCloud\Tools\Tool;
 use ILAB\MediaCloud\Tools\ToolsManager;
-use function ILAB\MediaCloud\Utilities\json_response;
-use ILAB\MediaCloud\Utilities\Logging\DatabaseLogger;
-use ILAB\MediaCloud\Utilities\Logging\DatabaseLogTable;
 use ILAB\MediaCloud\Utilities\Logging\ErrorCollector;
-use ILAB\MediaCloud\Utilities\NoticeManager;
 use ILAB\MediaCloud\Utilities\View;
-use Probe\ProviderFactory;
+use function ILAB\MediaCloud\Utilities\json_response;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
@@ -36,7 +31,7 @@ if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
  *
  * Debugging tool.
  */
-class TroubleshootingTool extends ToolBase {
+class TroubleshootingTool extends Tool {
     public function __construct( $toolName, $toolInfo, $toolManager ) {
         parent::__construct( $toolName, $toolInfo, $toolManager );
 
@@ -46,16 +41,17 @@ class TroubleshootingTool extends ToolBase {
 
     }
 
-    public function registerMenu($top_menu_slug) {
-        parent::registerMenu($top_menu_slug);
+	public function registerHelpMenu($top_menu_slug, $networkMode = false, $networkAdminMenu = false) {
+		parent::registerHelpMenu($top_menu_slug);
 
-        if($this->enabled()) {
-            add_submenu_page($top_menu_slug, 'Media Cloud Troubleshooting', 'Troubleshooter', 'manage_options', 'media-tools-troubleshooter', [
-                $this,
-                'renderTroubleshooter'
-            ]);
-        }
-    }
+		if($this->enabled() && (($networkMode && $networkAdminMenu) || (!$networkMode && !$networkAdminMenu))) {
+			ToolsManager::instance()->insertHelpToolSeparator();
+			add_submenu_page($top_menu_slug, 'Media Cloud Troubleshooting', 'Troubleshooter', 'manage_options', 'media-tools-troubleshooter', [
+				$this,
+				'renderTroubleshooter'
+			]);
+		}
+	}
 
     public function enabled() {
         return true;
@@ -275,21 +271,27 @@ class TroubleshootingTool extends ToolBase {
         $errorCollector = new ErrorCollector();
         BatchManager::instance()->testConnectivity($errorCollector);
 
-        $storageSettingsURL = admin_url('admin.php?page=media-tools-s3#ilab-media-s3-batch-settings');
+        $storageSettingsURL = admin_url('admin.php?page=media-cloud-settings&tab=storage#batch-processing-settings');
 
+        $batchSettings = admin_url('admin.php?page=media-cloud-settings&tab=batch-processing');
         $html = View::render_view('debug/trouble-shooter-step.php', [
             'success' => !$errorCollector->hasErrors(),
             'title' => 'Test Bulk Importer',
             'success_message' => "Your WordPress server configuration supports background processing.",
-            'error_message' => "Your WordPress server configuration does not support background processing.  The bulk importer will not work.  Try changing the <strong>Connection Timeout</strong> setting in <a href='$storageSettingsURL'>Storage Settings</a> to a higher value like 0.1 or 0.5.",
-            'errors' => $errorCollector->errors()
+            'error_message' => "Your WordPress server configuration does not support background processing.  The bulk importer will not work.  Try changing the <strong>Connection Timeout</strong> setting in <a href='$storageSettingsURL'>Storage Settings</a> to a higher value like 0.1 or 0.5.  Some plugins also can cause issues, such as Easy Digital Downloads.",
+            'errors' => $errorCollector->errors(),
+	        'hints' => [
+		        "Try changing the <strong>Connection Timeout</strong> and <strong>Timeout</strong> settings in the <a href='{$batchSettings}' target='_blank'>Batch Processing Settings</a>",
+		        "Some managed host providers have a misconfigured openssl and/or curl installations.  Try disabling <strong>Verify SSL</strong> in the <a href='{$batchSettings}' target='_blank'>Batch Processing Settings</a>",
+		        "DNS is also sometimes a problem on managed hosting providers.  Try turning off <strong>Skip DNS</strong> in the <a href='{$batchSettings}' target='_blank'>Batch Processing Settings</a>",
+	        ]
         ]);
 
         $data = [
             'html' => $html
         ];
 
-        $imgixEnabled = apply_filters('ilab_imgix_enabled', false);
+        $imgixEnabled = apply_filters('media-cloud/imgix/enabled', false);
         if ($imgixEnabled) {
             $data['next'] = 7;
         }

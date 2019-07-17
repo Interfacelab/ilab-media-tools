@@ -74,8 +74,10 @@ class NoticeManager {
 		    $message = "<p>$message</p>";
         }
 
-		add_action('admin_notices',function() use($class, $message, $dismissibleAttr) {
-			echo View::render_view( 'base/ilab-admin-notice.php', [
+
+        $action = (is_multisite() && Environment::NetworkMode()) ? 'network_admin_notices' : 'admin_notices';
+		add_action($action,function() use($class, $message, $dismissibleAttr) {
+			echo View::render_view( 'base/admin-notice', [
 				'class' => $class,
 				'message' => $message,
 				'identifier' => $dismissibleAttr

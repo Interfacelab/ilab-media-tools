@@ -13,6 +13,7 @@
 
 namespace ILAB\MediaCloud\Tools\Storage;
 
+use ILAB\MediaCloud\Tools\ToolsManager;
 use WP_Error;
 
 if (!defined('ABSPATH')) { header('Location: /'); die; }
@@ -29,23 +30,25 @@ class StorageImageEditor extends \WP_Image_Editor {
     private $imageEditor;
     private $attachmentId = null;
 
+    private $croppedS3Info = null;
+
     public function __construct($file) {
         parent::__construct($file);
 
-        $this->imageEditor = (\WP_Image_Editor_GD::test()) ? new \WP_Image_Editor_GD($file) : new \WP_Image_Editor_Imagick($file);
+        $this->imageEditor = (\WP_Image_Editor_Imagick::test()) ? new \WP_Image_Editor_Imagick($file) : new \WP_Image_Editor_GD($file);
 
         if (isset($_POST['action']) && ($_POST['action'] == 'image-editor') && isset($_POST['do']) && ($_POST['do'] == 'save')) {
             if (isset($_POST['postid'])) {
                 $this->attachmentId = $_POST['postid'];
-                add_filter('ilab_should_override_attached_file', [$this, 'shouldOverrideAttachedFile'], 10000, 2);
-                add_filter('ilab_ignore_existing_s3_data', [$this, 'shouldIgnoreExistingS3Data'], 10000, 2);
-                add_filter('ilab_ignore_optimizers', [$this, 'shouldIgnoreOptimizers'], 10000, 2);
+                add_filter('media-cloud/storage/should-override-attached-file', [$this, 'shouldOverrideAttachedFile'], 10000, 2);
+                add_filter('media-cloud/storage/ignore-existing-s3-data', [$this, 'shouldIgnoreExistingS3Data'], 10000, 2);
+                add_filter('media-cloud/storage/ignore-optimizers', [$this, 'shouldIgnoreOptimizers'], 10000, 2);
             }
         }
     }
 
     public function shouldOverrideAttachedFile($shouldOverride, $attachment_id) {
-        remove_filter('ilab_should_override_attached_file', [$this, 'shouldOverrideAttachedFile']);
+        remove_filter('media-cloud/storage/should-override-attached-file', [$this, 'shouldOverrideAttachedFile']);
 
         if (!$shouldOverride) {
             return $shouldOverride;
@@ -59,7 +62,7 @@ class StorageImageEditor extends \WP_Image_Editor {
     }
 
     public function shouldIgnoreExistingS3Data($shouldIgnore, $attachment_id) {
-        remove_filter('ilab_ignore_existing_s3_data', [$this, 'shouldIgnoreExistingS3Data']);
+        remove_filter('media-cloud/storage/ignore-existing-s3-data', [$this, 'shouldIgnoreExistingS3Data']);
 
         if ($shouldIgnore) {
             return $shouldIgnore;
@@ -138,7 +141,44 @@ class StorageImageEditor extends \WP_Image_Editor {
      * @return array An array of resized images metadata by size.
      */
     public function multi_resize($sizes) {
-        return $this->imageEditor->multi_resize($sizes);
+        $url = parse_url($this->file);
+
+        if (!empty($url['scheme'])) {
+            /** @var StorageTool $storageTool */
+            $storageTool = ToolsManager::instance()->tools['storage'];
+
+            $parsedFile = pathinfo($url['path']);
+
+            $uploadDir = wp_upload_dir();
+            $uploadDir = $storageTool->getUploadDir($uploadDir);
+
+            $fileName = $uploadDir['basedir'] . $uploadDir['subdir'] . DIRECTORY_SEPARATOR . $parsedFile['basename'];
+
+            $fileExists = file_exists($fileName);
+
+            if (!$fileExists) {
+                file_put_contents($fileName, file_get_contents($this->file));
+            }
+
+            $imageEditor = (\WP_Image_Editor_Imagick::test()) ? new \WP_Image_Editor_Imagick($fileName) : new \WP_Image_Editor_GD($fileName);
+            $imageEditor->load();
+
+            $resized = $imageEditor ->multi_resize($sizes);
+            foreach($resized as $size => $sizeData) {
+                $key = ltrim(trim(ltrim($uploadDir['subdir']),'/').'/'.$sizeData['file'],'/');
+                $s3Data = $storageTool->processFile($uploadDir['basedir'], $key, ['file' => $key]);
+                $sizeData['s3'] = $s3Data['s3'];
+                $resized[$size] = $sizeData;
+            }
+
+            if (!$fileExists) {
+                unlink($fileName);
+            }
+        } else {
+            $resized = $this->imageEditor->multi_resize($sizes);
+        }
+
+        return $resized;
     }
 
     /**
@@ -201,8 +241,46 @@ class StorageImageEditor extends \WP_Image_Editor {
     }
 
     public function save( $destfilename = null, $mime_type = null ) {
-        $result = $this->imageEditor->save($destfilename, $mime_type);
+        $url = parse_url($destfilename);
+
+        if (!empty($url['scheme'])) {
+            /** @var StorageTool $storageTool */
+            $storageTool = ToolsManager::instance()->tools['storage'];
+
+            $parsedFile = pathinfo($url['path']);
+
+            $uploadDir = wp_upload_dir();
+            $uploadDir = $storageTool->getUploadDir($uploadDir);
+
+            $fileName = $uploadDir['basedir'].$uploadDir['subdir'].DIRECTORY_SEPARATOR.$parsedFile['basename'];
+
+            $result = $this->imageEditor->save($fileName, $mime_type);
+
+            $key = ltrim($uploadDir['subdir']).'/'.$parsedFile['basename'];
+
+            $this->croppedS3Info = $storageTool->processFile($uploadDir['basedir'], $key, ['file' => $key]);
+
+            add_filter('wp_ajax_cropped_attachment_metadata', [$this, 'ajaxCroppedMetadata']);
+            add_filter('site_icon_attachment_metadata', [$this, 'ajaxCroppedMetadata']);
+            add_filter('wp_header_image_attachment_metadata', [$this, 'ajaxCroppedMetadata']);
+
+        } else {
+            $result = $this->imageEditor->save($destfilename, $mime_type);
+        }
 
         return $result;
+    }
+
+    public function ajaxCroppedMetadata($metadata) {
+        if (!empty($this->croppedS3Info)) {
+            $metadata['s3'] = $this->croppedS3Info['s3'];
+        }
+
+        $this->croppedS3Info = null;
+
+        remove_filter('wp_ajax_cropped_attachment_metadata', [$this, 'ajaxCroppedMetadata']);
+        remove_filter('site_icon_attachment_metadata', [$this, 'ajaxCroppedMetadata']);
+        remove_filter('wp_header_image_attachment_metadata', [$this, 'ajaxCroppedMetadata']);
+        return $metadata;
     }
 }

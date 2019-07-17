@@ -1,19 +1,28 @@
 === Media Cloud ===
-Contributors: interfacelab
+Contributors: mediacloud, interfacelab
 Tags: uploads, amazon, s3, imgix, minio, google cloud storage, digital ocean spaces, wasabi, media, cdn, rekognition, cloudfront, images, crop, image editing, image editor, media library, offload, offload s3, filepicker, smush, ewww, imagify, shortpixel
 Requires at least: 4.4
-Tested up to: 5.2.1
+Tested up to: 5.2.2
 License: GPLv3 or later
-Donate link: http://www2.jdrf.org/site/TR?fr_id=6912&pg=personal&px=11429802
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 2.1.33
+Stable tag: 3.0.7
 Requires PHP: 5.6
 
-Automatically upload media to Amazon S3 and integrate with Imgix, a real-time image processing CDN.  Boosts site performance and simplifies workflows.
+Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
 
 == Description ==
 
-Media Cloud by ILAB is a suite of tools designed to enhance media handling in WordPress in a number of ways.
+**IMPORTANT**: If you are upgrading from 2.x please read the FAQ section below.  If you are using Backblaze with Media Cloud, please wait until 3.0.8 to update.
+
+https://www.youtube.com/watch?v=3tB3rKkwAJY
+
+Media cloud is a revolutionary plug-in for WordPress that will supercharge the performance of your website and radically transform the way that you work with media in WordPress.
+
+Media Cloud works by moving your images, media and other files from your WordPress server to online cloud storage such as Amazon S3, Google Cloud Storage, DigitalOcean Spaces and many others.  You can then serve that media through a CDN like Amazon Cloud front, Cloudflare, Fastly and others.
+
+Beyond cloud storage, Media Cloud also has deep integration with Imgix, the leading real-time image manipulation and optimization CDN.  Media Cloud is the first plugin for WordPress to bring the full benefit of what Imgix offers - simplifying your development efforts, reducing your site’s page load times and opening up creative options that simply haven’t existed until now.
+
+Media Cloud also provides advanced image editing tools that provide improved cropping options, effects, filters, watermarking and more.
 
 **NOTE**: This plugin requires PHP 5.6x or higher (PHP 7.x preferred)
 
@@ -24,13 +33,7 @@ Automatically copy media uploads to the cloud and serve them directly from your 
 [Imgix](https://imgix.com) will radically change the way that you build your WordPress sites and themes.  This plugin is the best integration available for WordPress.  Upload your images to S3 with our S3 tool and then host the media with Imgix, providing you with real-time image processing and automatic format delivery.  Forget ImageMagick, Imgix is light years ahead in quality and speed.
 
 = Native support for Google Cloud Storage =
-Now supports using Google Cloud Storage for uploads without having to use Google's S3 compatible interop mode.  Supports direct uploads too.
-
-= Native Support For Backblaze B2 Cloud Storage =
-Now supports using Backblaze's new B2 Cloud Storage for uploads.
-
-= Upload Directly To S3, Minio, Wasabi and Google Cloud Storage =
-Directly upload your media and documents to the cloud, bypassing your WordPress server completely.  This feature requires Imgix.
+Now supports using Google Cloud Storage for uploads without having to use Google's S3 compatible interop mode.
 
 = Automatically Tag and Categorize with Amazon Rekognition =
 Use Amazon's latest AI tools to tag and categorize your images when uploading to Amazon S3.  With Rekognition, you can automatically detect objects, scenes, and faces in images.
@@ -45,35 +48,40 @@ Media Cloud by ILAB ships with the most advanced image cropping tool available f
 Import your media library to the cloud, regenerate thumbnails and process your library with Amazon Rekognition using WP-CLI commands.
 
 = Compatible With Leading Image Optimizers =
-*New!* Compatible with Short Pixel, EWWW, Smush and Imagify image optimization plugins!
-
-**Best of all you get this functionality for free.**
+Compatible with Short Pixel, EWWW, Smush and Imagify image optimization plugins!
 
 * Upload to any of a variety of cloud storage providers (Amazon S3, Google Cloud Storage, Minio, Wasabi, Backblaze, DigitalOcean Spaces or any other S3 compatible service)
 * Host your media directly from your cloud storage provider or specify a CDN
+* Import your existing library to cloud storage
 * Integrate with Imgix media hosting
-* Direct uploads to the cloud, bypassing WordPress completely (Requires Imgix)
 * Use Amazon Rekognition to automatically tag and categorize images
 * Use third party cloud file providers that use S3 compatible APIs
 * Advanced image cropping tool
 * Advanced image editing with saturation, contrast, auto-correct,
   sharpen, blur and more (only when integrated with Imgix)
 
-For more info (grab popcorn, it's kind of long!):
+= Premium Upgrade with Improved Support Options and More Features =
 
-https://www.youtube.com/watch?v=rOmziu30nPI
+* Direct uploads integrated directly into WordPress's media library
+* Cloud storage browser that allows you to import media to your media library from the cloud
+* Dynamic Images provides Imgix-like dynamic image generation directly in the plugin, no external service needed.
+* WPML, WooCommerce and Easy Digital Downloads integration
+* Push/pull your CSS and JS assets to the cloud and serve them from a CDN
+* Use Google Cloud Vision as a vision provider
+* Image size manager
+* Network level multisite support
 
-== Installation ==
-
-1. Upload the plugin files to the `/wp-content/plugins/ilab-media-tools` directory, or install the plugin through the WordPress plugins screen directly.
-2. Activate the plugin through the 'Plugins' screen in WordPress
-3. For Cloud Storage, enter your credentials in the *Media Cloud -> Storage Settings* page.
-4. For Imgix, enter your Imgix settings in the *Media Cloud -> Imgix Settings* page.
-5. Enable the tools you want through the *Media Cloud -> Tools* settings page.
-6. Once your settings are complete, use the *Media Cloud -> Storage Importer* to import your current media library to
-   Amazon S3 or whatever storage service you are using.
+[Compare the premium plans](https://mediacloud.press/comparison/)
 
 == Frequently Asked Questions ==
+
+= Upgrading from to 3.x from 2.x =
+
+If you are using environment variables, please refer to [this documentation](https://mediacloud.press/documentation/advanced/environment-variables) for new environment variable names as many have been deprecated.
+
+Additionally a number of hooks and actions have been deprecated, please refer to [the documentation](https://mediacloud.press/documentation/advanced/hooks) for more information.
+
+Backblaze support has been removed and is being provided as a separate free add-on.
 
 = How does this compare to WP Offload S3? =
 
@@ -89,14 +97,6 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 No, I'm just one very enthusiastic customer.
 
-= What plugins are not compatible with Media Cloud? =
-
-Some gallery plugins sidestep WordPress's built-in media library and try to roll their own, for whatever reasons - none of which seem like good reasons to me.  NextGEN Gallery, maybe the most popular one of these types of plugins, does their own thing.  We've tried a couple of times to integrate with it, but their codebase is a mess and it's not a plugin we ever really use, so we gave up.
-
-We've tested a lot of media related plugins (sliders, image optimizers, media replace, etc) and most of them work (except for the ones mentioned above).  If you find a plugin that doesn't work, please report it in the support forum so we can add the warning to the plugin.
-
-Note that image optimization plugins change how Media Cloud behaves.  When an image optimizer is being used, Media Cloud will not upload to S3 or wherever until after the optimization step occurs.  For must of these types of plugins, that optimization step is in the background and can be several minutes after you upload.  Until the optimization step is complete, your media will appear as local media.
-
 == Screenshots ==
 
 1. Easy image cropping for all croppable image sizes defined in your theme.
@@ -109,17 +109,20 @@ Note that image optimization plugins change how Media Cloud behaves.  When an im
 
 == Changelog ==
 
-= 2.1.33 =
-* Use credential provider for S3 (thanks @LiljebergXYZ)
-* Prefer DEFINED environment variables (thanks @tomasvanrijsse)
-* Verify file exists before uploadign (thanks @ItsNotABug)
+= 3.0.7 =
 
-
-= 2.1.31 =
-* Added additional S3 regions
-
-= 2.1.30 =
-* Fix for images inserted via Gutenberg
+* **IMPORTANT**  If you are using Backblaze, please do not update until the Backblaze addon has been approved by WordPress.org
+* Over 100 bug fixes and general improvements
+* Improved integration with Smart Slider 3, Master Slide, NextGEN Gallery
+* Backblaze support removed from main plugin and provided as a free add-on (waiting for WordPress.org review)
+* Crop tool now allows aspect ratio to be toggled on or off when cropping
+* Redesigned settings
+* Improved customizer support
+* Added `unlink` WP-CLI command for unlinking the media library from cloud storage
+* Batch settings for controlling how background batch processes run
+* Extensive documentation
+* Improved image optimizer integration
+* Allow default credential provider to be used with S3
 
 = 2.1.23 =
 * Fix for non-image uploads not uploading
