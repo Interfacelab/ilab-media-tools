@@ -14,7 +14,6 @@
 namespace ILAB\MediaCloud\Utilities\Logging;
 
 use Monolog\Handler\AbstractProcessingHandler;
-use Monolog\Logger;
 
 class DatabaseLoggerHandler extends AbstractProcessingHandler {
     /** @var DatabaseLogger|null Database logger */
@@ -39,6 +38,10 @@ class DatabaseLoggerHandler extends AbstractProcessingHandler {
             foreach($record['context'] as $key => $value) {
                 if (is_array($value)) {
                     continue;
+                }
+
+                if ($value instanceof \WP_Error) {
+                	$value = $value->get_error_message();
                 }
 
                 $flattenedContext[] = "$key = $value";

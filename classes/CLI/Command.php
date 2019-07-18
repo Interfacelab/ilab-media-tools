@@ -20,11 +20,11 @@ if (!defined('ABSPATH')) { header('Location: /'); die; }
 
 abstract class Command extends \WP_CLI_Command {
 	public static function Warn($string) {
-		\WP_CLI::warning($string);
+		\WP_CLI::warning(\WP_CLI::colorize($string));
 	}
 
 	public static function Error($string) {
-		\WP_CLI::error($string);
+		\WP_CLI::error(\WP_CLI::colorize($string));
 	}
 
 	public static function Info($string, $newline = false) {
@@ -32,7 +32,7 @@ abstract class Command extends \WP_CLI_Command {
 	}
 
 	public static function Out($string, $newline = false) {
-		\WP_CLI::out($string.($newline ? "\n" : ""));
+		\WP_CLI::out(\WP_CLI::colorize($string).($newline ? "\n" : ""));
 	}
 
 	public abstract static function Register();

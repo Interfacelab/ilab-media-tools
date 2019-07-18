@@ -14,7 +14,7 @@
 
 namespace ILAB\MediaCloud\Utilities\Logging;
 
-use ILAB\MediaCloud\Utilities\EnvironmentOptions;
+use ILAB\MediaCloud\Utilities\Environment;
 
 /**
  * For logging to database
@@ -32,7 +32,7 @@ class DatabaseLogger {
     private $limit = 1000;
 
     public function __construct() {
-        $this->limit = (int)EnvironmentOptions::Option('ilab-media-s3-debug-max-database-entries', null, $this->limit);
+        $this->limit = (int)Environment::Option('mcloud-debug-max-database-entries', null, $this->limit);
 
         $this->insureTable();
         $this->pruneLog();

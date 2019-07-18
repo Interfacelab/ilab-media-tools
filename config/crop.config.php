@@ -13,24 +13,22 @@
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
 return [
-    "name" => "Image Crop",
-	"title" => "Image Crop",
-	"description" => "Provides an easy to use tool for manually cropping images for all image sizes.",
+    "id" => "crop",
+    "name" => "Crop Tool",
+	"description" => "Provides an advanced and easy to use image crop tool that works with or without cloud storage.",
 	"class" => "ILAB\\MediaCloud\\Tools\\Crop\\CropTool",
 	"dependencies" => [],
 	"env" => "ILAB_MEDIA_CROP_ENABLED",
 	"settings" => [
-		"title" => "Crop Settings",
-		"menu" => "Crop Settings",
 		"options-page" => "media-tools-crop",
 		"options-group" => "ilab-media-crop",
 		"groups" => [
 			"ilab-media-crop-settings" => [
 				"title" => "Crop Settings",
-				"description" => "Put your crop settings here",
 				"options" => [
-					"ilab-media-crop-quality" => [
+					"mcloud-crop-quality" => [
 						"title" => "Crop Quality",
+                        "description" => "The jpeg compression quality to use for any images cropped with the tool.",
 						"type" => "number",
                         "default" => 100
 					]

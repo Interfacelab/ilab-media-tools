@@ -14,8 +14,8 @@
 namespace ILAB\MediaCloud\Utilities\Logging;
 
 use ILAB\MediaCloud\CLI\Command;
+use ILAB\MediaCloud\Utilities\Environment;
 use Monolog\Handler\ErrorLogHandler;
-use Monolog\Handler\SyslogUdpHandler;
 use Monolog\Logger as MonologLogger;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
@@ -33,7 +33,7 @@ class Logger {
 
 	//region Constructor
 	public function __construct() {
-	    if (defined( 'WP_CLI' ) && class_exists('\WP_CLI')) {
+        if (defined( 'WP_CLI' ) && class_exists('\WP_CLI')) {
 	        $this->useWPCLI = (\WP_CLI::get_config('debug') == 'mediacloud');
 
 	        if ($this->useWPCLI) {
@@ -41,11 +41,10 @@ class Logger {
             }
         }
 
-		$env = getenv('ILAB_MEDIA_DEBUGGING_ENABLED');
-		$enabled = ($this->useWPCLI) ?: get_option("ilab-media-tool-enabled-debugging", $env);
+		$enabled = ($this->useWPCLI) ?: Environment::Option("mcloud-tool-enabled-debugging", 'ILAB_MEDIA_DEBUGGING_ENABLED', false);
 
 		if ($enabled) {
-			$level = get_option('ilab-media-s3-debug-logging-level', ($this->useWPCLI) ? 'info' : 'none');
+			$level = Environment::Option('mcloud-debug-logging-level', null, ($this->useWPCLI) ? 'info' : 'none');
 
 			if ($level != 'none') {
 				$realLevel = MonologLogger::INFO;
@@ -82,7 +81,7 @@ class Logger {
 
 	//region Protected Logging Methods
     protected function logSystemError($type, $message, $file, $line) {
-        switch($type) {
+	    switch($type) {
             case E_ERROR:
             case E_USER_ERROR:
             case E_RECOVERABLE_ERROR:
@@ -103,7 +102,7 @@ class Logger {
         }
     }
 
-    protected function doLogInfo($message, $context=[]) {
+	protected function doLogInfo($message, $context=[]) {
 	    if ($this->useWPCLI) {
             Command::Info($message, true);
         }

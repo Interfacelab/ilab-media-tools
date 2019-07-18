@@ -13,11 +13,6 @@
 
 namespace ILAB\MediaCloud\Utilities\Logging;
 
-use ILAB\MediaCloud\CLI\Command;
-use Monolog\Handler\ErrorLogHandler;
-use Monolog\Handler\SyslogUdpHandler;
-use Monolog\Logger as MonologLogger;
-
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
 /**

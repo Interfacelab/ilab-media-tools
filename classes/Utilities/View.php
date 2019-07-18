@@ -12,121 +12,111 @@
 
 namespace ILAB\MediaCloud\Utilities;
 
+use duncan3dc\Laravel\BladeInstance;
+
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
-class View {
-    protected $currentBlocks;
-    protected $currentData;
+final class View {
+	/** @var BladeInstance|null  */
+    private static $bladeInstance = null;
+    private static $registeredViewDirectories = [];
 
-    protected $blocks;
-    protected $parent;
-    protected $parsed;
-
-    public function __construct($view) {
-        $this->currentBlocks=[];
-        $this->currentData=[];
-        $this->blocks=[];
-        $this->parent=null;
-        $this->parse($view);
+    private function __construct($view) {
     }
 
-    public function parse($view) {
-        $contents=file_get_contents($view);
+    private static function getTempDir() {
+        $temp = Environment::Option(null, 'ILAB_MEDIA_CLOUD_VIEW_CACHE', null);
+        if (!empty($temp)) {
+            return trailingslashit($temp);
+        }
 
-        $includeMatches=[];
-        if (preg_match_all('#{%\s*include\s+([/aA-zZ0-9-_.]+)\s*%}#',$contents,$includeMatches,PREG_PATTERN_ORDER | PREG_OFFSET_CAPTURE))
-        {
-            for($i=count($includeMatches[0])-1; $i>=0; $i--)
-            {
-                $included=file_get_contents(ILAB_VIEW_DIR.'/'.$includeMatches[1][$i][0]);
-                $contents=substr_replace($contents,$included,$includeMatches[0][$i][1],strlen($includeMatches[0][$i][0]));
-//                $contents=str_replace($includeMatches[0][$i],$included,$contents);
+        if (defined('WP_TEMP_DIR')) {
+            return trailingslashit(WP_TEMP_DIR);
+        }
+
+        if (function_exists('sys_get_temp_dir')) {
+            $temp = sys_get_temp_dir();
+            if (@is_dir($temp) && wp_is_writable($temp)) {
+                return trailingslashit($temp);
             }
         }
 
-
-        // parse parent template
-        $extendMatches=[];
-        if (preg_match('#{%\s*extends\s+([/aA-zZ0-9-_.]+)\s*%}#',$contents,$extendMatches))
-        {
-            $template=$extendMatches[1];
-
-            $this->parent=new View( ILAB_VIEW_DIR . '/' . $template);
-
-            $contents=preg_replace('#{%\s*extends\s+([/aA-zZ0-9-_.]+)\s*%}#','',$contents);
+        $temp = ini_get('upload_tmp_dir');
+        if (!empty($temp) && @is_dir($temp) && wp_is_writable($temp)) {
+            return trailingslashit($temp);
         }
 
-        // parse content targets
-        $contents=preg_replace('#{%\s*content\s+([/aA-zZ0-9-_.]+)\s*%}#','<?php echo $view->getBlock("$1"); ?>',$contents);
+        $temp = WP_CONTENT_DIR . '/';
+        if (@is_dir($temp) && wp_is_writable($temp)) {
+            return $temp;
+        }
 
-        // parse blocks
-        $blockMatches=[];
-        if (preg_match_all('#{%\s*block\s*([aA-zZ0-9-_]*)\s*%}(.*?){%\s*end\s*block\s*%}#s',$contents,$blockMatches))
-        {
-            for($i=0; $i<count($blockMatches[1]); $i++)
-            {
-                $blockName=$blockMatches[1][$i];
-                $this->blocks[$blockName]=$this->parseFragment($blockMatches[2][$i]);
+        $temp = '/tmp/';
+        if (@is_dir($temp) && wp_is_writable($temp)) {
+            return $temp;
+        }
+
+        return null;
+    }
+
+    private static function bladeInstance() {
+        if (static::$bladeInstance == null) {
+            $cacheDir = static::getTempDir();
+
+            static::$bladeInstance = new BladeInstance(ILAB_VIEW_DIR, $cacheDir.'media-cloud-views');
+
+            foreach(static::$registeredViewDirectories as $directory) {
+            	static::$bladeInstance->addPath($directory);
             }
 
-            $contents=preg_replace('#{%\s*block\s*([aA-zZ0-9-_]*)\s*%}(.*?){%\s*end\s*block\s*%}#s','',$contents);
+	        static::$bladeInstance->directive('inline', function($expression) {
+		        return '<?php \ILAB\MediaCloud\Utilities\View::InlineImage('.$expression.'); ?>';
+	        });
+
+	        static::$bladeInstance->directive('network', function($expression) {
+		        return '<?php if (is_multisite() && \ILAB\MediaCloud\Utilities\Environment::NetworkMode()): ?>';
+	        });
+
+	        static::$bladeInstance->directive('endnetwork', function($expression) {
+		        return '<?php endif; ?>';
+	        });
+
+	        static::$bladeInstance->directive('inline', function($expression) {
+		        return '<?php \ILAB\MediaCloud\Utilities\View::InlineImage('.$expression.'); ?>';
+	        });
+
+	        static::$bladeInstance->directive('plan', function($expression) {
+	        	return "<?php if (\\ILAB\\MediaCloud\\Utilities\\LicensingManager::ActivePlan($expression)): ?>";
+	        });
+
+	        static::$bladeInstance->directive('elseplan', function($expression) {
+		        return "<?php elseif (\\ILAB\\MediaCloud\\Utilities\\LicensingManager::ActivePlan($expression)): ?>";
+	        });
+
+	        static::$bladeInstance->directive('endplan', function($expression) {
+		        return '<?php endif; ?>';
+	        });
         }
 
-        $this->parsed=$this->parseFragment($contents);
-    }
-
-    private function parseFragment($fragment) {
-        $fragment=preg_replace('#{%\s*for\s*each\s*\(\s*(.*)\s*\)\s*%}#','<?php foreach($1):?>',$fragment);
-        $fragment=preg_replace('#{%\s*end\s*for\s*each\s*%}#','<?php endforeach; ?>',$fragment);
-        $fragment=preg_replace('#{%\s*if\s*\((.*)\)\s*%}#','<?php if ($1): ?>',$fragment);
-        $fragment=preg_replace('#{%\s*else\s*%}#','<?php else: ?>',$fragment);
-        $fragment=preg_replace('#{%\s*else\s*if\s*\((.*)\)\s*%}#','<?php elseif ($1): ?>',$fragment);
-        $fragment=preg_replace('#{%\s*end\s*if\s*%}#','<?php endif; ?>',$fragment);
-        $fragment=preg_replace("|\{{2}([^}]*)\}{2}|is",'<?php echo $1; ?>',$fragment);
-        $fragment=preg_replace("|\{{2}(.*)\}{2}|is",'<?php echo $1; ?>',$fragment); // for closures.
-
-        return $fragment;
-    }
-
-    private function renderFragment($fragment) {
-        $data=($this->currentData!=null) ? $this->currentData : [];
-
-        $data['view']=$this;
-        extract($data);
-
-        ob_start();
-        eval("?>".trim($fragment));
-        $result=ob_get_contents();
-        ob_end_clean();
-
-        return $result;
-    }
-
-    public function getBlock($blockId) {
-        if (!isset($this->currentBlocks[$blockId]))
-            return '';
-
-        return $this->renderFragment($this->currentBlocks[$blockId]);
-    }
-
-    public function render($data,$blocks=null) {
-        $allBlocks=$this->blocks;
-
-        if ($blocks)
-            $allBlocks=array_merge($allBlocks,$blocks);
-
-
-        if ($this->parent)
-            return $this->parent->render($data,$allBlocks);
-
-        $this->currentBlocks=$allBlocks;
-        $this->currentData=$data;
-
-        return $this->renderFragment($this->parsed);
+        return static::$bladeInstance;
     }
 
     public static function render_view($view, $data) {
-        $view=new View( ILAB_VIEW_DIR . '/' . $view);
-        return $view->render($data);
+        if (strpos($view, '.php') == (strlen($view) - 4)) {
+            $view = substr($view, 0,  (strlen($view) - 4));
+        }
+
+        return self::bladeInstance()->render(str_replace('.php', '', $view), $data);
+    }
+
+    public static function InlineImage($image) {
+    	$imageFile = ILAB_PUB_IMG_DIR.'/'.$image;
+    	if (file_exists($imageFile)) {
+    		echo str_replace('<?xml version="1.0" encoding="UTF-8"?>', '', file_get_contents($imageFile));
+	    }
+    }
+
+    public static function registerViewDirectory($directory) {
+    	static::$registeredViewDirectories[] = $directory;
     }
 }

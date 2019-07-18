@@ -13,17 +13,10 @@
 
 namespace ILAB\MediaCloud\Tools\Debugging;
 
-use FasterImage\FasterImage;
-use ILAB\MediaCloud\Cloud\Storage\StorageSettings;
-use ILAB\MediaCloud\Tasks\BatchManager;
-use ILAB\MediaCloud\Tools\Imgix\ImgixTool;
-use ILAB\MediaCloud\Tools\Storage\StorageTool;
-use ILAB\MediaCloud\Tools\ToolBase;
+use ILAB\MediaCloud\Tools\Tool;
 use ILAB\MediaCloud\Tools\ToolsManager;
-use function ILAB\MediaCloud\Utilities\json_response;
 use ILAB\MediaCloud\Utilities\Logging\DatabaseLogger;
 use ILAB\MediaCloud\Utilities\Logging\DatabaseLogTable;
-use ILAB\MediaCloud\Utilities\Logging\ErrorCollector;
 use ILAB\MediaCloud\Utilities\Logging\Logger;
 use ILAB\MediaCloud\Utilities\NoticeManager;
 use ILAB\MediaCloud\Utilities\View;
@@ -36,7 +29,7 @@ if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
  *
  * Debugging tool.
  */
-class DebuggingTool extends ToolBase {
+class DebuggingTool extends Tool {
 	public function __construct( $toolName, $toolInfo, $toolManager ) {
 		parent::__construct( $toolName, $toolInfo, $toolManager );
 
@@ -60,10 +53,11 @@ class DebuggingTool extends ToolBase {
 
 	}
 
-    public function registerMenu($top_menu_slug) {
-        parent::registerMenu($top_menu_slug);
+    public function registerHelpMenu($top_menu_slug, $networkMode = false, $networkAdminMenu = false) {
+        parent::registerHelpMenu($top_menu_slug);
 
-        if($this->enabled()) {
+        if($this->enabled() && (($networkMode && $networkAdminMenu) || (!$networkMode && !$networkAdminMenu))) {
+            ToolsManager::instance()->insertHelpToolSeparator();
             add_submenu_page($top_menu_slug, 'Debug Log', 'Debug Log', 'manage_options', 'media-tools-debug-log', [
                 $this,
                 'renderDebugLog'

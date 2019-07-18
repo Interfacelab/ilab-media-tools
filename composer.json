@@ -4,10 +4,8 @@
   "type": "wordpress-plugin",
   "license": "LGPL-3.0-or-later",
   "keywords": ["s3","imgix","cropping", "wordpress"],
-  "repositories": [{
-    "type": "composer",
-    "url": "https://packages.interfacelab.io"
-  }],
+  "repositories": [
+  ],
   "authors": [
     {
       "name": "Jon Gilkison",
@@ -15,14 +13,24 @@
     }
   ],
   "require" : {
+    "php": ">=5.6",
     "imgix/imgix-php": "^1.0",
     "smalot/pdfparser": "^0.13.2",
     "fasterimage/fasterimage": "^1.1",
     "monolog/monolog": "^1.23",
-    "google/cloud-storage": "^1.1",
-    "cwhite92/b2-sdk-php": "^1.3",
-    "ilab/ilab-aws-media-cloud-sdk": "^0.1.4",
-    "trntv/probe": "^1.0"
+    "google/cloud-storage": "^1.10",
+    "league/flysystem": "^1.0",
+    "ilab/ilab-aws-media-cloud-sdk": "^0.3.1",
+    "trntv/probe": "^1.0",
+    "league/glide": "^1.3",
+    "ilab/ilab-flysystem-aws-s3-v3": "^0.2.1",
+    "duncan3dc/blade": ">3.3",
+    "superbalist/flysystem-google-storage": "^7.1",
+    "google/cloud-vision": "^0.19.0",
+    "nesbot/carbon": "^1.21",
+    "michelf/php-markdown": "^1.8",
+    "teamtnt/tntsearch": "^1.4.0",
+    "ivopetkov/html5-dom-document-php": "^2.0.2"
   },
   "autoload": {
     "psr-4": {

@@ -1,0 +1,23 @@
+.ilab-docs-body .property, .ilab-docs-body .size {
+    white-space: nowrap;
+}
+
+.ilab-docs-body .property {
+    width: 84px;
+    min-width: 84px;
+}
+.ilab-docs-body .description {
+    width: 100%;
+}
+
+.ilab-docs-body .callout {
+    width: 32px;
+    min-width: 32px;
+    max-width: 32px;
+}
+
+.ilab-docs-body hr {
+    background-color: transparent;
+    padding: 15px;
+    border: 0px none;
+}

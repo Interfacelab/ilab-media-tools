@@ -1,0 +1,20 @@
+{
+    "/js/docs-prism.js": "/js/docs-prism.js",
+    "/js/ilab-dismiss-notice.js": "/js/ilab-dismiss-notice.js",
+    "/js/ilab-face-detect.js": "/js/ilab-face-detect.js",
+    "/js/ilab-image-sizes.js": "/js/ilab-image-sizes.js",
+    "/js/ilab-media-direct-upload.js": "/js/ilab-media-direct-upload.js",
+    "/js/ilab-media-direct-upload-google.js": "/js/ilab-media-direct-upload-google.js",
+    "/js/ilab-media-direct-upload-other-s3.js": "/js/ilab-media-direct-upload-other-s3.js",
+    "/js/ilab-media-direct-upload-s3.js": "/js/ilab-media-direct-upload-s3.js",
+    "/js/ilab-media-grid.js": "/js/ilab-media-grid.js",
+    "/js/ilab-media-tools.js": "/js/ilab-media-tools.js",
+    "/js/ilab-media-upload.js": "/js/ilab-media-upload.js",
+    "/js/ilab-modal.js": "/js/ilab-modal.js",
+    "/js/ilab-storage-browser.js": "/js/ilab-storage-browser.js",
+    "/js/media-cloud-docs.js": "/js/media-cloud-docs.js",
+    "/css/ilab-media-cloud.css": "/css/ilab-media-cloud.css",
+    "/css/media-cloud-docs.css": "/css/media-cloud-docs.css",
+    "/js/ilab-settings.js": "/js/ilab-settings.js",
+    "/js/face-api.js": "/js/face-api.js"
+}

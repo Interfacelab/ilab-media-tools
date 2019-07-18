@@ -1,0 +1,120 @@
+{
+    "id": "media-cloud",
+    "title": "Media Cloud",
+    "menu": "Media Cloud",
+    "toolbar": "Media Cloud",
+    "standalone": true,
+    "logo": {
+        "src": "images\/logo.svg",
+        "width": 53,
+        "height": 64
+    },
+    "toc": [
+        {
+            "title": "Working With Images",
+            "src": "images"
+        },
+        {
+            "title": "Publishing",
+            "src": "publishing"
+        },
+        {
+            "title": "Creating and Managing Pages",
+            "src": "pages",
+            "children": [
+                {
+                    "title": "Content Blocks",
+                    "src": "pages\/content-blocks",
+                    "children": [
+                        {
+                            "title": "Carousel",
+                            "src": "pages\/content-blocks\/carousel"
+                        },
+                        {
+                            "title": "Post List",
+                            "src": "pages\/content-blocks\/post-list"
+                        },
+                        {
+                            "title": "Text Block",
+                            "src": "pages\/content-blocks\/text-block"
+                        },
+                        {
+                            "title": "Information Panel",
+                            "src": "pages\/content-blocks\/information-panel"
+                        },
+                        {
+                            "title": "Hero",
+                            "src": "pages\/content-blocks\/hero"
+                        },
+                        {
+                            "title": "Video",
+                            "src": "pages\/content-blocks\/video"
+                        },
+                        {
+                            "title": "Two Column Text Block",
+                            "src": "pages\/content-blocks\/two-column-text-block"
+                        },
+                        {
+                            "title": "Bookmarks",
+                            "src": "pages\/content-blocks\/bookmarks"
+                        },
+                        {
+                            "title": "Image Block",
+                            "src": "pages\/content-blocks\/image-block"
+                        },
+                        {
+                            "title": "Callout",
+                            "src": "pages\/content-blocks\/callout"
+                        },
+                        {
+                            "title": "Leadership Team Grid",
+                            "src": "pages\/content-blocks\/leadership-grid"
+                        },
+                        {
+                            "title": "Links",
+                            "src": "pages\/content-blocks\/link"
+                        },
+                        {
+                            "title": "Links",
+                            "src": "pages\/content-blocks\/links"
+                        },
+                        {
+                            "title": "Contact Form",
+                            "src": "pages\/content-blocks\/contact-form"
+                        },
+                        {
+                            "title": "Text Header",
+                            "src": "pages\/content-blocks\/text-header"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "title": "Custom Content Types",
+            "src": "content-types",
+            "children": [
+                {
+                    "title": "Managing Case Studies",
+                    "src": "content-types\/case-studies"
+                },
+                {
+                    "title": "Managing News",
+                    "src": "content-types\/news"
+                },
+                {
+                    "title": "Managing Bios",
+                    "src": "content-types\/bios"
+                }
+            ]
+        },
+        {
+            "title": "Menus",
+            "src": "menus"
+        },
+        {
+            "title": "Plugin Documentation",
+            "src": "index"
+        }
+    ]
+}

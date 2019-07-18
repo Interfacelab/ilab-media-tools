@@ -13,16 +13,13 @@
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
 return [
-    "name" => "Media Cloud Debugging",
-	"title" => "Media Cloud Debugging",
+    "id" => "debugging",
+    "name" => "Debugging",
 	"description" => "Enables logging for the plugin to track down issues.",
 	"class" => "ILAB\\MediaCloud\\Tools\\Debugging\\DebuggingTool",
 	"dependencies" => [],
 	"env" => "ILAB_MEDIA_DEBUGGING_ENABLED",
 	"settings" => [
-		"title" => "Debug Settings",
-		"menu" => "Debug Settings",
-		"only_when_enabled" => true,
 		"options-page" => "media-tools-debugging",
 		"options-group" => "ilab-media-debugging",
 		"groups" => [
@@ -30,7 +27,7 @@ return [
 				"title" => "Debug Settings",
 				"description" => "If you are having issues with ILAB Media Cloud, you can turn on logging to possibly help track down issues.",
 				"options" => [
-					"ilab-media-s3-debug-logging-level" => [
+					"mcloud-debug-logging-level" => [
 						"title" => "Logging Level",
 						"description" => "The logging level to use. To disable logging for Media Cloud, set it to <code>None</code>.",
 						"type" => "select",
@@ -42,7 +39,7 @@ return [
 							"error" => "Error"
 						]
 					],
-					"ilab-media-s3-debug-max-database-entries" => [
+					"mcloud-debug-max-database-entries" => [
 						"title" => "Maximum Database Entries",
 						"description" => "The maximum number of log entries to keep in the database.  The default is 1000.",
 						"type" => "number",

@@ -100,7 +100,7 @@ abstract class BackgroundProcess extends AsyncRequest {
 		$key = $this->generate_key();
 
 		if ( ! empty( $this->data ) ) {
-			Logger::info( "Saving queue: $key", $this->data);
+//			Logger::info( "Saving queue: $key", $this->data);
 			update_site_option( $key, $this->data );
 		}
 
@@ -170,11 +170,29 @@ abstract class BackgroundProcess extends AsyncRequest {
 			wp_die();
 		}
 
+		Logger::info("Maybe handle {$this->identifier}");
+
 		check_ajax_referer( $this->identifier, 'nonce' );
+
+		if (is_callable('fastcgi_finish_request')) {
+			ignore_user_abort(true);
+			fastcgi_finish_request();
+		}
 
 		$this->handle();
 
 		wp_die();
+	}
+
+	protected function forceOutput() {
+		ini_set('output_buffering', 'off');
+		ini_set('zlib.output_compression', false);
+
+		ini_set('implicit_flush', true);
+		ob_implicit_flush(true);
+		for($i = 0; $i < 1000; $i++) {
+			echo "\n";
+		}
 	}
 
 	/**
@@ -328,7 +346,7 @@ abstract class BackgroundProcess extends AsyncRequest {
 			Logger::info( "Processing Batch", $batch->data);
 			foreach ( $batch->data as $key => $value ) {
 				if ($this->shouldHandle()) {
-					Logger::info( "Running task", $value);
+//					Logger::info( "Running task", $value);
 
 					$task = $this->task( $value );
 
