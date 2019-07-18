@@ -67,10 +67,21 @@ class StorageCommands extends Command {
 		}
 
 
+		$product_posts = new \WP_Query(
+			array(
+				'post_type' => 'product', // adjust your custom post type name here
+				'posts_per_page' => -1,
+				'post_status' => array('publish', 'pending', 'draft', 'auto-draft', 'future', 'private', 'inherit', 'trash'),
+				'fields' => 'ids'
+			)
+		);
+
 		$postArgs = [
 			'post_type' => 'attachment',
 			'post_status' => 'inherit',
+			'nopaging' => true,
 			'fields' => 'ids',
+			'post_parent__in' => $product_posts->posts,
 		];
 
 		if (isset($assoc_args['limit'])) {
