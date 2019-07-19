@@ -148,12 +148,15 @@ interface StorageInterface {
 	 * @param string $key
 	 * @param string $fileName
 	 * @param string $acl
-	 * @param bool $cacheControl
-	 * @param bool $expires
+	 * @param string|null $cacheControl
+	 * @param string|null $expires
+	 * @param string|null $contentType
+	 * @param string|null $contentEncoding
+	 * @param string|null $contentLength
 	 * @throws StorageException
 	 * @return string
 	 */
-	public function upload($key, $fileName, $acl, $cacheControl=false, $expires=false);
+	public function upload($key, $fileName, $acl, $cacheControl=null, $expires=null, $contentType=null, $contentEncoding=null, $contentLength=null);
 
 	/**
 	 * Creates a directory

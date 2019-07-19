@@ -126,6 +126,15 @@ class GoogleStorage implements StorageInterface {
 		return "https://console.cloud.google.com/storage/browser/$bucket";
 	}
 
+	public static function defaultDownloadUrl() {
+		$url = StorageObject::DEFAULT_DOWNLOAD_URL;
+		if (!filter_var($url, FILTER_VALIDATE_URL)) {
+			$url = 'https://'.$url;
+		}
+
+		return $url;
+	}
+
 	public function pathLink($bucket, $key) {
 		$keyParts = explode('/', $key);
 		array_pop($keyParts);
@@ -300,21 +309,36 @@ class GoogleStorage implements StorageInterface {
 		}
 	}
 
-	public function upload($key, $fileName, $acl, $cacheControl = false, $expires = false) {
+	public function upload($key, $fileName, $acl, $cacheControl=null, $expires=null, $contentType=null, $contentEncoding=null, $contentLength=null) {
 		if(!$this->client) {
 			throw new InvalidStorageSettingsException('Storage settings are invalid');
 		}
 
 		$bucket = $this->client->bucket($this->bucket);
 
+		$metadata = [];
+		if (!empty($cacheControl)) {
+			$metadata['cacheControl'] = $cacheControl;
+		}
+
+		if ($contentType) {
+			$metadata['contentType'] = $contentType;
+		}
+
+		if ($contentEncoding) {
+			$metadata['contentEncoding'] = $contentEncoding;
+		}
+
+		if ($contentLength) {
+			$metadata['contentLength'] = $contentLength;
+		}
+
 		try {
 			Logger::startTiming("Start Upload", ['file' => $key]);
 			$object = $bucket->upload(fopen($fileName, 'r'),[
 				'name' => $key,
 				'predefinedAcl' => self::GOOGLE_ACL[$acl],
-				'metadata'=> [
-					'cacheControl' => $cacheControl
-				]
+				'metadata'=> $metadata
 			]);
 			Logger::endTiming("End Upload", ['file' => $key]);
 		} catch (\Exception $ex) {
@@ -324,7 +348,7 @@ class GoogleStorage implements StorageInterface {
 		}
 
 		$url = $object->gcsUri();
-		$url = str_replace('gs://',StorageObject::DEFAULT_DOWNLOAD_URL.'/', $url);
+		$url = str_replace('gs://',static::defaultDownloadUrl().'/', $url);
 
 		return $url;
 	}
@@ -354,7 +378,7 @@ class GoogleStorage implements StorageInterface {
 		$type = $info['contentType'];
 
 		$url = $object->gcsUri();
-		$url = str_replace('gs://',StorageObject::DEFAULT_DOWNLOAD_URL.'/', $url);
+		$url = str_replace('gs://','https://'.static::defaultDownloadUrl().'/', $url);
 
 		$presignedUrl = $object->signedUrl(new Timestamp(new \DateTime("+{$this->presignedURLExpiration} minutes")));
 
@@ -504,7 +528,7 @@ class GoogleStorage implements StorageInterface {
 
 		$object = $this->client->bucket($this->bucket)->object($key);
 		$url = $object->gcsUri();
-		$url = str_replace('gs://',StorageObject::DEFAULT_DOWNLOAD_URL.'/', $url);
+		$url = str_replace('gs://','https://'.static::defaultDownloadUrl().'/', $url);
 		return $url;
 	}
 	//endregion

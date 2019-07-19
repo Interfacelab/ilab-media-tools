@@ -78,7 +78,7 @@ if ( is_plugin_active( 'wp-stateless/wp-stateless-media.php' ) ) {
 }
 
 // Version Defines
-define( 'MEDIA_CLOUD_VERSION', '3.0.7' );
+define( 'MEDIA_CLOUD_VERSION', '3.0.9' );
 // Directory defines
 define( 'ILAB_TOOLS_DIR', dirname( __FILE__ ) );
 define( 'ILAB_CONFIG_DIR', ILAB_TOOLS_DIR . '/config' );

@@ -547,7 +547,7 @@ class S3Storage implements StorageInterface {
 		}
 	}
 
-	public function upload($key, $fileName, $acl, $cacheControl = false, $expires = false) {
+	public function upload($key, $fileName, $acl, $cacheControl=null, $expires=null, $contentType=null, $contentEncoding=null, $contentLength=null) {
 		if(!$this->client) {
 			throw new InvalidStorageSettingsException('Storage settings are invalid');
 		}
@@ -561,6 +561,18 @@ class S3Storage implements StorageInterface {
 
 		if($expires) {
 			$params['Expires'] = $expires;
+		}
+
+		if ($contentType) {
+			$params['ContentType'] = $contentType;
+		}
+
+		if ($contentEncoding) {
+			$params['ContentEncoding'] = $contentEncoding;
+		}
+
+		if ($contentLength) {
+			$params['ContentLength'] = $contentLength;
 		}
 
 		if(!empty($params)) {
