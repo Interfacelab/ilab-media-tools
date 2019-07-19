@@ -5,7 +5,7 @@ Requires at least: 4.4
 Tested up to: 5.2.2
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 3.0.7
+Stable tag: 3.0.9
 Requires PHP: 5.6
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -99,15 +99,25 @@ No, I'm just one very enthusiastic customer.
 
 == Screenshots ==
 
-1. Easy image cropping for all croppable image sizes defined in your theme.
-2. Bulk import your assets to S3 (a free feature in Media Cloud that costs money in other S3 plugins)
-3. Make adjustments to your images like saturation, vibrancy, contrast when using Imgix.
-4. Stylize your images easily when using Imgix.
-5. Watermarking is easy and non-destructive, change the watermark at any time and all watermarked images will automatically update.
-6. Amazon S3 settings.
-7. Imgix settings.
+1. Media Cloud integration with the WordPress Media library.
+2. Media Cloud integration WordPress Media library list view.
+3. Easy image cropping for all croppable image sizes defined in your theme.
+4. Make adjustments to your images like saturation, vibrancy, contrast when using Imgix.
+5. Stylize your images easily when using Imgix.
+6. Bulk import your assets to cloud storage (a free feature in Media Cloud that costs money in other offload media plugins)
+7. Watermarking is easy and non-destructive, change the watermark at any time and all watermarked images will automatically update.
+8. Redesign settings.
+9. Easily pin frequently accessed settings.
+
 
 == Changelog ==
+
+= 3.0.9 =
+
+* Updated S3 regions
+* Fix for duplicate thumbnail during import process (thanks @jeryj)
+* You can now compress assets with gzip before pushing them to cloud storage (pro version)
+* Bug fixes for Google Cloud Storage
 
 = 3.0.7 =
 

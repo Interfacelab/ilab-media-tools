@@ -75,30 +75,38 @@
 
             const backgroundImport = {{ ($background) ? 'true' : 'false' }};
             var postsToImport = {!! json_encode($posts, JSON_PRETTY_PRINT) !!};
+            
+            var lastThumb = {
+                id: null,
+                url: null
+            };
 
-            var lastThumbUrl = null;
-
-            const displayNextThumbnail = function(thumbUrl, icon) {
-                if (thumbUrl == null) {
+            /**
+             * @param {object} thumb - {id, url}
+             * @param {boolean} icon
+             */
+            const displayNextThumbnail = function(thumb, icon) {
+                if (thumb == undefined || thumb == null || !thumb.hasOwnProperty('url') || thumb.url == null || !thumb.hasOwnProperty('id') || thumb.id == null) {
                     return;
                 }
 
-                if (!icon && (thumbUrl == lastThumbUrl)) {
+                if (!icon && (lastThumb.id === thumb.id)) {
                     return;
                 }
                 
                 if (!icon && (displayedThumbs.length > 0)) {
-                    if (displayedThumbs[displayedThumbs.length - 1].attr('src') == thumbUrl) {
+                    if (displayedThumbs[displayedThumbs.length - 1].attr('src') == thumb.url) {
                         return;
                     }
                 }
 
                 var image = null;
                 if (!icon) {
-                    lastThumbUrl = thumbUrl;
-                    image = $('<div class="s3-importer-thumb ilab-hidden" style="background-image: url('+thumbUrl+')"></div>');
+                    lastThumb.url = thumb.url;
+                    lastThumb.id = thumb.id;
+                    image = $('<div class="s3-importer-thumb ilab-hidden" style="background-image: url('+thumb.url+')"></div>');
                 } else {
-                    image = $('<div class="s3-importer-image-icon ilab-hidden"><img src="'+thumbUrl+'"></div>');
+                    image = $('<div class="s3-importer-image-icon ilab-hidden"><img src="'+thumb.url+'"></div>');
                 }
 
                 image.prependTo('#s3-importer-thumbnails-container');
@@ -171,7 +179,13 @@
 
                 totalIndex++;
 
-                displayNextThumbnail(postsToImport[currentIndex].thumb, postsToImport[currentIndex].icon);
+                displayNextThumbnail(
+                    {
+                        id: postsToImport[currentIndex].currentID, 
+                        url: postsToImport[currentIndex].thumb
+                    }, 
+                    postsToImport[currentIndex].icon
+                );
 
                 $('#s3-importer-status-text').css({'visibility':'visible'});
                 $('#s3-importer-current').text((totalIndex + 1));
@@ -278,7 +292,13 @@
                         $('#s3-importer-instructions').css({display: 'none'});
                         $('#s3-importer-progress').css({display: 'block'});
 
-                        displayNextThumbnail(postsToImport[0].thumb, postsToImport[0].icon);
+                        displayNextThumbnail(
+                            {
+                                id: postsToImport[0].currentID, 
+                                url: postsToImport[0].thumb
+                            }, 
+                            postsToImport[0].icon
+                        );
 
                         $('#s3-importer-status-text').css({'visibility':'visible'});
                         $('#s3-importer-current').text(1);
@@ -303,7 +323,13 @@
                             $('#s3-importer-instructions').css({display: 'none'});
                             $('#s3-importer-progress').css({display: 'block'});
 
-                            displayNextThumbnail(response.first.thumb, response.first.icon);
+                            displayNextThumbnail(
+                                {
+                                    id: response.first.currentID, 
+                                    url: response.first.thumb
+                                }, 
+                                response.first.icon
+                            );
 
                             totalItems = response.total;
                             $('#s3-importer-status-text').css({'visibility':'visible'});
@@ -380,7 +406,10 @@
                             }
 
                             if (response.thumb != null) {
-                                displayNextThumbnail(response.thumb);
+                                displayNextThumbnail({
+                                    id: response.currentID, 
+                                    url: response.thumb
+                                });
                             }
 
                             $('#s3-timing-stats').css({display: 'inline-block'});
