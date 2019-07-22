@@ -49,12 +49,13 @@ class MigrateToStorageBatchProcess extends BackgroundProcess implements ImportPr
 
 		$index = $item['index'];
 		$post_id = $item['post'];
+		$options = (isset($item['options'])) ? $item['options'] : [];
 
 		BatchManager::instance()->setCurrentID('storage', $post_id);
 
 		/** @var StorageTool $s3tool */
 		$s3tool = ToolsManager::instance()->tools['storage'];
-		$s3tool->processImport($index, $post_id, $this);
+		$s3tool->processImport($index, $post_id, $this, $options);
 
         $endTime = microtime(true) - $startTime;
 

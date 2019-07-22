@@ -13,6 +13,8 @@
 
 namespace ILAB\MediaCloud\Tools\Storage\Batch;
 
+use ILAB\MediaCloud\Storage\StorageException;
+use ILAB\MediaCloud\Storage\StorageSettings;
 use ILAB\MediaCloud\Tasks\BatchManager;
 use ILAB\MediaCloud\Tools\BatchTool;
 use function ILAB\MediaCloud\Utilities\json_response;
@@ -111,6 +113,32 @@ class MigrateToStorageBatchTool extends BatchTool {
     }
     //endregion
 
+	//region Batch Actions
+	/**
+	 * Gets the post data to process for this batch.  Data is paged to minimize memory usage.
+	 * @param $page
+	 * @param bool $forceImages
+	 * @param bool $allInfo
+	 * @return array
+	 */
+	protected function getImportBatch($page, $forceImages = false, $allInfo = false) {
+		$result = parent::getImportBatch($page, $forceImages, $allInfo);
+
+		$skipThumbnails = (empty($_REQUEST['skip-thumbnails'])) ? false : ($_REQUEST['skip-thumbnails'] == 'on');
+		$pathHandling = 'preserve';
+		if (!empty($_REQUEST['preserve-upload-paths']) && in_array($_REQUEST['preserve-upload-paths'], ['replace', 'prepend'])) {
+			$pathHandling = $_REQUEST['preserve-upload-paths'];
+		}
+
+		$result['options'] = [
+			'skip-thumbnails' => $skipThumbnails,
+			'path-handling' => $pathHandling
+		];
+
+		return $result;
+	}
+	//endregion
+
     //region Actions
 	protected function filterPostArgs($args) {
 		$args = parent::filterPostArgs($args);
@@ -142,16 +170,51 @@ class MigrateToStorageBatchTool extends BatchTool {
      */
     protected function filterRenderData($data) {
         $data['disabledText'] = 'enable Storage';
-        $data['commandLine'] = 'wp mediacloud import [--limit=number] [--offset=number] [--page=number]';
+        $data['commandLine'] = 'wp mediacloud import [--limit=<number>] [--offset=<number>] [--page=<number>] [--paths=preserve|replace|prepend] [--skip-thumbnails]';
         $data['commandTitle'] = 'Import Uploads';
         $data['cancelCommandTitle'] = 'Cancel Import';
 
         $data['options'] = [
 	        'skip-imported' => [
-		        "label" => "Skip items that have already been imported",
+	        	"title" => "Skip Imported",
+		        "description" => "Skip items that have already been imported.",
+		        "type" => "checkbox",
 		        "default" => true
 	        ],
         ];
+
+
+        $imgix = apply_filters('media-cloud/dynamic-images/enabled', false);
+        if ($imgix) {
+	        $data['options']['skip-thumbnails'] = [
+		        "title" => "Skip Thumbnails",
+		        "description" => "This will skip uploading thumbnails and other images sizes, only uploading the original master image.  This requires Imgix or Dynamic Images.",
+		        "type" => "checkbox",
+		        "default" => false
+	        ];
+        }
+
+        if (!empty(StorageSettings::prefixFormat())) {
+        	$warning = '';
+        	if (strpos(StorageSettings::prefixFormat(), '@{date:') !== false) {
+	        	$warning = "<p><strong>WARNING:</strong> Your custom upload prefix has a date in it, it will use today's date.  This means that all of your images will be placed in a folder for today's date.  It is recommended to remove the dynamic date from the prefix until after import.</p>";
+	        }
+
+        	$prefix = StorageSettings::prefix();
+
+	        $data['options']['preserve-upload-paths'] = [
+		        "title" => "Upload Paths",
+		        "description" => "Controls where in cloud storage imported files are placed.  <p>Current custom prefix: <code>$prefix</code>.</p>$warning",
+		        "type" => "select",
+		        "options" => [
+		        	'preserve' => 'Keep original upload path',
+			        'replace' => "Replace upload path with custom prefix",
+			        'prepend' => "Prepend upload path with custom prefix",
+		        ],
+		        "default" => 'preserve',
+	        ];
+        }
+
 
         return $data;
     }
@@ -165,8 +228,19 @@ class MigrateToStorageBatchTool extends BatchTool {
             json_response(['status' => 'error']);
         }
 
-        $pid = $_POST['post_id'];
-        $this->owner->processImport(0, $pid, null);
+	    $skipThumbnails = (empty($_REQUEST['skip-thumbnails'])) ? false : ($_REQUEST['skip-thumbnails'] == 'on');
+	    $pathHandling = 'preserve';
+	    if (!empty($_REQUEST['preserve-upload-paths']) && in_array($_REQUEST['preserve-upload-paths'], ['replace', 'prepend'])) {
+		    $pathHandling = $_REQUEST['preserve-upload-paths'];
+	    }
+
+	    $options = [
+		    'skip-thumbnails' => $skipThumbnails,
+		    'path-handling' => $pathHandling
+	    ];
+
+	    $pid = $_POST['post_id'];
+        $this->owner->processImport(0, $pid, null, $options);
 
         json_response(["status" => 'ok']);
     }

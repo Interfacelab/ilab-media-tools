@@ -70,8 +70,8 @@ class StorageTool extends Tool {
     /** @var string The name of the image optimizer */
     private $imageOptimizer = null;
 
-    /** @var bool Controls if file paths should be preserved when updated metadata */
-    private $preserveFilePaths = false;
+    /** @var string Controls how file paths should be preserved when updated metadata */
+    private $preserveFilePaths = 'replace';
 
 	/** @var string[] */
 	private $deleteCache = [];
@@ -353,10 +353,12 @@ class StorageTool extends Tool {
      *
      * @param array $data
      * @param integer $id
-     *
-     * @return array
-     */
-    public function updateAttachmentMetadata($data, $id, $preserveFilePaths = false) {
+	 * @param string $preserveFilePaths
+	 * @param bool $skipThumbnails
+	 *
+	 * @return array
+	 */
+    public function updateAttachmentMetadata($data, $id, $preserveFilePaths = 'replace', $skipThumbnails = false) {
         if($this->skipUpdate) {
             return $data;
         }
@@ -441,7 +443,9 @@ class StorageTool extends Tool {
                 $doUpload = apply_filters('media-cloud/storage/upload-master', true);
                 $data = $this->processFile($upload_path, $data['file'], $data, $id, $preserveFilePaths, $doUpload);
 
-                if(isset($data['sizes'])) {
+                if ($skipThumbnails && isset($data['sizes'])) {
+                    unset($data['sizes']);
+                } else if(isset($data['sizes'])) {
                     foreach($data['sizes'] as $key => $size) {
                         if(!is_array($size)) {
                             continue;
@@ -1428,12 +1432,12 @@ class StorageTool extends Tool {
 	 * @param $filename
 	 * @param $data
 	 * @param null $id
-	 * @param bool $preserveFilePath
+	 * @param string $preserveFilePath
 	 * @param bool $uploadFile
 	 *
 	 * @return mixed
 	 */
-	public function processFile($upload_path, $filename, $data, $id = null, $preserveFilePath = false, $uploadFile = true) {
+	public function processFile($upload_path, $filename, $data, $id = null, $preserveFilePath = 'replace', $uploadFile = true) {
 		if(!file_exists($upload_path.'/'.$filename)) {
             Logger::error("\tFile $filename is missing.");
 			return $data;
@@ -1453,7 +1457,7 @@ class StorageTool extends Tool {
 		$shouldUseCustomPrefix = apply_filters('media-cloud/storage/should-use-custom-prefix', $shouldUseCustomPrefix);
         $shouldUseCustomPrefix = (!empty(StorageSettings::prefixFormat()) && $shouldUseCustomPrefix);
 
-        if (!$preserveFilePath && !isset($data['prefix']) && !$shouldUseCustomPrefix) {
+        if (($preserveFilePath == 'replace') && !isset($data['prefix']) && !$shouldUseCustomPrefix) {
             $fpath = pathinfo($data['file'],PATHINFO_DIRNAME);
             $fpath = str_replace($upload_path, '', $fpath);
             $prefix = trailingslashit(ltrim($fpath, DIRECTORY_SEPARATOR));
@@ -1461,7 +1465,13 @@ class StorageTool extends Tool {
                 $prefix = trailingslashit(pathinfo($filename, PATHINFO_DIRNAME));
             }
         } else {
-            $prefix = ($preserveFilePath && isset($data['prefix'])) ? $data['prefix'].DIRECTORY_SEPARATOR : StorageSettings::prefix($id);
+            if ($preserveFilePath == 'preserve') {
+	            $prefix = (isset($data['prefix'])) ? trailingslashit($data['prefix']) : StorageSettings::prefix($id);
+            } else if ($preserveFilePath == 'prepend') {
+	            $prefix = (isset($data['prefix'])) ? trailingslashit(StorageSettings::prefix($id)).trailingslashit($data['prefix']) : StorageSettings::prefix($id);
+            } else {
+	            $prefix = StorageSettings::prefix($id);
+            }
         }
 
         $parts = explode('/', $filename);
@@ -2126,7 +2136,7 @@ class StorageTool extends Tool {
 
 	    $shouldPreserve = $this->preserveFilePaths;
 
-	    $this->preserveFilePaths = true;
+	    $this->preserveFilePaths = 'preserve';
 	    Logger::startTiming('Regenerating metadata ...', ['id' => $postId]);
 	    $metadata = wp_generate_attachment_metadata( $postId, $fullsizepath );
 	    Logger::endTiming('Regenerating metadata ...', ['id' => $postId]);
@@ -2144,13 +2154,18 @@ class StorageTool extends Tool {
      * @param int $index
 	 * @param int $postId
 	 * @param ImportProgressDelegate|null $progressDelegate
+     * @param array $options
 	 */
-	public function processImport($index, $postId, $progressDelegate) {
+	public function processImport($index, $postId, $progressDelegate, $options = []) {
 		if ($progressDelegate) {
 		    $progressDelegate->updateCurrentIndex($index + 1);
         }
 
 		$isDocument = false;
+
+		$skipThumbnails = (empty($options['skip-thumbnails'])) ? false : true;
+		$pathmode = (empty($options['path-handling'])) ? 'replace' : $options['path-handling'];
+
 
 		$data = wp_get_attachment_metadata($postId);
 
@@ -2252,7 +2267,7 @@ class StorageTool extends Tool {
 		}
 
 
-		$data = $this->updateAttachmentMetadata($data, $postId, true);
+		$data = $this->updateAttachmentMetadata($data, $postId, $pathmode, $skipThumbnails);
 
 		if ($isDocument) {
 			update_post_meta($postId, 'ilab_s3_info', $data);

@@ -127,14 +127,23 @@ final class BatchManager {
         return get_option("ilab_media_tools_{$batch}_current", 0);
     }
 
-    /**
-     * Sets the current index being processed
-     * @param $batch
-     * @param int $index
-     */
-    public function setCurrent($batch, $index) {
-        update_option("ilab_media_tools_{$batch}_current", $index);
-    }
+	/**
+	 * Sets the current index being processed
+	 * @param $batch
+	 * @param int $index
+	 */
+	public function setCurrent($batch, $index) {
+		update_option("ilab_media_tools_{$batch}_current", $index);
+	}
+
+	/**
+	 * Sets the current thumbnail of the file being processed
+	 * @param $batch
+	 * @param array $thumbUrl
+	 */
+	public function setCommandLineThumb($batch, $thumbUrl) {
+		update_option("ilab_media_tools_{$batch}_command_line_thumb", $thumbUrl);
+	}
 
     /**
      * Returns the ID of the item currently being processed
@@ -292,19 +301,28 @@ final class BatchManager {
         return get_option("ilab_media_tools_{$batch}_error_id", null);
     }
 
-    /**
-     * Returns the amount of time that has elapsed since the last item was processed.
-     * @param $batch
-     * @return float
-     */
-    public function lastUpdate($batch) {
-        $lu = get_option("ilab_media_tools_{$batch}_last_update", 0);
-        if ($lu > 0) {
-            $lu = microtime(true) - $lu;
-        }
+	/**
+	 * Returns the amount of time that has elapsed since the last item was processed.
+	 * @param $batch
+	 * @return float
+	 */
+	public function lastUpdate($batch) {
+		$lu = get_option("ilab_media_tools_{$batch}_last_update", 0);
+		if ($lu > 0) {
+			$lu = microtime(true) - $lu;
+		}
 
-        return $lu;
-    }
+		return $lu;
+	}
+
+	/**
+	 * Returns the amount of time that has elapsed since the last item was processed.
+	 * @param $batch
+	 * @return float
+	 */
+	public function lastCommandLineThumb($batch) {
+		return get_option("ilab_media_tools_{$batch}_command_line_thumb", false);
+	}
 
     //endregion
 
@@ -340,11 +358,26 @@ final class BatchManager {
         $icon = false;
 
         if (!empty($this->currentID($batch))) {
-            $thumb = wp_get_attachment_image_src($this->currentID($batch), 'thumbnail', true);
-            if (!empty($thumb)) {
-                $thumbUrl = $thumb[0];
-                $icon = (($thumb[1] != 150) && ($thumb[2] != 150));
-            }
+	        $commandLine = Environment::Option("mcloud-{$batch}-batch-command-line-processing", null, false);
+
+	        $found = false;
+	        if ($commandLine) {
+	        	$thumbData = $this->lastCommandLineThumb($batch);
+	        	if (!empty($thumbData)) {
+	        		$thumbUrl = $thumbData['thumbUrl'];
+	        		$icon = $thumbData['icon'];
+
+	        		$found = true;
+		        }
+	        }
+
+	        if (!$found) {
+		        $thumb = wp_get_attachment_image_src($this->currentID($batch), 'thumbnail', true);
+		        if (!empty($thumb)) {
+			        $thumbUrl = $thumb[0];
+			        $icon = (($thumb[1] != 150) && ($thumb[2] != 150));
+		        }
+	        }
         }
 
         return [
@@ -383,6 +416,8 @@ final class BatchManager {
      * @param $batch
      */
     public function reset($batch) {
+	    Environment::DeleteOption('mcloud-storage-batch-command-line-processing');
+
         delete_option("ilab_media_tools_{$batch}_status");
         delete_option("ilab_media_tools_{$batch}_current");
         delete_option("ilab_media_tools_{$batch}_file");
@@ -390,7 +425,8 @@ final class BatchManager {
         delete_option("ilab_media_tools_{$batch}_last_run");
         delete_option("ilab_media_tools_{$batch}_total_time");
         delete_option("ilab_media_tools_{$batch}_last_time");
-        delete_option("ilab_media_tools_{$batch}_last_update");
+	    delete_option("ilab_media_tools_{$batch}_last_update");
+	    delete_option("ilab_media_tools_{$batch}_command_line_thumb");
     }
 
 	/**
@@ -404,11 +440,12 @@ final class BatchManager {
 
     /**
      * Adds posts to a batch and runs it.  If another one of this batch type is running, it will be cancelled.
-     * @param $batch
-     * @param $postIDs
+     * @param string $batch
+     * @param array $postIDs
+     * @param array|null $options
      * @throws \Exception
      */
-    public function addToBatchAndRun($batch, $postIDs) {
+    public function addToBatchAndRun($batch, $postIDs, $options = null) {
         if (!isset(static::$batchClasses[$batch])) {
             throw new \Exception("Batch '$batch' is not registered.");
         }
@@ -457,7 +494,8 @@ final class BatchManager {
 
         $index = 0;
         foreach($postIDs as $postID) {
-            $batchProcess->push_to_queue(['index' => $index, 'post' => $postID]);
+        	$details = ['index' => $index, 'post' => $postID, 'options' => (empty($options)) ? [] : $options];
+            $batchProcess->push_to_queue($details);
             $index++;
         }
 

@@ -30,7 +30,10 @@
     "nesbot/carbon": "^1.21",
     "michelf/php-markdown": "^1.8",
     "teamtnt/tntsearch": "^1.4.0",
-    "ivopetkov/html5-dom-document-php": "^2.0.2"
+    "ilab/b2-sdk-php": "^1.4",
+    "psr/http-message-implementation": "*",
+    "mikey179/vfsstream": "*",
+    "ivopetkov/html5-dom-document-php": "^2.0"
   },
   "autoload": {
     "psr-4": {

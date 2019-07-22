@@ -30,40 +30,14 @@ final class View {
             return trailingslashit($temp);
         }
 
-        if (defined('WP_TEMP_DIR')) {
-            return trailingslashit(WP_TEMP_DIR);
-        }
-
-        if (function_exists('sys_get_temp_dir')) {
-            $temp = sys_get_temp_dir();
-            if (@is_dir($temp) && wp_is_writable($temp)) {
-                return trailingslashit($temp);
-            }
-        }
-
-        $temp = ini_get('upload_tmp_dir');
-        if (!empty($temp) && @is_dir($temp) && wp_is_writable($temp)) {
-            return trailingslashit($temp);
-        }
-
-        $temp = WP_CONTENT_DIR . '/';
-        if (@is_dir($temp) && wp_is_writable($temp)) {
-            return $temp;
-        }
-
-        $temp = '/tmp/';
-        if (@is_dir($temp) && wp_is_writable($temp)) {
-            return $temp;
-        }
-
-        return null;
+    	return trailingslashit(WP_CONTENT_DIR);
     }
 
     private static function bladeInstance() {
         if (static::$bladeInstance == null) {
             $cacheDir = static::getTempDir();
 
-            static::$bladeInstance = new BladeInstance(ILAB_VIEW_DIR, $cacheDir.'media-cloud-views');
+            static::$bladeInstance = new BladeInstance(ILAB_VIEW_DIR, $cacheDir.'mcloud-views');
 
             foreach(static::$registeredViewDirectories as $directory) {
             	static::$bladeInstance->addPath($directory);

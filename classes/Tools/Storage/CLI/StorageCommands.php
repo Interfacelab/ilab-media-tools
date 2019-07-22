@@ -22,7 +22,9 @@ use ILAB\MediaCloud\Tasks\BatchManager;
 use ILAB\MediaCloud\Tools\Storage\DefaultProgressDelegate;
 use ILAB\MediaCloud\Tools\Storage\StorageTool;
 use ILAB\MediaCloud\Tools\ToolsManager;
+use ILAB\MediaCloud\Utilities\Environment;
 use ILAB\MediaCloud\Utilities\Logging\Logger;
+use Illuminate\Support\Facades\Storage;
 
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
@@ -47,6 +49,19 @@ class StorageCommands extends Command {
 	 * [--page=<number>]
 	 * : The starting offset to process.  Page numbers start at 1.  Cannot be used with offset.
 	 *
+	 * [--paths=<string>]
+	 * : Controls the upload path.  'preserve' will preserve the files current path, 'replace' will replace it with the custom prefix defined in cloud storage settings.  'prepend' will prepend the custom prefix with the existing upload directory.
+	 * ---
+	 * default: preserve
+	 * options:
+	 *   - preserve
+	 *   - replace
+	 *   - prepend
+	 * ---
+	 *
+	 * [--skip-thumbnails]
+	 * : Skips uploading thumbnails.  Requires Imgix or Dynamic Images.
+	 *
 	 * @when after_wp_load
 	 *
 	 * @param $args
@@ -63,9 +78,19 @@ class StorageCommands extends Command {
 
 		if (!$storageTool || !$storageTool->enabled()) {
 			Command::Error('Storage tool is not enabled in Media Cloud or the settings are incorrect.');
-			return;
+			exit(1);
 		}
 
+		$pathMode = 'preserve';
+		if (isset($assoc_args['paths']) && in_array($assoc_args['paths'], ['replace', 'prepend'])) {
+			$pathMode = $assoc_args['paths'];
+			if (empty(StorageSettings::prefixFormat())) {
+				Command::Error("You have specified a path mode that requires a custom prefix, but you have not set one in Cloud Storage settings.");
+				exit(1);
+			}
+		}
+
+		$skipThumbnails = (!empty($assoc_args['skip-thumbnails'])) ? true : false;
 
 		$postArgs = [
 			'post_type' => 'attachment',
@@ -103,6 +128,8 @@ class StorageCommands extends Command {
 		if($query->post_count > 0) {
 		    BatchManager::instance()->reset('storage');
 
+		    Environment::UpdateOption('mcloud-storage-batch-command-line-processing', true);
+
             BatchManager::instance()->setStatus('storage', true);
             BatchManager::instance()->setTotalCount('storage', $query->post_count);
             BatchManager::instance()->setCurrent('storage', 1);
@@ -123,13 +150,32 @@ class StorageCommands extends Command {
 				}
 
                 BatchManager::instance()->setCurrentFile('storage', $fileName);
-                BatchManager::instance()->setCurrent('storage', $i);
+				BatchManager::instance()->setCurrent('storage', $i);
+				BatchManager::instance()->setCurrentID('storage', $postId);
+
+				$thumb = wp_get_attachment_image_src($postId, 'thumbnail', true);
+				if (!empty($thumb)) {
+					$thumbUrl = $thumb[0];
+					$icon = (($thumb[1] != 150) && ($thumb[2] != 150));
+					BatchManager::instance()->setCommandLineThumb('storage', ['thumbUrl' => $thumbUrl, 'icon' => $icon, 'id' => $postId]);
+				}
 
 				Command::Info("%w[%C{$i}%w of %C{$query->post_count}%w] %NImporting %Y$fileName%N %w(Post ID %N$postId%w)%N ... ", $this->debugMode);
-				$storageTool->processImport($i - 1, $postId, $pd);
+				$storageTool->processImport($i - 1, $postId, $pd, [
+					'skip-thumbnails' => $skipThumbnails,
+					'path-handling' => $pathMode
+				]);
+
 				if (!$this->debugMode) {
                     Command::Info("%YDone%N.", true);
                 }
+
+				wp_cache_flush();
+				if (empty(get_option('mcloud-storage-batch-command-line-processing', false))) {
+					Command::Warn("Cancelled by user from web.  Stopping.");
+					BatchManager::instance()->reset('storage');
+					exit(1);
+				}
 			}
 
 			BatchManager::instance()->reset('storage');

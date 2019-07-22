@@ -5,14 +5,12 @@ Requires at least: 4.4
 Tested up to: 5.2.2
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 3.0.9
-Requires PHP: 5.6
+Stable tag: 3.1.0
+Requires PHP: 5.6.4
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
 
 == Description ==
-
-**IMPORTANT**: If you are upgrading from 2.x please read the FAQ section below.  If you are using Backblaze with Media Cloud, please wait until 3.0.8 to update.
 
 https://www.youtube.com/watch?v=3tB3rKkwAJY
 
@@ -75,13 +73,11 @@ Compatible with Short Pixel, EWWW, Smush and Imagify image optimization plugins!
 
 == Frequently Asked Questions ==
 
-= Upgrading from to 3.x from 2.x =
+= Upgrading from 3.x from 2.x =
 
 If you are using environment variables, please refer to [this documentation](https://mediacloud.press/documentation/advanced/environment-variables) for new environment variable names as many have been deprecated.
 
 Additionally a number of hooks and actions have been deprecated, please refer to [the documentation](https://mediacloud.press/documentation/advanced/hooks) for more information.
-
-Backblaze support has been removed and is being provided as a separate free add-on.
 
 = How does this compare to WP Offload S3? =
 
@@ -111,6 +107,15 @@ No, I'm just one very enthusiastic customer.
 
 
 == Changelog ==
+
+= 3.1.0 =
+
+* Backblaze support re-added.  Note that the *asset push* and *direct upload* features do not work with Backblaze.
+* Added option to Migrate to Storage to skip uploading thumbnails. This option requires Imgix or Dynamic Images and will only appear if either is enabled.
+* Added option to Migrate to Storage to control how upload paths are handled. This option requires that you have a custom prefix defined in Cloud Storage settings and will only appear if you do.
+* Fixes for Migrate to Storage when run in ajax (non-background) mode.
+* Updated migrate command line command to include switches for skipping thumbnails and handling upload paths.
+* For more information about this release: [3.1.0 Release Notes](https://talk.mediacloud.press/topic/40/3-1-0-release-notes)
 
 = 3.0.9 =
 

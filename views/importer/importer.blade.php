@@ -15,17 +15,32 @@
                 </code>
             </div>
             @if(!empty($options))
-            <div id="s3-importer-options">
-                <h3>Options</h3>
-                <ul>
-                    @foreach($options as $optionName => $option)
-                        <li>
-                            @include('base/ui/checkbox', ['name' => $optionName, 'value' => $option['default'], 'description' => '', 'enabled' => true])
-                            <span>{{$option['label']}}</span>
-                        </li>
-                    @endforeach
-                </ul>
-            </div>
+                <div id="s3-importer-options">
+                    <h3>Options</h3>
+                    <ul>
+                        @foreach($options as $optionName => $option)
+                            <li>
+                                <div>
+                                    {!! $option['title'] !!}
+                                </div>
+                                <div>
+                                    <div>
+                                    @if($option['type'] == 'checkbox')
+                                        @include('base/ui/checkbox', ['name' => $optionName, 'value' => $option['default'], 'description' => '', 'enabled' => true])
+                                    @elseif($option['type'] == 'select')
+                                        <select name="{{$optionName}}">
+                                            @foreach($option['options'] as $suboptionValue => $suboptionName)
+                                            <option value="{{$suboptionValue}}">{{$suboptionName}}</option>
+                                            @endforeach
+                                        </select>
+                                    @endif
+                                    </div>
+                                    <div class="description">{!! $option['description'] !!}</div>
+                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
             @endif
             <div style="margin-top: 2em;">
                 @if($enabled)
@@ -75,7 +90,7 @@
 
             const backgroundImport = {{ ($background) ? 'true' : 'false' }};
             var postsToImport = {!! json_encode($posts, JSON_PRETTY_PRINT) !!};
-            
+
             var lastThumb = {
                 id: null,
                 url: null
@@ -93,7 +108,7 @@
                 if (!icon && (lastThumb.id === thumb.id)) {
                     return;
                 }
-                
+
                 if (!icon && (displayedThumbs.length > 0)) {
                     if (displayedThumbs[displayedThumbs.length - 1].attr('src') == thumb.url) {
                         return;
@@ -126,7 +141,6 @@
                 if (displayedThumbs.length >= 20) {
                     var firstImage = displayedThumbs.shift();
                     firstImage.remove();
-                    console.log(displayedThumbs.length);
                 }
             }
 
@@ -181,9 +195,9 @@
 
                 displayNextThumbnail(
                     {
-                        id: postsToImport[currentIndex].currentID, 
+                        id: postsToImport[currentIndex].id,
                         url: postsToImport[currentIndex].thumb
-                    }, 
+                    },
                     postsToImport[currentIndex].icon
                 );
 
@@ -207,6 +221,11 @@
 
                     var name = $(this).attr('name');
                     data[name] = 'on';
+                });
+
+                $('#s3-importer-options select').each(function(){
+                    var name = $(this).attr('name');
+                    data[name] = $(this).val();
                 });
 
                 $.post(ajaxurl,data,function(response){
@@ -277,6 +296,11 @@
                         data[name] = 'on';
                     });
 
+                    $('#s3-importer-options select').each(function(){
+                        var name = $(this).attr('name');
+                        data[name] = $(this).val();
+                    });
+
                     if (fromSelection) {
                         postIds = [];
                         for(var i=0; i<postsToImport.length; i++) {
@@ -294,9 +318,9 @@
 
                         displayNextThumbnail(
                             {
-                                id: postsToImport[0].currentID, 
+                                id: postsToImport[0].currentID,
                                 url: postsToImport[0].thumb
-                            }, 
+                            },
                             postsToImport[0].icon
                         );
 
@@ -325,9 +349,9 @@
 
                             displayNextThumbnail(
                                 {
-                                    id: response.first.currentID, 
+                                    id: response.first.currentID,
                                     url: response.first.thumb
-                                }, 
+                                },
                                 response.first.icon
                             );
 
@@ -369,7 +393,6 @@
                         $('#s3-importer-cancelling-text').css({'display':'block'});
                         $('#s3-importer-status-text').css({'visibility':'hidden'});
                         $('#s3-importer-cancel-import').attr('disabled', true);
-                        console.log(response);
                     });
                 } else {
                     importing = false;
@@ -407,7 +430,7 @@
 
                             if (response.thumb != null) {
                                 displayNextThumbnail({
-                                    id: response.currentID, 
+                                    id: response.currentID,
                                     url: response.thumb
                                 });
                             }
