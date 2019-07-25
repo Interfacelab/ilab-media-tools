@@ -136,7 +136,7 @@ final class Environment {
             $val = static::Option($fromOptionName);
             if ($val !== null) {
                 static::UpdateOption($toOptionName, $val);
-                static::DeleteOption($fromOptionName);
+//                static::DeleteOption($fromOptionName);
             }
         }
     }

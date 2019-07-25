@@ -1106,6 +1106,10 @@ class StorageTool extends Tool {
      * @throws StorageException
 	 */
 	public function getAttachmentURL($url, $post_id) {
+	    if (empty($this->client)) {
+	        return $url;
+        }
+
 		$meta = wp_get_attachment_metadata($post_id);
 
 		$new_url = null;
@@ -1162,6 +1166,10 @@ class StorageTool extends Tool {
      */
 	private function getAttachmentURLFromMeta($meta) {
 	    if (!isset($meta['s3'])) {
+	        return null;
+        }
+
+	    if (empty($this->client)) {
 	        return null;
         }
 
@@ -1289,7 +1297,18 @@ class StorageTool extends Tool {
                         if (preg_match('/wpsize=([aA-zZ0-9-_]*)/m', $src, $wpSizeMatches)) {
                             $size = $wpSizeMatches[1];
                         } else {
-                            $size = 'full';
+                            if (preg_match('/(([0-9]+)x([0-9]+)\.(?:jpg|jpeg|gif|png))/', $src, $dimensionMatches)) {
+                                $size = 'full';
+                                $width = $dimensionMatches[2];
+                                $height = $dimensionMatches[3];
+                                $size = ilab_find_nearest_size($id, $width, $height);
+
+                                if (empty($size)) {
+                                    $size = 'full';
+                                }
+                            } else {
+	                            $size = 'full';
+                            }
                         }
                     }
 			    }

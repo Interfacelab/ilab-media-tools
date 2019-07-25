@@ -96,6 +96,11 @@ class MigrateToStorageBatchProcess extends BackgroundProcess implements ImportPr
 			delete_option($batch->option_name);
 		}
 
+		$res = $wpdb->get_results("select * from {$wpdb->options} where option_name like '__wp_ilab_s3_import_process_batch_%'");
+		foreach($res as $batch) {
+			delete_option($batch->option_name);
+		}
+
         BatchManager::instance()->reset('storage');
 
 		Logger::info( "Current cron", get_option( 'cron', []));

@@ -108,6 +108,14 @@ No, I'm just one very enthusiastic customer.
 
 == Changelog ==
 
+= 3.1.1 =
+
+* Fix for migrating very large (greater than 10,000 items) media libraries to cloud storage
+* Fix for Gutenberg image blocks
+* Fixes for multi-site
+* General bug fixes
+* When transitioning from 2.x to 3.x, Media Cloud used to delete the old 2.x settings after copying them to the renamed 3.x settings.  This made it impossible to go back to 2.x without having to re-enter all of your settings.  The migration process no longer deletes your old 2.x settings.
+
 = 3.1.0 =
 
 * Backblaze support re-added.  Note that the *asset push* and *direct upload* features do not work with Backblaze.

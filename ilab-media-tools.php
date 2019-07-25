@@ -5,7 +5,7 @@ Plugin Name: Media Cloud
 Plugin URI: https://github.com/interfacelab/ilab-media-tools
 Description: Automatically upload media to Amazon S3 and integrate with Imgix, a real-time image processing CDN.  Boosts site performance and simplifies workflows.
 Author: interfacelab
-Version: 3.1.0
+Version: 3.1.1
 Author URI: http://interfacelab.io
 */
 // Copyright (c) 2016 Interfacelab LLC. All rights reserved.
@@ -35,11 +35,11 @@ if ( !defined( 'PHP_MAJOR_VERSION' ) || PHP_MAJOR_VERSION < 5 || PHP_MAJOR_VERSI
     deactivate_plugins( plugin_basename( __FILE__ ) );
     add_action( 'admin_notices', function () {
         ?>
-		<div class="notice notice-error is-dismissible">
-			<p><?php 
+        <div class="notice notice-error is-dismissible">
+            <p><?php 
         _e( 'Media Cloud requires PHP 5.6 or higher.', 'ilab-media-tools' );
         ?></p>
-		</div>
+        </div>
 		<?php 
     } );
     return;
@@ -52,11 +52,11 @@ if ( is_plugin_active( 'amazon-s3-and-cloudfront/wordpress-s3.php' ) ) {
     deactivate_plugins( plugin_basename( __FILE__ ) );
     add_action( 'admin_notices', function () {
         ?>
-		<div class="notice notice-error">
-			<p><?php 
+        <div class="notice notice-error">
+            <p><?php 
         _e( 'Media Cloud cannot be activated the same time as <strong>Offload S3</strong>.  Please deactive one before activating the other.', 'ilab-media-tools' );
         ?></p>
-		</div>
+        </div>
 		<?php 
     } );
     return;
@@ -78,7 +78,7 @@ if ( is_plugin_active( 'wp-stateless/wp-stateless-media.php' ) ) {
 }
 
 // Version Defines
-define( 'MEDIA_CLOUD_VERSION', '3.1.0' );
+define( 'MEDIA_CLOUD_VERSION', '3.1.1' );
 // Directory defines
 define( 'ILAB_TOOLS_DIR', dirname( __FILE__ ) );
 define( 'ILAB_CONFIG_DIR', ILAB_TOOLS_DIR . '/config' );

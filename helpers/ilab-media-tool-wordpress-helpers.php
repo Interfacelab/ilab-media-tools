@@ -48,6 +48,22 @@ function ilab_get_image_sizes($size = null) {
 	return $sizes;
 }
 
+function ilab_find_nearest_size($attachmentId, $width, $height) {
+	if (!empty($attachmentId)) {
+		$meta = wp_get_attachment_metadata($attachmentId);
+		if (isset($meta['sizes'])) {
+			foreach($meta['sizes'] as $msize => $mdata) {
+				if (strpos($mdata['file'], "{$width}x{$height}.") !== false) {
+					return $msize;
+				}
+			}
+		}
+	}
+
+
+	return null;
+}
+
 function ilab_size_is_cropped($size) {
 	if (is_array($size)) {
 	    return !empty($size['crop']);
