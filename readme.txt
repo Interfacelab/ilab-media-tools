@@ -5,7 +5,7 @@ Requires at least: 4.4
 Tested up to: 5.2.2
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 3.1.0
+Stable tag: 3.1.2
 Requires PHP: 5.6.4
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -108,10 +108,21 @@ No, I'm just one very enthusiastic customer.
 
 == Changelog ==
 
+= 3.1.2 =
+
+* Fix for blank settings pages that would appear on some hosting providers.
+* Fixed bugs when Media Cloud is being used on a C-Panel/WHM managed servers.
+* Fixed background processing when "Skip DNS" is enabled on C-Panel/WHM managed servers.
+* Troubleshooter tool has been renamed System Compatibility Test.
+* Running the system compatibility test will automatically tweak background processing settings until it finds a configuration that works.
+* Ability to sort the media to be imported when using the Migrate to Cloud tool
+* Fix for some hosts that have `allow_url_fopen` disabled
+* Added 'Unlink From Cloud' bulk action that will remove Media Cloud metadata from selected files in the Media Library list view
+* Fix for compatibility with Offload Media where the url contained an errant '-'
+
+
 = 3.1.1 =
 
-* Fix for migrating very large (greater than 10,000 items) media libraries to cloud storage
-* Fix for Gutenberg image blocks
 * Fixes for multi-site
 * General bug fixes
 * When transitioning from 2.x to 3.x, Media Cloud used to delete the old 2.x settings after copying them to the renamed 3.x settings.  This made it impossible to go back to 2.x without having to re-enter all of your settings.  The migration process no longer deletes your old 2.x settings.

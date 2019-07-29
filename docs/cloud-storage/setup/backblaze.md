@@ -54,4 +54,4 @@ In the **Provider** panel, set the **Storage Provider** to Backblaze B2 Cloud St
 - In **Key** enter the key we generated in Step 2.2
 - For **Bucket** enter the name of the bucket
  
-At this point, these are the basic settings you need to get DigitalOcean Spaces working with Media Cloud.  Save the settings and run the Troubleshooter to verify that everything is working correctly.
+At this point, these are the basic settings you need to get DigitalOcean Spaces working with Media Cloud.  Save the settings and run the System Compatibility to verify that everything is working correctly.

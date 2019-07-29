@@ -67,4 +67,4 @@ Next, supply the **Access Key** and **Secret** from the CSV file we downloaded i
 
 Next, set **Bucket** to the name of the bucket you created and for **Region** set this to whatever region you selected when creating the bucket.
 
-At this point, these are the basic settings you need to get Wasabi working with Media Cloud.  Save the settings and run the Troubleshooter to verify that everything is working correctly.
+At this point, these are the basic settings you need to get Wasabi working with Media Cloud.  Save the settings and run the System Compatibility Tool to verify that everything is working correctly.

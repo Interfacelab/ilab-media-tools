@@ -82,12 +82,11 @@ class ImgixImageEditor extends \WP_Image_Editor
 	        $tmpPath='/tmp'.$info['dirname'];
 	        @mkdir($tmpPath,0777,true);
 	        $this->sourceFile=$tmpPath.'/'.preg_replace('/[^\x20-\x7E]/','', $info['basename']);
-	        if (!file_exists($this->sourceFile))
-	        {
-		        file_put_contents($this->sourceFile,file_get_contents($this->file));
+	        if (!file_exists($this->sourceFile))  {
+		        file_put_contents($this->sourceFile, ilab_file_get_contents($this->file));
 	        }
 
-	        file_put_contents($this->sourceFile,file_get_contents($this->file));
+	        file_put_contents($this->sourceFile, ilab_file_get_contents($this->file));
 
 	        return $this->loadFromFile();
         }

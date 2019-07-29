@@ -172,17 +172,26 @@ final class BatchManager {
         return get_option("ilab_media_tools_{$batch}_file");
     }
 
-    /**
-     * Sets the current file being processed
-     * @param $batch
-     * @param string|null $file
-     */
-    public function setCurrentFile($batch, $file) {
-        update_option("ilab_media_tools_{$batch}_last_update", microtime(true));
-        update_option("ilab_media_tools_{$batch}_file", $file);
-    }
+	/**
+	 * Sets the current file being processed
+	 * @param $batch
+	 * @param string|null $file
+	 */
+	public function setCurrentFile($batch, $file) {
+		$this->setLastUpdateToNow($batch);
+		update_option("ilab_media_tools_{$batch}_file", $file);
+	}
 
-    /**
+
+	/**
+	 * Sets the time the last task update occurred
+	 * @param $batch
+	 */
+	public function setLastUpdateToNow($batch) {
+		update_option("ilab_media_tools_{$batch}_last_update", microtime(true));
+	}
+
+	/**
      * Returns the count of items in this batch being processed
      * @param $batch
      * @return int
@@ -457,7 +466,7 @@ final class BatchManager {
         }
 
         Logger::info("Testing connectivity.");
-        $testResult = $this->testConnectivity(null, true);
+        $testResult = $this->testConnectivity(null, 3);
 	    Logger::info("Finished Testing connectivity.");
         if ($testResult !== true) {
             $error = 'Unknown';
@@ -532,25 +541,38 @@ final class BatchManager {
 	 *
 	 * @return bool|\Exception|ResponseInterface
 	 */
-    public static function postRequest($url, $args) {
+    public static function postRequest($url, $args, $timeoutOverride = false) {
 	    $verifySSL = Environment::Option('mcloud-storage-batch-verify-ssl', null, 'default');
 	    $connectTimeout = Environment::Option('mcloud-storage-batch-connect-timeout', null, 0);
 	    $timeout = Environment::Option('mcloud-storage-batch-timeout', null, 0.1);
 	    $skipDNS = Environment::Option('mcloud-storage-batch-skip-dns', null, false);
 
 	    if ($skipDNS) {
+		    $ip = getHostByName(getHostName());
+		    if (empty($ip)) {
+			    $ip = $_SERVER['SERVER_ADDR'];
+		    }
+
+		    if (empty($ip)) {
+			    $ip = '127.0.0.1';
+		    }
+
 		    $host = parse_url($url, PHP_URL_HOST);
-		    $url = str_replace($host, '127.0.0.1', $url);
+		    $url = str_replace($host, $ip, $url);
 
 		    $headers = [
-		    	'Host' => $host
+			    'Host' => $host
 		    ];
 
 		    if (isset($args['headers'])) {
-		    	$args['headers'] = array_merge($args['headers'], $headers);
+			    $args['headers'] = array_merge($args['headers'], $headers);
 		    } else {
-		    	$args['headers'] = $headers;
+			    $args['headers'] = $headers;
 		    }
+
+		    $cookies = CookieJar::fromArray($args['cookies'], $ip);
+	    } else {
+		    $cookies = CookieJar::fromArray($args['cookies'], $_SERVER['HTTP_HOST']);
 	    }
 
 	    if ($verifySSL == 'default') {
@@ -561,7 +583,6 @@ final class BatchManager {
 
 	    $rawUrl = esc_url_raw( $url );
 
-	    $cookies = CookieJar::fromArray($args['cookies'], $_SERVER['HTTP_HOST']);
 	    $options = [
 		    'synchronous' => !empty($args['blocking']),
 		    'cookies' => $cookies,
@@ -569,56 +590,59 @@ final class BatchManager {
 	    ];
 
 	    if (isset($args['body'])) {
-	    	if (is_array($args['body'])) {
-	    		$options['form_params'] = $args['body'];
+		    if (is_array($args['body'])) {
+			    $options['form_params'] = $args['body'];
 		    } else {
 			    $options['body'] = $args['body'];
 		    }
 	    }
 
 	    if (!empty($headers)) {
-	        $options['headers'] = $headers;
+		    $options['headers'] = $headers;
 	    }
 
 	    if (!empty($connectTimeout)) {
 		    $options['connect_timeout'] = $connectTimeout;
 	    }
 
-	    if (!empty($timeout)) {
-		    $options['timeout'] = $connectTimeout;
+
+	    if ($timeoutOverride !== false) {
+		    $options['timeout'] = $timeoutOverride;
+	    } else {
+		    $options['timeout'] = max(0.01, $timeout);
 	    }
 
-        $client = new Client();
-        try {
-	        if (empty($options['synchronous'])) {
-		        Logger::info("Async call to $rawUrl");
-		        $options['synchronous'] = true;
-		        $client->postSync($rawUrl, $options);
-		        Logger::info("Async call to $rawUrl complete.");
-		        return true;
-	        } else {
-		        Logger::info("Synchronous call to $rawUrl");
-		        $result = $client->post($rawUrl, $options);
-		        Logger::info("Synchronous call to $rawUrl complete.");
-		        return $result;
-	        }
+	    $client = new Client();
+	    try {
+		    if (empty($options['synchronous'])) {
+			    Logger::info("Async call to $rawUrl");
+			    $options['synchronous'] = true;
+			    $client->postSync($rawUrl, $options);
+			    Logger::info("Async call to $rawUrl complete.");
+			    return true;
+		    } else {
+			    Logger::info("Synchronous call to $rawUrl");
+			    $result = $client->post($rawUrl, $options);
+			    Logger::info("Synchronous call to $rawUrl complete.");
+			    return $result;
+		    }
 	    } catch (\Exception $ex) {
-        	if (!empty($args['blocking'])) {
-        		return $ex;
-	        } else {
-        		Logger::info("Async exception: ".$ex->getMessage());
-	        }
+		    if (!empty($args['blocking'])) {
+			    return $ex;
+		    } else {
+			    Logger::info("Async exception: ".$ex->getMessage());
+		    }
 	    }
 
-        return true;
+	    return true;
     }
 
     /**
      * Tests connectivity to for the bulk importer
      * @param ErrorCollector|null $errorCollector
-	 * @return bool|ResponseInterface|\Exception
+	 * @return bool|ResponseInterface|\Exception|\WP_Error
 	 */
-    public function testConnectivity($errorCollector = null) {
+    public function testConnectivity($errorCollector = null, $timeoutOverride = false) {
         $url = add_query_arg(['action' => 'ilab_batch_test', 'nonce' => wp_create_nonce('ilab_batch_test')], admin_url('admin-ajax.php'));
         $args = [
             'blocking'  => true,
@@ -627,7 +651,7 @@ final class BatchManager {
         ];
 
         /** @var bool|ResponseInterface $result */
-        $result = static::postRequest($url, $args);
+        $result = static::postRequest($url, $args, $timeoutOverride);
 
         if ($result === true) {
         	return true;

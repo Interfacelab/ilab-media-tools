@@ -733,7 +733,7 @@ class ImgixTool extends DynamicImagesTool {
 
 		$url = $this->buildImage($postID, 'full',['fm' => 'json','faces'=>1],false,null,null,$meta);
 		if ($url && is_array($url)) {
-			$jsonString = file_get_contents($url[0]);
+			$jsonString = ilab_file_get_contents($url[0]);
 			if (!empty($jsonString)) {
 				$data = json_decode($jsonString, true);
 

@@ -13,6 +13,9 @@
                 <code>
                     {{$commandLine}}
                 </code>
+                @if(!empty($commandLink))
+                <p><a href="{{$commandLink}}" target="_blank">Command documentation</a></p>
+                @endif
             </div>
             @if(!empty($options))
                 <div id="s3-importer-options">

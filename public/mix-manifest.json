@@ -16,5 +16,7 @@
     "/css/ilab-media-cloud.css": "/css/ilab-media-cloud.css",
     "/css/media-cloud-docs.css": "/css/media-cloud-docs.css",
     "/js/ilab-settings.js": "/js/ilab-settings.js",
+    "/models/face_landmark_68_model-weights_manifest.json": "/models/face_landmark_68_model-weights_manifest.json",
+    "/models/ssd_mobilenetv1_model-weights_manifest.json": "/models/ssd_mobilenetv1_model-weights_manifest.json",
     "/js/face-api.js": "/js/face-api.js"
 }

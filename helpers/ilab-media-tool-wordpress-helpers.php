@@ -15,6 +15,19 @@ if(!defined('ABSPATH')) {
 	die;
 }
 
+function ilab_file_get_contents($path) {
+	if (filter_var($path, FILTER_VALIDATE_URL) && !ini_get('allow_url_fopen')) {
+		$response = wp_remote_get($path, ['timeout' => 5]);
+		if (is_wp_error($response)) {
+			return null;
+		}
+
+		return $response['body'];
+	}
+
+	return file_get_contents($path);
+}
+
 function ilab_get_image_sizes($size = null) {
 	global $_wp_additional_image_sizes;
 

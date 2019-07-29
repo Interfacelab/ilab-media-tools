@@ -159,6 +159,18 @@ class MigrateToStorageBatchTool extends BatchTool {
 			];
 		}
 
+		if (!empty($_REQUEST['sort-order']) && ($_REQUEST['sort-order'] != 'default')) {
+			if (in_array($_REQUEST['sort-order'], ['date-asc', 'date-desc', 'title-asc', 'title-desc'])) {
+				$parts = explode('-', $_REQUEST['sort-order']);
+				$args['orderby'] = $parts[0];
+				$args['order'] = strtoupper($parts[1]);
+			} else if (in_array($_REQUEST['sort-order'], ['filename-asc', 'filename-desc'])) {
+				$args['meta_key'] = '_wp_attached_file';
+				$args['orderby'] = 'meta_value';
+				$args['order'] = ($_REQUEST['sort-order'] == 'filename-asc') ? 'ASC' : 'DESC';
+			}
+		}
+
 		return $args;
 	}
 
@@ -170,8 +182,9 @@ class MigrateToStorageBatchTool extends BatchTool {
      */
     protected function filterRenderData($data) {
         $data['disabledText'] = 'enable Storage';
-        $data['commandLine'] = 'wp mediacloud import [--limit=<number>] [--offset=<number>] [--page=<number>] [--paths=preserve|replace|prepend] [--skip-thumbnails]';
-        $data['commandTitle'] = 'Import Uploads';
+        $data['commandLine'] = 'wp mediacloud import [--limit=<number>] [--offset=<number>] [--page=<number>] [--paths=preserve|replace|prepend] [--skip-thumbnails] [--order-by=date|title|filename] [--order=asc|desc]';
+	    $data['commandTitle'] = 'Import Uploads';
+	    $data['commandLink'] = admin_url('admin.php?page=media-cloud-docs&doc-page=advanced/command-line#import');
         $data['cancelCommandTitle'] = 'Cancel Import';
 
         $data['options'] = [
@@ -214,6 +227,22 @@ class MigrateToStorageBatchTool extends BatchTool {
 		        "default" => 'preserve',
 	        ];
         }
+
+        $data['options']['sort-order'] = [
+	        "title" => "Sort Order",
+	        "description" => "Controls the order that items from your media library are migrated to cloud storage.",
+	        "type" => "select",
+	        "options" => [
+		        'default' => 'Default',
+		        'date-asc' => "Oldest first",
+		        'date-desc' => "Newest first",
+		        'title-asc' => "Title, A-Z",
+		        'title-desc' => "Title, Z-A",
+		        'filename-asc' => "File name, A-Z",
+		        'filename-desc' => "File name, Z-A",
+	        ],
+	        "default" => 'default',
+        ];
 
 
         return $data;

@@ -14,7 +14,7 @@ namespace ILAB\MediaCloud\Tools;
 
 use  ILAB\MediaCloud\Documentation\Docs ;
 use  ILAB\MediaCloud\Tasks\BatchManager ;
-use  ILAB\MediaCloud\Tools\Debugging\TroubleshootingTool ;
+use  ILAB\MediaCloud\Tools\Debugging\System\SystemCompatibilityTool ;
 use  ILAB\MediaCloud\Tools\Network\NetworkTool ;
 use  ILAB\MediaCloud\Utilities\Environment ;
 use  ILAB\MediaCloud\Utilities\NoticeManager ;
@@ -87,8 +87,8 @@ final class ToolsManager
                 }
             }
         }
-        if ( isset( static::$registeredTools['troubleshooting'] ) ) {
-            $this->tools['troubleshooting'] = new TroubleshootingTool( 'troubleshooting', static::$registeredTools['troubleshooting'], $this );
+        if ( empty(static::$registeredTools['troubleshooting']) ) {
+            $this->tools['troubleshooting'] = new SystemCompatibilityTool( 'troubleshooting', static::$registeredTools['troubleshooting'], $this );
         }
         
         if ( is_multisite() ) {

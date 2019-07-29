@@ -68,13 +68,19 @@ final class Environment {
 			return $default;
 		}
 
-		$optionEnvName = str_replace('-','_', strtoupper($optionName));
-		if (is_array($envVariableName)) {
-			$envVariableName = array_merge([$optionEnvName], $envVariableName);
-		} else if (!empty($envVariableName)) {
-			$envVariableName = [$optionEnvName, $envVariableName];
+		if (empty($optionName)) {
+			if (!is_array($envVariableName)) {
+				$envVariableName = [$envVariableName];
+			}
 		} else {
-			$envVariableName = [$optionEnvName];
+			$optionEnvName = str_replace('-','_', strtoupper($optionName));
+			if (is_array($envVariableName)) {
+				$envVariableName = array_merge([$optionEnvName], $envVariableName);
+			} else if (!empty($envVariableName)) {
+				$envVariableName = [$optionEnvName, $envVariableName];
+			} else {
+				$envVariableName = [$optionEnvName];
+			}
 		}
 
 		foreach($envVariableName as $envVariable) {
@@ -94,10 +100,12 @@ final class Environment {
 		}
 
 		if (static::$networkMode) {
-			return get_site_option($optionName, $default);
+			$val = get_site_option($optionName, $default);
 		} else {
-			return get_option($optionName, $default);
+			$val = get_option($optionName, $default);
 		}
+
+		return $val;
 	}
 
 	/**

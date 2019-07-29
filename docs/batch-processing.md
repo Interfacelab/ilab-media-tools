@@ -12,7 +12,7 @@ This is probably the most common issue on managed hosting and VPS setups.   Sett
 Technically speaking, what happens is that when Media Cloud runs a batch, it will attempt to make a background ajax call from your WordPress server to your WordPress server.  A lot of managed hosting providers will have mapped your domain to 127.0.0.1, or to localhost, and the SSL certificates are further up their network stack at the reverse proxy level.  Because your server is actually HTTP (at the localhost level), trying to verify SSL will fail because SSL verification actually happens at the reverse-proxy level.
 
 ### Connection Timeout
-This is the number of section to wait for a connection to occur.  If you use the troubleshooting tool and see an error complaining about `cURL error 2x`, try setting to 5 to 10 seconds or more.
+This is the number of section to wait for a connection to occur.  If you use the System Compatibility Tool and see an error complaining about `cURL error 2x`, try setting to 5 to 10 seconds or more.
 
 ### Timeout
 This is the number of seconds to wait for a response once a connection has happened.  Similar to **Connection Timeout** if you see `cURL error 2x` and you've changed the **Connection Timeout** setting, set this anything from 0.2 up to 10 to see if it helps.

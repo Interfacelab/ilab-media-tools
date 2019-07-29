@@ -273,32 +273,47 @@ class StorageTool extends Tool {
                     return $editors;
                 });
             }
-		}
 
-		add_filter('wp_calculate_image_srcset', [$this, 'calculateSrcSet'], 10000, 5);
-		add_filter('wp_prepare_attachment_for_js', [$this, 'prepareAttachmentForJS'], 999, 3);
-		add_filter('wp_get_attachment_url', [$this, 'getAttachmentURL'], 1000, 2);
-		add_filter('theme_mod_header_image', [$this, 'getThemeOptionURL'], 1000, 1);
+			add_filter('wp_calculate_image_srcset', [$this, 'calculateSrcSet'], 10000, 5);
+			add_filter('wp_prepare_attachment_for_js', [$this, 'prepareAttachmentForJS'], 999, 3);
+			add_filter('wp_get_attachment_url', [$this, 'getAttachmentURL'], 1000, 2);
+			add_filter('theme_mod_header_image', [$this, 'getThemeOptionURL'], 1000, 1);
 
-        add_filter('attachment_url_to_postid', [$this, 'attachmentIdFromURL'], 1000, 2);
-
+			add_filter('attachment_url_to_postid', [$this, 'attachmentIdFromURL'], 1000, 2);
 
 
-		add_filter('image_size_names_choose', function($sizes) {
-			if ($this->allSizes == null) {
-				$this->allSizes = ilab_get_image_sizes();
-			}
 
-			foreach($this->allSizes as $sizeKey => $size) {
-				if (!isset($sizes[$sizeKey])) {
-					$sizes[$sizeKey] = ucwords(preg_replace("/[-_]/", " ", $sizeKey));
+			add_filter('image_size_names_choose', function($sizes) {
+				if ($this->allSizes == null) {
+					$this->allSizes = ilab_get_image_sizes();
 				}
-			}
 
-			return $sizes;
-		});
+				foreach($this->allSizes as $sizeKey => $size) {
+					if (!isset($sizes[$sizeKey])) {
+						$sizes[$sizeKey] = ucwords(preg_replace("/[-_]/", " ", $sizeKey));
+					}
+				}
 
-		$this->hookupUI();
+				return $sizes;
+			});
+
+			add_action('admin_init', function() {
+				add_filter('bulk_actions-upload', function($actions) {
+					$actions['mcloud_unlink_media'] = 'Unlink from Cloud Storage';
+					return $actions;
+				});
+
+				add_filter('handle_bulk_actions-upload', function($redirect_to, $action_name, $post_ids) {
+				    if ($action_name == 'mcloud_unlink_media') {
+				        return $this->handleUnlinkAction($redirect_to, $post_ids);
+                    }
+
+				    return $redirect_to;
+				}, 1000, 3);
+			});
+
+			$this->hookupUI();
+		}
 	}
 
 	public function settingsChanged() {
@@ -835,7 +850,12 @@ class StorageTool extends Tool {
 	    $mimetype = get_post_mime_type($postId);
 	    $meta['s3']['mime-type'] = $mimetype;
 
-	    $url = parse_url($meta['s3']['url']);
+	    $s3Url = $meta['s3']['url'];
+	    if (strpos($s3Url, '//s3-.amazonaws') !== false) {
+		    $s3Url = str_replace('//s3-.amazonaws', '//s3.amazonaws', $s3Url);
+	    }
+
+	    $url = parse_url($s3Url);
 	    $path = pathinfo($url['path']);
 
 	    $baseUrl = "{$url['scheme']}://{$url['host']}{$path['dirname']}/";
@@ -1155,6 +1175,12 @@ class StorageTool extends Tool {
 			}
 		}
 
+		if (!empty($new_url)) {
+		    if (strpos($new_url, '//s3-.amazonaws') !== false) {
+		        $new_url = str_replace('//s3-.amazonaws', '//s3.amazonaws', $new_url);
+            }
+        }
+
 		return $new_url ?: $url;
 	}
 
@@ -1198,7 +1224,13 @@ class StorageTool extends Tool {
                     }
                 }
 
-                return $meta['s3']['url'];
+                $new_url = $meta['s3']['url'];
+	            if (!empty($new_url)) {
+		            if (strpos($new_url, '//s3-.amazonaws') !== false) {
+			            $new_url = str_replace('//s3-.amazonaws', '//s3.amazonaws', $new_url);
+		            }
+	            }
+                return $new_url;
             }
 
             try {
@@ -1223,11 +1255,15 @@ class StorageTool extends Tool {
 			return null;
 		}
 
-		$region = $info[0]['region'];
+		$region = (isset($info[0]['region'])) ? $info[0]['region'] : null;
 		$bucket = $info[0]['bucket'];
 		$file = $info[0]['key'];
 
-		return "https://s3-$region.amazonaws.com/$bucket/$file";
+		if (empty($region)) {
+			return "https://s3.amazonaws.com/$bucket/$file";
+		} else {
+			return "https://s3-$region.amazonaws.com/$bucket/$file";
+		}
 	}
 
     /**
@@ -1418,6 +1454,33 @@ class StorageTool extends Tool {
 	}
 
 	//endregion
+
+    //region Bulk Actions
+    protected function handleUnlinkAction($redirect_to, $post_ids) {
+        foreach($post_ids as $post_id) {
+	        $meta = wp_get_attachment_metadata($post_id);
+	        if (isset($meta['s3'])) {
+		        unset($meta['s3']);
+		        if(isset($meta['sizes'])) {
+			        $sizes = $meta['sizes'];
+			        foreach($sizes as $size => $sizeData) {
+				        if(isset($sizeData['s3'])) {
+					        unset($sizeData['s3']);
+				        }
+
+				        $sizes[$size] = $sizeData;
+			        }
+
+			        $meta['sizes'] = $sizes;
+		        }
+
+		        update_post_meta($post_id, '_wp_attachment_metadata', $meta);
+	        }
+        }
+
+        return $redirect_to;
+    }
+    //endregion
 
 	//region Crop Tool Related
 	/**
@@ -2140,7 +2203,7 @@ class StorageTool extends Tool {
 
 			    $filepath = $uploadDirInfo['path'].'/'.$file;
 			    Logger::startTiming("Downloading fullsize '$fullsizepath' to '$filepath'");
-			    file_put_contents($filepath, file_get_contents($fullsizepath));
+			    file_put_contents($filepath, ilab_file_get_contents($fullsizepath));
 			    Logger::endTiming("Finished downloading fullsize '$fullsizepath' to '$filepath'");
 
 			    if (!file_exists($filepath)) {
@@ -2176,10 +2239,10 @@ class StorageTool extends Tool {
      * @param array $options
 	 */
 	public function processImport($index, $postId, $progressDelegate, $options = []) {
-		if ($progressDelegate) {
-		    $progressDelegate->updateCurrentIndex($index + 1);
-        }
-
+//		if ($progressDelegate) {
+//		    $progressDelegate->updateCurrentIndex($index + 1);
+//        }
+//
 		$isDocument = false;
 
 		$skipThumbnails = (empty($options['skip-thumbnails'])) ? false : true;

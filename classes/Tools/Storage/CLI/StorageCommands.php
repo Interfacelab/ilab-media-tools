@@ -62,6 +62,24 @@ class StorageCommands extends Command {
 	 * [--skip-thumbnails]
 	 * : Skips uploading thumbnails.  Requires Imgix or Dynamic Images.
 	 *
+	 * [--order-by=<string>]
+	 * : The field to sort the items to be imported by. Valid values are 'date', 'title' and 'filename'.
+	 * ---
+	 * options:
+	 *   - date
+	 *   - title
+	 *   - filename
+	 * ---
+	 *
+	 * [--order=<string>]
+	 * : The sort order. Valid values are 'asc' and 'desc'.
+	 * ---
+	 * default: asc
+	 * options:
+	 *   - asc
+	 *   - desc
+	 * ---
+	 *
 	 * @when after_wp_load
 	 *
 	 * @param $args
@@ -109,6 +127,16 @@ class StorageCommands extends Command {
 			$postArgs['nopaging'] = true;
 		}
 
+		if (isset($assoc_args['order-by']) && in_array($assoc_args['order-by'],['date','title','filename'])) {
+			if ($assoc_args['order-by'] == 'filename') {
+				$postArgs['meta_key'] = '_wp_attached_file';
+				$postArgs['orderby'] = 'meta_value';
+			} else {
+				$postArgs['orderby'] = $assoc_args['order-by'];
+			}
+
+			$postArgs['order'] = (isset($assoc_args['order']) && ($assoc_args['order'] == 'desc')) ? 'DESC' : 'ASC';
+		}
 
 		if(!StorageSettings::uploadDocuments()) {
 			$args['post_mime_type'] = 'image';
