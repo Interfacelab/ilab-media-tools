@@ -92,6 +92,14 @@ return [
 			'help' => [
 			]
 		],
+		'backblaze' => [
+			'name' => 'Backblaze',
+			'class' => \ILAB\MediaCloud\Storage\Driver\Backblaze\BackblazeStorage::class,
+			'config' => '/storage/backblaze.config.php',
+			'help' => [
+				[ 'title' => 'Read Documentation', 'url' => admin_url('admin.php?page=media-cloud-docs&doc-page=cloud-storage/setup/backblaze') ],
+			]
+		],
 	],
 	"settings" => [
 		"options-page" => "media-tools-s3",

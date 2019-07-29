@@ -9,8 +9,8 @@
 @endif
 <p><strong>Note:</strong></p>
 <ol>
+	<li>Always backup your database before performing the batch migration.</li>
 	<li>If you upload any files while this process is running, you'll need to run this tool again after it finishes.</li>
 	<li>This process DOES NOT delete your files on your server, you'll have to do that yourself manually.</li>
-	<li>You <strong>MUST HAVE</strong> storage enabled and working in <a href="admin.php?page=media-cloud">Features</a> before running this task.</li>
 </ol>
 @endif

@@ -355,7 +355,7 @@ abstract class Tool {
     public function hasEnabledBatchTools() {
         /** @var BatchTool $batchTool */
         foreach($this->batchTools as $batchTool) {
-            if ($batchTool->enabled()) {
+            if ($batchTool->enabled() && (!empty($batchTool->toolInfo()))) {
                 return true;
             }
         }
@@ -527,6 +527,10 @@ abstract class Tool {
 
 		    foreach($this->batchTools as $batchTool) {
 			    if ($batchTool->enabled()) {
+			        if (empty($batchTool->menuTitle())) {
+			            continue;
+                    }
+
 			        ToolsManager::instance()->addMultisiteBatchTool($batchTool);
 				    add_submenu_page($tool_menu_slug, $batchTool->pageTitle(), $batchTool->menuTitle(), $batchTool->capabilityRequirement(), $batchTool->menuSlug(), [
 					    $batchTool,

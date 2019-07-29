@@ -49,12 +49,14 @@ class MigrateToStorageBatchProcess extends BackgroundProcess implements ImportPr
 
 		$index = $item['index'];
 		$post_id = $item['post'];
+		$options = (isset($item['options'])) ? $item['options'] : [];
 
 		BatchManager::instance()->setCurrentID('storage', $post_id);
+		BatchManager::instance()->setCurrent('storage', $index + 1);
 
 		/** @var StorageTool $s3tool */
 		$s3tool = ToolsManager::instance()->tools['storage'];
-		$s3tool->processImport($index, $post_id, $this);
+		$s3tool->processImport($index, $post_id, $this, $options);
 
         $endTime = microtime(true) - $startTime;
 
@@ -92,6 +94,11 @@ class MigrateToStorageBatchProcess extends BackgroundProcess implements ImportPr
 		$res = $wpdb->get_results("select * from {$wpdb->options} where option_name like 'wp_ilab_s3_import_process_batch_%'");
 		foreach($res as $batch) {
 			Logger::info( "Deleting batch {$batch->option_name}");
+			delete_option($batch->option_name);
+		}
+
+		$res = $wpdb->get_results("select * from {$wpdb->options} where option_name like '__wp_ilab_s3_import_process_batch_%'");
+		foreach($res as $batch) {
 			delete_option($batch->option_name);
 		}
 

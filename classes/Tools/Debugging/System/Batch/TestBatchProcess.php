@@ -11,7 +11,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Tools\Storage\Batch;
+namespace ILAB\MediaCloud\Tools\Debugging\System\Batch;
 
 use ILAB\MediaCloud\Tasks\BackgroundProcess;
 use ILAB\MediaCloud\Tasks\BatchManager;
@@ -22,19 +22,18 @@ use ILAB\MediaCloud\Utilities\Logging\Logger;
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
 /**
- * Class RegenerateThumbnailsProcess
- *
- * Background processing job for regenerating thumbnails
+ * Class TestBatchProcess
+ * @package ILAB\MediaCloud\Tools\Debugging\System\Batch
  */
-class RegenerateThumbnailBatchProcess extends BackgroundProcess {
-	protected $action = 'ilab_cloud_regenerate_process';
+class TestBatchProcess extends BackgroundProcess {
+	protected $action = 'mcloud_system_test_process';
 
 	protected function shouldHandle() {
-	    return !BatchManager::instance()->shouldCancel('thumbnails');
+		return !BatchManager::instance()->shouldCancel('system-testing');
 	}
 
 	public function task($item) {
-        $startTime = microtime(true);
+		$startTime = microtime(true);
 
 		Logger::info( 'Start Task', $item);
 		if (!$this->shouldHandle()) {
@@ -45,38 +44,21 @@ class RegenerateThumbnailBatchProcess extends BackgroundProcess {
 		$index = $item['index'];
 		$post_id = $item['post'];
 
-        BatchManager::instance()->setCurrentID('thumbnails', $post_id);
+		BatchManager::instance()->setLastUpdateToNow('system-testing');
+		BatchManager::instance()->setCurrentID('system-testing', $post_id);
+		BatchManager::instance()->setCurrent('system-testing', $index + 1);
 
-		$fileName = get_attached_file( $post_id);
+		sleep(1);
 
-		if ($fileName) {
-			$fileparts = explode('/', $fileName);
-			$fileName = array_pop($fileparts);
-
-			BatchManager::instance()->setCurrentFile('thumbnails', $fileName);
-		}
-
-
-		BatchManager::instance()->setCurrent('thumbnails', $index + 1);
-
-		/** @var StorageTool $storageTool */
-		$storageTool = ToolsManager::instance()->tools['storage'];
-		$storageTool->regenerateFile($post_id);
-
-        $endTime = microtime(true) - $startTime;
-        BatchManager::instance()->incrementTotalTime('thumbnails', $endTime);
+		$endTime = microtime(true) - $startTime;
+		BatchManager::instance()->incrementTotalTime('system-testing', $endTime);
 
 		return false;
 	}
 
-	public function dispatch() {
-		Logger::info( 'Task dispatch');
-		parent::dispatch();
-	}
-
 	protected function complete() {
 		Logger::info( 'Task complete');
-		BatchManager::instance()->reset('thumbnails');
+		BatchManager::instance()->reset('system-testing');
 		parent::complete();
 	}
 
@@ -85,28 +67,28 @@ class RegenerateThumbnailBatchProcess extends BackgroundProcess {
 
 		parent::cancel_process();
 
-        BatchManager::instance()->reset('thumbnails');
+		BatchManager::instance()->reset('system-testing');
 	}
 
 	public static function cancelAll() {
 		Logger::info( 'Cancel all processes');
 
-		wp_clear_scheduled_hook('wp_ilab_cloud_regenerate_process_cron');
+		wp_clear_scheduled_hook('wp_mcloud_system_test_process_cron');
 
 		global $wpdb;
 
-		$res = $wpdb->get_results("select * from {$wpdb->options} where option_name like 'wp_ilab_cloud_regenerate_process_batch_%'");
+		$res = $wpdb->get_results("select * from {$wpdb->options} where option_name like 'wp_mcloud_system_test_process_batch_%'");
 		foreach($res as $batch) {
 			Logger::info( "Deleting batch {$batch->option_name}");
 			delete_option($batch->option_name);
 		}
 
-		$res = $wpdb->get_results("select * from {$wpdb->options} where option_name like '__wp_ilab_cloud_regenerate_process_batch_%'");
+		$res = $wpdb->get_results("select * from {$wpdb->options} where option_name like '__wp_mcloud_system_test_process_batch_%'");
 		foreach($res as $batch) {
 			delete_option($batch->option_name);
 		}
 
-        BatchManager::instance()->reset('thumbnails');
+		BatchManager::instance()->reset('system-testing');
 
 		Logger::info( "Current cron", get_option( 'cron', []));
 		Logger::info( 'End cancel all processes');

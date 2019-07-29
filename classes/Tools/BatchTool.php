@@ -221,9 +221,11 @@ abstract class BatchTool implements BatchToolInterface {
      * Gets the post data to process for this batch.  Data is paged to minimize memory usage.
      * @param $page
      * @param bool $forceImages
-     * @return array
-     */
-    protected function getImportBatch($page, $forceImages = false) {
+	 * @param bool $allInfo
+	 *
+	 * @return array
+	 */
+    protected function getImportBatch($page, $forceImages = false, $allInfo = false) {
         $total = 0;
         $pages = 1;
         $shouldRun = false;
@@ -274,7 +276,7 @@ abstract class BatchTool implements BatchToolInterface {
         $posts = [];
         $first = true;
         foreach($postIds as $post) {
-        	if ($first) {
+        	if ($first || $allInfo) {
 		        $thumb = wp_get_attachment_image_src($post, 'thumbnail', true);
 
 		        $thumbUrl = null;
@@ -304,6 +306,7 @@ abstract class BatchTool implements BatchToolInterface {
             'posts' =>$posts,
             'total' => $total,
             'pages' => $pages,
+	        'options' => [],
             'shouldRun' => $shouldRun,
             'fromSelection' => $fromSelection
         ];
@@ -322,14 +325,14 @@ abstract class BatchTool implements BatchToolInterface {
      * Renders the batch tool
      */
     public function renderBatchTool() {
-
         $data = BatchManager::instance()->stats(static::BatchIdentifier());
 
-        $postData = $this->getImportBatch(1);
+        $postData = $this->getImportBatch(1, false, true);
         $data['posts'] = $postData['posts'];
         $data['pages'] = $postData['pages'];
 
-        $background = Environment::Option('mcloud-storage-batch-background-processing', null, true);
+	    $background = Environment::Option('mcloud-storage-batch-background-processing', null, true);
+	    $commandLine = Environment::Option('mcloud-storage-batch-command-line-processing', null, false);
 
         if (!$background) {
             $data['total'] = $postData['total'];
@@ -359,7 +362,7 @@ abstract class BatchTool implements BatchToolInterface {
         $data['manualAction'] = $this->manualActionName();
         $data['progressAction'] = $this->progressActionName();
         $data['nextBatchAction'] = $this->nextBatchActionName();
-        $data['background'] = $background;
+        $data['background'] = $background || $commandLine;
 
         $data = $this->filterRenderData($data);
         echo View::render_view('importer/importer.php', $data);
@@ -391,7 +394,7 @@ abstract class BatchTool implements BatchToolInterface {
                 }
 
                 Logger::info('Adding posts to batch to run.');
-                BatchManager::instance()->addToBatchAndRun(static::BatchIdentifier(), $postIDs);
+                BatchManager::instance()->addToBatchAndRun(static::BatchIdentifier(), $postIDs, $posts['options']);
 	            Logger::info('Finished adding posts to batch to run.');
             } catch (\Exception $ex) {
                 json_response(["status"=>"error", "error" => $ex->getMessage()]);
@@ -429,7 +432,7 @@ abstract class BatchTool implements BatchToolInterface {
     public function nextBatchAction() {
         $page = isset($_POST['page']) ? (int)$_POST['page'] : 1;
 
-        $postData = $this->getImportBatch($page);
+        $postData = $this->getImportBatch($page, false, true);
 
         json_response($postData);
     }
@@ -443,6 +446,11 @@ abstract class BatchTool implements BatchToolInterface {
      * Cancels the batch
      */
     public function cancelAction() {
+	    $background = Environment::Option('mcloud-storage-batch-background-processing', null, true);
+	    if (!$background) {
+		    BatchManager::instance()->reset(static::BatchIdentifier());
+	    }
+
         BatchManager::instance()->setShouldCancel(static::BatchIdentifier(), true);
 
         call_user_func([static::BatchProcessClassName(), 'cancelAll']);

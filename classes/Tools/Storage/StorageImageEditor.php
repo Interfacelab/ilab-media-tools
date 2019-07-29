@@ -157,7 +157,7 @@ class StorageImageEditor extends \WP_Image_Editor {
             $fileExists = file_exists($fileName);
 
             if (!$fileExists) {
-                file_put_contents($fileName, file_get_contents($this->file));
+                file_put_contents($fileName, ilab_file_get_contents($this->file));
             }
 
             $imageEditor = (\WP_Image_Editor_Imagick::test()) ? new \WP_Image_Editor_Imagick($fileName) : new \WP_Image_Editor_GD($fileName);
@@ -255,6 +255,9 @@ class StorageImageEditor extends \WP_Image_Editor {
             $fileName = $uploadDir['basedir'].$uploadDir['subdir'].DIRECTORY_SEPARATOR.$parsedFile['basename'];
 
             $result = $this->imageEditor->save($fileName, $mime_type);
+	        if (!is_wp_error($result)) {
+		        $this->file = $this->imageEditor->file;
+	        }
 
             $key = ltrim($uploadDir['subdir']).'/'.$parsedFile['basename'];
 
@@ -266,6 +269,9 @@ class StorageImageEditor extends \WP_Image_Editor {
 
         } else {
             $result = $this->imageEditor->save($destfilename, $mime_type);
+            if (!is_wp_error($result)) {
+            	$this->file = $this->imageEditor->file;
+            }
         }
 
         return $result;

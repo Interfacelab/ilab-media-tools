@@ -142,7 +142,7 @@ class S3Storage implements StorageInterface {
 
 		if ($thisClass::defaultRegion() !== null) {
 			$this->region = $thisClass::defaultRegion();
-		} else if (StorageManager::driver() != 'wasabi') {
+		} else if ((StorageManager::driver() != 'wasabi') && (StorageManager::driver() != 'do')) {
 			$region = Environment::Option('mcloud-storage-s3-region', [
 				'ILAB_AWS_S3_REGION',
 				'ILAB_CLOUD_REGION'

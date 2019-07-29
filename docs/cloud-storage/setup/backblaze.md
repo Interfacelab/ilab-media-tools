@@ -1,6 +1,6 @@
 # Backblaze Setup
 
-> As of Media Cloud 3.0, Backblaze support has been removed from the main plugin and is provided by an open-source community supported add-on.  It's really recommended, though, that you consider a different cloud storage provider.  Backblaze is really only good for archival and lacks the features necessary for things like pre-signed URLs (important for WooCommerce or Easy Digital Downloads), direct uploads, etc.  Additionally, in our testing, Backblaze is consistently has the worst performance in terms of upload and download speeds.  Caveat emptor.
+> Even though we support Backblaze, it's really recommended that you consider a different cloud storage provider.  Backblaze is really only good for archival and lacks the features necessary for things like pre-signed URLs (important for WooCommerce or Easy Digital Downloads), direct uploads, etc.  Additionally, in our testing, Backblaze is consistently has the worst performance in terms of upload and download speeds.  Caveat emptor.
 
 ## Step 1 - Create Bucket
 To get started, log into your Backblaze account and click on the **Buckets** section.  When the page had loaded, click on **Create a Bucket**.
@@ -54,4 +54,4 @@ In the **Provider** panel, set the **Storage Provider** to Backblaze B2 Cloud St
 - In **Key** enter the key we generated in Step 2.2
 - For **Bucket** enter the name of the bucket
  
-At this point, these are the basic settings you need to get DigitalOcean Spaces working with Media Cloud.  Save the settings and run the Troubleshooter to verify that everything is working correctly.
+At this point, these are the basic settings you need to get DigitalOcean Spaces working with Media Cloud.  Save the settings and run the System Compatibility to verify that everything is working correctly.

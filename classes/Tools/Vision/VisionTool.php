@@ -153,7 +153,7 @@ class VisionTool extends Tool
             );
             add_action( 'media-cloud/direct-uploads/process-batch', function ( $postIds ) {
                 if ( $this->alwaysBackground ) {
-                    BatchManager::instance()->addToBatchAndRun( ImportVisionBatchTool::BatchIdentifier(), $postIds );
+                    BatchManager::instance()->addToBatchAndRun( ImportVisionBatchTool::BatchIdentifier(), $postIds, [] );
                 }
             } );
         }

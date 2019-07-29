@@ -14,9 +14,9 @@ if (!defined('ABSPATH')) { header('Location: /'); die; }
 
 return [
     "id" => "troubleshooting",
-    "name" => "Troubleshooting",
+    "name" => "System Compatibility",
 	"description" => "Enables troubleshooter to double check that your settings work.",
-	"class" => "ILAB\\MediaCloud\\Tools\\Debugging\\TroubleshootingTool",
+	"class" => "ILAB\\MediaCloud\\Tools\\Debugging\\System\\SystemCompatibilityTool",
 	"exclude" => true,
 	"dependencies" => [],
 	"env" => "ILAB_MEDIA_TROUBLESHOOTING_ENABLED",  // this is always enabled btw

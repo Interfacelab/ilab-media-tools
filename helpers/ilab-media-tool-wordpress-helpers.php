@@ -15,6 +15,19 @@ if(!defined('ABSPATH')) {
 	die;
 }
 
+function ilab_file_get_contents($path) {
+	if (filter_var($path, FILTER_VALIDATE_URL) && !ini_get('allow_url_fopen')) {
+		$response = wp_remote_get($path, ['timeout' => 5]);
+		if (is_wp_error($response)) {
+			return null;
+		}
+
+		return $response['body'];
+	}
+
+	return file_get_contents($path);
+}
+
 function ilab_get_image_sizes($size = null) {
 	global $_wp_additional_image_sizes;
 
@@ -46,6 +59,22 @@ function ilab_get_image_sizes($size = null) {
 	}
 
 	return $sizes;
+}
+
+function ilab_find_nearest_size($attachmentId, $width, $height) {
+	if (!empty($attachmentId)) {
+		$meta = wp_get_attachment_metadata($attachmentId);
+		if (isset($meta['sizes'])) {
+			foreach($meta['sizes'] as $msize => $mdata) {
+				if (strpos($mdata['file'], "{$width}x{$height}.") !== false) {
+					return $msize;
+				}
+			}
+		}
+	}
+
+
+	return null;
 }
 
 function ilab_size_is_cropped($size) {
