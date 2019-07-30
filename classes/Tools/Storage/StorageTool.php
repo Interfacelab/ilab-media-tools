@@ -1555,7 +1555,9 @@ class StorageTool extends Tool {
 	            $prefix = StorageSettings::prefix($id);
             }
         }
-
+		
+		$prefix = apply_filters( 'ilab_storage_prefix', $prefix );
+		
         $parts = explode('/', $filename);
         $bucketFilename = array_pop($parts);
 
