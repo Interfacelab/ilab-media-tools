@@ -1608,6 +1608,14 @@ class StorageTool extends Tool {
 				'options' => $options
 			];
 
+			/**
+             * Change by Novembit
+			 * store filesize to meta
+			 */
+			if( file_exists( $upload_path.'/'.$filename ) ) {
+				$data['filesize'] = filesize( $upload_path.'/'.$filename );
+			}
+
 			if(file_exists($upload_path.'/'.$filename)) {
 				$ftype = wp_check_filetype($upload_path.'/'.$filename);
 				if(!empty($ftype) && isset($ftype['type'])) {
