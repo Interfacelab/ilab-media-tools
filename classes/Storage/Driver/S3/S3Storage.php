@@ -278,7 +278,8 @@ class S3Storage implements StorageInterface {
 
 		if ($this->settingsError) {
 			$adminUrl = admin_url('admin.php?page=media-cloud-settings&tab=storage');
-			NoticeManager::instance()->displayAdminNotice('error', "Your cloud storage settings are incorrect or the bucket does not exist.  Please <a href='$adminUrl'>verify your settings</a> and update them.");
+			$testUrl = admin_url('admin.php?page=media-tools-troubleshooter');
+			NoticeManager::instance()->displayAdminNotice('error', "Your cloud storage settings are incorrect.  Please <a href='$adminUrl'>verify your settings</a> or run the <a href='$testUrl'>systems test</a> to troubleshoot the issue.");
 
 			return false;
 		}
