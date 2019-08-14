@@ -50,7 +50,15 @@ class DynamicImageEditor extends \WP_Image_Editor
         return true;
     }
 
-    private function loadFromFile() {
+    public function get_size() {
+    	if ($this->size == null) {
+    		$this->size = $this->storageEditor->get_size();
+	    }
+
+    	return $this->size;
+    }
+
+	private function loadFromFile() {
 	    if (!file_exists($this->sourceFile))
 		    return false;
 
