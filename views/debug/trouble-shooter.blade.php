@@ -67,6 +67,10 @@
             </div>
         </div>
     </div>
+
+    @track('mcloud-opt-in-crisp', 'pro')
+    @include('support.crisp')
+    @endtrack
 @endsection
 
 <script>
@@ -101,7 +105,7 @@
                 } else {
                     troubleshooting = false;
 
-                    $('#ilab-media-cloud-troubleshooter-wait').removeClass('hidden');
+                    $('#ilab-media-cloud-troubleshooter-wait').addClass('hidden');
 
                     $('#ilab-media-cloud-start-troubleshooting').attr('disabled',null);
                     $('#ilab-media-cloud-spinner').hide();

@@ -13,6 +13,7 @@
 
 namespace ILAB\MediaCloud\Tools\Debugging\System;
 
+use Carbon\CarbonInterval;
 use FasterImage\FasterImage;
 use GuzzleHttp\Psr7\Response;
 use ILAB\MediaCloud\Storage\StorageSettings;
@@ -206,13 +207,83 @@ class SystemCompatibilityTool extends Tool {
 	    }
     }
 
+    private function calcTimeDrift() {
+    	if (function_exists('socket_create')) {
+		    $sock = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
+		    socket_connect($sock, '0.pool.ntp.org', 123);
+
+		    /* Send request */
+		    $msg = "\010" . str_repeat("\0", 47);
+		    if (socket_send($sock, $msg, strlen($msg), 0) !== false) {
+			    /* Receive response and close socket */
+			    socket_recv($sock, $recv, 48, MSG_WAITALL);
+			    socket_close($sock);
+
+			    /* Interpret response */
+			    $data = unpack('N12', $recv);
+			    $timestamp = sprintf('%u', $data[9]);
+		    } else {
+			    socket_close($sock);
+			    return false;
+		    }
+	    } else if (function_exists('fsockopen')) {
+    		$fp = fsockopen('ntp.pads.ufrj.br', 37, $err, $errstr, 5);
+    		if (!empty($fp)) {
+    			fputs($fp, "\n");
+			    $timercvd = fread($fp, 49);
+			    fclose($fp);
+
+			    $timestamp = bin2hex($timercvd);
+			    $timestamp = abs(HexDec('7fffffff') - HexDec($timestamp) - HexDec('7fffffff'));
+
+			    if (empty($timestamp)) {
+			    	return false;
+			    }
+		    } else {
+    			return false;
+		    }
+	    } else {
+    		return false;
+	    }
+
+	    /* NTP is number of seconds since 0000 UT on 1 January 1900
+		   Unix time is seconds since 0000 UT on 1 January 1970 */
+	    $timestamp -= 2208988800;
+
+	    return abs(time() - $timestamp);
+    }
+
     private function testEnvironment() {
+	    Tracker::trackView("System Test - Environment", "/system-test/environment");
+
+	    $errors = false;
         $warnings = false;
         $info = [];
 
+	    $drift = $this->calcTimeDrift();
+	    if ($drift === false) {
+		    $warnings = true;
+		    $info[] =[
+			    'type' => 'warning',
+			    'message' => "Unable to connect to NTP server to verify server time is correct."
+		    ];
+	    } else if ($drift > 90) {
+		    $errors = true;
+		    $warnings = true;
+		    $interval = CarbonInterval::make("{$drift}s")->cascade()->forHumans();
+		    $info[] =[
+			    'type' => 'error',
+			    'message' => "Your server's system clock is wrong by over <strong>$interval</strong>.  This will cause errors with cloud storage services.  You may need to contact your hosting provider to correct the situation."
+		    ];
+	    } else {
+		    $info[] =[
+			    'type' => 'success',
+			    'message' => "Your server's system clock has the correct time."
+		    ];
+	    }
+
         $versionSystemParts = explode('+', phpversion());
         $version = $versionSystemParts[0];
-
         if (PHP_VERSION_ID < 70300) {
             $warnings = true;
             $info[] =[

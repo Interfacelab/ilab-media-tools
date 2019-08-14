@@ -1,6 +1,8 @@
 <div class="troubleshooter-step">
     <div class="troubleshooter-step-icon">
-        @if (!empty($warnings))
+        @if (!empty($errors))
+            <img src="{{ILAB_PUB_IMG_URL}}/icon-error.svg" width="32" height="32">
+        @elseif (!empty($warnings))
             <img src="{{ILAB_PUB_IMG_URL}}/icon-warning.svg" width="32" height="32">
         @else
             <img src="{{ILAB_PUB_IMG_URL}}/icon-success.svg" width="32" height="32">
