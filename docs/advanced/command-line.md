@@ -7,7 +7,7 @@ Media Cloud provides a variety of commands that you can use with [WP CLI](https:
 ```bash
 wp mediacloud import [--limit=<number>] [--offset=<number>] [--page=<number>] [--paths=preserve|replace|prepend] [--skip-thumbnails] [--order-by=date|title|filename] [--order=asc|desc]
 ```
-This command will import items in your media library to cloud storage.
+This command will import items in your media library to cloud storage.  **Premium version only.**
 
 #### Arguments
 Argument | Type | Optional | Description
@@ -26,7 +26,7 @@ order | string | yes | The sort order.  Valid values are `asc` and `desc`.
 ```bash
 wp mediacloud regenerate [--limit=<number>] [--offset=<number>] [--page=<number>]
 ```
-This command will regenerate thumbnails for items in the media library.
+This command will regenerate thumbnails for items in the media library.  **Premium version only.**
 
 #### Arguments
 Argument | Type | Optional | Description

@@ -3,7 +3,7 @@
 
 ## Imgix/Dynamic Images Filters
 ###`media-cloud/dynamic-images/enabled`
-Returns if the dynamix images (either Imgix or Dynamic Images) is enabled.
+Returns if either dynamic images feature (either Imgix or Dynamic Images) is enabled.
 ```php
 $enabled = apply_filters('media-cloud/dynamic-images/enabled', false);
 ```
@@ -13,6 +13,13 @@ $enabled = apply_filters('media-cloud/dynamic-images/enabled', false);
 Returns if the Imgix, specifically, is enabled.
 ```php
 $enabled = apply_filters('media-cloud/imgix/enabled', false);
+```
+&nbsp;
+
+###`media-cloud/glide/enabled`
+Returns if the Dynamic Images, specifically, is enabled.
+```php
+$enabled = apply_filters('media-cloud/glide/enabled', false);
 ```
 &nbsp;
 
@@ -231,6 +238,36 @@ Register any additional vision drivers.  This action is only called with the pai
 add_action('media-cloud/vision/register-drivers', function() {
     VisionManager::registerDriver('my-vision-driver', 'My Vision Driver', MyNamespace\MyVisionDriver::class, [], []);
 });
+```
+&nbsp;
+
+
+## Ultimate Member Integration Filters
+###`media-cloud/integrations/ultimate-member/glide-params`
+Allows any Dynamic Image image parameters to be supplied when creating urls for Ultimate Member.  This action is only called with the pro version.
+```php
+add_filter('media-cloud/integrations/ultimate-member/glide-params', function($umKey, $params) {
+    // Add a blur to cover photos
+	if ($umKey == 'cover_photo') {
+		$params['blur'] = 20;
+	}
+
+	return $params;
+}, 1000, 2);
+```
+&nbsp;
+
+###`media-cloud/integrations/ultimate-member/imgix-params`
+Allows any Imgix image parameters to be supplied when creating urls for Ultimate Member.  This action is only called with the pro version.
+```php
+add_filter('media-cloud/integrations/ultimate-member/imgix-params', function($umKey, $params) {
+    // Add a blur to cover photos
+	if ($umKey == 'cover_photo') {
+		$params['blur'] = 20;
+	}
+
+	return $params;
+}, 1000, 2);
 ```
 &nbsp;
 &nbsp;
