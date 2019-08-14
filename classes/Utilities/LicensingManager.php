@@ -25,4 +25,23 @@ final class LicensingManager {
 			return $media_cloud_licensing->is_plan($plan);
 		}
 	}
+
+	public static function CanTrack($plan = '') {
+		/** @var \Freemius $media_cloud_licensing */
+		global $media_cloud_licensing;
+
+		if (empty($plan)) {
+			return ($media_cloud_licensing->is_registered() && $media_cloud_licensing->is_tracking_allowed());
+		} else {
+			return ($media_cloud_licensing->is_plan($plan) && $media_cloud_licensing->is_registered() && $media_cloud_licensing->is_tracking_allowed());
+		}
+	}
+
+	public static function OptedIn($optInOption, $plan = '') {
+		if (!LicensingManager::CanTrack($plan)) {
+			return false;
+		}
+
+		return Environment::Option($optInOption, null, false);
+	}
 }

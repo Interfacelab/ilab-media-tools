@@ -17,7 +17,9 @@ use  ILAB\MediaCloud\Tasks\BatchManager ;
 use  ILAB\MediaCloud\Tools\Debugging\System\SystemCompatibilityTool ;
 use  ILAB\MediaCloud\Tools\Network\NetworkTool ;
 use  ILAB\MediaCloud\Utilities\Environment ;
+use  ILAB\MediaCloud\Utilities\LicensingManager ;
 use  ILAB\MediaCloud\Utilities\NoticeManager ;
+use  ILAB\MediaCloud\Utilities\Tracker ;
 use  ILAB\MediaCloud\Utilities\View ;
 use function  ILAB\MediaCloud\Utilities\arrayPath ;
 use function  ILAB\MediaCloud\Utilities\json_response ;
@@ -60,13 +62,32 @@ final class ToolsManager
     /** @var BatchTool[]  */
     private  $multisiteBatchTools = array() ;
     private  $docs = null ;
+    /** @var bool Determines if any media cloud settings have changed. */
+    private  $settingsDidChange = false ;
     //endregion
     //region Constructor
     public function __construct()
     {
         MigrationsManager::instance()->migrate();
         $this->tools = [];
-        $this->pinnedTools = Environment::Option( 'mcloud-pinned-tools', null, [] );
+        $hasRun = get_option( 'mcloud-has-run', false );
+        
+        if ( empty($hasRun) ) {
+            static::AccountConnected();
+            $this->pinnedTools = Environment::Option( 'mcloud-pinned-tools', null, [] );
+            
+            if ( empty($this->pinnedTools) ) {
+                $this->pinnedTools = [
+                    'storage' => 1,
+                ];
+                update_option( 'mcloud-has-run', true );
+                update_option( 'mcloud-pinned-tools', $this->pinnedTools );
+            }
+        
+        } else {
+            $this->pinnedTools = Environment::Option( 'mcloud-pinned-tools', null, [] );
+        }
+        
         foreach ( static::$registeredTools as $toolName => $toolInfo ) {
             $className = $toolInfo['class'];
             $this->tools[$toolName] = new $className( $toolName, $toolInfo, $this );
@@ -190,6 +211,21 @@ final class ToolsManager
         }
         
         BatchManager::boot();
+        add_action(
+            "updated_option",
+            function ( $setting, $oldValue = null, $newValue = null ) {
+            if ( $setting != '_transient_timeout_settings_errors' && isset( $_POST['option_page'] ) && strpos( $_POST['option_page'], 'ilab-media-' ) === 0 ) {
+                $this->settingsDidChange = true;
+            }
+        },
+            10,
+            3
+        );
+        add_action( 'shutdown', function () {
+            if ( $this->settingsDidChange ) {
+                Tracker::trackSettings();
+            }
+        } );
     }
     
     protected function setup()
@@ -237,11 +273,24 @@ final class ToolsManager
         ToolsManager::registerTool( "debugging", include ILAB_CONFIG_DIR . '/debugging.config.php' );
         ToolsManager::registerTool( "troubleshooting", include ILAB_CONFIG_DIR . '/troubleshooting.config.php' );
         ToolsManager::registerTool( "batch-processing", include ILAB_CONFIG_DIR . '/batch-processing.config.php' );
+        if ( LicensingManager::CanTrack() ) {
+            ToolsManager::registerTool( "opt-in", include ILAB_CONFIG_DIR . '/opt-in.config.php' );
+        }
         do_action( 'media-cloud/tools/register-tools' );
         // Make sure the NoticeManager is initialized
         NoticeManager::instance();
         // Get the party started
         ToolsManager::instance();
+    }
+    
+    public static function AccountConnected()
+    {
+        
+        if ( LicensingManager::CanTrack() ) {
+            Environment::UpdateOption( 'mcloud-opt-in-crisp', true );
+            Environment::UpdateOption( 'mcloud-opt-usage-tracking', true );
+        }
+    
     }
     
     /**
@@ -385,6 +434,15 @@ final class ToolsManager
             }
             foreach ( $this->tools as $key => $tool ) {
                 $tool->registerHelpMenu( 'media-cloud', $networkMode, $networkAdminMenu );
+            }
+            if ( LicensingManager::CanTrack() ) {
+                add_submenu_page(
+                    'media-cloud',
+                    'Opt-In Settings',
+                    'Opt-In Settings',
+                    'manage_options',
+                    admin_url( 'admin.php?page=media-cloud-settings&tab=opt-in' )
+                );
             }
         }
         

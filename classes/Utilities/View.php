@@ -70,6 +70,14 @@ final class View {
 	        static::$bladeInstance->directive('endplan', function($expression) {
 		        return '<?php endif; ?>';
 	        });
+
+	        static::$bladeInstance->directive('track', function($expression) {
+		        return "<?php if (\\ILAB\\MediaCloud\\Utilities\\LicensingManager::OptedIn($expression)): ?>";
+	        });
+
+	        static::$bladeInstance->directive('endtrack', function($expression) {
+		        return '<?php endif; ?>';
+	        });
         }
 
         return static::$bladeInstance;

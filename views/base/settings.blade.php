@@ -131,6 +131,10 @@
         @include('base/upgrade')
         @endplan
     </div>
+
+    @track('mcloud-opt-in-crisp', 'pro')
+    @include('support.crisp')
+    @endtrack
 </div>
 <script>
     (function($){

@@ -143,7 +143,30 @@ if ( !function_exists( 'media_cloud_licensing' ) ) {
     }
     
     // Init Freemius.
-    media_cloud_licensing();
+    //	media_cloud_licensing();
+    media_cloud_licensing()->add_filter( 'permission_list', function ( $permissions ) {
+        $permissions['crisp'] = array(
+            'icon-class' => 'dashicons dashicons-admin-comments',
+            'label'      => media_cloud_licensing()->get_text_inline( 'Crisp', 'crisp' ),
+            'desc'       => media_cloud_licensing()->get_text_inline( 'Rendering Crisp\'s beacon for easy support access', 'permissions-crips' ),
+            'priority'   => 16,
+        );
+        $permissions['feature-tracking'] = array(
+            'icon-class' => 'dashicons dashicons-admin-generic',
+            'label'      => media_cloud_licensing()->get_text_inline( 'Plugin Features', 'plugin-features' ),
+            'desc'       => media_cloud_licensing()->get_text_inline( 'Anonymously track which plugin features are being used to allow us to prioritize development.', 'permissions-plugin-features' ),
+            'priority'   => 16,
+        );
+        return $permissions;
+    } );
+    media_cloud_licensing()->add_action(
+        'after_account_connection',
+        function ( $user, $install ) {
+        \ILAB\MediaCloud\Tools\ToolsManager::AccountConnected();
+    },
+        1000,
+        2
+    );
     // Signal that SDK was initiated.
     do_action( 'media_cloud_licensing_loaded' );
 }
