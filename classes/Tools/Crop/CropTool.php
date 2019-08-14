@@ -17,6 +17,7 @@ use ILAB\MediaCloud\Tools\Storage\StorageTool;
 use ILAB\MediaCloud\Tools\Tool;
 use ILAB\MediaCloud\Tools\ToolsManager;
 use ILAB\MediaCloud\Utilities\Environment;
+use ILAB\MediaCloud\Utilities\Tracker;
 use ILAB\MediaCloud\Utilities\View;
 use function ILAB\MediaCloud\Utilities\gen_uuid;
 use function ILAB\MediaCloud\Utilities\json_response;
@@ -303,8 +304,10 @@ class CropTool extends Tool
 
 		if (current_user_can( 'edit_post', $image_id))
 		{
-			if (!$partial)
+			if (!$partial) {
+				Tracker::trackView('Crop Tool', '/image/crop');
 				echo View::render_view( 'crop/ilab-crop-ui.php', $data);
+            }
 			else
 			{
 				json_response([
@@ -393,6 +396,8 @@ class CropTool extends Tool
 			}
 		}
 
+		Tracker::trackView('Crop Tool - Reset', '/image/crop/reset');
+
 		$this->doPerformCrop($post_id, $size, $crop_x, $crop_y, $crop_width, $crop_height, true);
 	}
 
@@ -413,6 +418,8 @@ class CropTool extends Tool
 		$crop_height = (int)floor(esc_html($_POST['height']));
 		$crop_x = (int)floor(esc_html($_POST['x']));
 		$crop_y = (int)floor(esc_html($_POST['y']));
+
+		Tracker::trackView('Crop Tool - Crop', '/image/crop/commit');
 
 		$this->doPerformCrop($post_id, $size, $crop_x, $crop_y, $crop_width, $crop_height, false);
 	}

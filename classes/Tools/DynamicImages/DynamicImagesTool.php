@@ -15,8 +15,10 @@ namespace ILAB\MediaCloud\Tools\DynamicImages;
 
 use ILAB\MediaCloud\Tools\Tool;
 use ILAB\MediaCloud\Tools\ToolsManager;
+use function ILAB\MediaCloud\Utilities\arrayPath;
 use ILAB\MediaCloud\Utilities\Environment;
 use ILAB\MediaCloud\Utilities\NoticeManager;
+use ILAB\MediaCloud\Utilities\Tracker;
 use ILAB\MediaCloud\Utilities\View;
 use function ILAB\MediaCloud\Utilities\gen_uuid;
 use function ILAB\MediaCloud\Utilities\json_response;
@@ -532,6 +534,8 @@ abstract class DynamicImagesTool extends Tool {
 
         if(current_user_can('edit_post', $image_id)) {
             if(!$partial) {
+                Tracker::trackView("Image Editor", "/image/editor");
+
                 echo View::render_view('imgix/ilab-imgix-ui', [
                     'partial' => $partial,
                     'image_id' => $image_id,
@@ -665,6 +669,7 @@ abstract class DynamicImagesTool extends Tool {
 
 	        wp_update_attachment_metadata($image_id, $meta);
 
+	        Tracker::trackView("Image Editor - Save Adjustments", '/image/editor/save');
 	        json_response([
 		        'status' => 'ok'
 	        ]);
@@ -769,6 +774,8 @@ abstract class DynamicImagesTool extends Tool {
         $size = (isset($_POST['size'])) ? esc_html($_POST['size']) : null;
         $makeDefault = (isset($_POST['make_default'])) ? ($_POST['make_default'] == 1) : false;
 
+	    Tracker::trackView("Image Editor - New Preset", '/image/editor/preset/new');
+
         $this->doUpdatePresets($newKey, $name, $settings, $size, $makeDefault);
 
     }
@@ -798,6 +805,12 @@ abstract class DynamicImagesTool extends Tool {
         $size = (isset($_POST['size'])) ? esc_html($_POST['size']) : null;
         $makeDefault = (isset($_POST['make_default'])) ? ($_POST['make_default'] == 1) : false;
 
+        if ($makeDefault) {
+	        Tracker::trackView("Image Editor - Save Default Preset", '/image/editor/preset/save-default');
+        } else {
+	        Tracker::trackView("Image Editor - Save Preset", '/image/editor/preset/save');
+        }
+
         $this->doUpdatePresets($key, $name, $settings, $size, $makeDefault);
     }
 
@@ -812,6 +825,8 @@ abstract class DynamicImagesTool extends Tool {
                 'error' => 'Seems that you may have forgotten something.'
             ]);
         }
+
+	    Tracker::trackView("Image Editor - Delete Preset", '/image/editor/preset/delete');
 
         $this->doDeletePreset($key);
 

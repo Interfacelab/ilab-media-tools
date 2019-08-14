@@ -27,6 +27,7 @@ use ILAB\MediaCloud\Tools\ToolsManager;
 use function ILAB\MediaCloud\Utilities\arrayPath;
 use ILAB\MediaCloud\Utilities\Environment;
 use ILAB\MediaCloud\Utilities\Logging\ErrorCollector;
+use ILAB\MediaCloud\Utilities\Tracker;
 use ILAB\MediaCloud\Utilities\View;
 use Psr\Http\Message\ResponseInterface;
 
@@ -115,14 +116,14 @@ class SystemCompatibilityTool extends Tool {
 			    return [
 				    'index' => $step,
 				    'title' => 'Background Connectivity',
-				    'status' => 'Running tests ...'
+				    'status' => 'Running tests ... This may take several minutes ...'
 			    ];
 			    break;
 		    case self::STEP_TEST_BACKGROUND_TASK:
 			    return [
 				    'index' => $step,
 				    'title' => 'Background Tasks',
-				    'status' => 'Running tests ...'
+				    'status' => 'Running tests ... This may take several minutes ... '
 			    ];
 			    break;
 		    case self::STEP_TEST_IMGIX:
@@ -138,6 +139,8 @@ class SystemCompatibilityTool extends Tool {
     //region Trouble Shooting
 
     public function renderTroubleshooter() {
+    	Tracker::trackView("System Test", "/system-test");
+
         echo View::render_view('debug/trouble-shooter.php', [
             'title' => 'Media Cloud System Compatibility Test'
         ]);
@@ -327,26 +330,37 @@ class SystemCompatibilityTool extends Tool {
         $html = View::render_view('debug/system-info', [
 	        'title' => 'System Compatibility',
             'description' => 'Various aspects of your system that might have compatibility issues with Media Cloud',
-            'warnings' => $warnings,
+	        'errors' => $errors,
+	        'warnings' => $warnings,
             'info' => $info
         ]);
 
         $data = [
-            'html' => $html,
-            'next' => $this->stepInfo(self::STEP_VALIDATE_CLIENT)
+            'html' => $html
         ];
+
+        if (!$errors) {
+	        Tracker::trackView("System Test - Environment - Success", "/system-test/environment/success");
+	        $data['next'] = $this->stepInfo(self::STEP_VALIDATE_CLIENT);
+        } else {
+	        Tracker::trackView("System Test - Environment - Error", "/system-test/environment/error");
+        }
 
         wp_send_json($data);
     }
 
     private function testValidateClient() {
+	    Tracker::trackView("System Test - Validate Client", "/system-test/validate-client");
+
         /** @var StorageTool $storageTool */
         $storageTool = ToolsManager::instance()->tools['storage'];
 
         $errorCollector = new ErrorCollector();
         try {
             $isValid = $storageTool->client()->validateSettings($errorCollector);
+	        Tracker::trackView("System Test - Validate Client - Success", "/system-test/validate-client/success");
         } catch (\Exception $ex) {
+	        Tracker::trackView("System Test - Validate Client - Error", "/system-test/validate-client/error");
             $errorCollector->addError("Error validating client settings.  Message: ".$ex->getMessage());
         }
 
@@ -370,6 +384,8 @@ class SystemCompatibilityTool extends Tool {
     }
 
     private function testUploadClient() {
+	    Tracker::trackView("System Test - Test Uploads", "/system-test/uploads");
+
         /** @var StorageTool $storageTool */
         $storageTool = ToolsManager::instance()->tools['storage'];
 
@@ -377,7 +393,9 @@ class SystemCompatibilityTool extends Tool {
 
         try {
             $url = $storageTool->client()->upload('_troubleshooter/sample.txt',ILAB_TOOLS_DIR.'/public/text/sample-upload.txt', StorageSettings::privacy());
+	        Tracker::trackView("System Test - Test Uploads - Success", "/system-test/uploads/success");
         } catch (\Exception $ex) {
+	        Tracker::trackView("System Test - Test Uploads - Error", "/system-test/uploads/error");
             $errors[] = $ex->getMessage();
         }
 
@@ -402,6 +420,8 @@ class SystemCompatibilityTool extends Tool {
     }
 
     private function testPubliclyAccessible() {
+	    Tracker::trackView("System Test - Test Public", "/system-test/public");
+
         /** @var StorageTool $storageTool */
         $storageTool = ToolsManager::instance()->tools['storage'];
 
@@ -430,11 +450,13 @@ class SystemCompatibilityTool extends Tool {
         ]);
 
 	    if (empty($errors)) {
+		    Tracker::trackView("System Test - Test Public - Success", "/system-test/public/success");
 		    $data = [
 			    'html' => $html,
 			    'next' => $this->stepInfo(self::STEP_TEST_DELETE)
 		    ];
 	    } else {
+		    Tracker::trackView("System Test - Test Public - Error", "/system-test/public/error");
 		    $data = [
 			    'html' => $html,
 		    ];
@@ -444,6 +466,8 @@ class SystemCompatibilityTool extends Tool {
     }
 
     private function testDeletingFiles() {
+	    Tracker::trackView("System Test - Deleting", "/system-test/delete");
+
         /** @var StorageTool $storageTool */
         $storageTool = ToolsManager::instance()->tools['storage'];
 
@@ -451,8 +475,10 @@ class SystemCompatibilityTool extends Tool {
 
         try {
             $storageTool->client()->delete('_troubleshooter/sample.txt');
+	        Tracker::trackView("System Test - Deleting - Success", "/system-test/delete/success");
         } catch (\Exception $ex) {
             $errors[] = $ex->getMessage();
+	        Tracker::trackView("System Test - Deleting - Error", "/system-test/delete/error");
         }
 
         $html = View::render_view('debug/trouble-shooter-step.php', [
@@ -478,7 +504,9 @@ class SystemCompatibilityTool extends Tool {
     }
 
     private function testBackgroundConnectivity($attempts = 0, $mode = 'ssl', $timeoutOverride = false) {
-        $errorCollector = new ErrorCollector();
+	    Tracker::trackView("System Test - Background Connectivity", "/system-test/background-connection");
+
+	    $errorCollector = new ErrorCollector();
 
         $result = BatchManager::instance()->testConnectivity($errorCollector, $timeoutOverride);
         if ($result !== true) {
@@ -495,13 +523,13 @@ class SystemCompatibilityTool extends Tool {
         				if ($timeoutOverride === false) {
 					        $timeoutOverride = floatval(Environment::Option('mcloud-storage-batch-timeout', null, 0.01));
 				        }
-				        if ($timeoutOverride >= 5) {
+				        if ($timeoutOverride > 3) {
 					        Environment::UpdateOption('mcloud-storage-batch-skip-dns', 0.01);
 					        Environment::UpdateOption('mcloud-storage-batch-skip-dns-host', 'ip');
 
 					        $this->testBackgroundConnectivity(0, 'dns');
 				        } else {
-					        $timeoutOverride += 0.1;
+					        $timeoutOverride += 0.25;
 					        $this->testBackgroundConnectivity($attempts + 1, 'timeout', $timeoutOverride);
 				        }
 			        } else if ($mode == 'dns') {
@@ -516,6 +544,12 @@ class SystemCompatibilityTool extends Tool {
 			        }
 		        }
 	        }
+        }
+
+        if ($errorCollector->hasErrors()) {
+	        Tracker::trackView("System Test - Background Connectivity - Error", "/system-test/background-connection/error");
+        } else {
+	        Tracker::trackView("System Test - Background Connectivity - Success", "/system-test/background-connection/success");
         }
 
         $batchSettings = admin_url('admin.php?page=media-cloud-settings&tab=batch-processing');
@@ -541,6 +575,8 @@ class SystemCompatibilityTool extends Tool {
     }
 
     private function testBackgroundTasks() {
+	    Tracker::trackView("System Test - Background Tasks", "/system-test/background-tasks");
+
 	    BatchManager::instance()->setShouldCancel(TestBatchTool::BatchIdentifier(), true);
 	    call_user_func([TestBatchTool::BatchProcessClassName(), 'cancelAll']);
 
@@ -573,6 +609,8 @@ class SystemCompatibilityTool extends Tool {
 				$msg = 'General server error.';
 		    }
 
+		    Tracker::trackView("System Test - Background Tasks - Error", "/system-test/background-tasks/error");
+
 		    $batchSettings = admin_url('admin.php?page=media-cloud-settings&tab=batch-processing');
 		    $html = View::render_view('debug/trouble-shooter-step.php', [
 			    'success' => false,
@@ -600,6 +638,8 @@ class SystemCompatibilityTool extends Tool {
 	    if (!empty($data['running'])) {
 	    	$lastUpdate = arrayPath($data, 'lastUpdate', 0);
 	    	if (!empty($lastUpdate) && ($lastUpdate > 45)) {
+			    Tracker::trackView("System Test - Background Tasks - Error", "/system-test/background-tasks/error");
+
 			    $batchSettings = admin_url('admin.php?page=media-cloud-settings&tab=batch-processing');
 			    $html = View::render_view('debug/trouble-shooter-step.php', [
 				    'success' => false,
@@ -618,6 +658,8 @@ class SystemCompatibilityTool extends Tool {
 		    ]);
 	    }
 
+	    Tracker::trackView("System Test - Background Tasks - Success", "/system-test/background-tasks/success");
+
 	    $html = View::render_view('debug/trouble-shooter-step.php', [
 		    'success' => true,
 		    'title' => 'Test Background Tasks',
@@ -633,6 +675,8 @@ class SystemCompatibilityTool extends Tool {
     }
 
     private function testImgix() {
+	    Tracker::trackView("System Test - Imgix", "/system-test/imgix");
+
         /** @var StorageTool $storageTool */
         $storageTool = ToolsManager::instance()->tools['storage'];
 
@@ -664,6 +708,11 @@ class SystemCompatibilityTool extends Tool {
             $errors[] = $ex->getMessage();
         }
 
+        if (empty($errors)) {
+	        Tracker::trackView("System Test - Imgix - Success", "/system-test/imgix/success");
+        } else {
+	        Tracker::trackView("System Test - Imgix - Error", "/system-test/imgix/error");
+        }
 
         $html = View::render_view('debug/trouble-shooter-step.php', [
             'success' => empty($errors),
