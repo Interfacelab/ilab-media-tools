@@ -240,6 +240,16 @@ interface StorageInterface {
 	 */
 	public function dir($path = '', $delimiter = '/');
 
+	/**
+	 * Similar to dir() but returns an array of keys as strings.
+	 *
+	 * @param string $path
+	 * @param string $delimiter
+	 *
+	 * @return string[]
+	 */
+	public function ls($path = '', $delimiter = '/');
+
     /**
      * @return AdapterInterface
      */

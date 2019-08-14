@@ -363,6 +363,28 @@ class BackblazeStorage implements StorageInterface, AuthCacheInterface {
 		return array_merge($dirs, $files);
 	}
 
+	public function ls($path = '', $delimiter = '/') {
+		if(!$this->client) {
+			throw new InvalidStorageSettingsException('Storage settings are invalid');
+		}
+
+		/** @var File[] $files */
+		$storageFiles = $this->client->listFiles([
+			'BucketName' => $this->bucket,
+			'prefix' => $path,
+			'delimiter' => $delimiter
+		]);
+
+		$files = [];
+		foreach($storageFiles as $file) {
+			if ($file->getType() != 'folder') {
+				$files[] = $file->getName();
+			}
+		}
+
+		return $files;
+	}
+
 	public function info($key) {
 		if(!$this->client) {
 			throw new InvalidStorageSettingsException('Storage settings are invalid');

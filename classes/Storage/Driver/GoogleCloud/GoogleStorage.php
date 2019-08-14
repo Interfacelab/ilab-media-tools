@@ -505,6 +505,28 @@ class GoogleStorage implements StorageInterface {
 		return $fileList;
 	}
 
+	public function ls($path = '', $delimiter = '/') {
+		if(!$this->client) {
+			throw new InvalidStorageSettingsException('Storage settings are invalid');
+		}
+
+		$fileIter = $this->client->bucket($this->bucket)->objects([
+			'prefix' => $path,
+			'delimiter' => $delimiter
+		]);
+
+		$files = [];
+		/** @var StorageObject $file */
+		foreach($fileIter as $file) {
+			if (strpos(strrev($file->name()), '/') === 0) {
+				continue;
+			}
+
+			$files[] = $file->name();
+		}
+
+		return $files;
+	}
 	//endregion
 
 	//region URLs

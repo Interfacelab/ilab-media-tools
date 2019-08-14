@@ -749,6 +749,42 @@ class S3Storage implements StorageInterface {
 
 		return $contents;
 	}
+
+	public function ls($path = '', $delimiter = '/') {
+		if(!$this->client) {
+			throw new InvalidStorageSettingsException('Storage settings are invalid');
+		}
+
+		$contents = [];
+		try {
+			$args =  [
+				'Bucket' => $this->bucket,
+				'Prefix' => $path
+			];
+
+			if (!empty($delimiter)) {
+				$args['Delimiter'] = $delimiter;
+			}
+
+			$results  = $this->client->getPaginator('ListObjects', $args);
+
+			foreach($results as $result) {
+				if (!empty($result['Contents'])) {
+					foreach($result['Contents'] as $object) {
+						if ($object['Key'] == $path) {
+							continue;
+						}
+
+						$contents[] = $object['Key'];
+					}
+				}
+			}
+		} catch(AwsException $ex) {
+
+		}
+
+		return $contents;
+	}
 	//endregion
 
 	//region URLs
