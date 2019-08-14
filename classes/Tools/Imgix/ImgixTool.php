@@ -687,14 +687,14 @@ class ImgixTool extends DynamicImagesTool {
 		return $result;
 	}
 
-	public function urlForStorageMedia($key) {
+	public function urlForStorageMedia($key, $params = []) {
 		$imgix = new UrlBuilder($this->imgixDomains, $this->useHTTPS);
 
 		if($this->signingKey) {
 			$imgix->setSignKey($this->signingKey);
 		}
 
-		return $imgix->createURL(str_replace('%2F', '/', urlencode($key)), []);
+		return $imgix->createURL(str_replace('%2F', '/', urlencode($key)), $params);
 	}
 
 	public function fixCleanedUrls($good_protocol_url, $original_url, $context) {
