@@ -33,7 +33,9 @@
     "ilab/b2-sdk-php": "^1.4",
     "psr/http-message-implementation": "*",
     "mikey179/vfsstream": "*",
-    "ivopetkov/html5-dom-document-php": "^2.0"
+    "ivopetkov/html5-dom-document-php": "^2.0",
+    "ralouphie/mimey": "^2.1",
+    "theiconic/php-ga-measurement-protocol": "^2.7"
   },
   "autoload": {
     "psr-4": {
