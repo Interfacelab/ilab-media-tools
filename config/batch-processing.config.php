@@ -45,18 +45,18 @@ return [
 					],
 					"mcloud-storage-batch-connect-timeout" => [
 						"title" => "Connection Timeout",
-						"description" => "The number of seconds to wait for a connection to occur. If you are having issues with the batch importer process, or the system compatibility tool is complaining about <code>cURL error 2x</code>, try setting this to 5 to 10 seconds.  Set to zero to use the system default.",
+						"description" => "The number of seconds to wait for a connection to occur. If you are having issues with the batch importer process, or the system compatibility tool is complaining about <code>cURL error 2x</code>, try setting this to 5 to 10 seconds.",
 						"type" => "number",
-						"default" => 0,
+						"default" => 0.01,
 						"increment" => 0.01,
-						"min" => 0,
+						"min" => 0.01,
 						"max" => 300
 					],
 					"mcloud-storage-batch-timeout" => [
 						"title" => "Timeout",
 						"description" => "The number of seconds to wait for a response before the request times out. If you are having issues with the batch importer process, or the system compatibility tool is complaining about <code>cURL error 2x</code>, try setting this to 0.1 or even 10.",
 						"type" => "number",
-						"default" => 0.1,
+						"default" => 0.01,
 						"increment" => 0.01,
 						"min" => 0.01,
 						"max" => 30

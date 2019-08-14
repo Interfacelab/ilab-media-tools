@@ -100,6 +100,14 @@ final class BatchManager {
 
     //region Properties
 
+	public function setStartTime($batch) {
+		update_option("ilab_media_tools_{$batch}_start_time", microtime(true));
+	}
+
+	public function startTime($batch) {
+		return get_option("ilab_media_tools_{$batch}_start_time", microtime(true));
+	}
+
     /**
      * Returns the current status (true = running, false = not running) for a given batch
      * @param string $batch
@@ -145,23 +153,42 @@ final class BatchManager {
 		update_option("ilab_media_tools_{$batch}_command_line_thumb", $thumbUrl);
 	}
 
-    /**
-     * Returns the ID of the item currently being processed
-     * @param $batch
-     * @return int
-     */
-    public function currentID($batch) {
-        return get_option("ilab_media_tools_{$batch}_current_id", 0);
-    }
+	/**
+	 * Returns the ID of the item currently being processed
+	 * @param $batch
+	 * @return int|null
+	 */
+	public function currentID($batch) {
+		return get_option("ilab_media_tools_{$batch}_current_id", 0);
+	}
 
-    /**
-     * Sets the current index being processed
-     * @param $batch
-     * @param int $index
-     */
-    public function setCurrentID($batch, $id) {
-        update_option("ilab_media_tools_{$batch}_current_id", $id);
-    }
+	/**
+	 * Sets the current index being processed
+	 * @param $batch
+	 * @param int $index
+	 */
+	public function setCurrentID($batch, $id) {
+		update_option("ilab_media_tools_{$batch}_current_id", $id);
+	}
+
+
+	/**
+	 * Sets the current key being processed
+	 * @param $batch
+	 * @param string|null $key
+	 */
+	public function setCurrentKey($batch, $key) {
+		update_option("ilab_media_tools_{$batch}_current_key", $key);
+	}
+
+	/**
+	 * Returns the key of the item currently being processed
+	 * @param $batch
+	 * @return string|null
+	 */
+	public function currentKey($batch) {
+		return get_option("ilab_media_tools_{$batch}_current_key", null);
+	}
 
     /**
      * Returns the file name of the current item being processed
@@ -182,6 +209,21 @@ final class BatchManager {
 		update_option("ilab_media_tools_{$batch}_file", $file);
 	}
 
+	public function currentThumbUrl($batch) {
+		return get_option("ilab_media_tools_{$batch}_thumb_url");
+	}
+
+	public function setCurrentThumbUrl($batch, $url) {
+		update_option("ilab_media_tools_{$batch}_thumb_url", $url);
+	}
+
+	public function currentThumbIsIcon($batch) {
+		return get_option("ilab_media_tools_{$batch}_is_icon");
+	}
+
+	public function setCurrentThumbIsIcon($batch, $isIcon) {
+		update_option("ilab_media_tools_{$batch}_is_icon", $isIcon);
+	}
 
 	/**
 	 * Sets the time the last task update occurred
@@ -351,7 +393,8 @@ final class BatchManager {
             $progress = ($current / $total) * 100;
         }
 
-        $postsPerMinute = 0;
+	    $postsPerMinute = 0;
+	    $postsPerSecond = 0;
         $eta = 0;
         if (($totalTime > 0) && ($current > 1)) {
             $postsPerSecond = ($totalTime / ($current - 1));
@@ -366,7 +409,11 @@ final class BatchManager {
         $thumbUrl = null;
         $icon = false;
 
-        if (!empty($this->currentID($batch))) {
+        if (!empty($this->currentThumbUrl($batch))) {
+			$thumbUrl = $this->currentThumbUrl($batch);
+			$icon = $this->currentThumbIsIcon($batch);
+        }
+        else if (!empty($this->currentID($batch))) {
 	        $commandLine = Environment::Option("mcloud-{$batch}-batch-command-line-processing", null, false);
 
 	        $found = false;
@@ -392,18 +439,20 @@ final class BatchManager {
         return [
             'running' => $this->status($batch),
             'current' => $current,
-            'currentID' => $this->currentID($batch),
+	        'currentID' => $this->currentID($batch),
+	        'currentKey' => $this->currentKey($batch),
             'thumb' => $thumbUrl,
             'icon' => $icon,
             'currentFile' => $this->currentFile($batch),
             'total' => $total,
-            'totalTime' => $totalTime,
+            'totalTime' => microtime(true) - $this->startTime($batch),
             'lastTime' => $this->lastTime($batch),
             'lastRun' => $this->lastRun($batch),
             'lastUpdate' => $this->lastUpdate($batch),
             'eta' => $eta,
             'progress' => $progress,
-            'postsPerMinute' => $postsPerMinute,
+	        'postsPerMinute' => $postsPerMinute,
+	        'postsPerSecond' => $postsPerSecond,
             'shouldCancel' => $this->shouldCancel($batch)
         ];
     }
@@ -427,14 +476,19 @@ final class BatchManager {
     public function reset($batch) {
 	    Environment::DeleteOption('mcloud-storage-batch-command-line-processing');
 
-        delete_option("ilab_media_tools_{$batch}_status");
-        delete_option("ilab_media_tools_{$batch}_current");
+	    delete_option("ilab_media_tools_{$batch}_start_time");
+	    delete_option("ilab_media_tools_{$batch}_status");
+	    delete_option("ilab_media_tools_{$batch}_current");
+	    delete_option("ilab_media_tools_{$batch}_current_id");
+	    delete_option("ilab_media_tools_{$batch}_current_key");
         delete_option("ilab_media_tools_{$batch}_file");
         delete_option("ilab_media_tools_{$batch}_total");
         delete_option("ilab_media_tools_{$batch}_last_run");
         delete_option("ilab_media_tools_{$batch}_total_time");
         delete_option("ilab_media_tools_{$batch}_last_time");
 	    delete_option("ilab_media_tools_{$batch}_last_update");
+	    delete_option("ilab_media_tools_{$batch}_thumb_url");
+	    delete_option("ilab_media_tools_{$batch}_is_icon");
 	    delete_option("ilab_media_tools_{$batch}_command_line_thumb");
     }
 
@@ -492,6 +546,7 @@ final class BatchManager {
         $firstPostFile = get_attached_file($postIDs[0]);
         $fileName = basename($firstPostFile);
 
+        $this->setStartTime($batch);
         $this->setCurrent($batch, 1);
         $this->setTotalCount($batch, count($postIDs));
         $this->setCurrentFile($batch, $fileName);
@@ -543,8 +598,8 @@ final class BatchManager {
 	 */
     public static function postRequest($url, $args, $timeoutOverride = false) {
 	    $verifySSL = Environment::Option('mcloud-storage-batch-verify-ssl', null, 'default');
-	    $connectTimeout = Environment::Option('mcloud-storage-batch-connect-timeout', null, 0);
-	    $timeout = Environment::Option('mcloud-storage-batch-timeout', null, 0.1);
+	    $connectTimeout = Environment::Option('mcloud-storage-batch-connect-timeout', null, 0.01);
+	    $timeout = Environment::Option('mcloud-storage-batch-timeout', null, 0.01);
 	    $skipDNS = Environment::Option('mcloud-storage-batch-skip-dns', null, false);
 
 	    if ($skipDNS) {
@@ -601,15 +656,12 @@ final class BatchManager {
 		    $options['headers'] = $headers;
 	    }
 
-	    if (!empty($connectTimeout)) {
-		    $options['connect_timeout'] = $connectTimeout;
-	    }
-
-
 	    if ($timeoutOverride !== false) {
 		    $options['timeout'] = $timeoutOverride;
+		    $options['connect_timeout'] = $timeoutOverride;
 	    } else {
 		    $options['timeout'] = max(0.01, $timeout);
+		    $options['connect_timeout'] =  max(0.01, $connectTimeout);;
 	    }
 
 	    $client = new Client();

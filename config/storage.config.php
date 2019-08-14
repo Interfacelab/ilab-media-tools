@@ -38,10 +38,6 @@ return [
 		    "description" => "Optimole uploads and hosts your images on their servers and is fundamentally incompatible with Media Cloud."
 	    ],
     ],
-	"batchTools" => [
-		"\\ILAB\\MediaCloud\\Tools\\Storage\\Batch\\MigrateToStorageBatchTool",
-		"\\ILAB\\MediaCloud\\Tools\\Storage\\Batch\\RegenerateThumbnailBatchTool"
-	],
 	"CLI" => [
 		"\\ILAB\\MediaCloud\\Tools\\Storage\\CLI\\StorageCommands"
 	],
@@ -168,7 +164,7 @@ return [
                         "description" => "When you delete from the media library, turning this on will also delete the file from cloud storage.",
                         "display-order" => 10,
                         "type" => "checkbox"
-                    ]
+                    ],
                 ]
 			],
             "ilab-media-cloud-cdn-settings" => [

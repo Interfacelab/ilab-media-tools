@@ -19,6 +19,7 @@ namespace ILAB\MediaCloud\Tools;
 use ILAB\MediaCloud\Utilities\Environment;
 use ILAB\MediaCloud\Utilities\NoticeManager;
 use function ILAB\MediaCloud\Utilities\arrayPath;
+use ILAB\MediaCloud\Utilities\Tracker;
 
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
@@ -56,6 +57,9 @@ abstract class Tool {
     protected $batchTools = [];
 
     protected $actions = [];
+
+    /** @var bool Determines if settings did change. */
+    private $settingsDidChange = false;
 
     //endregion
 
@@ -285,8 +289,7 @@ abstract class Tool {
             return false;
         }
 
-        $env = ($this->env_variable) ? getenv($this->env_variable) : false;
-        return Environment::Option("mcloud-tool-enabled-$this->toolName", $env);
+        return Environment::Option("mcloud-tool-enabled-$this->toolName", $this->env_variable, false);
     }
 
     /**
@@ -498,46 +501,39 @@ abstract class Tool {
      * @param $top_menu_slug
      */
     public function registerBatchToolMenu($tool_menu_slug, $networkMode = false, $networkAdminMenu = false) {
-        if (!isset($this->toolInfo['settings'])) {
+        if($this->only_when_enabled && (!$this->enabled())) {
             return;
         }
 
-        if ($this->only_when_enabled && (!$this->enabled())) {
+        if(empty($this->batchTools)) {
             return;
         }
 
-        if (empty($this->batchTools)) {
-            return;
-        }
-
-        if ($networkMode && $networkAdminMenu) {
+        if($networkMode && $networkAdminMenu) {
             return;
         }
 
         $hasBatchTool = false;
-	    foreach($this->batchTools as $batchTool) {
-		    if ($batchTool->enabled()) {
-		        $hasBatchTool = true;
-		        break;
-		    }
-	    }
+        foreach($this->batchTools as $batchTool) {
+            if($batchTool->enabled()) {
+                $hasBatchTool = true;
+                break;
+            }
+        }
 
-	    if ($hasBatchTool) {
-		    ToolsManager::instance()->insertBatchToolSeparator();
+        if($hasBatchTool) {
+            ToolsManager::instance()->insertBatchToolSeparator();
 
-		    foreach($this->batchTools as $batchTool) {
-			    if ($batchTool->enabled()) {
-			        if (empty($batchTool->menuTitle())) {
-			            continue;
+            foreach($this->batchTools as $batchTool) {
+                if($batchTool->enabled()) {
+                    if(empty($batchTool->menuTitle())) {
+                        continue;
                     }
 
-			        ToolsManager::instance()->addMultisiteBatchTool($batchTool);
-				    add_submenu_page($tool_menu_slug, $batchTool->pageTitle(), $batchTool->menuTitle(), $batchTool->capabilityRequirement(), $batchTool->menuSlug(), [
-					    $batchTool,
-					    'renderBatchTool'
-				    ]);
-			    }
-		    }
+                    ToolsManager::instance()->addMultisiteBatchTool($batchTool);
+                    add_submenu_page($tool_menu_slug, $batchTool->pageTitle(), $batchTool->menuTitle(), $batchTool->capabilityRequirement(), $batchTool->menuSlug(), [$batchTool, 'renderBatchTool']);
+                }
+            }
         }
     }
 

@@ -89,27 +89,10 @@ class ImportVisionBatchTool extends BatchTool {
      */
     public function handleBulkActions($redirect_to, $action_name, $post_ids) {
         if('ilab_vision_process' === $action_name) {
-            $posts_to_import = [];
-            if (count($post_ids) > 0) {
-                foreach($post_ids as $post_id) {
-                    $meta = wp_get_attachment_metadata($post_id);
-                    if (!empty($meta) && !isset($meta['s3'])) {
-                        continue;
-                    }
-
-                    $mime = get_post_mime_type($post_id);
-                    if (!in_array($mime, ['image/jpeg', 'image/jpg', 'image/png'])) {
-                        continue;
-                    }
-
-                    $posts_to_import[] = $post_id;
-                }
-            }
-
-            if(count($posts_to_import) > 0) {
-                set_site_transient($this->batchPrefix().'_post_selection', $posts_to_import, 10);
-                return 'admin.php?page='.$this->menuSlug();
-            }
+	        $result = $this->processBulkSelection($post_ids, false, true);
+	        if (!empty($result)) {
+		        return $result;
+	        }
         }
 
         return $redirect_to;
@@ -135,12 +118,12 @@ class ImportVisionBatchTool extends BatchTool {
      * Process the import manually.  $_POST will contain a field `post_id` for the post to process
      */
     public function manualAction() {
-        if (!isset($_POST['post_id'])) {
+        if (!isset($_POST['id'])) {
             BatchManager::instance()->setErrorMessage('storage', 'Missing required post data.');
             json_response(['status' => 'error']);
         }
 
-        $pid = $_POST['post_id'];
+        $pid = $_POST['id'];
 
         $data = wp_get_attachment_metadata($pid);
         if (!empty($data) && isset($data['s3'])) {
