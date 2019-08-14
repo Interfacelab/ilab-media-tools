@@ -1,11 +1,11 @@
-=== Media Cloud ===
+=== Media Cloud for Amazon S3, Imgix, Google Cloud Storage, DigitalOcean Spaces and more ===
 Contributors: mediacloud, interfacelab
 Tags: uploads, amazon, s3, imgix, minio, google cloud storage, digital ocean spaces, wasabi, media, cdn, rekognition, cloudfront, images, crop, image editing, image editor, media library, offload, offload s3, filepicker, smush, ewww, imagify, shortpixel
 Requires at least: 4.4
 Tested up to: 5.2.2
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 3.1.2
+Stable tag: 3.1.4
 Requires PHP: 5.6.4
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -25,7 +25,7 @@ Media Cloud also provides advanced image editing tools that provide improved cro
 **NOTE**: This plugin requires PHP 5.6x or higher (PHP 7.x preferred)
 
 = Upload to S3, Minio, Google Cloud Storage, Wasabi and Digital Ocean Spaces =
-Automatically copy media uploads to the cloud and serve them directly from your cloud storage provider, CloudFront or any other CDN.  Additionally, easily import your existing media library with the push of a button.
+Automatically copy media uploads to the cloud and serve them directly from your cloud storage provider, CloudFront or any other CDN.
 
 = Integrate with Imgix =
 [Imgix](https://imgix.com) will radically change the way that you build your WordPress sites and themes.  This plugin is the best integration available for WordPress.  Upload your images to S3 with our S3 tool and then host the media with Imgix, providing you with real-time image processing and automatic format delivery.  Forget ImageMagick, Imgix is light years ahead in quality and speed.
@@ -42,9 +42,6 @@ When integrating with [Imgix](https://imgix.com), Media Cloud by ILAB provides t
 = Image Cropping =
 Media Cloud by ILAB ships with the most advanced image cropping tool available for WordPress, based on Chen Fengyuan's amazing Cropper plugin for jQuery.
 
-= WP-CLI Support =
-Import your media library to the cloud, regenerate thumbnails and process your library with Amazon Rekognition using WP-CLI commands.
-
 = Compatible With Leading Image Optimizers =
 Compatible with Short Pixel, EWWW, Smush and Imagify image optimization plugins!
 
@@ -60,6 +57,8 @@ Compatible with Short Pixel, EWWW, Smush and Imagify image optimization plugins!
 
 = Premium Upgrade with Improved Support Options and More Features =
 
+* Easily import your existing media library with the push of a button
+* WP-CLI support: Import your media library to the cloud, regenerate thumbnails and process your library with Amazon Rekognition using WP-CLI commands.
 * Direct uploads integrated directly into WordPress's media library
 * Cloud storage browser that allows you to import media to your media library from the cloud
 * Dynamic Images provides Imgix-like dynamic image generation directly in the plugin, no external service needed.
@@ -68,6 +67,7 @@ Compatible with Short Pixel, EWWW, Smush and Imagify image optimization plugins!
 * Use Google Cloud Vision as a vision provider
 * Image size manager
 * Network level multisite support
+* and more!
 
 [Compare the premium plans](https://mediacloud.press/comparison/)
 
@@ -81,7 +81,7 @@ Additionally a number of hooks and actions have been deprecated, please refer to
 
 = How does this compare to WP Offload S3? =
 
-This essentially does everything that WP Offload S3 does but is free.  It includes an import function for importing your current library to S3 that only the pro version of WP Offload S3 has.  Otherwise, they work almost exactly the same.
+This essentially does everything that WP Offload S3 does but it does a whole lot more.  This plugin is an essential part of our own development stack when creating WordPress solutions for clients and it was born out of frustration with a other "offload" plugins.
 
 = Why should I use Imgix? =
 
@@ -100,16 +100,32 @@ No, I'm just one very enthusiastic customer.
 3. Easy image cropping for all croppable image sizes defined in your theme.
 4. Make adjustments to your images like saturation, vibrancy, contrast when using Imgix.
 5. Stylize your images easily when using Imgix.
-6. Bulk import your assets to cloud storage (a free feature in Media Cloud that costs money in other offload media plugins)
-7. Watermarking is easy and non-destructive, change the watermark at any time and all watermarked images will automatically update.
-8. Redesign settings.
-9. Easily pin frequently accessed settings.
+6. Watermarking is easy and non-destructive, change the watermark at any time and all watermarked images will automatically update.
+7. Redesign settings.
+8. Easily pin frequently accessed settings.
 
 
 == Changelog ==
 
-= 3.1.2 =
+= 3.1.4 =
 
+* Ultimate Membership integration (Pro Version)
+* Rewritten batch tool UI
+* New!  Import media from cloud storage into WordPress (Premium Version)
+* Fix for srcset issues with Imgix.
+* Added --skip-existing flag to the command line import command (Premium verison).
+* Fix for system compatibilities test on certain systems.
+* Added ability to regenerate thumbnails even when Imgix or Dynamic Images is enabled, previously only available if either was turned off  (Premium verison).
+* Added options for importing files via the cloud storage browser (Pro verison).
+* Fixes for Backblaze
+* Fix for Dynamic Images showing a warning about an empty needle
+* Fix for Regenerate Image in the cloud info pop-up in the media grid
+
+
+= 3.1.3 =
+
+* When the system compatibility test is run, check to see if the server's clock is correct.  An incorrect clock can cause errors with cloud storage APIs.
+* Fix for connect timeout of 0
 * Fix for blank settings pages that would appear on some hosting providers.
 * Fixed bugs when Media Cloud is being used on a C-Panel/WHM managed servers.
 * Fixed background processing when "Skip DNS" is enabled on C-Panel/WHM managed servers.
@@ -123,6 +139,8 @@ No, I'm just one very enthusiastic customer.
 
 = 3.1.1 =
 
+* Fix for migrating very large (greater than 10,000 items) media libraries to cloud storage
+* Fix for Gutenberg image blocks
 * Fixes for multi-site
 * General bug fixes
 * When transitioning from 2.x to 3.x, Media Cloud used to delete the old 2.x settings after copying them to the renamed 3.x settings.  This made it impossible to go back to 2.x without having to re-enter all of your settings.  The migration process no longer deletes your old 2.x settings.
