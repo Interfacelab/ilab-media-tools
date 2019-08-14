@@ -155,7 +155,8 @@ abstract class DynamicImagesTool extends Tool {
 	            return $metadata;
             }
 
-	        if (in_array($attachmentId, $this->processedAttachments)) {
+	        $hasVersion = isset($metadata['s3']['v']) && ($metadata['s3']['v'] == MEDIA_CLOUD_INFO_VERSION);
+	        if ($hasVersion && in_array($attachmentId, $this->processedAttachments)) {
 	            return $metadata;
             }
 
@@ -174,14 +175,16 @@ abstract class DynamicImagesTool extends Tool {
 
 		    $didChange = false;
 		    foreach($this->allSizes as $sizeKey => $sizeData) {
-		        if (isset($metadata['sizes'][$sizeKey])) {
+		        if (isset($metadata['sizes'][$sizeKey]) && $hasVersion) {
 		            continue;
                 }
 
+			    $sizeFilename = arrayPath($metadata, "sizes/$sizeKey/file", $filename);
 			    $sizeWidth = intval($sizeData['width']);
 			    $sizeHeight = intval($sizeData['height']);
+			    $sizeS3 = arrayPath($metadata, "sizes/$sizeKey/s3", $metadata['s3']);
 
-		        if (!empty($sizeCrop)) {
+		        if (!empty($sizeData['crop'])) {
 		            $newWidth = $sizeWidth;
 		            $newHeight = $sizeHeight;
                 } else {
@@ -189,17 +192,18 @@ abstract class DynamicImagesTool extends Tool {
                 }
 
 		        $metadata['sizes'][$sizeKey] = [
-		            'file' => $filename,
-                    'width' => $newWidth,
-                    'height' => $newHeight,
+		            'file' => $sizeFilename,
+                    'width' => intval($newWidth),
+                    'height' => intval($newHeight),
                     'mime-type' => $mime,
-                    's3' => $metadata['s3']
+                    's3' => $sizeS3
                 ];
 
 		        $didChange = true;
             }
 
 		    if ($didChange) {
+		        $metadata['s3']['v'] = MEDIA_CLOUD_INFO_VERSION;
 			    update_post_meta($attachmentId, '_wp_attachment_metadata', $metadata);
             }
 
