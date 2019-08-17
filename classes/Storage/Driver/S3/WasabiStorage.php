@@ -146,7 +146,6 @@ class WasabiStorage extends OtherS3Storage {
 	public function uploadUrl($key, $acl, $mimeType = null, $cacheControl = null, $expires = null) {
 		try {
 			$optionsData = [
-				'ACL' => $acl,
 				'Bucket' => $this->bucket,
 				'ContentType' => $mimeType,
 				'Key' => $key
