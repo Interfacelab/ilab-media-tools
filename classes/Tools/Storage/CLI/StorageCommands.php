@@ -16,6 +16,7 @@
 // **********************************************************************
 namespace ILAB\MediaCloud\Tools\Storage\CLI;
 
+use  GuzzleHttp\Client ;
 use  ILAB\MediaCloud\CLI\Command ;
 use  ILAB\MediaCloud\Storage\StorageSettings ;
 use  ILAB\MediaCloud\Tasks\BatchManager ;
@@ -197,6 +198,188 @@ class StorageCommands extends Command
         }
         Command::Info( ' %GDone.%n', true );
         Command::Out( "", true );
+    }
+    
+    /**
+     * Migrates any media that was uploaded with Human Made S3 Uploads plugin
+     *
+     * ## OPTIONS
+     *
+     * [--limit=<number>]
+     * : The maximum number of items to process, default is infinity.
+     *
+     * [--offset=<number>]
+     * : The starting offset to process.  Cannot be used with page.
+     *
+     * [--page=<number>]
+     * : The starting offset to process.  Page numbers start at 1.  Cannot be used with offset.
+     *
+     * [--order-by=<string>]
+     * : The field to sort the items to be imported by. Valid values are 'date', 'title' and 'filename'.
+     * ---
+     * options:
+     *   - date
+     *   - title
+     *   - filename
+     * ---
+     *
+     * [--order=<string>]
+     * : The sort order. Valid values are 'asc' and 'desc'.
+     * ---
+     * default: asc
+     * options:
+     *   - asc
+     *   - desc
+     * ---
+     *
+     * @when after_wp_load
+     *
+     * @param $args
+     * @param $assoc_args
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function migrateS3Uploads( $args, $assoc_args )
+    {
+        
+        if ( !is_plugin_active( 's3-uploads/s3-uploads.php' ) ) {
+            self::Error( "S3 Uploads must be installed and activated." );
+            exit( 1 );
+        }
+        
+        Command::Out( "", true );
+        Command::Warn( "%WThis command will make some changes to your database that are totally reversible.  However, it's always a good idea to backup your database first.%n" );
+        Command::Out( "", true );
+        $result = \WP_CLI::confirm( "Are you sure you want to continue?", $assoc_args );
+        self::Info( $result, true );
+        $postArgs = [
+            'post_type'   => 'attachment',
+            'post_status' => 'inherit',
+            'meta_query'  => [
+            'relation' => 'AND',
+            [
+            'key'     => '_wp_attachment_metadata',
+            'value'   => '"s3"',
+            'compare' => 'NOT LIKE',
+            'type'    => 'CHAR',
+        ],
+            [
+            'key'     => 'ilab_s3_info',
+            'compare' => 'NOT EXISTS',
+        ],
+        ],
+        ];
+        
+        if ( isset( $assoc_args['limit'] ) ) {
+            $postArgs['posts_per_page'] = $assoc_args['limit'];
+            
+            if ( isset( $assoc_args['offset'] ) ) {
+                $postArgs['offset'] = $assoc_args['offset'];
+            } else {
+                if ( isset( $assoc_args['page'] ) ) {
+                    $postArgs['offset'] = max( 0, ($assoc_args['page'] - 1) * $assoc_args['limit'] );
+                }
+            }
+        
+        } else {
+            $postArgs['nopaging'] = true;
+        }
+        
+        
+        if ( isset( $assoc_args['order-by'] ) && in_array( $assoc_args['order-by'], [ 'date', 'title', 'filename' ] ) ) {
+            
+            if ( $assoc_args['order-by'] == 'filename' ) {
+                $postArgs['meta_key'] = '_wp_attached_file';
+                $postArgs['orderby'] = 'meta_value';
+            } else {
+                $postArgs['orderby'] = $assoc_args['order-by'];
+            }
+            
+            $postArgs['order'] = ( isset( $assoc_args['order'] ) && $assoc_args['order'] == 'desc' ? 'DESC' : 'ASC' );
+        }
+        
+        $q = new \WP_Query( $postArgs );
+        $postCount = count( $q->posts );
+        
+        if ( $postCount == 0 ) {
+            self::Error( "No posts found." );
+            exit( 0 );
+        }
+        
+        $currentIndex = 1;
+        self::Info( "Found {$postCount} posts.", true );
+        /** @var \S3_Uploads $s3Uploads */
+        $s3Uploads = \S3_Uploads::get_instance();
+        $s3Base = trailingslashit( $s3Uploads->get_s3_url() );
+        $s3Acl = ( defined( 'S3_UPLOADS_OBJECT_ACL' ) ? S3_UPLOADS_OBJECT_ACL : 'public-read' );
+        $host = get_home_url( '/' );
+        $guzzle = new Client();
+        /** @var \WP_Post $post */
+        foreach ( $q->posts as $post ) {
+            
+            if ( strpos( $post->guid, $host ) === 0 ) {
+                self::Info( "[{$currentIndex} of {$postCount}] Skipping ({$post->ID}) {$post->post_title} ... ", true );
+                $currentIndex++;
+                continue;
+            }
+            
+            self::Info( "[{$currentIndex} of {$postCount}] Processing ({$post->ID}) {$post->post_title} ... ", false );
+            $currentIndex++;
+            $res = $guzzle->request( 'HEAD', $post->guid, [
+                'allow_redirects' => true,
+            ] );
+            
+            if ( $res->getStatusCode() == 200 ) {
+                self::Info( "Exists ... ", false );
+                $basename = basename( $post->guid );
+                $postBaseUrl = str_replace( $basename, '', $post->guid );
+                $key = str_replace( $s3Base, '', $post->guid );
+                $baseKey = ltrim( trailingslashit( str_replace( $basename, '', $key ) ), '/' );
+                $s3Info = [
+                    'url'       => $post->guid,
+                    'bucket'    => $s3Uploads->get_s3_bucket(),
+                    'provider'  => 's3',
+                    'privacy'   => $s3Acl,
+                    'v'         => MEDIA_CLOUD_INFO_VERSION,
+                    'key'       => $key,
+                    'options'   => [],
+                    'mime-type' => $post->post_mime_type,
+                ];
+                $meta = wp_get_attachment_metadata( $post->ID );
+                $meta['file'] = $key;
+                $meta['s3'] = $s3Info;
+                $sizes = $meta['sizes'];
+                $newSizes = [];
+                foreach ( $sizes as $size => $sizeData ) {
+                    $sizeUrl = trailingslashit( $postBaseUrl ) . $sizeData['file'];
+                    $res = $guzzle->request( 'HEAD', $sizeUrl, [
+                        'allow_redirects' => true,
+                    ] );
+                    
+                    if ( $res->getStatusCode() == 200 ) {
+                        $s3Info = [
+                            'url'       => $sizeUrl,
+                            'bucket'    => $s3Uploads->get_s3_bucket(),
+                            'provider'  => 's3',
+                            'privacy'   => $s3Acl,
+                            'v'         => MEDIA_CLOUD_INFO_VERSION,
+                            'key'       => $baseKey . $sizeData['file'],
+                            'options'   => [],
+                            'mime-type' => $sizeData['mime-type'],
+                        ];
+                        $sizeData['s3'] = $s3Info;
+                        $newSizes[$size] = $sizeData;
+                    }
+                
+                }
+                $meta['sizes'] = $newSizes;
+                update_post_meta( $post->ID, '_wp_attachment_metadata', $meta );
+                self::Info( "Done.", true );
+            } else {
+                self::Info( "Skipping, does not exist.", true );
+            }
+        
+        }
     }
     
     public static function Register()
