@@ -5,7 +5,7 @@ Requires at least: 4.4
 Tested up to: 5.2.2
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 3.1.4
+Stable tag: 3.1.5
 Requires PHP: 5.6.4
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -107,16 +107,13 @@ No, I'm just one very enthusiastic customer.
 
 == Changelog ==
 
-= 3.1.4 =
+= 3.1.5 =
 
-* Ultimate Membership integration (Pro Version)
+* Added `migrateS3Uploads` command line command to migrate uploads from Human Made S3 Uploads plugin
 * Rewritten batch tool UI
-* New!  Import media from cloud storage into WordPress (Premium Version)
 * Fix for srcset issues with Imgix.
-* Added --skip-existing flag to the command line import command (Premium verison).
 * Fix for system compatibilities test on certain systems.
 * Added ability to regenerate thumbnails even when Imgix or Dynamic Images is enabled, previously only available if either was turned off  (Premium verison).
-* Added options for importing files via the cloud storage browser (Pro verison).
 * Fixes for Backblaze
 * Fix for Dynamic Images showing a warning about an empty needle
 * Fix for Regenerate Image in the cloud info pop-up in the media grid
