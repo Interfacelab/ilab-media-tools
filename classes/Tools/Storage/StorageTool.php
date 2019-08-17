@@ -3068,8 +3068,15 @@ Optimizer;
         return true;
     }
     
-    public function importFileFromStorage( $key, $thumbs, $importOnly )
+    public function importFileFromStorage(
+        $key,
+        $thumbs,
+        $importOnly,
+        $preservePaths
+    )
     {
+        $oldPreserve = $this->preserveFilePaths;
+        $this->preserveFilePaths = ( $preservePaths ? 'preserve' : 'replace' );
         $dynamicEnabled = apply_filters( 'media-cloud/dynamic-images/enabled', false );
         if ( !empty($importOnly) ) {
             $dynamicEnabled = true;
@@ -3086,6 +3093,7 @@ Optimizer;
             Logger::error( $ex->getMessage() );
             $success = false;
         }
+        $this->preserveFilePaths = $oldPreserve;
         return $success;
     }
     
