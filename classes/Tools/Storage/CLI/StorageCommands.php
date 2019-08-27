@@ -17,6 +17,9 @@
 namespace ILAB\MediaCloud\Tools\Storage\CLI;
 
 use  GuzzleHttp\Client ;
+use  GuzzleHttp\Exception\BadResponseException ;
+use  GuzzleHttp\Exception\ClientException ;
+use  GuzzleHttp\Exception\RequestException ;
 use  ILAB\MediaCloud\CLI\Command ;
 use  ILAB\MediaCloud\Storage\StorageSettings ;
 use  ILAB\MediaCloud\Tasks\BatchManager ;
@@ -325,9 +328,14 @@ class StorageCommands extends Command
             
             self::Info( "[{$currentIndex} of {$postCount}] Processing ({$post->ID}) {$post->post_title} ... ", false );
             $currentIndex++;
-            $res = $guzzle->request( 'HEAD', $post->guid, [
-                'allow_redirects' => true,
-            ] );
+            try {
+                $res = $guzzle->request( 'HEAD', $post->guid, [
+                    'allow_redirects' => true,
+                ] );
+            } catch ( ClientException $ex ) {
+                self::Info( "Error " . $ex->getMessage() . " skipping.", true );
+                continue;
+            }
             
             if ( $res->getStatusCode() == 200 ) {
                 self::Info( "Exists ... ", false );
@@ -349,30 +357,40 @@ class StorageCommands extends Command
                 $meta['file'] = $key;
                 $meta['s3'] = $s3Info;
                 $sizes = $meta['sizes'];
-                $newSizes = [];
-                foreach ( $sizes as $size => $sizeData ) {
-                    $sizeUrl = trailingslashit( $postBaseUrl ) . $sizeData['file'];
-                    $res = $guzzle->request( 'HEAD', $sizeUrl, [
-                        'allow_redirects' => true,
-                    ] );
-                    
-                    if ( $res->getStatusCode() == 200 ) {
-                        $s3Info = [
-                            'url'       => $sizeUrl,
-                            'bucket'    => $s3Uploads->get_s3_bucket(),
-                            'provider'  => 's3',
-                            'privacy'   => $s3Acl,
-                            'v'         => MEDIA_CLOUD_INFO_VERSION,
-                            'key'       => $baseKey . $sizeData['file'],
-                            'options'   => [],
-                            'mime-type' => $sizeData['mime-type'],
-                        ];
-                        $sizeData['s3'] = $s3Info;
-                        $newSizes[$size] = $sizeData;
-                    }
                 
+                if ( empty($sizes) ) {
+                    self::Info( "Missing size data ... ", false );
+                } else {
+                    $newSizes = [];
+                    foreach ( $sizes as $size => $sizeData ) {
+                        $sizeUrl = trailingslashit( $postBaseUrl ) . $sizeData['file'];
+                        try {
+                            $res = $guzzle->request( 'HEAD', $sizeUrl, [
+                                'allow_redirects' => true,
+                            ] );
+                        } catch ( ClientException $ex ) {
+                            continue;
+                        }
+                        
+                        if ( $res->getStatusCode() == 200 ) {
+                            $s3Info = [
+                                'url'       => $sizeUrl,
+                                'bucket'    => $s3Uploads->get_s3_bucket(),
+                                'provider'  => 's3',
+                                'privacy'   => $s3Acl,
+                                'v'         => MEDIA_CLOUD_INFO_VERSION,
+                                'key'       => $baseKey . $sizeData['file'],
+                                'options'   => [],
+                                'mime-type' => $sizeData['mime-type'],
+                            ];
+                            $sizeData['s3'] = $s3Info;
+                            $newSizes[$size] = $sizeData;
+                        }
+                    
+                    }
+                    $meta['sizes'] = $newSizes;
                 }
-                $meta['sizes'] = $newSizes;
+                
                 update_post_meta( $post->ID, '_wp_attachment_metadata', $meta );
                 self::Info( "Done.", true );
             } else {
