@@ -38,6 +38,10 @@ MCLOUD_STORAGE_BACKBLAZE_BUCKET_URL | url | URL for the backblaze bucket.
 MCLOUD_STORAGE_BACKBLAZE_KEY | string | The application key to use for Backblaze.
 MCLOUD_STORAGE_PRIVACY | string | Privacy ACL for uploads, valid values are `public-read` or `authenticated-read`.
 MCLOUD_STORAGE_PREFIX | string | The prefix for file upload paths.
+MCLOUD_STORAGE_UPLOAD_IMAGES | boolean | Upload image files to cloud storage.
+MCLOUD_STORAGE_UPLOAD_VIDEOS | boolean | Upload video files to cloud storage.
+MCLOUD_STORAGE_UPLOAD_AUDIO | boolean | Upload audio files to cloud storage.
+MCLOUD_STORAGE_UPLOAD_DOCUMENTS | boolean | Allow non-media files to be uploaded to cloud storage.
 MCLOUD_STORAGE_IGNORED_MIME_TYPES | string | MIME types of files that should not be uploaded to cloud storage.
 MCLOUD_STORAGE_CDN_BASE | url | Base URL for CDN.
 MCLOUD_STORAGE_DOC_CDN_BASE | url | Base URL for document (non-media) CDN.
@@ -47,7 +51,6 @@ MCLOUD_STORAGE_DELETE_FROM_SERVER | boolean | Delete from cloud storage when del
 MCLOUD_STORAGE_DELETE_UPLOADS | boolean | Delete uploads after uploaded to cloud storage.
 MCLOUD_STORAGE_DISPLAY_BADGE | boolean | Display cloud icon in media library for uploaded media.
 MCLOUD_STORAGE_DISPLAY_MEDIA_LIST | boolean | Add extra column to media library in list view mode.
-MCLOUD_STORAGE_UPLOAD_DOCUMENTS | boolean | Allow non-media files to be uploaded to cloud storage.
 MCLOUD_STORAGE_USE_PRESIGNED_URLS | boolean | Use pre-signed URLs.
 MCLOUD_STORAGE_PRESIGNED_EXPIRATION | number | Number of minutes pre-signed URLs are valid for.
 
@@ -92,8 +95,15 @@ MCLOUD_GLIDE_GENERATE_THUMBNAILS | boolean | Allow WordPress to generate thumbna
 Variable | Type | Description
 -------- | ---- | -----------
 MCLOUD_DIRECT_UPLOADS_INTEGRATION | boolean | Integrated with the WordPress media library so that all uploads done through the library are direct uploads.
+MCLOUD_DIRECT_UPLOADS_UPLOAD_IMAGES | boolean | Enables direct uploads for image files.  You will need to have Imgix or Dynamic Images enabled.
+MCLOUD_DIRECT_UPLOADS_UPLOAD_VIDEOS | boolean | Enables direct uploads for video files.  Important!  WordPress will be unable to extract metadata about the video such as length and audio attributes without the FFProbe option enabled.
+MCLOUD_DIRECT_UPLOADS_UPLOAD_AUDIO | boolean | Enables direct uploads for audio files.
+MCLOUD_DIRECT_UPLOADS_UPLOAD_DOCUMENTS | boolean | Enables direct uploads for non-image files such as Word documents, PDF files, zip files, etc.
 MCLOUD_DIRECT_UPLOADS_SIMULTANEOUS_UPLOADS | number | The maximum number of simultaneous direct uploads.
+MCLOUD_DIRECT_UPLOADS_MAX_UPLOAD_SIZE | number | The maximum upload size allowed for direct uploads in MB.  Set to 0 to use whatever PHP is set to.
 MCLOUD_DIRECT_UPLOADS_DETECT_FACES | boolean | Uses browser based javascript machine learning to detect faces in the image.   If Vision is enabled, this setting is ignored in favor of Vision's results.
+MCLOUD_DIRECT_UPLOADS_USE_FFPROBE | boolean | When enabled, uses FFProbe to extract video metadata such as length, size, codecs, etc.  You must have `fffprobe` installed on your server and have the PHP function `shell_exec` enabled.
+MCLOUD_DIRECT_UPLOADS_FFPROBE_PATH | path | The path, on the webserver, to the ffprobe binary, eg. `/usr/bin/ffprobe`.
 
 &nbsp;
 
