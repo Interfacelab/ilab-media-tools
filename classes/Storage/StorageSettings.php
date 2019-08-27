@@ -43,6 +43,15 @@ final class StorageSettings {
 	private $ignoredMimeTypes = [];
 
 	/** @var bool */
+	private $uploadImages = true;
+
+	/** @var bool */
+	private $uploadAudio = true;
+
+	/** @var bool */
+	private $uploadVideo = true;
+
+	/** @var bool */
 	private $uploadDocuments = true;
 
 	/** @var string|null */
@@ -56,6 +65,13 @@ final class StorageSettings {
 
 	/** @var bool */
 	private $deleteFromStorage = false;
+
+	/** @var array */
+	private $alternateFormatTypes = ['image/pdf', 'application/pdf', 'image/psd', 'application/vnd.adobe.illustrator'];
+
+	/** @var null|array */
+	private $allowedMimes = null;
+
 	//endregion
 
 	//region Constructor
@@ -63,7 +79,12 @@ final class StorageSettings {
 		$this->deleteOnUpload = Environment::Option('mcloud-storage-delete-uploads');
 		$this->deleteFromStorage = Environment::Option('mcloud-storage-delete-from-server');
 		$this->prefixFormat = Environment::Option('mcloud-storage-prefix', '');
+
+		$this->uploadImages = Environment::Option('mcloud-storage-upload-images', null, true);
+		$this->uploadAudio = Environment::Option('mcloud-storage-upload-audio', null, true);
+		$this->uploadVideo = Environment::Option('mcloud-storage-upload-videos', null, true);
 		$this->uploadDocuments = Environment::Option('mcloud-storage-upload-documents', null, true);
+
 		$this->privacy = Environment::Option('mcloud-storage-privacy', null, "public-read");
 		if(!in_array($this->privacy, ['public-read', 'authenticated-read'])) {
 			NoticeManager::instance()->displayAdminNotice('error', "Your AWS S3 settings are incorrect.  The ACL '{$this->privacy}' is not valid.  Defaulting to 'public-read'.");
@@ -80,6 +101,24 @@ final class StorageSettings {
 				$this->ignoredMimeTypes[] = trim($d);
 			}
 		}
+
+		if (empty($this->uploadImages)) {
+			$this->ignoredMimeTypes[] = 'image/*';
+		}
+
+		if (empty($this->uploadVideo)) {
+			$this->ignoredMimeTypes[] = 'video/*';
+		}
+
+		if (empty($this->uploadAudio)) {
+			$this->ignoredMimeTypes[] = 'audio/*';
+		}
+
+		if (empty($this->uploadDocuments)) {
+			$this->ignoredMimeTypes[] = 'application/*';
+			$this->ignoredMimeTypes[] = 'text/*';
+		}
+
 
 		$this->cdn = Environment::Option('mcloud-storage-cdn-base', 'ILAB_AWS_S3_CDN_BASE');
 		if($this->cdn) {
@@ -143,8 +182,75 @@ final class StorageSettings {
 	}
 
 	/** @return bool */
+	public static function mimeTypeIsIgnored($mimeType, $additionalTypes = []) {
+		$altFormatsEnabled = apply_filters('media-cloud/imgix/alternative-formats/enabled', false);
+
+		$ignored = array_merge(self::instance()->ignoredMimeTypes, $additionalTypes);
+
+		foreach($ignored as $mimeTypeTest) {
+			if ($mimeType == $mimeTypeTest) {
+				return true;
+			}
+
+			if (strpos($mimeTypeTest, '*') !== false) {
+				$mimeTypeRegex = str_replace('*', '[aA-zZ0-9_.-]+', $mimeTypeTest);
+				$mimeTypeRegex = str_replace('/','\/', $mimeTypeRegex);
+
+				if (preg_match("/{$mimeTypeRegex}/m", $mimeType)) {
+					if (self::uploadImages() && $altFormatsEnabled && (in_array($mimeType, self::alternativeFormatTypes()))) {
+						return false;
+					}
+
+					return true;
+				}
+			}
+		}
+	}
+
+	public static function allowedMimeTypes() {
+		if (self::instance()->allowedMimes != null) {
+			return self::instance()->allowedMimes;
+		}
+
+		$altFormatsEnabled = apply_filters('media-cloud/imgix/alternative-formats/enabled', false);
+		$allowed = get_allowed_mime_types();
+
+		if (self::uploadImages() && $altFormatsEnabled) {
+			$allowed = array_merge($allowed, self::alternativeFormatTypes());
+		}
+
+		$result = [];
+		foreach($allowed as $mime) {
+			if (self::mimeTypeIsIgnored($mime)) {
+				continue;
+			}
+
+			$result[] = $mime;
+		}
+
+		self::instance()->allowedMimes = $result;
+
+		return $result;
+	}
+
+	/** @return bool */
 	public static function uploadDocuments() {
 		return self::instance()->uploadDocuments;
+	}
+
+	/** @return bool */
+	public static function uploadImages() {
+		return self::instance()->uploadImages;
+	}
+
+	/** @return bool */
+	public static function uploadAudio() {
+		return self::instance()->uploadAudio;
+	}
+
+	/** @return bool */
+	public static function uploadVideo() {
+		return self::instance()->uploadVideo;
 	}
 
 	/** @return string|null */
@@ -165,6 +271,13 @@ final class StorageSettings {
 	/** @return bool */
 	public static function deleteFromStorage() {
 		return self::instance()->deleteFromStorage;
+	}
+
+	/**
+	 * @return array
+	 */
+	public static function alternativeFormatTypes() {
+		return self::instance()->alternateFormatTypes;
 	}
 	//endregion
 }

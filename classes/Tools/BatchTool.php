@@ -300,10 +300,7 @@ abstract class BatchTool implements BatchToolInterface {
                 }
 
                 $args = $this->filterPostArgs($args);
-
-                if($forceImages || !StorageSettings::uploadDocuments()) {
-                    $args['post_mime_type'] = 'image';
-                }
+				$args['post_mime_type'] = StorageSettings::allowedMimeTypes();
 
                 $query = new \WP_Query($args);
 

@@ -135,21 +135,42 @@ return [
 				"description" => "The following options control how the storage tool handles uploads.",
                 "options" => [
                     "mcloud-storage-prefix" => [
-                        "title" => "Upload File Prefix",
+                        "title" => "Upload Path",
                         "display-order" => 10,
-                        "description" => "This will prepend a prefix to any file uploaded to cloud storage.  For dynamically created prefixes, you can use the following variables: <code>@{date:format}</code>, <code>@{site-name}</code>, <code>@{site-host}</code>, <code>@{site-id}</code>, <code>@{versioning}</code>, <code>@{user-name}</code>, <code>@{unique-id}</code>, <code>@{unique-path}</code>.  For the date token, format is any format string that you can use with php's <a href='http://php.net/manual/en/function.date.php' target='_blank'>date()</a> function.  Note that specifying a prefix here will remove WordPress's default date prefix.  WordPress's default prefix would look like: <code>@{date:Y/m}</code>.",
+                        "description" => "This will set the upload path to store uploads both locally and on cloud storage.  Leave blank to use the WordPress default of <code>Month/Day</code>.  For dynamically created paths, you can use the following variables: <code>@{date:format}</code>, <code>@{site-name}</code>, <code>@{site-host}</code>, <code>@{site-id}</code>, <code>@{versioning}</code>, <code>@{user-name}</code>, <code>@{unique-id}</code>, <code>@{unique-path}</code>.  For the date token, format is any format string that you can use with php's <a href='http://php.net/manual/en/function.date.php' target='_blank'>date()</a> function.  WordPress's default upload path would look like: <code>@{date:Y/m}</code>.",
                         "type" => "text-field"
                     ],
-                    "mcloud-storage-upload-documents" => [
-                        "title" => "Upload Non-image Files",
-                        "description" => "Upload non-image files such as Word documents, PDF files, zip files, etc.",
-                        "display-order" => 10,
-                        "type" => "checkbox",
-                        "default" => true
-                    ],
+	                "mcloud-storage-upload-images" => [
+		                "title" => "Upload Images",
+		                "description" => "Upload image files to cloud storage.",
+		                "display-order" => 10,
+		                "type" => "checkbox",
+		                "default" => true
+	                ],
+	                "mcloud-storage-upload-videos" => [
+		                "title" => "Upload Video Files",
+		                "description" => "Upload video files to cloud storage.",
+		                "display-order" => 10,
+		                "type" => "checkbox",
+		                "default" => true
+	                ],
+	                "mcloud-storage-upload-audio" => [
+		                "title" => "Upload Audio Files",
+		                "description" => "Upload audio files to cloud storage.",
+		                "display-order" => 10,
+		                "type" => "checkbox",
+		                "default" => true
+	                ],
+	                "mcloud-storage-upload-documents" => [
+		                "title" => "Upload Documents",
+		                "description" => "Upload non-image files such as Word documents, PDF files, zip files, etc.",
+		                "display-order" => 10,
+		                "type" => "checkbox",
+		                "default" => true
+	                ],
                     "mcloud-storage-ignored-mime-types" => [
                         "title" => "Ignored MIME Types",
-                        "description" => "List of MIME types to ignore.  Any files with matching MIME types will not be uploaded.",
+                        "description" => "List of MIME types to ignore.  Any files with matching MIME types will not be uploaded.  You can also use wildcards.  For example <code>image/*</code> would disable uploading for any image.",
                         "display-order" => 10,
                         "type" => "text-area"
                     ],

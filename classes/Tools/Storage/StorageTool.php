@@ -433,6 +433,7 @@ class StorageTool extends Tool
         if ( !$data ) {
             return $data;
         }
+        $originalData = $data;
         $imgixEnabled = apply_filters( 'media-cloud/imgix/enabled', false );
         $mime = ( isset( $data['ilab-mime'] ) ? $data['ilab-mime'] : null );
         if ( $mime ) {
@@ -477,7 +478,7 @@ class StorageTool extends Tool
         $old_path_base = $path_base;
         $old_file = $data['file'];
         
-        if ( $preserveFilePaths ) {
+        if ( $preserveFilePaths == 'replace' ) {
             $upload_path .= DIRECTORY_SEPARATOR . $path_base;
             $data['prefix'] = $path_base;
             $data['file'] = trim( str_replace( $path_base, '', $data['file'] ), DIRECTORY_SEPARATOR );
@@ -488,13 +489,14 @@ class StorageTool extends Tool
         }
         
         if ( !file_exists( $upload_path . DIRECTORY_SEPARATOR . $data['file'] ) ) {
-            return $data;
+            return $originalData;
         }
         if ( !$mime ) {
             $mime = wp_get_image_mime( $upload_path . DIRECTORY_SEPARATOR . $data['file'] );
         }
-        if ( $mime && in_array( $mime, StorageSettings::ignoredMimeTypes() ) ) {
-            return $data;
+        $ignoreMimeTypes = apply_filters( 'media-cloud/storage/ignore-mime-types', true );
+        if ( $mime && $ignoreMimeTypes && StorageSettings::mimeTypeIsIgnored( $mime ) ) {
+            return $originalData;
         }
         
         if ( $this->client && $this->client->enabled() ) {
@@ -749,7 +751,8 @@ class StorageTool extends Tool
         if ( !isset( $upload['file'] ) ) {
             return $upload;
         }
-        if ( isset( $upload['type'] ) && in_array( $upload['type'], StorageSettings::ignoredMimeTypes() ) ) {
+        $ignoreMimeTypes = apply_filters( 'media-cloud/storage/ignore-mime-types', true );
+        if ( isset( $upload['type'] ) && $ignoreMimeTypes && StorageSettings::mimeTypeIsIgnored( $upload['type'] ) ) {
             return $upload;
         }
         if ( $this->fileIsDisplayableImage( $upload['file'] ) ) {
@@ -760,12 +763,12 @@ class StorageTool extends Tool
         }
         $shouldHandle = apply_filters_deprecated(
             'ilab_s3_should_handle_upload',
-            [ false, $upload ],
+            [ true, $upload ],
             '3.0.0',
             'media-cloud/storage/should-handle-upload'
         );
         $shouldHandle = apply_filters( 'media-cloud/storage/should-handle-upload', $shouldHandle, $upload );
-        if ( !$shouldHandle && !StorageSettings::uploadDocuments() ) {
+        if ( !$shouldHandle ) {
             return $upload;
         }
         
