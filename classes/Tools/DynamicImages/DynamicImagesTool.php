@@ -13,6 +13,7 @@
 
 namespace ILAB\MediaCloud\Tools\DynamicImages;
 
+use ILAB\MediaCloud\Tools\Storage\StorageTool;
 use ILAB\MediaCloud\Tools\Tool;
 use ILAB\MediaCloud\Tools\ToolsManager;
 use function ILAB\MediaCloud\Utilities\arrayPath;
@@ -31,7 +32,9 @@ abstract class DynamicImagesTool extends Tool {
     protected $paramProps;
     protected $keepThumbnails;
     protected $imageQuality;
+
     protected $shouldCrop = false;
+
     protected $allSizes = null;
     protected $processedAttachments = [];
     protected $skipSizeParams = false;
@@ -273,6 +276,14 @@ abstract class DynamicImagesTool extends Tool {
      * @return mixed|string
      */
     public function getAttachmentURL($url, $post_id) {
+	    if (!empty(apply_filters('media-cloud/dynamic-images/skip-url-generation', false))) {
+		    /** @var StorageTool $storageTool */
+		    $storageTool = ToolsManager::instance()->tools['storage'];
+
+		    $result = $storageTool->getAttachmentURL($url, $post_id);
+		    return $result;
+	    }
+
         $res = $this->buildImage($post_id, 'full');
         if(!$res || !is_array($res)) {
             return $url;
@@ -294,6 +305,16 @@ abstract class DynamicImagesTool extends Tool {
      * @return array|bool
      */
     public function imageDownsize($fail, $id, $size) {
+	    if (!empty(apply_filters('media-cloud/dynamic-images/skip-url-generation', false))) {
+		    /** @var StorageTool $storageTool */
+		    $storageTool = ToolsManager::instance()->tools['storage'];
+
+		    $result = $storageTool->forcedImageDownsize($fail, $id, $size);
+		    return $result;
+        }
+
+		$this->shouldCrop = apply_filters('media-cloud/dynamic-images/should-crop', $this->shouldCrop);
+
         $result = $this->buildImage($id, $size);
         return $result;
     }
