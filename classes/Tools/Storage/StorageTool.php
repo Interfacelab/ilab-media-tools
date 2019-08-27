@@ -1208,6 +1208,13 @@ class StorageTool extends Tool
             }
         }
         
+        
+        if ( isset( $meta['filesize'] ) ) {
+            $bytes = intval( $meta['filesize'] );
+            $response['filesizeInBytes'] = $bytes;
+            $response['filesizeHumanReadable'] = size_format( $bytes );
+        }
+        
         return $response;
     }
     
@@ -2821,8 +2828,9 @@ class StorageTool extends Tool
             $s3Info['options']['params']['Expires'] = StorageSettings::expires();
         }
         $meta = [
-            'file' => $fileInfo->key(),
-            's3'   => $s3Info,
+            'file'     => $fileInfo->key(),
+            'filesize' => $fileInfo->length(),
+            's3'       => $s3Info,
         ];
         $post = wp_insert_post( [
             'post_author'    => get_current_user_id(),
