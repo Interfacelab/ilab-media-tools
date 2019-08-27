@@ -292,6 +292,22 @@ abstract class Tool {
         return Environment::Option("mcloud-tool-enabled-$this->toolName", $this->env_variable, false);
     }
 
+    private function notifyMissingDependencies($shouldBeEnabled, $toolId) {
+        $problemTool = $this->toolManager->tools[$toolId];
+        $problemToolName = $problemTool->toolInfo['name'];
+        $problemUrl = admin_url('admin.php?page=media-cloud-settings&tab='.$toolId);
+	    $toolUrl = admin_url('admin.php?page=media-cloud-settings&tab='.$this->toolInfo['id']);
+	    $settingsUrl = admin_url('admin.php?page=media-cloud');
+
+        if ($shouldBeEnabled) {
+            $message = "<a href='{$toolUrl}'>{$this->toolInfo['name']}</a> requires that <a href='{$problemUrl}'>$problemToolName</a> be enabled and working.  You can enable that feature <a href='{$settingsUrl}'>here</a>.";
+        } else {
+	        $message = "<a href='{$toolUrl}'>{$this->toolInfo['name']}</a> cannot work until <a href='{$problemUrl}'>$problemToolName</a> is disabled.  You can disable that feature <a href='{$settingsUrl}'>here</a>.";
+        }
+
+	    NoticeManager::instance()->displayAdminNotice('warning', $message, true, "media-cloud-{$this->toolInfo['id']}-bad-dep-{$toolId}", 1);
+    }
+
     /**
      * Determines if this tool is enabled or not
      */
@@ -305,6 +321,7 @@ abstract class Tool {
                 if (!is_array($dep) && (strpos($dep, '!') === 0)) {
                     $dep = trim($dep, '!');
                     if ($this->toolManager->toolEnvEnabled($dep)) {
+                        $this->notifyMissingDependencies(false, $dep);
                         return false;
                     }
                 }
@@ -328,6 +345,7 @@ abstract class Tool {
             	        continue;
                     } else {
                         if (!$this->toolManager->toolEnabled($dep)) {
+	                        $this->notifyMissingDependencies(true, $dep);
                             return false;
                         }
                     }
