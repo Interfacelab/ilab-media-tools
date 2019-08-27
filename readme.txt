@@ -1,11 +1,11 @@
 === Media Cloud for Amazon S3, Imgix, Google Cloud Storage, DigitalOcean Spaces and more ===
 Contributors: mediacloud, interfacelab
-Tags: uploads, amazon, s3, imgix, minio, google cloud storage, digital ocean spaces, wasabi, media, cdn, rekognition, cloudfront, images, crop, image editing, image editor, media library, offload, offload s3, filepicker, smush, ewww, imagify, shortpixel
+Tags: offload, amazon, s3, imgix, uploads, google cloud storage, digital ocean spaces, wasabi, minio, media, cdn, rekognition, cloudfront, images, crop, image editing, image editor, media library, offload, offload s3, filepicker, smush, ewww, imagify, shortpixel
 Requires at least: 4.4
 Tested up to: 5.2.2
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 3.1.5
+Stable tag: 3.1.6
 Requires PHP: 5.6.4
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -63,6 +63,7 @@ Compatible with Short Pixel, EWWW, Smush and Imagify image optimization plugins!
 * Cloud storage browser that allows you to import media to your media library from the cloud
 * Dynamic Images provides Imgix-like dynamic image generation directly in the plugin, no external service needed.
 * WPML, WooCommerce and Easy Digital Downloads integration
+* Blubrry Pod Casting, Ultimate Membership integrations
 * Push/pull your CSS and JS assets to the cloud and serve them from a CDN
 * Use Google Cloud Vision as a vision provider
 * Image size manager
@@ -107,17 +108,38 @@ No, I'm just one very enthusiastic customer.
 
 == Changelog ==
 
+= 3.1.6 =
+
+* More detailed release notes are available at: https://mediacloud.press/blog/media-cloud-3-1-6-released/
+* Ability to specify which type of media are uploaded to cloud storage or not, for example you can configure Media Cloud to only upload audio to cloud storage.
+* Ignored mime types in cloud storage settings now supports wildcards, eg `image/*` to disallow image uploads
+* Fix for Human Made S3 Uploads migration
+* Display relevant warnings for enabled tools that require another tool that is disabled
+* When uploading to cloud storage, file size is now recorded properly in attachment metadata
+* Updated documentation
+* Vision tool has a new option for forcing term counts to update when using tagging.  WordPress usually only counts "attached" attachments in term counts, but this option circumvents that.
+* LearnDash integration fixes font errors and allows remote images to be used in certificates (Pro Version)
+* Blubrry Pod Casting integration allows you to select media from the WordPress library when creating a new episode (Pro Version)
+* Fix for importer ignoring certain mime types (Pro Version)
+* Direct uploads no longer require Imgix or Dynamic Images to be enabled (Pro Version)
+* Ability to specify what kind of media is uploaded directy to cloud storage and which is uploaded to WordPress (Pro Version)
+* For Direct Uploads, ability to specify the maximum allowed upload size (Pro Version)
+* When performing a direct upload, Media Cloud first checks that the upload file name is unique, and if not, will add a unique part to the original file name.  (Pro Version)
+
 = 3.1.5 =
 
 * Added `migrateS3Uploads` command line command to migrate uploads from Human Made S3 Uploads plugin
 * Rewritten batch tool UI
 * Fix for srcset issues with Imgix.
 * Fix for system compatibilities test on certain systems.
-* Added ability to regenerate thumbnails even when Imgix or Dynamic Images is enabled, previously only available if either was turned off  (Premium verison).
+* Added ability to regenerate thumbnails even when Imgix or Dynamic Images is enabled, previously only available if either was turned off  (Premium Version).
 * Fixes for Backblaze
 * Fix for Dynamic Images showing a warning about an empty needle
 * Fix for Regenerate Image in the cloud info pop-up in the media grid
-
+* New! Import media from cloud storage into WordPress (Premium Version)
+* Ultimate Membership integration (Pro Version)
+* Added --skip-existing flag to the command line import command (Premium Version).
+* Added options for importing files via the cloud storage browser (Pro Version).
 
 = 3.1.3 =
 
