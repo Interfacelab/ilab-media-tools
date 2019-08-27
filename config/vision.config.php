@@ -83,6 +83,13 @@ return [
 						"type" => "checkbox",
 						"default" => false
 					],
+					"mcloud-vision-force-term-count" => [
+						"title" => "Force Term Count",
+						"description" => "By default, WordPress will not include an attachment in a term or category's count if it is not attached to anything.  Enabling this will force WordPress to include it in the term count.",
+						"display-order" => 10,
+						"type" => "checkbox",
+						"default" => false
+					],
 				]
 			]
 		]

@@ -16,14 +16,21 @@
 
 namespace ILAB\MediaCloud\Vision;
 
+use ILAB\MediaCloud\Utilities\Environment;
+
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
 abstract class VisionDriver {
     /** @var null|VisionConfig  */
     protected $config = null;
 
+    /** @var bool  */
+    protected $forceTermCount = false;
+
     public function __construct() {
         $this->config = new VisionConfig();
+
+        $this->forceTermCount = Environment::Option('mcloud-vision-force-term-count', null, false);
     }
 
 	/**
@@ -106,6 +113,13 @@ abstract class VisionDriver {
         }
 
         if (!empty($tagsToAdd)) {
+        	if ($this->forceTermCount) {
+		        global $wp_taxonomies;
+		        if (isset($wp_taxonomies[$tax])) {
+			        $wp_taxonomies[$tax]->update_count_callback = '_update_generic_term_count';
+		        }
+	        }
+
             wp_set_post_terms($postID, $tagsToAdd, $tax, true);
         }
     }
