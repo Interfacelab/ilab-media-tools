@@ -479,7 +479,7 @@ abstract class BatchTool implements BatchToolInterface {
     public function progressAction() {
         $data = BatchManager::instance()->stats(static::BatchIdentifier());
 
-        if ($data['running']) {
+        if (!$data['running']) {
 	        Tracker::trackView("Batch - Finish ".$this->title(), "/batch/".static::BatchIdentifier()."/finish");
         }
 
