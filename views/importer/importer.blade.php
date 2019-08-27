@@ -100,6 +100,7 @@
 
             importing: {{($status == 'running') ? 'true' : 'false'}},
             backgroundImport: {{ ($background) ? 'true' : 'false' }},
+            fromSelection: {{ ($fromSelection) ? 'true' : 'false' }},
 
             index: 0,
             currentPage: 0,
