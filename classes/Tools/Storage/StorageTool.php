@@ -1587,6 +1587,18 @@ class StorageTool extends Tool
             $url = image_downsize( $id, $data['size'] );
         }
         
+        
+        if ( $url === false ) {
+            $siteId = apply_filters( 'global_media.site_id', false );
+            
+            if ( $siteId != false ) {
+                switch_to_blog( $siteId );
+                $url = image_downsize( $id, $data['size'] );
+                restore_current_blog();
+            }
+        
+        }
+        
         if ( is_array( $url ) ) {
             $url = $url[0];
         }
@@ -2244,11 +2256,28 @@ class StorageTool extends Tool
             $postId = $post->ID;
         }
         $meta = wp_get_attachment_metadata( $postId );
+        $blogSwitched = false;
+        
+        if ( empty($meta) && is_multisite() ) {
+            $siteId = apply_filters( 'global_media.site_id', false );
+            
+            if ( $siteId !== false ) {
+                $postId = str_replace( "{$siteId}00000", "", $postId );
+                switch_to_blog( $siteId );
+                $meta = wp_get_attachment_metadata( $postId );
+                $blogSwitched = true;
+            }
+        
+        }
+        
         if ( empty($meta['s3']) ) {
             $meta = get_post_meta( $postId, 'ilab_s3_info', true );
         }
         
         if ( empty($meta) || empty($meta['s3']) ) {
+            if ( $blogSwitched ) {
+                restore_current_blog();
+            }
             ?>
             Not uploaded.
 			<?php 
@@ -2265,7 +2294,10 @@ class StorageTool extends Tool
         } else {
             $this->doRenderStorageinfoMetaDocument( $postId, $meta, $readOnly );
         }
-    
+        
+        if ( $blogSwitched ) {
+            restore_current_blog();
+        }
     }
     
     private function doRenderStorageinfoMetaDocument( $postId, $meta, $readOnly )
