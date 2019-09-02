@@ -1772,6 +1772,35 @@ class StorageTool extends Tool
                 Logger::info( "\tSkipping upload of {$filename} to S3.  Already exists." );
             }
             
+            $additionalPaths = apply_filters(
+                'as3cf_attachment_file_paths',
+                [
+                'file' => $upload_path . '/' . $filename,
+            ],
+                $id,
+                $data
+            );
+            
+            if ( isset( $additionalPaths['file-webp'] ) ) {
+                $webpPath = $additionalPaths['file-webp'];
+                $webpBasename = basename( $webpPath );
+                
+                if ( !$this->client->exists( $prefix . $webpBasename ) ) {
+                    $this->client->upload(
+                        $prefix . $webpBasename,
+                        $webpPath,
+                        StorageSettings::privacy(),
+                        StorageSettings::cacheControl(),
+                        StorageSettings::expires(),
+                        'image/webp'
+                    );
+                    if ( StorageSettings::deleteOnUpload() ) {
+                        unlink( $webpPath );
+                    }
+                }
+            
+            }
+            
             $options = [];
             $params = [];
             if ( !empty(StorageSettings::cacheControl()) ) {
