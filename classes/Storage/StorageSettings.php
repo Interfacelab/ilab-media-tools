@@ -133,6 +133,13 @@ final class StorageSettings {
 		if(!empty($expires)) {
 			$this->expires = gmdate('D, d M Y H:i:s \G\M\T', time() + ($expires * 60));
 		}
+
+		if (is_multisite() && is_network_admin() && empty($this->prefixFormat)) {
+			$rootSiteName = get_network()->site_name;
+			$adminUrl = network_admin_url('admin.php?page=media-cloud-settings&tab=storage#upload-handling');
+
+			NoticeManager::instance()->displayAdminNotice('warning', "You are using Multisite WordPress but have not set a custom upload directory.  Your root site, <strong>'{$rootSiteName}'</strong> will be uploading to the root of your cloud storage which may not be desirable.  It's recommended that you set the Upload Directory to <code>sites/@{site-id}/@{date:Y/m}</code> in <a href='{$adminUrl}'>Cloud Storage</a> settings.", true, 'mcloud-multisite-missing-upload-path');
+		}
 	}
 
 	/**
