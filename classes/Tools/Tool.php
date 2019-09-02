@@ -490,6 +490,9 @@ abstract class Tool {
 	                        case 'custom':
 		                        $this->registerCustomFieldSetting($option,'__CUSTOMREMOVE__',$group,$optionInfo['callback'],$description, $conditions);
 		                        break;
+	                        case 'sites':
+		                        $this->registerSiteSelectSetting($option,$optionInfo['title'],$group,$description, $conditions);
+		                        break;
                         }
                     }
                 }
