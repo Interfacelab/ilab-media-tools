@@ -108,9 +108,6 @@ final class ToolsManager
                 }
             }
         }
-        if ( empty(static::$registeredTools['troubleshooting']) ) {
-            $this->tools['troubleshooting'] = new SystemCompatibilityTool( 'troubleshooting', static::$registeredTools['troubleshooting'], $this );
-        }
         
         if ( is_multisite() ) {
             add_action( 'network_admin_menu', function () {
@@ -184,6 +181,14 @@ final class ToolsManager
             }
         }
         
+        if ( !extension_loaded( 'mbstring' ) ) {
+            NoticeManager::instance()->displayAdminNotice(
+                'warning',
+                "Media Cloud recommends that the <code>mbstring</code> PHP extension be installed and activated.",
+                true,
+                'mcloud-no-mbstring'
+            );
+        }
         add_action( 'admin_enqueue_scripts', function () {
             wp_enqueue_script(
                 'ilab-settings-js',
@@ -263,8 +268,8 @@ final class ToolsManager
             return;
         }
         static::$booted = true;
-        global  $media_cloud_licensing ;
         Environment::Boot();
+        
         // Register Tools
         ToolsManager::registerTool( "storage", include ILAB_CONFIG_DIR . '/storage.config.php' );
         ToolsManager::registerTool( "imgix", include ILAB_CONFIG_DIR . '/imgix.config.php' );
@@ -277,6 +282,7 @@ final class ToolsManager
             ToolsManager::registerTool( "opt-in", include ILAB_CONFIG_DIR . '/opt-in.config.php' );
         }
         do_action( 'media-cloud/tools/register-tools' );
+        
         // Make sure the NoticeManager is initialized
         NoticeManager::instance();
         // Get the party started
@@ -313,35 +319,46 @@ final class ToolsManager
         $networkAdminMenu = false;
         $isNetworkModeAdmin = false;
         $isLocal = true;
+        $showMenu = true;
         
-        if ( $isLocal || $isNetworkModeAdmin ) {
-            add_menu_page(
-                'Settings',
-                'Media Cloud',
-                'manage_options',
-                'media-cloud',
-                [ $this, 'renderFeatureSettings' ],
-                'data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjA0OCAxNzkyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwYXRoIGZpbGw9ImJsYWNrIiBkPSJNMTk4NCAxMTUycTAgMTU5LTExMi41IDI3MS41dC0yNzEuNSAxMTIuNWgtMTA4OHEtMTg1IDAtMzE2LjUtMTMxLjV0LTEzMS41LTMxNi41cTAtMTMyIDcxLTI0MS41dDE4Ny0xNjMuNXEtMi0yOC0yLTQzIDAtMjEyIDE1MC0zNjJ0MzYyLTE1MHExNTggMCAyODYuNSA4OHQxODcuNSAyMzBxNzAtNjIgMTY2LTYyIDEwNiAwIDE4MSA3NXQ3NSAxODFxMCA3NS00MSAxMzggMTI5IDMwIDIxMyAxMzQuNXQ4NCAyMzkuNXoiLz48L3N2Zz4='
-            );
-            add_submenu_page(
-                'media-cloud',
-                'Media Cloud Tools',
-                'Features',
-                'manage_options',
-                'media-cloud',
-                [ $this, 'renderFeatureSettings' ]
-            );
-        } else {
-            add_menu_page(
-                'Settings',
-                'Media Cloud',
-                'manage_options',
-                'media-cloud',
-                [ $this, 'renderMultisiteLanding' ],
-                'data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjA0OCAxNzkyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwYXRoIGZpbGw9ImJsYWNrIiBkPSJNMTk4NCAxMTUycTAgMTU5LTExMi41IDI3MS41dC0yNzEuNSAxMTIuNWgtMTA4OHEtMTg1IDAtMzE2LjUtMTMxLjV0LTEzMS41LTMxNi41cTAtMTMyIDcxLTI0MS41dDE4Ny0xNjMuNXEtMi0yOC0yLTQzIDAtMjEyIDE1MC0zNjJ0MzYyLTE1MHExNTggMCAyODYuNSA4OHQxODcuNSAyMzBxNzAtNjIgMTY2LTYyIDEwNiAwIDE4MSA3NXQ3NSAxODFxMCA3NS00MSAxMzggMTI5IDMwIDIxMyAxMzQuNXQ4NCAyMzkuNXoiLz48L3N2Zz4='
-            );
+        if ( is_multisite() ) {
+            $hideMenu = Environment::Option( 'media-cloud-network-hide', null, false );
+            if ( $hideMenu && !is_network_admin() ) {
+                $showMenu = false;
+            }
         }
         
+        if ( $showMenu ) {
+            
+            if ( $isLocal || $isNetworkModeAdmin ) {
+                add_menu_page(
+                    'Settings',
+                    'Media Cloud',
+                    'manage_options',
+                    'media-cloud',
+                    [ $this, 'renderFeatureSettings' ],
+                    'data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjA0OCAxNzkyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwYXRoIGZpbGw9ImJsYWNrIiBkPSJNMTk4NCAxMTUycTAgMTU5LTExMi41IDI3MS41dC0yNzEuNSAxMTIuNWgtMTA4OHEtMTg1IDAtMzE2LjUtMTMxLjV0LTEzMS41LTMxNi41cTAtMTMyIDcxLTI0MS41dDE4Ny0xNjMuNXEtMi0yOC0yLTQzIDAtMjEyIDE1MC0zNjJ0MzYyLTE1MHExNTggMCAyODYuNSA4OHQxODcuNSAyMzBxNzAtNjIgMTY2LTYyIDEwNiAwIDE4MSA3NXQ3NSAxODFxMCA3NS00MSAxMzggMTI5IDMwIDIxMyAxMzQuNXQ4NCAyMzkuNXoiLz48L3N2Zz4='
+                );
+                add_submenu_page(
+                    'media-cloud',
+                    'Media Cloud Tools',
+                    'Features',
+                    'manage_options',
+                    'media-cloud',
+                    [ $this, 'renderFeatureSettings' ]
+                );
+            } else {
+                add_menu_page(
+                    'Settings',
+                    'Media Cloud',
+                    'manage_options',
+                    'media-cloud',
+                    [ $this, 'renderMultisiteLanding' ],
+                    'data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjA0OCAxNzkyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwYXRoIGZpbGw9ImJsYWNrIiBkPSJNMTk4NCAxMTUycTAgMTU5LTExMi41IDI3MS41dC0yNzEuNSAxMTIuNWgtMTA4OHEtMTg1IDAtMzE2LjUtMTMxLjV0LTEzMS41LTMxNi41cTAtMTMyIDcxLTI0MS41dDE4Ny0xNjMuNXEtMi0yOC0yLTQzIDAtMjEyIDE1MC0zNjJ0MzYyLTE1MHExNTggMCAyODYuNSA4OHQxODcuNSAyMzBxNzAtNjIgMTY2LTYyIDEwNiAwIDE4MSA3NXQ3NSAxODFxMCA3NS00MSAxMzggMTI5IDMwIDIxMyAxMzQuNXQ4NCAyMzkuNXoiLz48L3N2Zz4='
+                );
+            }
+        
+        }
         add_settings_section(
             'ilab-media-features',
             'Media Cloud Features',
@@ -695,6 +712,7 @@ final class ToolsManager
             'manager'  => $this,
             'sections' => $sections,
         ] ) ;
+    
     }
     
     public function renderSupport()
@@ -711,7 +729,7 @@ final class ToolsManager
             'networkMode' => Environment::NetworkMode(),
             'tools'       => $this->tools,
             'manager'     => $this,
-        ] ) ;
+        ] ) ;    
     }
     
     public function renderNetworkSettings()
