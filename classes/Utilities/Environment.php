@@ -85,11 +85,10 @@ final class Environment {
 
 		foreach($envVariableName as $envVariable) {
 			if (defined($envVariable)) {
-				$envval = constant($envVariable);
-			} else {
-				$envval = getenv($envVariable);
+				return constant($envVariable);
 			}
 
+			$envval = getenv($envVariable);
 			if ($envval !== false) {
 				return $envval;
 			}
