@@ -47,6 +47,7 @@ return [
 			'class' => "\\ILAB\\MediaCloud\\Storage\\Driver\\S3\\S3Storage",
 			'config' => '/storage/s3.config.php',
 			'help' => [
+				[ 'title' => 'Watch Tutorial', 'url' => 'https://www.youtube.com/watch?v=kjFCACrPRtU' ],
 				[ 'title' => 'Read Documentation', 'url' => admin_url('admin.php?page=media-cloud-docs&doc-page=cloud-storage/setup/amazon-s3') ],
 			]
 		],
