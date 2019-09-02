@@ -25,7 +25,7 @@ final class View {
     }
 
     private static function getTempDir() {
-        $temp = Environment::Option(null, 'ILAB_MEDIA_CLOUD_VIEW_CACHE', null);
+        $temp = Environment::Option(null, ['MCLOUD_VIEW_CACHE', 'ILAB_MEDIA_CLOUD_VIEW_CACHE'], null);
         if (!empty($temp)) {
             return trailingslashit($temp);
         }
