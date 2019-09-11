@@ -15,7 +15,7 @@ When you've done all that, click on *Add Permissions*
 
 ![image.png](https://i.imgur.com/w4IAAYl.png){.responsive}
 
-### Step 1.2 - Role Permissions
+### Step 1.2 - Role Permissions 
 A dialog window will appear that will allow us to assign the relevant permissions to our new role.  To make it easier, filter the list of permissions to any role that has *Storage* in the title.
 
 Once you've filtered the permissions, add the following permissions to our new role by click on the checkbox next to it.  You will want to add the following:
@@ -103,6 +103,13 @@ Click on **Permissions** and then click on **Add members**.
 In the modal dialog that appears, simply enter the name of the user we created in Step 2 and then select the role we created in Step 1.  Click on **Add** to finish.
 
 ![image.png](https://i.imgur.com/uG6v9Ft.png){.responsive}
+
+## Step 3.4 - Allow public access (Optional)
+If you are using a bucket with the 'Bucket Policy Only' option set, you need to grant permission to access the items publicly. 
+
+Click on **Permissions** and then click on **Add members**.
+
+In the modal dialog that appears, enter `allUsers`, and select the `Storage Object Viewer` option. Click **Save**
 
 We are now done setting things up in Google Cloud.  The next step is setting up Media Cloud.
 
