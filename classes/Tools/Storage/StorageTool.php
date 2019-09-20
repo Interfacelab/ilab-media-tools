@@ -1368,12 +1368,14 @@ class StorageTool extends Tool {
 	                $textSize = null;
 	                $cleanedUrl = null;
                     $size = 'full';
+                    $sizePrefix = '-';
+                    $sizeSeparator = 'x';
 
-                    if (preg_match('/(-[0-9x]+)\.(?:jpg|gif|png)/m', $matchedUrl, $sizeMatches)) {
+                    if (preg_match("/({$sizePrefix}\d+{$sizeSeparator}\d+)\.(?:jpg|gif|png)/mi", $matchedUrl, $sizeMatches)) {
                         $cleanedUrl = str_replace($sizeMatches[1], '', $matchedUrl);
 	                    $id = attachment_url_to_postid($cleanedUrl);
-                        $textSize = trim($sizeMatches[1], '-');
-                        $size = explode('x', $textSize);
+                        $textSize = trim($sizeMatches[1], $sizePrefix);
+                        $size = explode($sizeSeparator, $textSize);
                     } else {
                         $id = attachment_url_to_postid($matchedUrl);
                     }
