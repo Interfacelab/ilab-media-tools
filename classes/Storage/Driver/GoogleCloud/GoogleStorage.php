@@ -348,7 +348,7 @@ class GoogleStorage implements StorageInterface {
 		}
 
 		$url = $object->gcsUri();
-		$url = str_replace('gs://',static::defaultDownloadUrl().'/', $url);
+		$url = str_replace('gs://', static::defaultDownloadUrl().'/', $url);
 
 		return $url;
 	}
@@ -378,7 +378,7 @@ class GoogleStorage implements StorageInterface {
 		$type = $info['contentType'];
 
 		$url = $object->gcsUri();
-		$url = str_replace('gs://','https://'.static::defaultDownloadUrl().'/', $url);
+		$url = str_replace('gs://', static::defaultDownloadUrl().'/', $url);
 
 		$presignedUrl = $object->signedUrl(new Timestamp(new \DateTime("+{$this->presignedURLExpiration} minutes")));
 
@@ -550,7 +550,7 @@ class GoogleStorage implements StorageInterface {
 
 		$object = $this->client->bucket($this->bucket)->object($key);
 		$url = $object->gcsUri();
-		$url = str_replace('gs://','https://'.static::defaultDownloadUrl().'/', $url);
+		$url = str_replace('gs://', static::defaultDownloadUrl().'/', $url);
 		return $url;
 	}
 	//endregion
