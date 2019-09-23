@@ -75,7 +75,7 @@ class GoogleStorage implements StorageInterface {
 			'ILAB_CLOUD_BUCKET'
 		]);
 
-		$credFile = Environment::Option(null, ['ILAB_CLOUD_GOOGLE_CREDENTIALS', 'MCLOUD_GOOGLE_CREDENTIALS_FILE']);
+		$credFile = Environment::Option('mcloud-storage-google-credentials-file', 'ILAB_CLOUD_GOOGLE_CREDENTIALS');
 		if (!empty($credFile)) {
 			if (file_exists($credFile)) {
 				$this->credentials = json_decode(file_get_contents($credFile), true);
