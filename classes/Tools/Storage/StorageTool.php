@@ -157,7 +157,7 @@ class StorageTool extends Tool
                         add_action( 'shortpixel_after_restore_image', [ $this, 'handleImageOptimizer' ] );
                     } else {
                         
-                        if ( $key == 'smush' ) {
+                        if ( $key == 'smush' || $key == 'smush_pro' ) {
                             add_action(
                                 'wp_smush_image_optimised',
                                 [ $this, 'handleSmushImageOptimizer' ],
