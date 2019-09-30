@@ -3011,7 +3011,11 @@ class StorageTool extends Tool
     
     public function handleSmushImageOptimizer( $postId, $stats )
     {
-        $this->handleImageOptimizer( $postId );
+        // wp_smush_image_optimised runs inside of a wp_update_attachment_metadata
+        // filter hook, so any metadata written by processImport will be overwritten.
+        // We'll use the standard handleUpdateAttachmentMetadata() method to handle
+        // the upload instead.
+        $this->processingOptimized = true;
     }
     
     public function handleImagifyImageOptimizer( $postId, $data )
