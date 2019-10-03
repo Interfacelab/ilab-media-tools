@@ -20,6 +20,7 @@ use ILAB\MediaCloud\Utilities\Environment;
 use ILAB\MediaCloud\Utilities\NoticeManager;
 use function ILAB\MediaCloud\Utilities\arrayPath;
 use ILAB\MediaCloud\Utilities\Tracker;
+use function ILAB\MediaCloud\Utilities\vomit;
 
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
@@ -53,9 +54,6 @@ abstract class Tool {
 	/** @var bool Only display the settings page when the tool is enabled */
     protected $only_when_enabled;
 
-    /** @var BatchTool[] List of batch tools for this tool */
-    protected $batchTools = [];
-
     protected $actions = [];
 
     /** @var bool Determines if settings did change. */
@@ -85,7 +83,11 @@ abstract class Tool {
                 if (!method_exists($this, $action['method'])) {
                     unset($this->actions[$key]);
                 } else {
-                    add_action('wp_ajax_'.str_replace('-', '_', $key), [$this, $action['method']]);
+                    $actionKey = str_replace('-', '_', $key);
+                    add_action('wp_ajax_'.$actionKey, function() use ($actionKey, $action) {
+                        check_ajax_referer($actionKey, 'nonce');
+                        call_user_func([$this, $action['method']]);
+                    });
                 }
             }
 
@@ -112,12 +114,6 @@ abstract class Tool {
         if (isset($toolInfo['helpers'])) {
             foreach($toolInfo['helpers'] as $helper) {
                 require_once(ILAB_HELPERS_DIR.'/'.$helper);
-            }
-        }
-
-        if (isset($toolInfo['batchTools'])) {
-            foreach($toolInfo['batchTools'] as $className) {
-                $this->batchTools[] = new $className($this);
             }
         }
     }
@@ -236,9 +232,6 @@ abstract class Tool {
      * Perform any setup
      */
     public function setup() {
-        foreach($this->batchTools as $batchTool) {
-            $batchTool->setup();
-        }
     }
 
     /**
@@ -275,7 +268,19 @@ abstract class Tool {
         return $this->actions;
     }
 
+	/**
+     * Determines if the tool has user editable settings or not
+	 * @return bool
+	 */
     public function hasSettings() {
+        return false;
+    }
+
+	/**
+     * Determines if this tool installs, or wants to install, items in the admin menu bar
+	 * @return bool
+	 */
+    public function hasAdminBarMenu() {
         return false;
     }
 
@@ -358,63 +363,19 @@ abstract class Tool {
 
     //endregion
 
-    //region Batch Tools
+    //region Admin Menu Bar
 
-    /**
-     * Determines if this tool has any related batch tools
+	/**
+     * Allows a tool to add entries to the admin bar
      *
-     * @return bool
-     */
-    public function hasBatchTools() {
-        return (count($this->batchTools) > 0);
-    }
+	 * @param \WP_Admin_Bar $adminBar
+	 */
+    public function addAdminMenuBarItems($adminBar) {
 
-    /**
-     * Determines if this tool has any related batch tools that are enabled
-     * @return bool
-     */
-    public function hasEnabledBatchTools() {
-        /** @var BatchTool $batchTool */
-        foreach($this->batchTools as $batchTool) {
-            if ($batchTool->enabled() && (!empty($batchTool->toolInfo()))) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Returns information about related batch tools
-     * @return array
-     */
-    public function batchToolInfo() {
-        $results = [];
-
-        foreach($this->batchTools as $batchTool) {
-            $results[] = $batchTool->toolInfo();
-        }
-
-        return $results;
-    }
-
-    /**
-     * Returns information about related batch tools that are enabled
-     * @return array
-     */
-    public function enabledBatchToolInfo() {
-        $results = [];
-
-        foreach($this->batchTools as $batchTool) {
-            if ($batchTool->enabled()) {
-                $results[] = $batchTool->toolInfo();
-            }
-        }
-
-        return $results;
     }
 
     //endregion
+
 
     //region Settings
 
@@ -522,40 +483,6 @@ abstract class Tool {
      * @param $top_menu_slug
      */
     public function registerBatchToolMenu($tool_menu_slug, $networkMode = false, $networkAdminMenu = false) {
-        if($this->only_when_enabled && (!$this->enabled())) {
-            return;
-        }
-
-        if(empty($this->batchTools)) {
-            return;
-        }
-
-        if($networkMode && $networkAdminMenu) {
-            return;
-        }
-
-        $hasBatchTool = false;
-        foreach($this->batchTools as $batchTool) {
-            if($batchTool->enabled()) {
-                $hasBatchTool = true;
-                break;
-            }
-        }
-
-        if($hasBatchTool) {
-            ToolsManager::instance()->insertBatchToolSeparator();
-
-            foreach($this->batchTools as $batchTool) {
-                if($batchTool->enabled()) {
-                    if(empty($batchTool->menuTitle())) {
-                        continue;
-                    }
-
-                    ToolsManager::instance()->addMultisiteBatchTool($batchTool);
-                    add_submenu_page($tool_menu_slug, $batchTool->pageTitle(), $batchTool->menuTitle(), $batchTool->capabilityRequirement(), $batchTool->menuSlug(), [$batchTool, 'renderBatchTool']);
-                }
-            }
-        }
     }
 
     /**

@@ -44,7 +44,7 @@ class Logger {
 		$enabled = ($this->useWPCLI) ?: Environment::Option("mcloud-tool-enabled-debugging", 'ILAB_MEDIA_DEBUGGING_ENABLED', false);
 
 		if ($enabled) {
-			$level = Environment::Option('mcloud-debug-logging-level', null, ($this->useWPCLI) ? 'info' : 'none');
+			$level = Environment::Option('mcloud-debug-logging-level', null, 'info');
 
 			if ($level != 'none') {
 				$realLevel = MonologLogger::INFO;
@@ -108,6 +108,11 @@ class Logger {
         }
 
 		if ($this->logger) {
+			$pid = getmypid();
+			if (!empty($pid)) {
+				$message = "[$pid] ".$message;
+			}
+
 			$this->logger->addInfo($message, array_merge($this->context, $context));
 		}
 	}
@@ -118,6 +123,11 @@ class Logger {
         }
 
 		if ($this->logger) {
+			$pid = getmypid();
+			if (!empty($pid)) {
+				$message = "[$pid] ".$message;
+			}
+
 			$this->logger->addWarning($message, array_merge($this->context, $context));
 		}
 	}
@@ -128,13 +138,24 @@ class Logger {
         }
 
         if ($this->logger) {
-			$this->logger->addError($message, array_merge($this->context, $context));
+	        $pid = getmypid();
+	        if (!empty($pid)) {
+		        $message = "[$pid] ".$message;
+	        }
+
+	        $this->logger->addError($message, array_merge($this->context, $context));
 		}
 	}
 
 	protected function doStartTiming($message, $context=[]) {
 		if ($this->logger) {
 			$this->time[] = microtime(true);
+
+			$pid = getmypid();
+			if (!empty($pid)) {
+				$message = "[$pid] ".$message;
+			}
+
 			$this->logger->addInfo($message, array_merge($this->context, $context));
 		}
 	}
@@ -143,6 +164,11 @@ class Logger {
 		if ($this->logger) {
 			$time = array_pop($this->time);
 			$context['time'] = microtime(true) - $time;
+
+			$pid = getmypid();
+			if (!empty($pid)) {
+				$message = "[$pid] ".$message;
+			}
 
 			$this->logger->addInfo($message, array_merge($this->context, $context));
 		}

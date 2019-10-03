@@ -88,6 +88,11 @@
                     @if(!empty($section['title']))
                     <h2>
                         {{$section['title']}}
+                        @if(!empty($section['doc_beacon']))
+                            <a href="#" class="help-beacon" data-beacon-article-inline="{{$section['doc_beacon']}}">
+                                Help
+                            </a>
+                        @endif
                         @if (!empty($section['help']) && !empty($section['help']['data']) && (\ILAB\MediaCloud\Utilities\arrayPath($section['help'], 'target', 'footer') == 'header'))
                             <div class="ilab-section-title-doc-links">
                                 @include('base.fields.help', $section['help'])
@@ -112,15 +117,8 @@
                     @if(!empty($tool->actions()))
                         <div class="ilab-settings-batch-tools">
                             @foreach($tool->actions() as $key => $action)
-                            <a class="button ilab-ajax-button" data-ajax-action="{{str_replace('-','_',$key)}}" href="#">{{$action['name']}}</a>
+                            <a class="button ilab-ajax-button" data-ajax-action="{{str_replace('-','_',$key)}}" data-ajax-nonce="{{wp_create_nonce(str_replace('-','_',$key))}}" href="#">{{$action['name']}}</a>
                             @endforeach
-                        </div>
-                    @endif
-                    @if($tool->hasEnabledBatchTools())
-                        <div class="ilab-settings-batch-tools">
-                        @foreach($tool->enabledBatchToolInfo() as $batchTool)
-                        <a class="button" href="{{$batchTool['link']}}">{{$batchTool['title']}}</a>
-                        @endforeach
                         </div>
                     @endif
                     <?php submit_button(); ?>
@@ -132,9 +130,8 @@
         @endplan
     </div>
 
-    @track('mcloud-opt-in-crisp', 'pro')
-    @include('support.crisp')
-    @endtrack
+
+    @include('support.beacon')
 </div>
 <script>
     (function($){
@@ -201,11 +198,16 @@
             e.preventDefault();
 
             const data={
-                action: $(this).data('ajax-action')
+                action: $(this).data('ajax-action'),
+                nonce: $(this).data('ajax-nonce')
             };
 
             $.post(ajaxurl, data, function(response){
-                document.location.reload();
+                if (response.hasOwnProperty('message')) {
+                    alert(response.message);
+                } else {
+                    document.location.reload();
+                }
             });
 
             return false;
@@ -227,23 +229,18 @@
            });
         });
 
+        var currentLabels = [];
         var lastPinnedItems = [];
         var menu = $('#toplevel_page_media-cloud');
         var menuUL = menu.find('ul');
         var firstItem = menuUL.find('li.wp-first-item').next();
         var pinnedSeparator = null;
 
-        firstItem.next().find('span.ilab-admin-separator-pinned-settings').each(function(){
+        firstItem.next().next().find('span.ilab-admin-separator-settings').each(function(){
             if (pinnedSeparator == null) {
-                pinnedSeparator = firstItem.next();
+                pinnedSeparator = firstItem.next().next();
             }
         });
-
-        console.log(pinnedSeparator);
-
-        if (pinnedSeparator == null) {
-            pinnedSeparator = $('<li><a href="#"><span class="ilab-admin-separator-container"><span class="ilab-admin-separator-title">Pinned Settings</span><span class="ilab-admin-separator"></span></span></a></li>');
-        }
 
         $('a.tool-pin').each(function(){
             var pin = $(this);
@@ -254,7 +251,9 @@
             menuUL.find('li').each(function(){
                var item = $(this);
                item.find('a').each(function(){
-                   const regex = /\&tab\=(.*)$/gm;
+                   currentLabels.push($(this).text());
+
+                   const regex = /\page\=media\-cloud\-settings\-(.*)\&pinned=true$/gm;
                    var m = regex.exec($(this).attr('href'));
                    if ((m != null) && (m.length > 1)) {
                        var tool = m[m.length - 1];
@@ -286,10 +285,6 @@
                             lastPinnedItems.splice(lastPinnedItems.indexOf(pinItem), 1);
                         }
 
-                        if (lastPinnedItems.length == 0) {
-                            pinnedSeparator.remove();
-                        }
-
                         if (pinItem) {
                             pinItem.remove();
                             pinItem = null;
@@ -297,11 +292,13 @@
 
                         pin.removeClass('pinned');
                     } else {
-                        if (lastPinnedItems.length == 0) {
-                            pinnedSeparator.insertAfter(firstItem);
+                        pin.addClass('pinned');
+
+                        if (currentLabels.indexOf(pinToolTitle) != -1) {
+                            return;
                         }
 
-                        pinItem = $('<li id="pinned-tool-'+pinToolName+'"><a href="admin.php?page=media-cloud-settings&tab='+pinToolName+'" aria-current="page">'+pinToolTitle+'</a></li>');
+                        pinItem = $('<li id="pinned-tool-'+pinToolName+'"><a href="admin.php?page=media-cloud-settings-'+pinToolName+'" aria-current="page">'+pinToolTitle+'</a></li>');
 
                         if (lastPinnedItems.length > 0) {
                             pinItem.insertAfter(lastPinnedItems[lastPinnedItems.length - 1]);
@@ -310,8 +307,6 @@
                         }
 
                         lastPinnedItems.push(pinItem);
-
-                        pin.addClass('pinned');
                     }
                 });
 

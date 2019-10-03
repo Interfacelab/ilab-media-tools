@@ -15,5 +15,7 @@
         @include('base/upgrade')
         @endplan
     </div>
+
+    @include('support.beacon')
 </div>
 

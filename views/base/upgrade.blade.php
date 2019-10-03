@@ -12,6 +12,7 @@ if (!empty($hideBug)) {
     <div class="upgrade-interior">
         <h2>Upgrade to Media Cloud Premium</h2>
         <ul>
+            <li>Migrate your existing WordPress media library to {{\ILAB\MediaCloud\Storage\StorageManager::currentDriverName()}}</li>
             <li>Easily manage your theme's image sizes</li>
             <li>Built-in dynamic image generation</li>
             <li>Image moderation with Google Vision</li>
@@ -20,6 +21,7 @@ if (!empty($hideBug)) {
             <li>Built-in {{\ILAB\MediaCloud\Storage\StorageManager::currentDriverName()}} storage browser (Pro)</li>
             <li>Import media from {{\ILAB\MediaCloud\Storage\StorageManager::currentDriverName()}} (Pro)</li>
             <li>WPML, WooCommerce, Easy Digital Downloads, WP Job Manager integration (Pro)</li>
+            <li>plus <a href="https://mediacloud.press/comparison?utm_source=mediacloud-free&utm_medium=in-app&utm_campaign=mediacloud-free" target="_blank">more awesome features!</a></li>
         </ul>
         <div class="button-container">
            <a href="{{admin_url('admin.php?page=media-cloud-pricing')}}">Upgrade Now!</a>

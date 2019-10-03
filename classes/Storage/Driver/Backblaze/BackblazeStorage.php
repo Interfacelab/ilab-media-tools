@@ -184,7 +184,11 @@ class BackblazeStorage implements StorageInterface, AuthCacheInterface {
 		return true;
 	}
 
-    public function client() {
+	public function settingsError() {
+		return $this->settingsError;
+	}
+
+	public function client() {
         if ($this->client == null) {
             $this->client = $this->getClient();
         }

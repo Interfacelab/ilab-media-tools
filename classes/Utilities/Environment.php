@@ -186,4 +186,35 @@ final class Environment {
             }
         }
     }
+
+	/**
+	 * Fetches a wordpress option directly from the database.
+	 * @param $name
+	 * @param $default
+	 *
+	 * @return mixed
+	 */
+    public static function WordPressOption($name, $default = null) {
+	    global $wpdb;
+
+	    if (is_multisite()) {
+		    $network_id = get_current_network_id();
+
+		    $row = $wpdb->get_row( $wpdb->prepare( "SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = %s AND site_id = %d", $name, $network_id ) );
+		    if (!is_object($row)) {
+			    $val = $default;
+		    } else {
+		        $val =  maybe_unserialize($row->meta_value);
+		    }
+	    } else {
+		    $row = $wpdb->get_row($wpdb->prepare( "SELECT option_value FROM $wpdb->options WHERE option_name = %s LIMIT 1", $name));
+		    if (!is_object($row)) {
+			    $val = $default;
+		    } else {
+		        $val = maybe_unserialize($row->option_value);
+		    }
+	    }
+
+	    return $val;
+    }
 }

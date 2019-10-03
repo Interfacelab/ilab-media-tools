@@ -94,6 +94,12 @@ interface StorageInterface {
 	public function enabled();
 
 	/**
+	 * Flag that indicates if the storage interface has a settings error which prevents it from working.
+	 * @return bool
+	 */
+	public function settingsError();
+
+	/**
 	 * Validates settings.
 	 *
      * @param ErrorCollector|null $errorCollector

@@ -29,4 +29,10 @@
         </div>
     </div>
 </div>
+
+@include('support.silent-beacon')
+
 @yield('script')
+<script>
+    MediaBox('.mediabox');
+</script>

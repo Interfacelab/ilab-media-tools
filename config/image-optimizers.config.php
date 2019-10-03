@@ -15,7 +15,7 @@ if (!defined('ABSPATH')) { header('Location: /'); die; }
 return [
 	"shortpixel" => "shortpixel-image-optimiser/wp-shortpixel.php",
 	"smush" => "wp-smushit/wp-smush.php",
-    "smush_pro" => "wp-smush-pro/wp-smush.php",
+	"smush_pro" => "wp-smush-pro/wp-smush.php",
 	"ewww" => "ewww-image-optimizer/ewww-image-optimizer.php",
 	"imagify" => "imagify/imagify.php",
 	"kraken" => "kraken-image-optimizer/kraken-image-optimizer.php",

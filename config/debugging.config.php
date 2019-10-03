@@ -31,7 +31,7 @@ return [
 						"title" => "Logging Level",
 						"description" => "The logging level to use. To disable logging for Media Cloud, set it to <code>None</code>.",
 						"type" => "select",
-						"default" => "none",
+						"default" => "info",
 						"options" => [
 							"none" => "None",
 							"info" => "Info",
@@ -43,6 +43,9 @@ return [
 						"title" => "Maximum Database Entries",
 						"description" => "The maximum number of log entries to keep in the database.  The default is 1000.",
 						"type" => "number",
+						"step" => 1,
+						"min" => 100,
+						"max" => 10000,
                         "default" => 1000
 					],
 				]

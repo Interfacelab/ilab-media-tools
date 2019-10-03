@@ -101,6 +101,7 @@ class GoogleStorage implements StorageInterface {
 
 		$this->useBucketPolicyOnly = Environment::Option('mcloud-storage-bucket-policy-only', null, false);
 
+
 		$this->client = $this->getClient();
 	}
 	//endregion
@@ -135,6 +136,7 @@ class GoogleStorage implements StorageInterface {
 		if (!filter_var($url, FILTER_VALIDATE_URL)) {
 			$url = 'https://'.$url;
 		}
+
 		return $url;
 	}
 
@@ -228,7 +230,11 @@ class GoogleStorage implements StorageInterface {
 		return true;
 	}
 
-    public function client() {
+	public function settingsError() {
+		return $this->settingsError;
+	}
+
+	public function client() {
         if ($this->client == null) {
             $this->client = $this->getClient();
         }
@@ -305,29 +311,21 @@ class GoogleStorage implements StorageInterface {
 
 		$sourceObject = $bucket->object($sourceKey);
 
-		if(!$this->usesBucketPolicyOnly()) {
-			try {
-				$sourceObject->copy($bucket,[
-					'name' => $destKey,
-					'predefinedAcl' => self::GOOGLE_ACL[$acl],
-					'metadata'=> [
-						'cacheControl' => $cacheControl
-					]
-				]);
-			} catch (\Exception $ex) {
-				StorageException::ThrowFromOther($ex);
+		try {
+			$data = [
+				'name' => $destKey,
+				'metadata'=> [
+					'cacheControl' => $cacheControl
+				]
+			];
+
+			if (!$this->usesBucketPolicyOnly()) {
+				$data['predefinedAcl'] = self::GOOGLE_ACL[$acl];
 			}
-		} else {
-			try {
-				$sourceObject->copy($bucket,[
-					'name' => $destKey,
-					'metadata'=> [
-						'cacheControl' => $cacheControl
-					]
-				]);
-			} catch (\Exception $ex) {
-				StorageException::ThrowFromOther($ex);
-			}
+
+			$sourceObject->copy($bucket, $data);
+		} catch (\Exception $ex) {
+			StorageException::ThrowFromOther($ex);
 		}
 	}
 
@@ -357,18 +355,18 @@ class GoogleStorage implements StorageInterface {
 
 		try {
 			Logger::startTiming("Start Upload", ['file' => $key]);
-			if(!$this->usesBucketPolicyOnly()) {
-				$object = $bucket->upload(fopen($fileName, 'r'),[
-					'name' => $key,
-					'predefinedAcl' => self::GOOGLE_ACL[$acl],
-					'metadata'=> $metadata
-				]);
-			} else {
-				$object = $bucket->upload(fopen($fileName, 'r'),[
-					'name' => $key,
-					'metadata'=> $metadata
-				]);
+
+			$data = [
+				'name' => $key,
+				'metadata'=> $metadata
+			];
+
+			if (!$this->usesBucketPolicyOnly()) {
+				$data['predefinedAcl'] = self::GOOGLE_ACL[$acl];
 			}
+
+			$object = $bucket->upload(fopen($fileName, 'r'), $data);
+
 			Logger::endTiming("End Upload", ['file' => $key]);
 		} catch (\Exception $ex) {
 			Logger::error("Error uploading $fileName ...",['exception' => $ex->getMessage()]);
@@ -435,17 +433,17 @@ class GoogleStorage implements StorageInterface {
 
 		try {
 			Logger::startTiming("Start Create Directory", ['file' => $key]);
+
+			$data = [
+				'name' => $key
+			];
+
 			if (!$this->usesBucketPolicyOnly()) {
-				$object = $bucket->upload(null,[
-					'name' => $key,
-					'predefinedAcl' => self::GOOGLE_ACL['public-read']
-				]);
-			} else {
-				$object = $bucket->upload(null,[
-					'name' => $key,
-					'predefinedAcl' => self::GOOGLE_ACL['public-read']
-				]);
+				$data['predefinedAcl'] = self::GOOGLE_ACL['public-read'];
 			}
+
+			$bucket->upload(null, $data);
+
 			Logger::endTiming("End Create Directory", ['file' => $key]);
 
 			return true;
@@ -611,7 +609,7 @@ class GoogleStorage implements StorageInterface {
 			$options['cacheControl'] = $cacheControl;
 		}
 
-		if(!$this->usesBucketPolicyOnly()) {
+		if (!$this->usesBucketPolicyOnly()) {
 			$options['predefinedAcl'] = self::GOOGLE_ACL[$acl];
 		}
 

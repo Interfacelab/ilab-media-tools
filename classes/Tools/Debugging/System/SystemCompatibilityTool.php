@@ -15,21 +15,15 @@ namespace ILAB\MediaCloud\Tools\Debugging\System;
 
 use Carbon\CarbonInterval;
 use FasterImage\FasterImage;
-use GuzzleHttp\Psr7\Response;
 use ILAB\MediaCloud\Storage\StorageSettings;
-use ILAB\MediaCloud\Tasks\BatchManager;
-use ILAB\MediaCloud\Tools\Debugging\System\Batch\TestBatchProcess;
-use ILAB\MediaCloud\Tools\Debugging\System\Batch\TestBatchTool;
+use ILAB\MediaCloud\Tasks\TaskRunner;
 use ILAB\MediaCloud\Tools\Imgix\ImgixTool;
 use ILAB\MediaCloud\Tools\Storage\StorageTool;
 use ILAB\MediaCloud\Tools\Tool;
 use ILAB\MediaCloud\Tools\ToolsManager;
-use function ILAB\MediaCloud\Utilities\arrayPath;
-use ILAB\MediaCloud\Utilities\Environment;
 use ILAB\MediaCloud\Utilities\Logging\ErrorCollector;
 use ILAB\MediaCloud\Utilities\Tracker;
 use ILAB\MediaCloud\Utilities\View;
-use Psr\Http\Message\ResponseInterface;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
@@ -45,32 +39,28 @@ class SystemCompatibilityTool extends Tool {
 	const STEP_TEST_ACL = 4;
 	const STEP_TEST_DELETE = 5;
 	const STEP_TEST_BACKGROUND_CONNECTIVITY = 6;
-	const STEP_TEST_BACKGROUND_TASK = 7;
-	const STEP_TEST_IMGIX = 8;
+	const STEP_TEST_IMGIX = 7;
 
     public function __construct( $toolName, $toolInfo, $toolManager ) {
         parent::__construct( $toolName, $toolInfo, $toolManager );
 
-	    new TestBatchProcess();
-
         if ($this->enabled()) {
 	        add_action('wp_ajax_ilab_media_cloud_start_troubleshooting', [$this, 'startTroubleshooting']);
-	        add_action('wp_ajax_ilab_media_cloud_wait_troubleshooting', [$this, 'waitTroubleshooting']);
         }
 
+        if (is_admin()) {
+        	TaskRunner::init();
+        }
     }
 
-	public function registerHelpMenu($top_menu_slug, $networkMode = false, $networkAdminMenu = false) {
-		parent::registerHelpMenu($top_menu_slug);
-
-		if($this->enabled() && (($networkMode && $networkAdminMenu) || (!$networkMode && !$networkAdminMenu))) {
-			ToolsManager::instance()->insertHelpToolSeparator();
-			add_submenu_page($top_menu_slug, 'Media Cloud System Compatibility Test', 'System Test', 'manage_options', 'media-tools-troubleshooter', [
-				$this,
-				'renderTroubleshooter'
-			]);
-		}
-	}
+    public function registerMenu($top_menu_slug, $networkMode = false, $networkAdminMenu = false) {
+	    if($this->enabled() && (($networkMode && $networkAdminMenu) || (!$networkMode && !$networkAdminMenu))) {
+		    add_submenu_page($top_menu_slug, 'Media Cloud System Compatibility Test', 'System Check', 'manage_options', 'media-tools-troubleshooter', [
+			    $this,
+			    'renderTroubleshooter'
+		    ]);
+	    }
+    }
 
     public function enabled() {
         return true;
@@ -117,13 +107,6 @@ class SystemCompatibilityTool extends Tool {
 				    'index' => $step,
 				    'title' => 'Background Connectivity',
 				    'status' => 'Running tests ... This may take several minutes ...'
-			    ];
-			    break;
-		    case self::STEP_TEST_BACKGROUND_TASK:
-			    return [
-				    'index' => $step,
-				    'title' => 'Background Tasks',
-				    'status' => 'Running tests ... This may take several minutes ... '
 			    ];
 			    break;
 		    case self::STEP_TEST_IMGIX:
@@ -179,41 +162,18 @@ class SystemCompatibilityTool extends Tool {
         } else if ($step == self::STEP_TEST_BACKGROUND_CONNECTIVITY) {
 	        // Step 5 - Verify that the bulk importer process can work
 	        $this->testBackgroundConnectivity();
-        }  else if ($step == self::STEP_TEST_BACKGROUND_TASK) {
-	        // Step 5 - Verify that the bulk importer process can work
-	        $this->testBackgroundTasks();
-        } else if ($step == self::STEP_TEST_IMGIX) {
+        }  else if ($step == self::STEP_TEST_IMGIX) {
             // Step 6 - Test Imgix
             $this->testImgix();
         }
     }
 
-    public function waitTroubleshooting() {
-	    if (!is_admin()) {
-		    wp_send_json(['error' => 'Not an admin.']);
-	    }
-
-	    if (empty($_POST['step'])) {
-		    wp_send_json(['error' => 'Missing step.']);
-	    }
-
-	    $step = (int)$_POST['step'];
-
-	    if (($step < self::STEP_ENVIRONMENT) || ($step > self::STEP_TEST_IMGIX)) {
-		    wp_send_json(['error' => 'Invalid step.']);
-	    }
-
-	    if ($step == self::STEP_TEST_BACKGROUND_TASK) {
-		    $this->waitBackgroundTasks();
-	    } else {
-		    wp_send_json(['error' => 'Missing step.']);
-	    }
-    }
-
     private function calcTimeDrift() {
     	if (function_exists('socket_create')) {
 		    $sock = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
-		    socket_connect($sock, '0.pool.ntp.org', 123);
+		    socket_connect($sock, 'time.google.com', 123);
+
+		    socket_set_option($sock, SOL_SOCKET, SO_RCVTIMEO, ['sec' => 5, 'usec' => 0]);
 
 		    /* Send request */
 		    $msg = "\010" . str_repeat("\0", 47);
@@ -327,6 +287,28 @@ class SystemCompatibilityTool extends Tool {
 		    ];
 	    }
 
+	    if (defined('DISABLE_WP_CRON') && !empty(constant('DISABLE_WP_CRON'))) {
+		    $warnings = true;
+		    $info[] =[
+			    'type' => 'warning',
+			    'message' => "<code>DISABLE_WP_CRON</code> is enabled, which is often a good thing so long that WordPress's Cron is being triggered by the system's crontab or something like WPEngine's <a href='https://wpengine.com/support/wp-cron-wordpress-scheduling/' target='_blank'>WP Engine Alternate Cron</a> is enabled.  If WordPress's Cron is not being triggered, running background tasks will be slow and get 'stuck' a lot.  Read more about the best way of <a href='https://kinsta.com/knowledgebase/disable-wp-cron/' target='_blank'>setting up WordPress Cron</a>."
+		    ];
+	    } else {
+		    $warnings = true;
+		    $info[] =[
+			    'type' => 'warning',
+			    'message' => "WordPress Cron is enabled.  For better performance, consider disabling WordPress Cron and running it from the system crontab.  Read more about the best way of <a href='https://kinsta.com/knowledgebase/disable-wp-cron/' target='_blank'>setting up WordPress Cron</a>."
+		    ];
+	    }
+
+	    if (function_exists('xdebug_is_debugger_active') && xdebug_is_debugger_active()) {
+		    $warnings = true;
+		    $info[] =[
+			    'type' => 'warning',
+			    'message' => "XDebug is currently active, which may inhibit background processing from running properly."
+		    ];
+	    }
+
         $html = View::render_view('debug/system-info', [
 	        'title' => 'System Compatibility',
             'description' => 'Various aspects of your system that might have compatibility issues with Media Cloud',
@@ -336,12 +318,12 @@ class SystemCompatibilityTool extends Tool {
         ]);
 
         $data = [
-            'html' => $html
+            'html' => $html,
+	        'next' => $this->stepInfo(self::STEP_VALIDATE_CLIENT)
         ];
 
         if (!$errors) {
 	        Tracker::trackView("System Test - Environment - Success", "/system-test/environment/success");
-	        $data['next'] = $this->stepInfo(self::STEP_VALIDATE_CLIENT);
         } else {
 	        Tracker::trackView("System Test - Environment - Error", "/system-test/environment/error");
         }
@@ -506,47 +488,8 @@ class SystemCompatibilityTool extends Tool {
     private function testBackgroundConnectivity($attempts = 0, $mode = 'ssl', $timeoutOverride = false) {
 	    Tracker::trackView("System Test - Background Connectivity", "/system-test/background-connection");
 
-	    $errorCollector = new ErrorCollector();
-
-        $result = BatchManager::instance()->testConnectivity($errorCollector, $timeoutOverride);
-        if ($result !== true) {
-        	foreach($errorCollector->errors() as $error) {
-        		if (strpos($error, ' 60: SSL') !== false) {
-        			if ($attempts == 0) {
-				        Environment::UpdateOption('mcloud-storage-batch-verify-ssl', 'no');
-				        $this->testBackgroundConnectivity($attempts + 1, 'ssl');
-			        }
-
-        			return;
-		        } else if (strpos($error, ' 28: ') !== false) {
-        			if (in_array($mode, ['ssl', 'timeout'])) {
-        				if ($timeoutOverride === false) {
-					        $timeoutOverride = floatval(Environment::Option('mcloud-storage-batch-timeout', null, 0.01));
-				        }
-				        if ($timeoutOverride > 3) {
-					        Environment::UpdateOption('mcloud-storage-batch-skip-dns', 0.01);
-					        Environment::UpdateOption('mcloud-storage-batch-skip-dns-host', 'ip');
-
-					        $this->testBackgroundConnectivity(0, 'dns');
-				        } else {
-					        $timeoutOverride += 0.25;
-					        $this->testBackgroundConnectivity($attempts + 1, 'timeout', $timeoutOverride);
-				        }
-			        } else if ($mode == 'dns') {
-				        if ($timeoutOverride === false) {
-					        $timeoutOverride = floatval(Environment::Option('mcloud-storage-batch-timeout', null, 0.01));
-				        }
-
-				        if ($timeoutOverride < 5) {
-					        $timeoutOverride += 0.1;
-					        $this->testBackgroundConnectivity($attempts + 1, 'dns', $timeoutOverride);
-				        }
-			        }
-		        }
-	        }
-        }
-
-        if ($errorCollector->hasErrors()) {
+	    $result = TaskRunner::testConnectivity();
+        if (is_array($result)) {
 	        Tracker::trackView("System Test - Background Connectivity - Error", "/system-test/background-connection/error");
         } else {
 	        Tracker::trackView("System Test - Background Connectivity - Success", "/system-test/background-connection/success");
@@ -554,124 +497,28 @@ class SystemCompatibilityTool extends Tool {
 
         $batchSettings = admin_url('admin.php?page=media-cloud-settings&tab=batch-processing');
         $html = View::render_view('debug/trouble-shooter-step.php', [
-            'success' => !$errorCollector->hasErrors(),
+            'success' => !is_array($result),
             'title' => 'Background Connectivity',
             'success_message' => "Your WordPress server configuration supports loopback connections.",
             'error_message' => "Your WordPress server configuration does not support background processing.  The bulk importer will not work.  Try changing the <strong>Connection Timeout</strong> setting in <a href='$batchSettings'>Batch Processing Settings</a> to a higher value like 0.1 or 0.5.  Some plugins also can cause issues.",
-            'errors' => $errorCollector->errors(),
+            'errors' => (is_array($result)) ? $result : [],
 	        'hints' => [
+		        "Try changing the HTTP Client to Guzzle.",
 		        "Try changing the <strong>Connection Timeout</strong> and <strong>Timeout</strong> settings in the <a href='{$batchSettings}' target='_blank'>Batch Processing Settings</a>",
 		        "Some managed host providers have a misconfigured openssl and/or curl installations.  Try disabling <strong>Verify SSL</strong> in the <a href='{$batchSettings}' target='_blank'>Batch Processing Settings</a>",
 		        "DNS is also sometimes a problem on managed hosting providers.  Try turning off <strong>Skip DNS</strong> in the <a href='{$batchSettings}' target='_blank'>Batch Processing Settings</a>",
 	        ]
         ]);
 
-        $data = [
-            'html' => $html,
-	        'next' => $this->stepInfo(self::STEP_TEST_BACKGROUND_TASK)
-        ];
-
-        wp_send_json($data);
-    }
-
-    private function testBackgroundTasks() {
-	    Tracker::trackView("System Test - Background Tasks", "/system-test/background-tasks");
-
-	    BatchManager::instance()->setShouldCancel(TestBatchTool::BatchIdentifier(), true);
-	    call_user_func([TestBatchTool::BatchProcessClassName(), 'cancelAll']);
-
-
-		$ajaxurl = admin_url('admin-ajax.php');
-		$data = [
-			'action' => 'mcloud_system_testing_start'
-		];
-
-		$result = BatchManager::postRequest($ajaxurl,[
-			'cookies' => $_COOKIE,
-			'blocking' => true,
-			'body' => $data
-		],15);
-
-	    if (($result instanceof ResponseInterface) && ($result->getStatusCode() == 200)) {
-		    wp_send_json([
-			    'title' => 'Background Tasks',
-		    	'status' => 'Waiting for background test task to start ...',
-			    'wait' => self::STEP_TEST_BACKGROUND_TASK
-		    ]);
+	    if (!is_array($result)) {
+		    Tracker::trackView("System Test - Environment - Success", "/system-test/background-connection/success");
 	    } else {
-		    if (is_wp_error($result)) {
-			    /** @var \WP_Error $result */
-			    $msg = $result->get_error_message();
-		    } else if ($result instanceof \Exception) {
-			    /** @var \Exception $result */
-			    $msg = $result->getMessage();
-		    } else if ($result instanceof ResponseInterface) {
-				$msg = 'General server error.';
-		    }
-
-		    Tracker::trackView("System Test - Background Tasks - Error", "/system-test/background-tasks/error");
-
-		    $batchSettings = admin_url('admin.php?page=media-cloud-settings&tab=batch-processing');
-		    $html = View::render_view('debug/trouble-shooter-step.php', [
-			    'success' => false,
-			    'title' => 'Background Tasks',
-			    'error_message' => "Your WordPress server configuration does not support background tasks.  The bulk importer will not work.  Try changing the <strong>Connection Timeout</strong> setting in <a href='$batchSettings'>Batch Processing Settings</a> to a higher value like 0.1 or 0.5.  Some plugins also can cause issues.",
-			    'errors' => [$msg],
-			    'hints' => [
-				    "Try changing the <strong>Connection Timeout</strong> and <strong>Timeout</strong> settings in the <a href='{$batchSettings}' target='_blank'>Batch Processing Settings</a>",
-				    "Some managed host providers have a misconfigured openssl and/or curl installations.  Try disabling <strong>Verify SSL</strong> in the <a href='{$batchSettings}' target='_blank'>Batch Processing Settings</a>",
-				    "DNS is also sometimes a problem on managed hosting providers.  Try turning off <strong>Skip DNS</strong> in the <a href='{$batchSettings}' target='_blank'>Batch Processing Settings</a>",
-			    ]
-		    ]);
-
-		    $data = [
-			    'html' => $html
-		    ];
-
-		    wp_send_json($data);
-	    }
-    }
-
-    private function waitBackgroundTasks() {
-	    $data = BatchManager::instance()->stats(TestBatchTool::BatchIdentifier());
-
-	    if (!empty($data['running'])) {
-	    	$lastUpdate = arrayPath($data, 'lastUpdate', 0);
-	    	if (!empty($lastUpdate) && ($lastUpdate > 45)) {
-			    Tracker::trackView("System Test - Background Tasks - Error", "/system-test/background-tasks/error");
-
-			    $batchSettings = admin_url('admin.php?page=media-cloud-settings&tab=batch-processing');
-			    $html = View::render_view('debug/trouble-shooter-step.php', [
-				    'success' => false,
-				    'title' => 'Background Tasks',
-				    'error_message' => "Your WordPress server configuration does not support background tasks.  The bulk importer will not work with your current configuration.  Try changing the <strong>Connection Timeout</strong> setting in <a href='$batchSettings'>Batch Processing Settings</a> to a higher value like 0.1 or 0.5.  Some plugins can also cause issues.",
-			    ]);
-
-			    wp_send_json([
-			    	'html' => $html
-			    ]);
-		    }
-
-		    wp_send_json([
-			    'status' => "Running test background task ... processing {$data['current']} of {$data['total']} sample items.",
-			    'wait' => self::STEP_TEST_BACKGROUND_TASK
-		    ]);
+		    Tracker::trackView("System Test - Environment - Error", "/system-test/background-connection/error");
 	    }
 
-	    Tracker::trackView("System Test - Background Tasks - Success", "/system-test/background-tasks/success");
-
-	    $html = View::render_view('debug/trouble-shooter-step.php', [
-		    'success' => true,
-		    'title' => 'Test Background Tasks',
-		    'success_message' => "Your WordPress server configuration supports background tasks.",
-	    ]);
-
-
-	    $data = [
-	    	'html' => $html
-	    ];
-
-		wp_send_json($data);
+        wp_send_json([
+	        'html' => $html
+        ]);
     }
 
     private function testImgix() {

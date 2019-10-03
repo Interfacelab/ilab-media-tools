@@ -5,7 +5,7 @@ Requires at least: 4.4
 Tested up to: 5.2.2
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 3.1.7
+Stable tag: 3.2.0
 Requires PHP: 5.6.4
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -54,6 +54,7 @@ Compatible with Short Pixel, EWWW, Smush and Imagify image optimization plugins!
 * Advanced image cropping tool
 * Advanced image editing with saturation, contrast, auto-correct,
   sharpen, blur and more (only when integrated with Imgix)
+* Automatically import your settings from WP Offload Media and WP-Stateless
 
 = Premium Upgrade with Improved Support Options and More Features =
 
@@ -107,6 +108,33 @@ No, I'm just one very enthusiastic customer.
 
 
 == Changelog ==
+
+= 3.2.0 =
+
+* Activating Media Cloud will now import your WP Offload Media or WP-Stateless settings, making the transition as smooth as possible.
+* Improved import for media uploaded with WP Offload Media or WP-Stateless
+* New and improved background processing system, completely replaced the old error prone one
+* New Task Manager shows you all running background tasks and upcoming scheduled ones
+* Vastly improved Elementor integration
+* Fixed Smush Pro integration (thanks to Brett Porcelli!)
+* Asset push now queues uploads in the background instead of during page loads
+* Support for "Bucket Only Policy" with Google Cloud Storage (thanks to Wietse Muizelaar!)
+* Fix for environment variable MCLOUD_STORAGE_GOOGLE_CREDENTIALS_FILE (thanks to Wietse Muizelaar!)
+* When "Delete Uploaded Files" is enabled, deletes can be queued in the background to be deleted in the future.  Allowing other plugins to process the upload before being removed from the local server.
+* New "Clean Uploads" task removes media from the local uploads directory.
+* Fix for path handling during migration and imports
+* Fix for Vision where items were not being queued in a background task
+* Fix for upload paths using @{version} token
+* New integrated inline help system
+* If Assets are enabled, added entries to WordPress admin bar to update build version and clear asset cache
+* The `import` command line task renamed to `migrateToStorage`
+* Added new `importFromStorage` command line task
+* Added new `updateElementor` command line task
+* Ability to hide Task Manager on multisite sub-sites
+* Improved error reporting for invalid credentials
+* Fixed dreaded white screen of doom when invalid cloud storage credentials are supplied
+* Fix for blank settings pages in more restrictive server setups
+
 
 = 3.1.7 =
 

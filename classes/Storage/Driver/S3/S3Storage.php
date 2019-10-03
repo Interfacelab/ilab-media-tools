@@ -29,6 +29,7 @@ use ILAB\MediaCloud\Utilities\Logging\Logger;
 use ILAB\MediaCloud\Utilities\NoticeManager;
 use ILABAmazon\Credentials\CredentialProvider;
 use ILABAmazon\Exception\AwsException;
+use ILABAmazon\Exception\CredentialsException;
 use ILABAmazon\S3\PostObjectV4;
 use ILABAmazon\S3\S3Client;
 use ILABAmazon\S3\S3MultiRegionClient;
@@ -217,10 +218,33 @@ class S3Storage implements StorageInterface {
 		if($this->enabled()) {
 			$client = $this->getClient($errorCollector);
 
-			if($client) {
-				if($client->doesBucketExist($this->bucket)) {
-					$valid = true;
-				} else {
+			if (!empty($client)) {
+				$connectError = false;
+
+				try {
+					if($client->doesBucketExist($this->bucket)) {
+						$valid = true;
+					}
+				} catch (\Exception $ex) {
+					$connectError = true;
+					$valid = false;
+
+					if ($errorCollector) {
+						if ($ex instanceof CredentialsException) {
+							if ($this->useCredentialProvider) {
+								$errorCollector->addError("Your Amazon credentials are invalid.  You have enabled <strong>Use Credential Provider</strong> but it appears that isn't configured properly.  Either turn off that setting and provide an access key and secret, or double check your credential provider setup.");
+							} else {
+								$errorCollector->addError("Your Amazon credentials are invalid.  Verify that the access key, secret and bucket name are correct and try this test again.");
+							}
+						} else {
+							$errorCollector->addError("Error attempting to validate client settings.  The error was: ".$ex->getMessage());
+						}
+					}
+
+					Logger::error("Error insuring bucket exists.", ['exception' => $ex->getMessage()]);
+				}
+
+				if (empty($valid) && empty($connectError)) {
 					try {
 						Logger::info("Bucket does not exist, trying to list buckets.");
 
@@ -242,10 +266,18 @@ class S3Storage implements StorageInterface {
 
                             Logger::info("Bucket does not exist.");
                         }
-					}
-					catch(AwsException $ex) {
+					} catch(AwsException $ex) {
                         if ($errorCollector) {
-                            $errorCollector->addError("Error insuring that {$this->bucket} exists.  Message: ".$ex->getMessage());
+                        	$adminUrl = admin_url('admin.php?page=media-cloud-settings&tab=storage');
+	                        if ($ex->getAwsErrorCode() == 'SignatureDoesNotMatch') {
+		                        $errorCollector->addError("Your S3 credentials are invalid.  It appears that the <strong>Secret</strong> you specified is invalid.  Please double check <a href='$adminUrl'>your settings</a>.");
+	                        } else if ($ex->getAwsErrorCode() == 'InvalidAccessKeyId') {
+		                        $errorCollector->addError("Your S3 credentials are invalid.  It appears that the <strong>Access Key</strong> you specified is invalid.  Please double check <a href='$adminUrl'>your settings</a>.");
+	                        } else if ($ex->getAwsErrorCode() == 'AccessDenied') {
+		                        $errorCollector->addError("The <strong>Bucket</strong> you specified doesn't exist or you don't have access to it.  You may have also specified the wrong <strong>Region</strong>.  It's also possible that you don't have the correct permissions specified in your IAM policy.  Please set the <strong>Region</strong> to <strong>Automatic</strong> and double check the <strong>Bucket Name</strong> in <a href='$adminUrl'>your settings</a>.");
+	                        } else {
+		                        $errorCollector->addError($ex->getAwsErrorMessage());
+	                        }
                         }
 
                         Logger::error("Error insuring bucket exists.", ['exception' => $ex->getMessage()]);
@@ -277,17 +309,17 @@ class S3Storage implements StorageInterface {
 		}
 
 		if ($this->settingsError) {
-			$adminUrl = admin_url('admin.php?page=media-cloud-settings&tab=storage');
-			$testUrl = admin_url('admin.php?page=media-tools-troubleshooter');
-			NoticeManager::instance()->displayAdminNotice('error', "Your cloud storage settings are incorrect.  Please <a href='$adminUrl'>verify your settings</a> or run the <a href='$testUrl'>systems test</a> to troubleshoot the issue.");
-
 			return false;
 		}
 
 		return true;
 	}
 
-    public function client() {
+	public function settingsError() {
+    	return $this->settingsError;
+	}
+
+	public function client() {
         if ($this->client == null) {
             $this->client = $this->getClient();
         }
@@ -380,7 +412,6 @@ class S3Storage implements StorageInterface {
 		}
 
 		$s3 = new S3MultiRegionClient($config);
-
 		return $s3;
 	}
 
@@ -455,7 +486,6 @@ class S3Storage implements StorageInterface {
 		}
 
 		$s3 = new S3Client($config);
-
 		return $s3;
 	}
 

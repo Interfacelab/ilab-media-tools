@@ -50,6 +50,7 @@ return [
 		"groups" => [
 			"ilab-media-imgix-settings" => [
 				"title" => "Imgix Settings",
+				"doc_beacon" => '88',
 				"description" => "Required settings for getting the Imgix integration working.",
 				"options" => [
 					"mcloud-imgix-domains" => [
@@ -72,6 +73,7 @@ return [
 			],
 			"ilab-media-imgix-image-settings" => [
 				"title" => "Imgix Image Settings",
+				"doc_beacon" => '89',
 				"options" => [
 					"mcloud-imgix-default-quality" => [
 						"title" => "Lossy Image Quality",

@@ -26,10 +26,13 @@ final class Prefixer {
 
 	/** @var array */
 	private $versionedIds = [];
+
+	private $currentVersion = null;
 	//endregion
 
 	//region Constructor/Static Instance
 	private function __construct() {
+		$this->updateVersion();
 	}
 
 	/**
@@ -84,30 +87,16 @@ final class Prefixer {
 	}
 
 	/**
-	 * Gets an Offload S3 compatible object version string.
-	 *
-	 * @param int $id
-	 *
-	 * @return string|null
+	 * Updates the current version
 	 */
-	private function getObjectVersion($id = null) {
-
-		if(!empty($id) && !empty($this->versionedIds[$id])) {
-			return $this->versionedIds[$id];
-		}
-
+	private function updateVersion() {
 		$date_format = 'dHis';
 		// Use current time so that object version is unique
 		$time = current_time('timestamp');
 
 		$object_version = date($date_format, $time).'/';
 		$object_version = apply_filters('as3cf_get_object_version_string', $object_version);
-
-		if(!empty($id)) {
-			$this->versionedIds[$id] = $object_version;
-		}
-
-		return $object_version;
+		$this->currentVersion = $object_version;
 	}
 
 	/**
@@ -127,10 +116,7 @@ final class Prefixer {
 			$userName = sanitize_title($user->display_name);
 		}
 
-		if($id) {
-			$prefix = str_replace("@{versioning}", $this->getObjectVersion($id), $prefix);
-		}
-
+		$prefix = str_replace("@{versioning}", $this->currentVersion, $prefix);
 		$prefix = str_replace("@{site-id}", sanitize_title(strtolower(get_current_blog_id())), $prefix);
 		$prefix = str_replace("@{site-name}", sanitize_title(strtolower(get_bloginfo('name'))), $prefix);
 		$prefix = str_replace("@{site-host}", $host, $prefix);
@@ -162,8 +148,13 @@ final class Prefixer {
 		if (!empty($prefixFormat)) {
 			return self::instance()->parsePrefix($prefixFormat, $id);
 		} else {
-			return date('Y/m').'/';
+			$wpUpload = wp_upload_dir();
+			return ltrim(trailingslashit($wpUpload['subdir']), '/');
 		}
+	}
+
+	public static function nextVersion() {
+		self::instance()->updateVersion();
 	}
 	//endregion
 }

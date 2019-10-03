@@ -2,7 +2,7 @@
 @foreach($data as $id => $helpLinks)
     <div id="doc-links-{{$id}}" class="doc-links-setting" @if(!$loop->first) style="display:none" @endif>
         @foreach($helpLinks as $helpLink)
-            <a href="{{$helpLink['url']}}" target="_blank" class="{{$classes}} {{\ILAB\MediaCloud\Utilities\arrayPath($helpLink, 'class', '')}}">{{$helpLink['title']}}</a>
+            <a href="{{$helpLink['url']}}" target="_blank" class="{{$classes}} {{\ILAB\MediaCloud\Utilities\arrayPath($helpLink, 'class', '')}}" @if(!empty($helpLink['beacon_id'])) data-beacon-article-sidebar="{{$helpLink['beacon_id']}}" @endif>{{$helpLink['title']}}</a>
         @endforeach
     </div>
     @if(!empty($watch))

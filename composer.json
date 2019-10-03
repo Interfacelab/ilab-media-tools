@@ -28,8 +28,6 @@
     "superbalist/flysystem-google-storage": "^7.1",
     "google/cloud-vision": "^0.19.0",
     "nesbot/carbon": "^1.21",
-    "michelf/php-markdown": "^1.8",
-    "teamtnt/tntsearch": "^1.4.0",
     "ilab/b2-sdk-php": "^1.4",
     "psr/http-message-implementation": "*",
     "mikey179/vfsstream": "*",

@@ -20,9 +20,6 @@ return [
 	"class" => "ILAB\\MediaCloud\\Tools\\Vision\\VisionTool",
 	"env" => "ILAB_VISION_ENABLED",
     "dynamic-config-option" => "mcloud-vision-provider",
-    "batchTools" => [
-        "\\ILAB\\MediaCloud\\Tools\\Vision\\Batch\\ImportVisionBatchTool"
-    ],
 	"CLI" => [
 		"\\ILAB\\MediaCloud\\Tools\\Vision\\CLI\\VisionCLICommands"
 	],
@@ -32,7 +29,7 @@ return [
 			'class' => "\\ILAB\\MediaCloud\\Vision\\Driver\\Rekognition\\RekognitionDriver",
 			'config' => '/vision/rekognition.config.php',
 			'help' => [
-				[ 'title' => 'Read Documentation', 'url' => admin_url('admin.php?page=media-cloud-docs&doc-page=vision#configuring-amazon-rekognition') ],
+				[ 'title' => 'Read Documentation', 'url' => 'https://help.mediacloud.press/article/59-setting-up-amazon-rekognition', 'beacon_id' => '59' ],
 			]
 		],
 	],
@@ -67,6 +64,7 @@ return [
             ],
 			"ilab-vision-options" => [
 				"title" => "Vision Options",
+				"doc_beacon" => '96',
                 "dynamic" => true,
 				"options" => [
 					"mcloud-vision-detect-faces" => [

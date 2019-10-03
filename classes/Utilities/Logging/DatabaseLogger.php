@@ -70,7 +70,7 @@ class DatabaseLogger {
     protected function insureTable() {
         global $wpdb;
 
-        $this->table = $wpdb->prefix.'ilab_mc_logging';
+        $this->table = $wpdb->base_prefix.'ilab_mc_logging';
 
         $tableSchema = <<<SQL
         create table {$this->table} (

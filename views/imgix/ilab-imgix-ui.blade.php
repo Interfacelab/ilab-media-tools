@@ -8,6 +8,10 @@
     @else
         {{ __('Edit Image') }} ({{$full_width}} x {{$full_height}})
     @endif
+    <div class="modal-actions">
+        <a href="https://help.mediacloud.press/article/53-image-editor" target="_blank"  data-beacon-article-sidebar="53" class="button button-small">@inline('ilab-ui-icon-help.svg') Help</a>
+        <a href="https://www.youtube.com/watch?v=blFUKzOsbXs" class="button button-small mediabox">@inline('ilab-ui-icon-youtube.svg') Tutorial</a>
+    </div>
 @endsection
 
 @section('main-tabs')
@@ -121,6 +125,7 @@
 @endsection
 
 @section('script')
+
 <script>
         new ILabImageEdit(jQuery, {
             modal_id:'{{$modal_id}}',
@@ -134,3 +139,4 @@
         });
 </script>
 @endsection
+

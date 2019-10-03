@@ -12,12 +12,13 @@
 // **********************************************************************
 namespace ILAB\MediaCloud\Tools\Vision;
 
-use  ILAB\MediaCloud\Tasks\BatchManager ;
+use  ILAB\MediaCloud\Tasks\TaskManager ;
+use  ILAB\MediaCloud\Tasks\TaskSchedule ;
 use  ILAB\MediaCloud\Tools\Tool ;
-use  ILAB\MediaCloud\Tools\Vision\Batch\ImportVisionBatchProcess ;
-use  ILAB\MediaCloud\Tools\Vision\Batch\ImportVisionBatchTool ;
+use  ILAB\MediaCloud\Tools\Vision\Tasks\ProcessVisionTask ;
 use function  ILAB\MediaCloud\Utilities\arrayPath ;
 use  ILAB\MediaCloud\Utilities\Environment ;
+use  ILAB\MediaCloud\Utilities\Logging\Logger ;
 use  ILAB\MediaCloud\Utilities\NoticeManager ;
 use  ILAB\MediaCloud\Vision\VisionDriver ;
 use  ILAB\MediaCloud\Vision\VisionManager ;
@@ -69,11 +70,7 @@ class VisionTool extends Tool
         }
         $toolInfo = $this->mergeSettings( $toolInfo, $driverConfigs );
         parent::__construct( $toolName, $toolInfo, $toolManager );
-        new ImportVisionBatchProcess();
         $this->driver = VisionManager::visionInstance();
-        if ( is_admin() ) {
-            BatchManager::instance()->displayAnyErrors( 'rekognizer' );
-        }
         add_filter( 'media-cloud/vision/detect-faces', function ( $enabled ) {
             return $this->enabled() && ($this->driver->config()->detectFaces() || $this->driver->config()->detectCelebrities());
         } );
@@ -90,6 +87,7 @@ class VisionTool extends Tool
         $this->testForUselessPlugins();
         
         if ( $this->enabled() ) {
+            TaskManager::registerTask( ProcessVisionTask::class );
             
             if ( VisionManager::driver() == 'rekognition' ) {
                 add_filter(
@@ -97,6 +95,7 @@ class VisionTool extends Tool
                     function ( $data, $id ) {
                     
                     if ( $this->alwaysBackground ) {
+                        $this->addToBackgroundTask( $id );
                         return $data;
                     } else {
                         return $this->processImageMeta( $data, $id );
@@ -112,6 +111,7 @@ class VisionTool extends Tool
                     function ( $data, $id ) {
                     
                     if ( $this->alwaysBackground ) {
+                        $this->addToBackgroundTask( $id );
                         return $data;
                     } else {
                         return $this->processImageMeta( $data, $id );
@@ -126,6 +126,7 @@ class VisionTool extends Tool
                     function ( $data, $id ) {
                     
                     if ( $this->alwaysBackground ) {
+                        $this->addToBackgroundTask( $id );
                         return $data;
                     } else {
                         return $this->processImageMeta( $data, $id );
@@ -152,10 +153,30 @@ class VisionTool extends Tool
                 1
             );
             add_action( 'media-cloud/direct-uploads/process-batch', function ( $postIds ) {
+                
                 if ( $this->alwaysBackground ) {
-                    BatchManager::instance()->addToBatchAndRun( ImportVisionBatchTool::BatchIdentifier(), $postIds, [] );
+                    $task = new ProcessVisionTask();
+                    $task->prepare( [], $postIds );
+                    TaskManager::instance()->queueTask( $task );
                 }
+            
             } );
+        }
+    
+    }
+    
+    private function addToBackgroundTask( $postId )
+    {
+        $task = TaskSchedule::nextScheduledTaskOfType( ProcessVisionTask::identifier() );
+        
+        if ( !empty($task) ) {
+            Logger::info( "ADDING TO EXISTING VISION TASK" );
+            $task->selection = array_merge( $task->selection, [ $postId ] );
+            Logger::info( "SELECTION LENGTH: " . count( $task->selection ) );
+            $task->save();
+        } else {
+            Logger::info( "CREATING VISION TASK" );
+            ProcessVisionTask::scheduleIn( 2, [], [ $postId ] );
         }
     
     }

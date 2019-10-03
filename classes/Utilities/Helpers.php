@@ -127,5 +127,57 @@ namespace ILAB\MediaCloud\Utilities {
 			$config = &$config[$part];
 		}
 	}
+
+
+	/**
+	 * Fetches a value from an object or array using a path, eg 'some/setting/name'
+	 *
+	 * @param array|object $object
+	 * @param string $path
+	 * @param mixed|null $default
+	 *
+	 * @return mixed|null
+	 */
+	function objectPath($object, $path, $default = null) {
+		$pathArray = explode('/', $path);
+
+		$currentObject = $object;
+		for($i = 0; $i < count($pathArray); $i++) {
+			$part = $pathArray[$i];
+
+			if (is_object($currentObject)) {
+				if (!property_exists($currentObject, $part)) {
+					return $default;
+				}
+
+				if ($i === count($pathArray) - 1) {
+					return $currentObject->{$part};
+				}
+
+				$currentObject = $currentObject->{$part};
+			} else {
+				if (!isset($currentObject[$part])) {
+					return $default;
+				}
+
+				if ($i === count($pathArray) - 1) {
+					return $currentObject[$part];
+				}
+
+				$currentObject = $currentObject[$part];
+			}
+		}
+	}
+
+	/**
+	 * Determines if a postIdExists
+	 *
+	 * @param $postId
+	 *
+	 * @return bool
+	 */
+	function postIdExists($postId) {
+		return is_string(get_post_status($postId));
+	}
 }
 

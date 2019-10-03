@@ -13,6 +13,7 @@
 
 namespace ILAB\MediaCloud\Tools\Crop;
 
+use ILAB\MediaCloud\Storage\StorageSettings;
 use ILAB\MediaCloud\Tools\Storage\StorageTool;
 use ILAB\MediaCloud\Tools\Tool;
 use ILAB\MediaCloud\Tools\ToolsManager;
@@ -458,11 +459,20 @@ class CropTool extends Tool
 			$img_subpath=apply_filters('media-cloud/storage/process-file-name',$parsed_path['dirname']);
 
 			$upload_dir=wp_upload_dir();
-			$save_path=$upload_dir['basedir'].$img_subpath;
-			@mkdir($save_path,0777,true);
+            $save_path=$upload_dir['basedir'].$img_subpath;
+
+			if (!file_exists($save_path)) {
+				if(!mkdir($save_path, 0777, true) && !is_dir($save_path)) {
+					json_response([
+						'status'=>'error',
+						'message'=> "Path '$save_path' cannot be created."
+					]);
+				}
+            }
 		}
-		else
-			$save_path=$save_path_parts['dirname'];
+		else {
+			$save_path = $save_path_parts['dirname'];
+        }
 
 		$extension=$save_path_parts['extension'];
 		$filename=preg_replace('#^(IL[0-9-]*)#','',$save_path_parts['filename']);
@@ -517,6 +527,15 @@ class CropTool extends Tool
 
 		$attrs = wp_get_attachment_image_src($post_id, $size);
 		list($full_src,$full_width,$full_height,$full_cropped)=$attrs;
+
+		if ($storageTool->enabled()) {
+			if(StorageSettings::deleteOnUpload() && !StorageSettings::queuedDeletes()) {
+                $toDelete = trailingslashit($save_path).$filename;
+                if (file_exists($toDelete)) {
+                    @unlink($toDelete);
+                }
+			}
+		}
 
 		json_response([
 			'status'=>'ok',

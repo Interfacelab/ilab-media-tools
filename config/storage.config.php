@@ -48,7 +48,7 @@ return [
 			'config' => '/storage/s3.config.php',
 			'help' => [
 				[ 'title' => 'Watch Tutorial', 'url' => 'https://www.youtube.com/watch?v=kjFCACrPRtU' ],
-				[ 'title' => 'Read Documentation', 'url' => admin_url('admin.php?page=media-cloud-docs&doc-page=cloud-storage/setup/amazon-s3') ],
+				[ 'title' => 'Read Documentation', 'url' => 'https://help.mediacloud.press/article/38-setting-up-amazon-s3', 'beacon_id' => '38' ],
 			]
 		],
 		'google' => [
@@ -56,7 +56,7 @@ return [
 			'class' => "\\ILAB\\MediaCloud\\Storage\\Driver\\GoogleCloud\\GoogleStorage",
 			'config' => '/storage/google.config.php',
 			'help' => [
-				[ 'title' => 'Read Documentation', 'url' => admin_url('admin.php?page=media-cloud-docs&doc-page=cloud-storage/setup/google-cloud-storage')],
+				[ 'title' => 'Read Documentation', 'url' => 'https://help.mediacloud.press/article/45-setting-up-google-cloud-storage', 'beacon_id' => '45' ],
 			]
 		],
 		'do' => [
@@ -64,7 +64,7 @@ return [
 			'class' => "\\ILAB\\MediaCloud\\Storage\\Driver\\S3\\DigitalOceanStorage",
 			'config' => '/storage/do.config.php',
 			'help' => [
-				[ 'title' => 'Read Documentation', 'url' => admin_url('admin.php?page=media-cloud-docs&doc-page=cloud-storage/setup/do-spaces') ],
+				[ 'title' => 'Read Documentation', 'url' => 'https://help.mediacloud.press/article/44-setting-up-digital-ocean-spaces', 'beacon_id' => '44' ],
 			]
 		],
 		'minio' => [
@@ -79,7 +79,7 @@ return [
 			'class' => "\\ILAB\\MediaCloud\\Storage\\Driver\\S3\\WasabiStorage",
 			'config' => '/storage/wasabi.config.php',
 			'help' => [
-				[ 'title' => 'Read Documentation', 'url' => admin_url('admin.php?page=media-cloud-docs&doc-page=cloud-storage/setup/wasabi') ],
+				[ 'title' => 'Read Documentation', 'url' => 'https://help.mediacloud.press/article/46-setting-up-wasabi', 'beacon_id' => '46' ],
 			]
 		],
 		'other-s3' => [
@@ -94,7 +94,7 @@ return [
 			'class' => \ILAB\MediaCloud\Storage\Driver\Backblaze\BackblazeStorage::class,
 			'config' => '/storage/backblaze.config.php',
 			'help' => [
-				[ 'title' => 'Read Documentation', 'url' => admin_url('admin.php?page=media-cloud-docs&doc-page=cloud-storage/setup/backblaze') ],
+				[ 'title' => 'Read Documentation', 'url' => 'https://help.mediacloud.press/article/43-setting-up-backblaze', 'beacon_id' => '43' ],
 			]
 		],
 	],
@@ -133,6 +133,7 @@ return [
 			"ilab-media-cloud-upload-handling" => [
 				"title" => "Upload Handling",
                 "dynamic" => true,
+				"doc_beacon" => '39',
 				"description" => "The following options control how the storage tool handles uploads.",
                 "options" => [
                     "mcloud-storage-prefix" => [
@@ -181,16 +182,24 @@ return [
                         "display-order" => 10,
                         "type" => "checkbox"
                     ],
-                    "mcloud-storage-delete-from-server" => [
-                        "title" => "Delete From Storage",
-                        "description" => "When you delete from the media library, turning this on will also delete the file from cloud storage.",
-                        "display-order" => 10,
-                        "type" => "checkbox"
-                    ],
+	                "mcloud-storage-queue-deletes" => [
+		                "title" => "Queue Deletes",
+		                "description" => "When this option is enabled, uploads won't be deleted right away, they will be queued for deletion two to five minutes later.  This allows other plugins the ability to process any uploads before they are deleted from your WordPress server.  If <strong>Delete From Storage</strong> is disabled, this setting is ignored.",
+		                "display-order" => 10,
+		                "type" => "checkbox",
+		                "default" => true
+	                ],
+	                "mcloud-storage-delete-from-server" => [
+		                "title" => "Delete From Storage",
+		                "description" => "When you delete from the media library, turning this on will also delete the file from cloud storage.",
+		                "display-order" => 10,
+		                "type" => "checkbox"
+	                ],
                 ]
 			],
             "ilab-media-cloud-cdn-settings" => [
                 "title" => "CDN Settings",
+	            "doc_beacon" => '40',
                 "description" => "If you are using CloudFront, Fastly or another CDN, enter the CDN domain here.  If you are using Imgix, the <b>CDN Base URL</b> setting is ignored, but the <b>Document CDN Base URL</b> is not.  If both are left blank, Media Tools will use the cloud storage URLs.",
                 "options" => [
                     "mcloud-storage-cdn-base" => [
@@ -207,6 +216,7 @@ return [
             ],
 			"ilab-media-cloud-display-settings" => [
 				"title" => "Display Settings",
+				"doc_beacon" => '41',
 				"description" => "",
 				"options" => [
 					"mcloud-storage-display-badge" => [

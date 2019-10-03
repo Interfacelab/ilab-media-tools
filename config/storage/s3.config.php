@@ -16,6 +16,7 @@ return [
     "ilab-media-cloud-provider-settings" => [
         "title" => "Provider Settings",
         "dynamic" => true,
+	    "doc_beacon" => '38',
         "options" => [
             "mcloud-storage-s3-access-key" => [
                 "title" => "Access Key",

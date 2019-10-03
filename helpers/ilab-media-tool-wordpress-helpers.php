@@ -110,3 +110,9 @@ if (!function_exists('mb_strpos')) {
 		return strpos($haystack, $needle, $offset);
 	}
 }
+
+if (!function_exists('mb_strtolower')) {
+	function mb_strtolower($string) {
+		return strtolower($string);
+	}
+}

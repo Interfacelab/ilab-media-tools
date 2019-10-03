@@ -18,14 +18,20 @@ use  ILAB\MediaCloud\Storage\StorageException ;
 use  ILAB\MediaCloud\Storage\StorageInterface ;
 use  ILAB\MediaCloud\Storage\StorageManager ;
 use  ILAB\MediaCloud\Storage\StorageSettings ;
-use  ILAB\MediaCloud\Tasks\BatchManager ;
+use  ILAB\MediaCloud\Tasks\TaskManager ;
+use  ILAB\MediaCloud\Tasks\TaskSchedule ;
+use  ILAB\MediaCloud\Tools\Storage\Tasks\CleanUploadsTask ;
+use  ILAB\MediaCloud\Tools\Storage\Tasks\DeleteUploadsTask ;
+use  ILAB\MediaCloud\Tools\Storage\Tasks\MigrateTask ;
+use  ILAB\MediaCloud\Tools\Storage\Tasks\RegenerateThumbnailTask ;
+use  ILAB\MediaCloud\Tools\Storage\Tasks\UnlinkTask ;
 use  ILAB\MediaCloud\Tools\Tool ;
 use  ILAB\MediaCloud\Utilities\Environment ;
 use  ILAB\MediaCloud\Utilities\Logging\Logger ;
 use  ILAB\MediaCloud\Utilities\NoticeManager ;
+use  ILAB\MediaCloud\Utilities\Prefixer ;
 use  ILAB\MediaCloud\Utilities\View ;
 use  Smalot\PdfParser\Parser ;
-use  WP_CLI\Iterators\Exception ;
 use function  ILAB\MediaCloud\Utilities\arrayPath ;
 
 if ( !defined( 'ABSPATH' ) ) {
@@ -96,7 +102,6 @@ class StorageTool extends Tool
         foreach ( StorageManager::drivers() as $key => $driver ) {
             $driverConfigs[$key] = $driver['config'];
         }
-        global  $media_cloud_licensing ;
         $toolInfo = $this->mergeSettings( $toolInfo, $driverConfigs );
         parent::__construct( $toolName, $toolInfo, $toolManager );
         $this->displayBadges = Environment::Option( 'mcloud-storage-display-badge', null, true );
@@ -112,13 +117,31 @@ class StorageTool extends Tool
             require_once ABSPATH . 'wp-admin/includes/image.php';
         }
         
-        if ( StorageSettings::deleteOnUpload() ) {
-            add_filter( 'wp_die_ajax_handler', [ $this, 'hookDieHandler' ] );
-            add_filter( 'wp_die_json_handler', [ $this, 'hookDieHandler' ] );
-            add_filter( 'wp_die_jsonp_handler', [ $this, 'hookDieHandler' ] );
-            add_filter( 'wp_die_xmlrpc_handler', [ $this, 'hookDieHandler' ] );
-            add_filter( 'wp_die_xml_handler', [ $this, 'hookDieHandler' ] );
-            add_filter( 'wp_die_handler', [ $this, 'hookDieHandler' ] );
+        if ( is_admin() ) {
+            
+            if ( StorageSettings::deleteOnUpload() ) {
+                add_filter( 'wp_die_ajax_handler', [ $this, 'hookDieHandler' ] );
+                add_filter( 'wp_die_json_handler', [ $this, 'hookDieHandler' ] );
+                add_filter( 'wp_die_jsonp_handler', [ $this, 'hookDieHandler' ] );
+                add_filter( 'wp_die_xmlrpc_handler', [ $this, 'hookDieHandler' ] );
+                add_filter( 'wp_die_xml_handler', [ $this, 'hookDieHandler' ] );
+                add_filter( 'wp_die_handler', [ $this, 'hookDieHandler' ] );
+            }
+            
+            $migratedFrom = get_option( 'mcloud-other-plugins-did-migrate' );
+            
+            if ( !empty($migratedFrom) ) {
+                $settingsUrl = admin_url( 'admin.php?page=media-cloud-settings&tab=storage' );
+                $systemCheck = admin_url( 'admin.php?page=media-tools-troubleshooter' );
+                NoticeManager::instance()->displayAdminNotice(
+                    'info',
+                    "Media Cloud noticed you were using {$migratedFrom} and has migrated your settings automatically.  Everything should be working as before, but make sure to double check your <a href='{$settingsUrl}'>Cloud Storage</a> settings.  You may also want to run a <a href='{$systemCheck}'>System Check</a> to make sure everything is running properly.",
+                    true,
+                    'mcloud-migrated-other-plugin',
+                    'forever'
+                );
+            }
+        
         }
     
     }
@@ -139,13 +162,22 @@ class StorageTool extends Tool
         return true;
     }
     
+    public function activate()
+    {
+        $provider = Environment::Option( 'mcloud-storage-provider', 'ILAB_CLOUD_STORAGE_PROVIDER', null );
+        if ( empty($provider) ) {
+            StorageSettings::migrateFromOtherPlugin();
+        }
+    }
+    
     public function setup()
     {
         parent::setup();
+        TaskManager::registerTask( UnlinkTask::class );
         
         if ( $this->enabled() ) {
-            BatchManager::instance()->displayAnyErrors( 'storage' );
-            BatchManager::instance()->displayAnyErrors( 'thumbnails' );
+            TaskManager::registerTask( CleanUploadsTask::class );
+            TaskManager::registerTask( DeleteUploadsTask::class );
             foreach ( $this->toolInfo['compatibleImageOptimizers'] as $key => $plugin ) {
                 
                 if ( is_plugin_active( $plugin ) ) {
@@ -346,24 +378,15 @@ class StorageTool extends Tool
                 }
                 return $sizes;
             } );
-            add_action( 'admin_init', function () {
-                add_filter( 'bulk_actions-upload', function ( $actions ) {
-                    $actions['mcloud_unlink_media'] = 'Unlink from Cloud Storage';
-                    return $actions;
-                } );
-                add_filter(
-                    'handle_bulk_actions-upload',
-                    function ( $redirect_to, $action_name, $post_ids ) {
-                    if ( $action_name == 'mcloud_unlink_media' ) {
-                        return $this->handleUnlinkAction( $redirect_to, $post_ids );
-                    }
-                    return $redirect_to;
-                },
-                    1000,
-                    3
-                );
-            } );
             $this->hookupUI();
+        } else {
+            
+            if ( !empty($this->client) && $this->client->settingsError() ) {
+                $adminUrl = admin_url( 'admin.php?page=media-cloud-settings&tab=storage' );
+                $testUrl = admin_url( 'admin.php?page=media-tools-troubleshooter' );
+                NoticeManager::instance()->displayAdminNotice( 'error', "Your cloud storage settings are incorrect.  Please <a href='{$adminUrl}'>verify your settings</a> or run the <a href='{$testUrl}'>systems test</a> to troubleshoot the issue." );
+            }
+        
         }
     
     }
@@ -524,7 +547,7 @@ class StorageTool extends Tool
                             }
                             $oldSizeFile = $size['file'];
                             
-                            if ( $preserveFilePaths ) {
+                            if ( $preserveFilePaths == 'preserve' ) {
                                 $size['prefix'] = $old_path_base;
                                 $size['file'] = str_replace( $old_path_base, '', $size['file'] );
                             }
@@ -598,6 +621,7 @@ class StorageTool extends Tool
         
         unset( $data['prefix'] );
         $data['file'] = $old_file;
+        Prefixer::nextVersion();
         return $data;
     }
     
@@ -686,11 +710,21 @@ class StorageTool extends Tool
         if ( !empty($job_manager_upload) && !empty($job_manager_uploading_file) ) {
             return $uploads;
         }
+        if ( empty(StorageSettings::prefixFormat()) ) {
+            return $uploads;
+        }
         $prefix = trim( StorageSettings::prefix( null ), '/' );
         
         if ( is_multisite() && !is_main_site() ) {
-            $root = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . 'uploads';
-            $rootUrl = rtrim( content_url(), '/' ) . '/uploads';
+            
+            if ( defined( 'UPLOADS' ) ) {
+                $root = trailingslashit( ABSPATH ) . constant( 'UPLOADS' );
+                $rootUrl = rtrim( home_url( '/' . constant( 'UPLOADS' ) ), '/' );
+            } else {
+                $root = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . 'uploads';
+                $rootUrl = rtrim( content_url(), '/' ) . '/uploads';
+            }
+            
             $sitePrefix = ltrim( str_replace( $root, '', $uploads['basedir'] ), DIRECTORY_SEPARATOR );
             $prefix = $sitePrefix . '/' . $prefix;
             $uploads['subdir'] = '/' . $prefix;
@@ -1274,32 +1308,21 @@ class StorageTool extends Tool
         }
         
         if ( empty($new_url) ) {
-            $meta = get_post_meta( $post_id, 'ilab_s3_info', true );
-            if ( $meta ) {
-                $new_url = $this->getAttachmentURLFromMeta( $meta );
+            $s3Info = get_post_meta( $post_id, 'ilab_s3_info', true );
+            if ( !empty($s3Info) ) {
+                $new_url = $this->getAttachmentURLFromMeta( $s3Info );
             }
             
-            if ( !$new_url ) {
-                $meta = get_post_meta( $post_id, 'amazonS3_info' );
+            if ( empty($new_url) ) {
+                $offloadS3Info = get_post_meta( $post_id, 'amazonS3_info', true );
                 
-                if ( $meta ) {
-                    $new_url = $this->getOffloadS3URL( $post_id, $meta );
-                    $s3Data = $meta[0];
-                    $s3Data['url'] = $new_url;
-                    $s3Data['privacy'] = 'public-read';
-                    $this->skipUpdate = true;
-                    $imageMeta = wp_get_attachment_metadata( $post_id );
-                    
-                    if ( $imageMeta ) {
-                        $imageMeta['s3'] = $s3Data;
-                        wp_update_attachment_metadata( $post_id, $imageMeta );
-                    } else {
-                        update_post_meta( $post_id, 'ilab_s3_info', [
-                            's3' => $s3Data,
-                        ] );
+                if ( !empty($offloadS3Info) ) {
+                    $new_url = $this->importOffloadMetadata( $post_id, $meta, $offloadS3Info );
+                } else {
+                    $statelessInfo = get_post_meta( $post_id, 'sm_cloud', true );
+                    if ( !empty($statelessInfo) ) {
+                        $new_url = $this->importStatelessMetadata( $post_id, $meta, $statelessInfo );
                     }
-                    
-                    $this->skipUpdate = false;
                 }
             
             }
@@ -1394,28 +1417,198 @@ class StorageTool extends Tool
     }
     
     /**
-     * For compatibility with Offload S3.
+     * Imports metadata from WP-Stateless
      *
-     * @param int $post_id
-     * @param array $info
+     * @param $post_id
+     * @param $meta
+     * @param $statelessData
      *
-     * @return null|string
+     * @return mixed|null
+     * @throws StorageException
      */
-    private function getOffloadS3URL( $post_id, $info )
+    private function importStatelessMetadata( $post_id, $meta, $statelessData )
     {
-        if ( !is_array( $info ) && count( $info ) < 1 ) {
+        $provider = 'google';
+        $key = arrayPath( $statelessData, 'name', null );
+        $bucket = arrayPath( $statelessData, 'bucket', null );
+        if ( empty($bucket) || empty($key) ) {
             return null;
         }
-        $region = ( isset( $info[0]['region'] ) ? $info[0]['region'] : null );
-        $bucket = $info[0]['bucket'];
-        $file = $info[0]['key'];
-        
-        if ( empty($region) ) {
-            return "https://s3.amazonaws.com/{$bucket}/{$file}";
-        } else {
-            return "https://s3-{$region}.amazonaws.com/{$bucket}/{$file}";
+        $mime = get_post_mime_type( $post_id );
+        $hasMeta = !empty($meta);
+        if ( empty($meta) ) {
+            $meta = [];
         }
+        $s3Info = [
+            'url'       => $this->getStatelessURL( $bucket, $key ),
+            'provider'  => $provider,
+            'bucket'    => $bucket,
+            'privacy'   => 'public-read',
+            'v'         => MEDIA_CLOUD_INFO_VERSION,
+            'mime-type' => $mime,
+        ];
+        $meta['s3'] = $s3Info;
+        $sizes = $meta['sizes'];
+        $statelessSizes = arrayPath( $statelessData, 'sizes', [] );
+        $meta['sizes'] = [];
+        foreach ( $statelessSizes as $statelessSize => $statelessSizeData ) {
+            $sizeKey = arrayPath( $statelessSizeData, 'name' );
+            if ( !isset( $sizes[$statelessSize] ) || empty($sizeKey) ) {
+                continue;
+            }
+            $sizeData = $sizes[$statelessSize];
+            $sizeS3Info = $s3Info;
+            $sizeS3Info['url'] = $this->getStatelessURL( $bucket, $sizeKey );
+            $sizeS3Info['key'] = $sizeKey;
+            $sizeS3Info['mime-type'] = $sizeData['mime-type'];
+            $sizeData['s3'] = $sizeS3Info;
+            $meta['sizes'][$statelessSize] = $sizeData;
+        }
+        
+        if ( $hasMeta ) {
+            update_post_meta( $post_id, '_wp_attachment_metadata', $meta );
+        } else {
+            update_post_meta( $post_id, 'ilab_s3_info', [
+                's3' => $s3Info,
+            ] );
+        }
+        
+        return $s3Info['url'];
+    }
     
+    /**
+     * Imports metadata from WP Offload
+     *
+     * @param $post_id
+     * @param $meta
+     * @param $offloadS3Data
+     *
+     * @return mixed|null
+     * @throws StorageException
+     */
+    private function importOffloadMetadata( $post_id, $meta, $offloadS3Data )
+    {
+        $provider = arrayPath( $offloadS3Data, 'provider', null );
+        $bucket = arrayPath( $offloadS3Data, 'bucket', null );
+        $region = arrayPath( $offloadS3Data, 'region', null );
+        $key = arrayPath( $offloadS3Data, 'key', null );
+        if ( empty($provider) || empty($bucket) || empty($key) || !in_array( $provider, [ 'aws', 'do', 'gcp' ] ) ) {
+            return null;
+        }
+        $providerMap = [
+            'aws' => 's3',
+            'do'  => 'do',
+            'gcp' => 'google',
+        ];
+        $provider = $providerMap[$provider];
+        $mime = get_post_mime_type( $post_id );
+        $hasMeta = !empty($meta);
+        if ( empty($meta) ) {
+            $meta = [];
+        }
+        $s3Info = [
+            'url'       => $this->getOffloadS3URL(
+            $provider,
+            $region,
+            $bucket,
+            $key
+        ),
+            'provider'  => $provider,
+            'bucket'    => $bucket,
+            'privacy'   => 'public-read',
+            'v'         => MEDIA_CLOUD_INFO_VERSION,
+            'mime-type' => $mime,
+        ];
+        if ( $provider !== 'google' ) {
+            $s3Info['region'] = $region;
+        }
+        $meta['s3'] = $s3Info;
+        
+        if ( isset( $meta['sizes'] ) ) {
+            $baseKey = ltrim( pathinfo( '/' . $key, PATHINFO_DIRNAME ), '/' );
+            $newSizes = [];
+            foreach ( $meta['sizes'] as $size => $sizeData ) {
+                $sizeKey = trailingslashit( $baseKey ) . $sizeData['file'];
+                $sizeS3Info = $s3Info;
+                $sizeS3Info['url'] = $this->getOffloadS3URL(
+                    $provider,
+                    $region,
+                    $bucket,
+                    $sizeKey
+                );
+                $sizeS3Info['key'] = $sizeKey;
+                $sizeS3Info['mime-type'] = $sizeData['mime-type'];
+                $sizeData['s3'] = $sizeS3Info;
+                $newSizes[$size] = $sizeData;
+            }
+            $meta['sizes'] = $newSizes;
+        }
+        
+        
+        if ( $hasMeta ) {
+            update_post_meta( $post_id, '_wp_attachment_metadata', $meta );
+        } else {
+            update_post_meta( $post_id, 'ilab_s3_info', [
+                's3' => $s3Info,
+            ] );
+        }
+        
+        return $s3Info['url'];
+    }
+    
+    /**
+     * Generates a URL from a WP-Stateless Import
+     *
+     * @param $bucket
+     * @param $key
+     *
+     * @return string|null
+     * @throws StorageException
+     */
+    private function getStatelessURL( $bucket, $key )
+    {
+        if ( 'google' === StorageManager::driver() && $bucket === $this->client->bucket() ) {
+            return $this->client->url( $key );
+        }
+        return "https://storage.googleapis.com/{$bucket}/{$key}";
+    }
+    
+    /**
+     * Generates a URL from Offload import
+     *
+     * @param $provider
+     * @param $region
+     * @param $bucket
+     * @param $key
+     *
+     * @return string|null
+     * @throws StorageException
+     */
+    private function getOffloadS3URL(
+        $provider,
+        $region,
+        $bucket,
+        $key
+    )
+    {
+        if ( $provider === StorageManager::driver() && $bucket === $this->client->bucket() ) {
+            return $this->client->url( $key );
+        }
+        
+        if ( $provider === 's3' ) {
+            if ( empty($region) ) {
+                return "https://s3.amazonaws.com/{$bucket}/{$key}";
+            }
+            return "https://s3-{$region}.amazonaws.com/{$bucket}/{$key}";
+        }
+        
+        if ( $provider === 'do' ) {
+            return "https://{$region}.digitaloceanspaces.com/{$bucket}/{$key}";
+        }
+        if ( $provider === 'google' ) {
+            return "https://storage.googleapis.com/{$bucket}/{$key}";
+        }
+        return null;
     }
     
     /**
@@ -1627,34 +1820,6 @@ class StorageTool extends Tool
     }
     
     //endregion
-    //region Bulk Actions
-    protected function handleUnlinkAction( $redirect_to, $post_ids )
-    {
-        foreach ( $post_ids as $post_id ) {
-            $meta = wp_get_attachment_metadata( $post_id );
-            
-            if ( isset( $meta['s3'] ) ) {
-                unset( $meta['s3'] );
-                
-                if ( isset( $meta['sizes'] ) ) {
-                    $sizes = $meta['sizes'];
-                    foreach ( $sizes as $size => $sizeData ) {
-                        if ( isset( $sizeData['s3'] ) ) {
-                            unset( $sizeData['s3'] );
-                        }
-                        $sizes[$size] = $sizeData;
-                    }
-                    $meta['sizes'] = $sizes;
-                }
-                
-                update_post_meta( $post_id, '_wp_attachment_metadata', $meta );
-            }
-        
-        }
-        return $redirect_to;
-    }
-    
-    //endregion
     //region Crop Tool Related
     /**
      * Processes a file after a crop has been performed, uploading it to storage if it exists
@@ -1675,7 +1840,13 @@ class StorageTool extends Tool
     {
         $upload_info = wp_upload_dir();
         $subdir = trim( str_replace( $upload_info['basedir'], '', $upload_path ), '/' );
-        $upload_path = rtrim( str_replace( $subdir, '', $upload_path ), '/' );
+        
+        if ( strpos( $upload_info['basedir'], $upload_path ) !== false ) {
+            $upload_path = $upload_info['basedir'];
+        } else {
+            $upload_path = rtrim( substr( $upload_path, 0, strlen( $upload_path ) - strlen( $subdir ) ), '/' );
+        }
+        
         if ( $this->client && $this->client->enabled() ) {
             $sizeMeta = $this->processFile( $upload_path, $subdir . '/' . $file, $sizeMeta );
         }
@@ -1729,29 +1900,51 @@ class StorageTool extends Tool
         $shouldUseCustomPrefix = apply_filters( 'media-cloud/storage/should-use-custom-prefix', $shouldUseCustomPrefix );
         $shouldUseCustomPrefix = !empty(StorageSettings::prefixFormat()) && $shouldUseCustomPrefix;
         
-        if ( $preserveFilePath == 'replace' && !isset( $data['prefix'] ) && !$shouldUseCustomPrefix ) {
-            $fpath = pathinfo( $data['file'], PATHINFO_DIRNAME );
-            $fpath = str_replace( $upload_path, '', $fpath );
-            $prefix = trailingslashit( ltrim( $fpath, DIRECTORY_SEPARATOR ) );
-            if ( $prefix == './' ) {
-                $prefix = trailingslashit( pathinfo( $filename, PATHINFO_DIRNAME ) );
+        if ( $preserveFilePath == 'replace' ) {
+            
+            if ( !isset( $data['prefix'] ) && !$shouldUseCustomPrefix ) {
+                $fpath = pathinfo( $data['file'], PATHINFO_DIRNAME );
+                $fpath = str_replace( $upload_path, '', $fpath );
+                $prefix = trailingslashit( ltrim( $fpath, DIRECTORY_SEPARATOR ) );
+                
+                if ( $prefix == './' || $prefix == '/' ) {
+                    $wpUpload = wp_upload_dir();
+                    $prefix = ltrim( trailingslashit( $wpUpload['subdir'] ), '/' );
+                }
+            
+            } else {
+                $prefix = trailingslashit( StorageSettings::prefix( $id ) );
             }
+        
         } else {
             
             if ( $preserveFilePath == 'preserve' ) {
-                $prefix = ( isset( $data['prefix'] ) ? trailingslashit( $data['prefix'] ) : StorageSettings::prefix( $id ) );
+                
+                if ( isset( $data['prefix'] ) ) {
+                    $prefix = trailingslashit( $data['prefix'] );
+                } else {
+                    $prefix = trailingslashit( str_replace( basename( $filename ), '', $filename ) );
+                }
+            
             } else {
                 
                 if ( $preserveFilePath == 'prepend' ) {
-                    $prefix = ( isset( $data['prefix'] ) ? trailingslashit( StorageSettings::prefix( $id ) ) . trailingslashit( $data['prefix'] ) : StorageSettings::prefix( $id ) );
-                } else {
-                    $prefix = StorageSettings::prefix( $id );
+                    
+                    if ( isset( $data['prefix'] ) ) {
+                        $prefix = trailingslashit( $data['prefix'] );
+                    } else {
+                        $bn = basename( $filename );
+                        $prefix = trailingslashit( str_replace( $bn, '', $filename ) );
+                    }
+                    
+                    $prefix = trailingslashit( StorageSettings::prefix( $id ) ) . $prefix;
                 }
             
             }
         
         }
         
+        Logger::info( "({$preserveFilePath}) Prefix => {$prefix} " );
         $parts = explode( '/', $filename );
         $bucketFilename = array_pop( $parts );
         try {
@@ -1806,9 +1999,12 @@ class StorageTool extends Tool
                         StorageSettings::expires(),
                         'image/webp'
                     );
+                    
                     if ( StorageSettings::deleteOnUpload() ) {
-                        unlink( $webpPath );
+                        $this->deleteCache[] = $webpPath;
+                        //                        unlink($webpPath);
                     }
+                
                 }
             
             }
@@ -1879,8 +2075,8 @@ class StorageTool extends Tool
             if ( file_exists( $upload_path . '/' . $filename ) ) {
                 $fileToDelete = $upload_path . '/' . $filename;
                 Logger::info( "Deleting {$fileToDelete}" );
-                //$this->deleteCache[] = $fileToDelete;
-                unlink( $fileToDelete );
+                $this->deleteCache[] = $fileToDelete;
+                //unlink($fileToDelete);
             }
         
         }
@@ -1895,12 +2091,29 @@ class StorageTool extends Tool
     
     public function cleanUploads( $message, $title = '', $args = array() )
     {
-        foreach ( $this->deleteCache as $file ) {
-            if ( file_exists( $file ) ) {
-                unlink( $file );
+        
+        if ( count( $this->deleteCache ) > 0 ) {
+            Logger::info( "Cleaning uploads ..." );
+            
+            if ( StorageSettings::queuedDeletes() ) {
+                $task = TaskSchedule::nextScheduledTaskOfType( DeleteUploadsTask::identifier() );
+                
+                if ( !empty($task) ) {
+                    $task->selection = array_merge( $task->selection, $this->deleteCache );
+                    $task->save();
+                } else {
+                    DeleteUploadsTask::scheduleIn( 2, [], $this->deleteCache );
+                }
+            
+            } else {
+                foreach ( $this->deleteCache as $file ) {
+                    @unlink( $file );
+                }
             }
+            
+            $this->deleteCache = [];
         }
-        $this->deleteCache = [];
+        
         call_user_func(
             $this->dieHandler,
             $message,
@@ -2538,7 +2751,7 @@ class StorageTool extends Tool
         //
         $isDocument = false;
         $skipThumbnails = ( empty($options['skip-thumbnails']) ? false : true );
-        $pathmode = ( empty($options['path-handling']) ? 'replace' : $options['path-handling'] );
+        $pathmode = ( empty($options['path-handling']) ? 'preserve' : $options['path-handling'] );
         $data = wp_get_attachment_metadata( $postId );
         
         if ( empty($data) ) {
@@ -2815,6 +3028,8 @@ class StorageTool extends Tool
             }
         }
         
+        $dir = wp_upload_dir();
+        $guid = trailingslashit( $dir['baseurl'] ) . $fileInfo->key();
         $post = wp_insert_post( [
             'post_author'    => get_current_user_id(),
             'post_title'     => $filename,
@@ -2836,15 +3051,163 @@ class StorageTool extends Tool
         $meta = apply_filters( 'media-cloud/vision/process-meta', $meta, $post );
         add_post_meta( $post, '_wp_attached_file', $fileInfo->key() );
         add_post_meta( $post, '_wp_attachment_metadata', $meta );
-        $thumbUrl = image_downsize( $post, [
-            'width'  => 128,
-            'height' => 128,
-        ] );
+        $thumbUrl = image_downsize( $post, [ 128, 128 ] );
         if ( is_array( $thumbUrl ) ) {
             $thumbUrl = $thumbUrl[0];
         }
         return [
             'id'    => $post,
+            'url'   => $url,
+            'thumb' => $thumbUrl,
+        ];
+    }
+    
+    /**
+     * Once a file has been directly uploaded, it'll need to be "imported" into WordPress
+     *
+     * @param int|string $postId
+     * @param FileInfo $fileInfo
+     * @param string[] $thumbs
+     *
+     * @return array|bool
+     * @throws StorageException
+     */
+    public function importExistingAttachmentFromStorage( $postId, $fileInfo, $thumbs = array() )
+    {
+        if ( !$this->client || !$this->client->enabled() ) {
+            return null;
+        }
+        if ( $fileInfo->mimeType() && strpos( $fileInfo->mimeType(), 'image/' ) === 0 ) {
+            return $this->importExistingImageAttachmentFromStorage( $postId, $fileInfo, $thumbs );
+        }
+        $url = $this->client->url( $fileInfo->key() );
+        $s3Info = [
+            'url'       => $url,
+            'mime-type' => $fileInfo->mimeType(),
+            'bucket'    => $this->client->bucket(),
+            'privacy'   => StorageSettings::privacy(),
+            'key'       => $fileInfo->key(),
+            'v'         => MEDIA_CLOUD_INFO_VERSION,
+            'options'   => [
+            'params' => [],
+        ],
+        ];
+        if ( !empty(StorageSettings::cacheControl()) ) {
+            $s3Info['options']['params']['CacheControl'] = StorageSettings::cacheControl();
+        }
+        if ( !empty(StorageSettings::expires()) ) {
+            $s3Info['options']['params']['Expires'] = StorageSettings::expires();
+        }
+        $meta = wp_get_attachment_metadata( $postId, true );
+        $meta['s3'] = $s3Info;
+        update_post_meta( $postId, '_wp_attachment_metadata', $meta );
+        return [
+            'id'    => $postId,
+            'url'   => $url,
+            'thumb' => wp_mime_type_icon( $postId ),
+        ];
+    }
+    
+    /**
+     * Once a file has been directly uploaded, it'll need to be "imported" into WordPress
+     *
+     * @param int|string $postId
+     * @param FileInfo $fileInfo
+     * @param string[] $thumbs
+     *
+     * @return array|bool
+     * @throws StorageException
+     */
+    public function importExistingImageAttachmentFromStorage( $postId, $fileInfo, $thumbs = array() )
+    {
+        if ( !$this->client || !$this->client->enabled() ) {
+            return null;
+        }
+        if ( !is_array( $fileInfo->size() ) ) {
+            return null;
+        }
+        $url = $this->client->url( $fileInfo->key() );
+        $s3Info = [
+            'url'       => $url,
+            'mime-type' => $fileInfo->mimeType(),
+            'bucket'    => $this->client->bucket(),
+            'privacy'   => StorageSettings::privacy(),
+            'key'       => $fileInfo->key(),
+            'v'         => MEDIA_CLOUD_INFO_VERSION,
+            'options'   => [
+            'params' => [],
+        ],
+        ];
+        if ( !empty(StorageSettings::cacheControl()) ) {
+            $s3Info['options']['params']['CacheControl'] = StorageSettings::cacheControl();
+        }
+        if ( !empty(StorageSettings::expires()) ) {
+            $s3Info['options']['params']['Expires'] = StorageSettings::expires();
+        }
+        $meta = wp_get_attachment_metadata( $postId, true );
+        $meta['s3'] = $s3Info;
+        $builtInSizes = [];
+        foreach ( [
+            'thumbnail',
+            'medium',
+            'medium_large',
+            'large'
+        ] as $size ) {
+            $builtInSizes[$size] = [
+                'width'  => get_option( "{$size}_size_w" ),
+                'height' => get_option( "{$size}_size_h" ),
+                'crop'   => get_option( "{$size}_crop", 0 ),
+            ];
+        }
+        $additional_sizes = wp_get_additional_image_sizes();
+        $sizes = array_merge( $builtInSizes, $additional_sizes );
+        $indexedThumbs = [];
+        foreach ( $thumbs as $thumb ) {
+            if ( preg_match( '/(-[0-9]+x[0-9]+){2,}\\.(?:.*)$/', $thumb, $matches ) ) {
+                continue;
+            }
+            if ( preg_match( '/([0-9]+x[0-9]+)\\.(?:.*)$/', $thumb, $matches ) ) {
+                if ( !isset( $indexedThumbs[$matches[1]] ) ) {
+                    $indexedThumbs[$matches[1]] = $thumb;
+                }
+            }
+        }
+        $meta['sizes'] = [];
+        foreach ( $sizes as $sizeKey => $size ) {
+            $resized = image_resize_dimensions(
+                $fileInfo->size()[0],
+                $fileInfo->size()[1],
+                $size['width'],
+                $size['height'],
+                $size['crop']
+            );
+            
+            if ( $resized ) {
+                $sizeIndex = "{$resized[4]}x{$resized[5]}";
+                
+                if ( isset( $indexedThumbs[$sizeIndex] ) ) {
+                    $sizeS3Info = $s3Info;
+                    $sizeS3Info['url'] = $this->client()->url( $indexedThumbs[$sizeIndex] );
+                    $sizeS3Info['key'] = $indexedThumbs[$sizeIndex];
+                    $meta['sizes'][$sizeKey] = [
+                        'file'      => basename( $indexedThumbs[$sizeIndex] ),
+                        'width'     => $resized[4],
+                        'height'    => $resized[5],
+                        'mime-type' => 'image/jpeg',
+                        's3'        => $sizeS3Info,
+                    ];
+                }
+            
+            }
+        
+        }
+        update_post_meta( $postId, '_wp_attachment_metadata', $meta );
+        $thumbUrl = image_downsize( $postId, [ 128, 128 ] );
+        if ( is_array( $thumbUrl ) ) {
+            $thumbUrl = $thumbUrl[0];
+        }
+        return [
+            'id'    => $postId,
             'url'   => $url,
             'thumb' => $thumbUrl,
         ];
@@ -3090,8 +3453,16 @@ Optimizer;
         $base = trailingslashit( $dir['basedir'] );
         $destFile = $base . $key;
         $desturl = trailingslashit( $dir['baseurl'] ) . $key;
+        Logger::info( "DIRECT URL " . $desturl );
+        Logger::info( "DIRECT BASE " . $dir['baseurl'] );
         $query = $wpdb->prepare( "select ID from {$wpdb->posts} where guid = %s", $desturl );
         $postId = $wpdb->get_var( $query );
+        
+        if ( empty($postId) ) {
+            $query = $wpdb->prepare( "select ID from {$wpdb->posts} where guid = %s", $this->client()->url( $key ) );
+            $postId = $wpdb->get_var( $query );
+        }
+        
         $destDir = pathinfo( $destFile, PATHINFO_DIRNAME );
         if ( !file_exists( $destDir ) ) {
             @mkdir( $destDir, 0777, true );
@@ -3108,6 +3479,33 @@ Optimizer;
             }
         }
         
+        $indexedThumbs = [];
+        foreach ( $thumbs as $thumb ) {
+            if ( preg_match( '/(-[0-9]+x[0-9]+){2,}\\.(?:.*)$/', $thumb, $matches ) ) {
+                continue;
+            }
+            if ( preg_match( '/([0-9]+x[0-9]+)\\.(?:.*)$/', $thumb, $matches ) ) {
+                
+                if ( !isset( $indexedThumbs[$matches[1]] ) ) {
+                    $indexedThumbs[$matches[1]] = $thumb;
+                    $thumbFile = $base . $thumb;
+                    
+                    if ( !file_exists( $thumbFile ) ) {
+                        $url = $this->client()->presignedUrl( $thumb );
+                        $client = new Client();
+                        $response = $client->get( $url, [
+                            'save_to' => $thumbFile,
+                        ] );
+                        if ( $response->getStatusCode() != 200 ) {
+                            unset( $indexedThumbs[$matches[1]] );
+                        }
+                    }
+                
+                }
+            
+            }
+        }
+        require_once ABSPATH . 'wp-admin/includes/image.php';
         
         if ( empty($postId) ) {
             $filetype = wp_check_filetype( basename( $destFile ), null );
@@ -3119,13 +3517,82 @@ Optimizer;
                 'post_status'    => 'inherit',
             ];
             $postId = wp_insert_attachment( $attachment, $destFile );
+            add_filter( 'media-cloud/storage/upload-master', [ $this, 'uploadMaster' ] );
+            $meta = wp_generate_attachment_metadata( $postId, $destFile );
+        } else {
+            add_filter( 'media-cloud/storage/upload-master', [ $this, 'uploadMaster' ] );
+            $meta = wp_get_attachment_metadata( $postId );
+            $basefilename = basename( $key );
+            foreach ( $meta['sizes'] as $size => $sizeData ) {
+                if ( $sizeData['file'] == $basefilename ) {
+                    unset( $meta['sizes'][$size] );
+                }
+            }
         }
         
-        require_once ABSPATH . 'wp-admin/includes/image.php';
-        add_filter( 'media-cloud/storage/upload-master', [ $this, 'uploadMaster' ] );
-        $attach_data = wp_generate_attachment_metadata( $postId, $destFile );
-        wp_update_attachment_metadata( $postId, $attach_data );
+        
+        if ( count( $indexedThumbs ) > 0 ) {
+            $builtInSizes = [];
+            foreach ( [
+                'thumbnail',
+                'medium',
+                'medium_large',
+                'large'
+            ] as $size ) {
+                $builtInSizes[$size] = [
+                    'width'  => get_option( "{$size}_size_w" ),
+                    'height' => get_option( "{$size}_size_h" ),
+                    'crop'   => get_option( "{$size}_crop", 0 ),
+                ];
+            }
+            $additional_sizes = wp_get_additional_image_sizes();
+            $sizes = array_merge( $builtInSizes, $additional_sizes );
+            $meta['sizes'] = [];
+            $s3Info = [
+                'bucket'  => $this->client->bucket(),
+                'privacy' => StorageSettings::privacy(),
+                'v'       => MEDIA_CLOUD_INFO_VERSION,
+                'options' => [
+                'params' => [],
+            ],
+            ];
+            foreach ( $sizes as $sizeKey => $size ) {
+                $fileInfo = $this->client()->info( $key );
+                $resized = image_resize_dimensions(
+                    $fileInfo->size()[0],
+                    $fileInfo->size()[1],
+                    $size['width'],
+                    $size['height'],
+                    $size['crop']
+                );
+                
+                if ( $resized ) {
+                    $sizeIndex = "{$resized[4]}x{$resized[5]}";
+                    
+                    if ( isset( $indexedThumbs[$sizeIndex] ) ) {
+                        $sizeS3Info = $s3Info;
+                        $sizeS3Info['mime-type'] = $fileInfo->mimeType();
+                        $sizeS3Info['url'] = $this->client()->url( $indexedThumbs[$sizeIndex] );
+                        $sizeS3Info['key'] = $indexedThumbs[$sizeIndex];
+                        $meta['sizes'][$sizeKey] = [
+                            'file'      => basename( $indexedThumbs[$sizeIndex] ),
+                            'width'     => $resized[4],
+                            'height'    => $resized[5],
+                            'mime-type' => 'image/jpeg',
+                            's3'        => $sizeS3Info,
+                        ];
+                    }
+                
+                }
+            
+            }
+        }
+        
+        wp_update_attachment_metadata( $postId, $meta );
         remove_filter( 'media-cloud/storage/upload-master', [ $this, 'uploadMaster' ] );
+        if ( count( $meta['sizes'] ) == 0 ) {
+            $this->regenerateFile( $postId );
+        }
         return true;
     }
     
@@ -3137,10 +3604,13 @@ Optimizer;
         $info = $this->client()->info( $key );
         $query = $wpdb->prepare( "select ID from {$wpdb->posts} where (guid = %s) or (guid = %s)", $desturl, $info->url() );
         $postId = $wpdb->get_var( $query );
+        
         if ( !empty($postId) ) {
-            return true;
+            $this->importExistingAttachmentFromStorage( $postId, $info, $thumbs );
+        } else {
+            $this->importAttachmentFromStorage( $info, $thumbs );
         }
-        $this->importAttachmentFromStorage( $info, $thumbs );
+        
         return true;
     }
     
@@ -3153,13 +3623,9 @@ Optimizer;
     {
         $oldPreserve = $this->preserveFilePaths;
         $this->preserveFilePaths = ( $preservePaths ? 'preserve' : 'replace' );
-        $dynamicEnabled = apply_filters( 'media-cloud/dynamic-images/enabled', false );
-        if ( !empty($importOnly) ) {
-            $dynamicEnabled = true;
-        }
         try {
             
-            if ( $dynamicEnabled ) {
+            if ( $importOnly ) {
                 $success = $this->doImportDynamicFile( $key, $thumbs );
             } else {
                 $success = $this->doImportFile( $key, $thumbs );

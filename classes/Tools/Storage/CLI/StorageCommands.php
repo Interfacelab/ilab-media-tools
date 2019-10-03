@@ -17,18 +17,18 @@
 namespace ILAB\MediaCloud\Tools\Storage\CLI;
 
 use  GuzzleHttp\Client ;
-use  GuzzleHttp\Exception\BadResponseException ;
 use  GuzzleHttp\Exception\ClientException ;
-use  GuzzleHttp\Exception\RequestException ;
 use  ILAB\MediaCloud\CLI\Command ;
 use  ILAB\MediaCloud\Storage\StorageSettings ;
-use  ILAB\MediaCloud\Tasks\BatchManager ;
-use  ILAB\MediaCloud\Tools\Storage\DefaultProgressDelegate ;
+use  ILAB\MediaCloud\Tools\Browser\Tasks\ImportFromStorageTask ;
+use  ILAB\MediaCloud\Tools\Integrations\PlugIns\Elementor\Tasks\UpdateElementorTask ;
 use  ILAB\MediaCloud\Tools\Storage\StorageTool ;
+use  ILAB\MediaCloud\Tools\Storage\Tasks\MigrateTask ;
+use  ILAB\MediaCloud\Tools\Storage\Tasks\RegenerateThumbnailTask ;
+use  ILAB\MediaCloud\Tools\Storage\Tasks\UnlinkTask ;
 use  ILAB\MediaCloud\Tools\ToolsManager ;
-use  ILAB\MediaCloud\Utilities\Environment ;
+use function  ILAB\MediaCloud\Utilities\arrayPath ;
 use  ILAB\MediaCloud\Utilities\Logging\Logger ;
-use  Illuminate\Support\Facades\Storage ;
 
 if ( !defined( 'ABSPATH' ) ) {
     header( 'Location: /' );
@@ -43,7 +43,7 @@ class StorageCommands extends Command
 {
     private  $debugMode = false ;
     /**
-     * Imports the media library to the cloud.
+     * Migrates the media library to the cloud.
      *
      * ## OPTIONS
      *
@@ -56,7 +56,7 @@ class StorageCommands extends Command
      * [--page=<number>]
      * : The starting offset to process.  Page numbers start at 1.  Cannot be used with offset.
      *
-     * [--paths=<string>]
+     * [--path-handling=<string>]
      * : Controls the upload path.  'preserve' will preserve the files current path, 'replace' will replace it with the custom prefix defined in cloud storage settings.  'prepend' will prepend the custom prefix with the existing upload directory.
      * ---
      * default: preserve
@@ -66,7 +66,7 @@ class StorageCommands extends Command
      *   - prepend
      * ---
      *
-     * [--skip-existing]
+     * [--skip-imported]
      * : Skips images that have already been migrated to storage.
      *
      * [--skip-thumbnails]
@@ -94,8 +94,48 @@ class StorageCommands extends Command
      *
      * @param $args
      * @param $assoc_args
+     *
+     * @throws \Exception
      */
-    public function import( $args, $assoc_args )
+    public function migrateToCloud( $args, $assoc_args )
+    {
+        /** @var \Freemius $media_cloud_licensing */
+        global  $media_cloud_licensing ;
+        self::Error( "Only available in the Premium version.  To upgrade: https://mediacloud.press/pricing/" );
+    }
+    
+    /**
+     * Imports media from the cloud to WordPress.
+     *
+     * ## OPTIONS
+     *
+     * [--import-path=<string>]
+     * : The path on cloud storage to import from
+     *
+     * [--import-only]
+     * : Don't download, import to database only.
+     *
+     * [--skip-thumbnails]
+     * : Skips any images that look like they might be thumbnails. If this option is on, you may import images that are thumbnails but they will be treated as individual images.  Default is true.
+     *
+     * [--preserve-paths=<string>]
+     * : When downloading images, maintain the directory structure that is on cloud storage.
+     * ---
+     * default: preserve
+     * options:
+     *   - preserve
+     *   - replace
+     *   - prepend
+     * ---
+     *
+     * @when after_wp_load
+     *
+     * @param $args
+     * @param $assoc_args
+     *
+     * @throws \Exception
+     */
+    public function importFromCloud( $args, $assoc_args )
     {
         /** @var \Freemius $media_cloud_licensing */
         global  $media_cloud_licensing ;
@@ -116,10 +156,30 @@ class StorageCommands extends Command
      * [--page=<number>]
      * : The starting offset to process.  Page numbers start at 1.  Cannot be used with offset.
      *
+     * [--order-by=<string>]
+     * : The field to sort the items to be imported by. Valid values are 'date', 'title' and 'filename'.
+     * ---
+     * options:
+     *   - date
+     *   - title
+     *   - filename
+     * ---
+     *
+     * [--order=<string>]
+     * : The sort order. Valid values are 'asc' and 'desc'.
+     * ---
+     * default: asc
+     * options:
+     *   - asc
+     *   - desc
+     * ---
+     *
      * @when after_wp_load
      *
      * @param $args
      * @param $assoc_args
+     *
+     * @throws \Exception
      */
     public function regenerate( $args, $assoc_args )
     {
@@ -142,65 +202,75 @@ class StorageCommands extends Command
      * [--page=<number>]
      * : The starting offset to process.  Page numbers start at 1.  Cannot be used with offset.
      *
+     * [--order-by=<string>]
+     * : The field to sort the items to be imported by. Valid values are 'date', 'title' and 'filename'.
+     * ---
+     * options:
+     *   - date
+     *   - title
+     *   - filename
+     * ---
+     *
+     * [--order=<string>]
+     * : The sort order. Valid values are 'asc' and 'desc'.
+     * ---
+     * default: asc
+     * options:
+     *   - asc
+     *   - desc
+     * ---
+     *
      * @when after_wp_load
      *
      * @param $args
      * @param $assoc_args
+     *
+     * @throws \Exception
      */
     public function unlink( $args, $assoc_args )
     {
-        $postArgs = [
-            'post_type'   => 'attachment',
-            'post_status' => 'inherit',
-        ];
-        
-        if ( isset( $assoc_args['limit'] ) ) {
-            $postArgs['posts_per_page'] = $assoc_args['limit'];
-            
-            if ( isset( $assoc_args['offset'] ) ) {
-                $postArgs['offset'] = $assoc_args['offset'];
-            } else {
-                if ( isset( $assoc_args['page'] ) ) {
-                    $postArgs['offset'] = max( 0, ($assoc_args['page'] - 1) * $assoc_args['limit'] );
-                }
-            }
-        
-        } else {
-            $postArgs['nopaging'] = true;
-        }
-        
-        $q = new \WP_Query( $postArgs );
         Command::Out( "", true );
         Command::Warn( "%WThis command only unlinks media attachments from cloud storage, \nit will not download any media from cloud storage. If the attachments \nyou are unlinking do not exist on your server, you will have broken \nimages on your site.%n" );
         Command::Out( "", true );
         \WP_CLI::confirm( "Are you sure you want to continue?", $assoc_args );
-        Command::Out( "", true );
-        Command::Info( "Found %W{$q->post_count}%n attachments.", true );
-        Command::Info( "Processing ..." );
-        foreach ( $q->posts as $post ) {
-            $meta = wp_get_attachment_metadata( $post->ID );
+        $options = $assoc_args;
+        if ( isset( $options['limit'] ) ) {
             
-            if ( isset( $meta['s3'] ) ) {
-                unset( $meta['s3'] );
-                
-                if ( isset( $meta['sizes'] ) ) {
-                    $sizes = $meta['sizes'];
-                    foreach ( $sizes as $size => $sizeData ) {
-                        if ( isset( $sizeData['s3'] ) ) {
-                            unset( $sizeData['s3'] );
-                        }
-                        $sizes[$size] = $sizeData;
-                    }
-                    $meta['sizes'] = $sizes;
-                }
-                
-                update_post_meta( $post->ID, '_wp_attachment_metadata', $meta );
+            if ( isset( $options['page'] ) ) {
+                $options['offset'] = max( 0, ($assoc_args['page'] - 1) * $assoc_args['limit'] );
+                unset( $options['page'] );
             }
-            
-            Command::Info( '.' );
+        
         }
-        Command::Info( ' %GDone.%n', true );
-        Command::Out( "", true );
+        
+        if ( isset( $assoc_args['order-by'] ) ) {
+            $orderBy = $assoc_args['order-by'];
+            $dir = arrayPath( $assoc_args, 'order', 'asc' );
+            unset( $assoc_args['order-by'] );
+            unset( $assoc_args['order'] );
+            $assoc_args['sort-order'] = $orderBy . '-' . $dir;
+        }
+        
+        /** @var UnlinkTask $task */
+        $task = new UnlinkTask();
+        $this->runTask( $task, $options );
+    }
+    
+    /**
+     * Updates Elementor's data with the correct URLs.
+     *
+     *
+     * @when after_wp_load
+     *
+     * @param $args
+     * @param $assoc_args
+     *
+     * @throws \Exception
+     */
+    public function updateElementor( $args, $assoc_args )
+    {
+        global  $media_cloud_licensing ;
+        self::Error( "Only available in the Premium version.  To upgrade: https://mediacloud.press/pricing/" );
     }
     
     /**

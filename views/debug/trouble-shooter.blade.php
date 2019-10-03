@@ -68,9 +68,8 @@
         </div>
     </div>
 
-    @track('mcloud-opt-in-crisp', 'pro')
-    @include('support.crisp')
-    @endtrack
+
+    @include('support.beacon')
 @endsection
 
 <script>
@@ -91,11 +90,7 @@
                     $('#wait-message').text(response.status);
                 }
 
-                if (response.hasOwnProperty('wait')) {
-                    $('#ilab-media-cloud-troubleshooter-wait').removeClass('hidden');
-
-                    startWaiting(response.wait);
-                } else if (response.hasOwnProperty('next')) {
+                if (response.hasOwnProperty('next')) {
                     $('#ilab-media-cloud-troubleshooter-wait').removeClass('hidden');
 
                     $('#wait-title').text(response.next.title);
@@ -109,42 +104,6 @@
 
                     $('#ilab-media-cloud-start-troubleshooting').attr('disabled',null);
                     $('#ilab-media-cloud-spinner').hide();
-                }
-            });
-        }
-
-        function startWaiting(step) {
-            $.post(ajaxurl, { action: 'ilab_media_cloud_wait_troubleshooting', step: step }, function(response){
-                if (response.hasOwnProperty('status')) {
-                    $('#wait-message').text(response.status);
-                }
-
-                if (response.hasOwnProperty('title')) {
-                    $('#wait-title').text(response.title);
-                }
-
-                if (response.hasOwnProperty('wait')) {
-                    setTimeout(function() {
-                        startWaiting(step);
-                    }, 500);
-                } else {
-                    if (response.hasOwnProperty('html')) {
-                        $('#ilab-media-cloud-troubleshooting-results').append(response.html);
-                    }
-
-                    if (response.hasOwnProperty('next')) {
-                        $('#wait-title').text(response.next.title);
-                        $('#wait-message').text(response.next.status);
-
-                        nextStep(response.next.step);
-                    } else {
-                        $('#ilab-media-cloud-troubleshooter-wait').addClass('hidden');
-
-                        troubleshooting = false;
-                        $('#ilab-media-cloud-start-troubleshooting').attr('disabled',null);
-                        $('#ilab-media-cloud-spinner').hide();
-                    }
-
                 }
             });
         }

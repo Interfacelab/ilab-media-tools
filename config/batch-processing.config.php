@@ -20,9 +20,6 @@ return [
 	"exclude" => true,
 	"dependencies" => [],
 	"env" => "ILAB_MEDIA_BATCH_PROCESSING_ENABLED",  // this is always enabled btw
-	"batchTools" => [
-		\ILAB\MediaCloud\Tools\Debugging\System\Batch\TestBatchTool::class
-	],
 	"settings" => [
 		"options-page" => "media-tools-batch-processing",
 		"options-group" => "ilab-media-batch-processing",
@@ -32,18 +29,28 @@ return [
 				"dynamic" => true,
 				"description" => "The following options control how tasks like importer, thumbnail regeneration and Rekognition work.  You should only change these settings if you are having issues or if the <a href='".admin_url('admin.php?page=media-tools-troubleshooter')."' target='_blank'>system compatibility tool</a> directed you to.",
 				"options" => [
-					"mcloud-storage-batch-verify-ssl" => [
+					"mcloud-tasks-http-client" => [
+						"title" => "HTTP Client",
+						"description" => "Controls which HTTP client to use for background processing.",
+						"type" => "select",
+						"default" => "wordpress",
+						"options" => [
+							"wordpress" => "WordPress HTTP Client",
+							"guzzle" => "Guzzle HTTP Client",
+						]
+					],
+					"mcloud-tasks-verify-ssl" => [
 						"title" => "Verify SSL",
 						"description" => "Determines if SSL is verified when making the remote connection for the background process.",
 						"type" => "select",
-						"default" => "none",
+						"default" => "no",
 						"options" => [
 							"default" => "System Default",
 							"yes" => "Yes",
 							"no" => "No",
 						]
 					],
-					"mcloud-storage-batch-connect-timeout" => [
+					"mcloud-tasks-connect-timeout" => [
 						"title" => "Connection Timeout",
 						"description" => "The number of seconds to wait for a connection to occur. If you are having issues with the batch importer process, or the system compatibility tool is complaining about <code>cURL error 2x</code>, try setting this to 5 to 10 seconds.",
 						"type" => "number",
@@ -52,7 +59,7 @@ return [
 						"min" => 0.01,
 						"max" => 300
 					],
-					"mcloud-storage-batch-timeout" => [
+					"mcloud-tasks-timeout" => [
 						"title" => "Timeout",
 						"description" => "The number of seconds to wait for a response before the request times out. If you are having issues with the batch importer process, or the system compatibility tool is complaining about <code>cURL error 2x</code>, try setting this to 0.1 or even 10.",
 						"type" => "number",
@@ -61,13 +68,13 @@ return [
 						"min" => 0.01,
 						"max" => 30
 					],
-					"mcloud-storage-batch-skip-dns" => [
+					"mcloud-tasks-skip-dns" => [
 						"title" => "Skip DNS",
 						"description" => "When this is selected, the background process request will connect to localhost, passing in the host name in an HTTP header.  Some managed hosting/VPS providers have DNS issues, turning this off might help.",
 						"type" => "checkbox",
 						"default" => false
 					],
-					"mcloud-storage-batch-skip-dns-host" => [
+					"mcloud-tasks-skip-dns-host" => [
 						"title" => "Host IP Address",
 						"description" => "When skipping DNS, select the IP address to use to resolve to.",
 						"type" => "select",
@@ -76,12 +83,6 @@ return [
 							"ip" => getHostByName(getHostName()),
 							'local' => '127.0.0.1',
 						]
-					],
-					"mcloud-storage-batch-background-processing" => [
-						"title" => "Process In Background",
-						"description" => "When this is selected, batch processing happens asynchronously in the background on your WordPress server.  However, some server configuration and hosting setups do not support this type of background processing.  If you set this to false/off, the import is processed in your browser via ajax.  This client-side ajax method is can be slower (though sometimes it can be faster) and requires that the importer page be open during the entire import process.",
-						"type" => "checkbox",
-						"default" => true
 					],
 				]
 			],

@@ -53,6 +53,11 @@ class DebuggingTool extends Tool {
 
 	}
 
+
+	public function hasSettings() {
+		return true;
+	}
+
     public function registerHelpMenu($top_menu_slug, $networkMode = false, $networkAdminMenu = false) {
         parent::registerHelpMenu($top_menu_slug);
 

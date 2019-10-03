@@ -297,8 +297,12 @@ class ImgixTool extends DynamicImagesTool {
 			$imgix->setSignKey($this->signingKey);
 		}
 
+		if (isset($size['crop'])) {
+			$is_crop = !empty($size['crop']);
+		} else {
+			$is_crop = ((count($size) >= 3) && ($size[2] == 'crop'));
+		}
 
-		$is_crop = ((count($size) >= 3) && ($size[2] == 'crop'));
 		if (!$is_crop && $this->shouldCrop) {
 		    $this->shouldCrop = false;
 		    $is_crop = true;

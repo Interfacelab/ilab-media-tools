@@ -17,10 +17,9 @@
 namespace ILAB\MediaCloud\Tools\Vision\CLI;
 
 use ILAB\MediaCloud\CLI\Command;
-use ILAB\MediaCloud\Tasks\BatchManager;
 use ILAB\MediaCloud\Tools\Rekognition\VisionTool;
-use ILAB\MediaCloud\Tools\ToolsManager;
-use ILAB\MediaCloud\Vision\VisionManager;
+use ILAB\MediaCloud\Tools\Vision\Tasks\ProcessVisionTask;
+use function ILAB\MediaCloud\Utilities\arrayPath;
 
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
@@ -42,97 +41,54 @@ class VisionCLICommands extends Command {
 	 * [--page=<number>]
 	 * : The starting offset to process.  Page numbers start at 1.  Cannot be used with offset.
 	 *
+	 * [--order-by=<string>]
+	 * : The field to sort the items to be imported by. Valid values are 'date', 'title' and 'filename'.
+	 * ---
+	 * options:
+	 *   - date
+	 *   - title
+	 *   - filename
+	 * ---
+	 *
+	 * [--order=<string>]
+	 * : The sort order. Valid values are 'asc' and 'desc'.
+	 * ---
+	 * default: asc
+	 * options:
+	 *   - asc
+	 *   - desc
+	 * ---
+	 *
 	 * @when after_wp_load
 	 *
 	 * @param $args
 	 * @param $assoc_args
+	 *
+	 * @throws \Exception
 	 */
 	public function process($args, $assoc_args) {
-		/** @var VisionTool $tool */
-		$tool = ToolsManager::instance()->tools['vision'];
+		$options = $assoc_args;
 
-		if (!$tool || !$tool->enabled()) {
-			Command::Error('Vision tool is not enabled in Media Cloud or the settings are incorrect.');
-			return;
-		}
-
-		global $wpdb;
-
-		$sql = <<<SQL
-			select 
-				posts.ID
-			from
-				{$wpdb->posts} posts
-			where
-				posts.post_type = 'attachment'
-			and
-				posts.post_status = 'inherit'
-			and
-				posts.post_mime_type in ('image/jpeg', 'image/jpg', 'image/png')
-			and
-				posts.ID in (select post_id from wp_postmeta where meta_key = '_wp_attachment_metadata' and meta_value like '%s:2:"s3";a:%')
-SQL;
-
-		if (isset($assoc_args['limit'])) {
-			$limit = $assoc_args['limit'];
-			$offset = 0;
-			if (isset($assoc_args['offset'])) {
-				$offset = $assoc_args['offset'];
-			} else if (isset($assoc_args['page'])) {
-				$offset = max(0,($assoc_args['page'] - 1) * $assoc_args['limit']);
+		if (isset($options['limit'])) {
+			if (isset($options['page'])) {
+				$options['offset'] = max(0,($assoc_args['page'] - 1) * $assoc_args['limit']);
+				unset($options['page']);
 			}
 
-			$sql .= " limit $limit offset $offset";
 		}
 
-		$rows = $wpdb->get_results($sql);
+		if (isset($assoc_args['order-by'])) {
+			$orderBy = $assoc_args['order-by'];
+			$dir = arrayPath($assoc_args, 'order', 'asc');
 
-		$posts = [];
-		foreach($rows as $row) {
-			$posts[] = $row->ID;
+			unset($assoc_args['order-by']);
+			unset($assoc_args['order']);
+
+			$assoc_args['sort-order'] = $orderBy.'-'.$dir;
 		}
 
-		$postCount = count($posts);
-		if($postCount > 0) {
-		    BatchManager::instance()->reset('vision');
-
-
-            BatchManager::instance()->setStatus('vision', true);
-            BatchManager::instance()->setTotalCount('vision', $postCount);
-            BatchManager::instance()->setCurrent('vision', 1);
-            BatchManager::instance()->setShouldCancel('vision', false);
-
-			Command::Info("Total posts found: %Y{$postCount}.", true);
-
-			for($i = 1; $i <= $postCount; $i++) {
-				$postId = $posts[$i - 1];
-				$upload_file = get_attached_file($postId);
-				$fileName = basename($upload_file);
-
-                BatchManager::instance()->setCurrentFile('vision', $fileName);
-                BatchManager::instance()->setCurrent('vision', $i);
-
-				Command::Info("%w[%C{$i}%w of %C{$postCount}%w] %NProcessing %Y$fileName%N %w(%N$postId%w)%N ... ");
-
-				$data = wp_get_attachment_metadata($postId);
-				if (empty($data)) {
-					Command::info( 'Missing metadata, skipping.', true);
-					continue;
-				}
-
-				if (!isset($data['s3']) && (VisionManager::driver() == 'rekognition')) {
-					Command::info( 'Missing cloud storage metadata, skipping.', true);
-					continue;
-				}
-
-				$data = $tool->processImageMeta($data, $postId);
-				wp_update_attachment_metadata($postId, $data);
-
-				Command::Info("%YDone%N.", true);
-			}
-
-            BatchManager::instance()->reset('vision');
-		}
+		$task = new ProcessVisionTask();
+		$this->runTask($task, $options);
 	}
 
 	public static function Register() {

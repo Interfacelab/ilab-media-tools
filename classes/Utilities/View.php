@@ -87,6 +87,10 @@ final class View {
 		        return "<?php if (\\ILAB\\MediaCloud\\Utilities\\LicensingManager::OptedIn($expression)): ?>";
 	        });
 
+	        static::$bladeInstance->directive('elsetrack', function($expression) {
+		        return "<?php else: ?>";
+	        });
+
 	        static::$bladeInstance->directive('endtrack', function($expression) {
 		        return '<?php endif; ?>';
 	        });
