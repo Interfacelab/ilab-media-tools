@@ -498,6 +498,9 @@ class StorageTool extends Tool
         $upload_info = wp_upload_dir();
         $upload_path = $upload_info['basedir'];
         $path_base = pathinfo( $data['file'] )['dirname'];
+        if ( $path_base === '.' ) {
+            $path_base = '';
+        }
         $old_path_base = $path_base;
         $old_file = $data['file'];
         
@@ -552,7 +555,7 @@ class StorageTool extends Tool
                                 $size['file'] = str_replace( $old_path_base, '', $size['file'] );
                             }
                             
-                            $file = $path_base . '/' . $size['file'];
+                            $file = ltrim( $path_base . '/' . $size['file'], '/' );
                             
                             if ( $file == $data['file'] ) {
                                 $size['file'] = $oldSizeFile;
@@ -1353,7 +1356,7 @@ class StorageTool extends Tool
      */
     private function getAttachmentURLFromMeta( $meta )
     {
-        if ( !isset( $meta['s3'] ) ) {
+        if ( !isset( $meta['s3'] ) || !isset( $meta['s3']['key'] ) ) {
             return null;
         }
         if ( empty($this->client) ) {
@@ -1944,6 +1947,9 @@ class StorageTool extends Tool
         
         }
         
+        if ( $prefix === '/' ) {
+            $prefix = '';
+        }
         Logger::info( "({$preserveFilePath}) Prefix => {$prefix} " );
         $parts = explode( '/', $filename );
         $bucketFilename = array_pop( $parts );

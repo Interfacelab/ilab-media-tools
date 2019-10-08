@@ -176,5 +176,11 @@ class UnlinkTask extends AttachmentTask {
 		return true;
 	}
 
+	public function complete() {
+		if (function_exists('rocket_clean_domain')) {
+			rocket_clean_domain();
+		}
+	}
+
 	//endregion
 }

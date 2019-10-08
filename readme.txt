@@ -109,6 +109,13 @@ No, I'm just one very enthusiastic customer.
 
 == Changelog ==
 
+= 3.2.1 =
+
+* Fix for task heartbeat
+* Optimize asset upload process
+* Fix for font assets not being gzipped when pushed to cloud storage
+* Fix for when images are in the root of the upload directory, they appeared broken
+
 = 3.2.0 =
 
 * Activating Media Cloud will now import your WP Offload Media or WP-Stateless settings, making the transition as smooth as possible.

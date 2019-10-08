@@ -458,6 +458,7 @@ abstract class Task extends Model implements \JsonSerializable {
 
 		$firstTime = true;
 		$result = self::TASK_TIME_LIMIT;
+		$this->willStart();
 		while ($this->canWork($firstTime)) {
 			$this->lock();
 
@@ -559,6 +560,7 @@ abstract class Task extends Model implements \JsonSerializable {
 		}
 
 		Logger::info("Unlocking ...");
+		$this->didFinish();
 		$this->unlock();
 		return $result;
 	}
@@ -572,6 +574,17 @@ abstract class Task extends Model implements \JsonSerializable {
 	 */
 	public abstract function performTask($item);
 
+	/**
+	 * Called when a task is about to start processing for a cycle
+	 */
+	public function willStart() {
+	}
+
+	/**
+	 * Called when the task has finished processing for a cycle
+	 */
+	public function didFinish() {
+	}
 
 	/**
 	 * Called when the task completed

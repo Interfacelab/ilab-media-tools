@@ -86,6 +86,28 @@ return [
 					],
 				]
 			],
+			"ilab-media-cloud-batch-heartbeat-settings" => [
+				"title" => "Heartbeat Settings",
+				"dynamic" => true,
+				"description" => "The following settings control the task manager's heartbeat settings.  When browsing the admin pages, javascript will execute periodically to insure that the task queue is processed and any background tasks are being run.  We use this instead of the WordPress heartbeat API for reliability reasons.  You can completely disable this, however make sure that you have WordPress CRON configured and running reliably otherwise you may have issues processing background tasks.",
+				"options" => [
+					"mcloud-tasks-heartbeat-enabled" => [
+						"title" => "Enable Heartbeat",
+						"description" => "When this is enabled, browsing WordPress admin pages will execute an ajax method every few seconds to insure that the background tasks are being processed.  If disabled, please insure that WordPress CRON is running reliably.",
+						"type" => "checkbox",
+						"default" => true
+					],
+					"mcloud-tasks-heartbeat-frequency" => [
+						"title" => "Heartbeat Frequency",
+						"description" => "The number of seconds between heartbeats.",
+						"type" => "number",
+						"default" => 15,
+						"increment" => 1,
+						"min" => 2,
+						"max" => 60
+					],
+				]
+			],
 		]
 	]
 ];
