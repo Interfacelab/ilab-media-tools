@@ -152,7 +152,6 @@ class ImgixTool extends DynamicImagesTool {
 			return $this->renderPDF;
 		});
 
-		do_action_deprecated('ilab_imgix_setup', [], '3.0.0', 'media-cloud/imgix/setup');
 		do_action('media-cloud/imgix/setup');
 
 		if ($this->detectFaces) {
@@ -332,7 +331,6 @@ class ImgixTool extends DynamicImagesTool {
 			'fm' => 'jpg'
 		];
 
-		$params = apply_filters_deprecated('ilab-imgix-filter-parameters', [$params, $size, $id, $meta], '3.0.0', 'media-cloud/dynamic-images/filter-parameters');
 		$params = apply_filters('media-cloud/dynamic-images/filter-parameters', $params, $size, $id, $meta);
 
 		$imageFile = (isset($meta['s3'])) ? $meta['s3']['key'] : $meta['file'];
@@ -452,7 +450,6 @@ class ImgixTool extends DynamicImagesTool {
 			}
 
 			$params = $this->buildImgixParams($params, $mimetype);
-			$params = apply_filters_deprecated('ilab-imgix-filter-parameters', [$params, $size, $id, $meta], '3.0.0', 'media-cloud/dynamic-images/filter-parameters');
 			$params = apply_filters('media-cloud/dynamic-images/filter-parameters', $params, $size, $id, $meta);
 
 			if(!isset($meta['file'])) {
@@ -676,7 +673,6 @@ class ImgixTool extends DynamicImagesTool {
 		}
 
 		$params = $this->buildImgixParams($params, $mimetype);
-		$params = apply_filters_deprecated('ilab-imgix-filter-parameters', [$params, $size, $id, $meta], '3.0.0', 'media-cloud/dynamic-images/filter-parameters');
 		$params = apply_filters('media-cloud/dynamic-images/filter-parameters', $params, $size, $id, $meta);
 
 		$imageFile = (isset($meta['s3'])) ? $meta['s3']['key'] : $meta['file'];

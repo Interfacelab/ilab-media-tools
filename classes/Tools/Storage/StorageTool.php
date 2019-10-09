@@ -608,12 +608,6 @@ class StorageTool extends Tool
                 
                 
                 if ( isset( $data['s3'] ) ) {
-                    $data = apply_filters_deprecated(
-                        'ilab_s3_after_upload',
-                        [ $data, $id ],
-                        '3.0.0',
-                        'media-cloud/storage/after-upload'
-                    );
                     $data = apply_filters( 'media-cloud/storage/after-upload', $data, $id );
                     $data = apply_filters( 'media-cloud/vision/process-meta', $data, $id );
                 }
@@ -798,13 +792,7 @@ class StorageTool extends Tool
         if ( isset( $_REQUEST["action"] ) && $_REQUEST["action"] == "upload-plugin" ) {
             return $upload;
         }
-        $shouldHandle = apply_filters_deprecated(
-            'ilab_s3_should_handle_upload',
-            [ true, $upload ],
-            '3.0.0',
-            'media-cloud/storage/should-handle-upload'
-        );
-        $shouldHandle = apply_filters( 'media-cloud/storage/should-handle-upload', $shouldHandle, $upload );
+        $shouldHandle = apply_filters( 'media-cloud/storage/should-handle-upload', true, $upload );
         if ( !$shouldHandle ) {
             return $upload;
         }
@@ -1158,13 +1146,7 @@ class StorageTool extends Tool
         $attachment_id
     )
     {
-        $canCalculateSrcSet = apply_filters_deprecated(
-            'ilab_s3_can_calculate_srcset',
-            [ true ],
-            '3.0.0',
-            'media-cloud/storage/can-calculate-srcset'
-        );
-        if ( !apply_filters( 'media-cloud/storage/can-calculate-srcset', $canCalculateSrcSet ) ) {
+        if ( !apply_filters( 'media-cloud/storage/can-calculate-srcset', true ) ) {
             return $sources;
         }
         if ( $this->disableSrcSet ) {
@@ -1623,13 +1605,7 @@ class StorageTool extends Tool
      */
     public function filterContent( $content )
     {
-        $canFilterContent = apply_filters_deprecated(
-            'ilab_media_cloud_filter_content',
-            [ true ],
-            '3.0.0',
-            'media-cloud/storage/can-filter-content'
-        );
-        if ( !apply_filters( 'media-cloud/storage/can-filter-content', $canFilterContent ) ) {
+        if ( !apply_filters( 'media-cloud/storage/can-filter-content', true ) ) {
             return $content;
         }
         if ( !preg_match_all( '/<img [^>]+>/', $content, $matches ) ) {
@@ -1894,13 +1870,7 @@ class StorageTool extends Tool
             $this->deleteFile( $key );
         }
         
-        $shouldUseCustomPrefix = apply_filters_deprecated(
-            'ilab_storage_should_use_custom_prefix',
-            [ true ],
-            '3.0.0',
-            'media-cloud/storage/should-use-custom-prefix'
-        );
-        $shouldUseCustomPrefix = apply_filters( 'media-cloud/storage/should-use-custom-prefix', $shouldUseCustomPrefix );
+        $shouldUseCustomPrefix = apply_filters( 'media-cloud/storage/should-use-custom-prefix', true );
         $shouldUseCustomPrefix = !empty(StorageSettings::prefixFormat()) && $shouldUseCustomPrefix;
         
         if ( $preserveFilePath == 'replace' ) {
@@ -3047,12 +3017,6 @@ class StorageTool extends Tool
         if ( is_wp_error( $post ) ) {
             return false;
         }
-        $meta = apply_filters_deprecated(
-            'ilab_s3_after_upload',
-            [ $meta, $post ],
-            '3.0.0',
-            'media-cloud/storage/after-upload'
-        );
         $meta = apply_filters( 'media-cloud/storage/after-upload', $meta, $post );
         $meta = apply_filters( 'media-cloud/vision/process-meta', $meta, $post );
         add_post_meta( $post, '_wp_attached_file', $fileInfo->key() );
@@ -3273,12 +3237,6 @@ class StorageTool extends Tool
         if ( is_wp_error( $post ) ) {
             return false;
         }
-        $meta = apply_filters_deprecated(
-            'ilab_s3_after_upload',
-            [ $meta, $post ],
-            '3.0.0',
-            'media-cloud/storage/after-upload'
-        );
         $meta = apply_filters( 'media-cloud/storage/after-upload', $meta, $post );
         add_post_meta( $post, '_wp_attached_file', $fileInfo->key() );
         add_post_meta( $post, '_wp_attachment_metadata', $meta );
