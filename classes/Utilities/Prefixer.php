@@ -28,6 +28,8 @@ final class Prefixer {
 	private $versionedIds = [];
 
 	private $currentVersion = null;
+
+	private $currentType = null;
 	//endregion
 
 	//region Constructor/Static Instance
@@ -123,6 +125,7 @@ final class Prefixer {
 		$prefix = str_replace("@{user-name}", $userName, $prefix);
 		$prefix = str_replace("@{unique-id}", $this->genUUID(), $prefix);
 		$prefix = str_replace("@{unique-path}", $this->genUUIDPath(), $prefix);
+		$prefix = str_replace('@{type}', $this->currentType, $prefix);
 		$prefix = str_replace("//", "/", $prefix);
 
 		$matches = [];
@@ -155,6 +158,18 @@ final class Prefixer {
 
 	public static function nextVersion() {
 		self::instance()->updateVersion();
+	}
+
+	public static function setType($type) {
+		if ($type != null) {
+			$typeParts = explode('/', $type);
+			$type = $typeParts[0];
+			if ($type == 'application') {
+				$type = 'doc';
+			}
+		}
+
+		self::instance()->currentType = $type;
 	}
 	//endregion
 }

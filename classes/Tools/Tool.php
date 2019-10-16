@@ -16,9 +16,11 @@
 
 namespace ILAB\MediaCloud\Tools;
 
+use ILAB\MediaCloud\Storage\StorageSettings;
 use ILAB\MediaCloud\Utilities\Environment;
 use ILAB\MediaCloud\Utilities\NoticeManager;
 use function ILAB\MediaCloud\Utilities\arrayPath;
+use ILAB\MediaCloud\Utilities\Prefixer;
 use ILAB\MediaCloud\Utilities\Tracker;
 use function ILAB\MediaCloud\Utilities\vomit;
 
@@ -115,6 +117,10 @@ abstract class Tool {
             foreach($toolInfo['helpers'] as $helper) {
                 require_once(ILAB_HELPERS_DIR.'/'.$helper);
             }
+        }
+
+        if (is_admin()) {
+            add_action('wp_ajax_mcloud_preview_upload_path', [$this, 'doPreviewUploadPath']);
         }
     }
 
@@ -427,9 +433,15 @@ abstract class Tool {
                         $max = arrayPath($optionInfo,'max',1000);
 
                         switch($optionInfo['type']) {
-                            case 'text-field':
-                                $this->registerTextFieldSetting($option,$optionInfo['title'],$group,$description,$placeholder,$conditions);
-                                break;
+	                        case 'text-field':
+		                        $this->registerTextFieldSetting($option,$optionInfo['title'],$group,$description,$placeholder,$conditions);
+		                        break;
+	                        case 'upload-path':
+		                        $this->registerUploadPathFieldSetting($option,$optionInfo['title'],$group,$description,$placeholder,$conditions);
+		                        break;
+	                        case 'subsite-upload-paths':
+		                        $this->registerSubsiteUploadPathsFieldSetting($option,$optionInfo['title'],$group,$description,$placeholder,$conditions);
+		                        break;
                             case 'text-area':
                                 $this->registerTextAreaFieldSetting($option,$optionInfo['title'],$group,$description, $placeholder, $conditions);
                                 break;
@@ -537,5 +549,25 @@ abstract class Tool {
         return false;
     }
 
+    //endregion
+
+    //region Upload Path Preview
+    public function doPreviewUploadPath() {
+        check_ajax_referer('mcloud-preview-upload-path', 'nonce');
+
+        $prefix = sanitize_text_field($_REQUEST['prefix']);
+        if (empty($prefix)) {
+            wp_die();
+        }
+
+        Prefixer::nextVersion();
+        Prefixer::setType('image/jpeg');
+
+        wp_send_json([
+            'path' => Prefixer::Parse($prefix),
+            'prefix' => $prefix
+        ]);
+
+    }
     //endregion
 }

@@ -524,6 +524,7 @@ class StorageTool extends Tool
         if ( $mime && $ignoreMimeTypes && StorageSettings::mimeTypeIsIgnored( $mime ) ) {
             return $originalData;
         }
+        Prefixer::setType( $mime );
         
         if ( $this->client && $this->client->enabled() ) {
             $ignoreExistingS3 = apply_filters( 'media-cloud/storage/ignore-existing-s3-data', false, $id );
@@ -618,6 +619,7 @@ class StorageTool extends Tool
         
         unset( $data['prefix'] );
         $data['file'] = $old_file;
+        Prefixer::setType( null );
         Prefixer::nextVersion();
         return $data;
     }
@@ -838,6 +840,7 @@ class StorageTool extends Tool
                 restore_error_handler();
             }
             
+            Prefixer::setType( $upload['type'] );
             $upload = $this->processFile( $upload_path, $file, $upload );
             if ( isset( $upload['s3'] ) ) {
                 
@@ -851,6 +854,8 @@ class StorageTool extends Tool
             
             }
             $this->uploadedDocs[$file] = $upload;
+            Prefixer::setType( null );
+            Prefixer::nextVersion();
         }
         
         return $upload;

@@ -136,12 +136,18 @@ return [
 				"doc_beacon" => '39',
 				"description" => "The following options control how the storage tool handles uploads.",
                 "options" => [
-                    "mcloud-storage-prefix" => [
-                        "title" => "Upload Path",
-                        "display-order" => 10,
-                        "description" => "This will set the upload path to store uploads both locally and on cloud storage.  Leave blank to use the WordPress default of <code>Month/Day</code>.  For dynamically created paths, you can use the following variables: <code>@{date:format}</code>, <code>@{site-name}</code>, <code>@{site-host}</code>, <code>@{site-id}</code>, <code>@{versioning}</code>, <code>@{user-name}</code>, <code>@{unique-id}</code>, <code>@{unique-path}</code>.  For the date token, format is any format string that you can use with php's <a href='http://php.net/manual/en/function.date.php' target='_blank'>date()</a> function.  WordPress's default upload path would look like: <code>@{date:Y/m}</code>.",
-                        "type" => "text-field"
-                    ],
+	                "mcloud-storage-prefix" => [
+		                "title" => "Upload Path",
+		                "display-order" => 10,
+		                "description" => "This will set the upload path to store uploads both locally and on cloud storage.  Leave blank to use the WordPress default of <code>Month/Day</code>.  For dynamically created paths, you can use the following variables: <code>@{date:format}</code>, <code>@{site-name}</code>, <code>@{site-host}</code>, <code>@{site-id}</code>, <code>@{versioning}</code>, <code>@{user-name}</code>, <code>@{unique-id}</code>, <code>@{unique-path}</code>, <code>@{type}</code>.  For the date token, format is any format string that you can use with php's <a href='http://php.net/manual/en/function.date.php' target='_blank'>date()</a> function.  WordPress's default upload path would look like: <code>@{date:Y/m}</code>.",
+		                "type" => "upload-path"
+	                ],
+	                "mcloud-storage-subsite-prefixes" => [
+		                "title" => "Subsite Upload Paths",
+		                "display-order" => 10,
+		                "description" => "This allows you to override the default upload path for individual subsites in your multisite network.  If left blank, that subsite will use your default upload path.  As with the <strong>Upload Path</strong> setting, you can use the following variables: <code>@{date:format}</code>, <code>@{site-name}</code>, <code>@{site-host}</code>, <code>@{site-id}</code>, <code>@{versioning}</code>, <code>@{user-name}</code>, <code>@{unique-id}</code>, <code>@{unique-path}</code>, <code>@{type}</code>.",
+		                "type" => "subsite-upload-paths"
+	                ],
 	                "mcloud-storage-upload-images" => [
 		                "title" => "Upload Images",
 		                "description" => "Upload image files to cloud storage.",

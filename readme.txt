@@ -2,10 +2,10 @@
 Contributors: mediacloud, interfacelab
 Tags: offload, amazon, s3, imgix, uploads, google cloud storage, digital ocean spaces, wasabi, minio, media, cdn, rekognition, cloudfront, images, crop, image editing, image editor, media library, offload, offload s3, filepicker, smush, ewww, imagify, shortpixel
 Requires at least: 4.4
-Tested up to: 5.2.2
+Tested up to: 5.2.4
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 3.2.2
+Stable tag: 3.2.3
 Requires PHP: 5.6.4
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -108,6 +108,15 @@ No, I'm just one very enthusiastic customer.
 
 
 == Changelog ==
+
+= 3.2.3 =
+
+* Fix for asset push when the CSS rule contains a url with a query string
+* Fix to insure the task heartbeat only runs once within the given interval, regardless of the number of admins logged into the admin
+* Added @{type} variable for upload paths to include the upload type.  For example, if the upload path setting is set to `upload/@{type}` then when uploading an image the upload directory will be `/upload/image/`, or when uploading a video the upload path would be `/upload/video/`, etc.
+* The Cloud Storage settings will show you a preview of your upload path when editing it.
+* Fix for invalid presign expiration time which was causing direct uploads to fail on multisite.
+* For multisite, the ability to specify different upload directories for each subsite.
 
 = 3.2.2 =
 

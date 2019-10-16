@@ -77,7 +77,7 @@ class S3Storage implements StorageInterface {
 	protected $usePresignedURLs = false;
 
 	/** @var int  */
-	protected $presignedURLExpiration = 10;
+	protected $presignedURLExpiration = 300;
 
 	/** @var null|AdapterInterface */
 	protected $adapter = null;
@@ -109,7 +109,10 @@ class S3Storage implements StorageInterface {
 		$thisClass = get_class($this);
 
 		$this->usePresignedURLs = Environment::Option('mcloud-storage-use-presigned-urls', null, false);
-		$this->presignedURLExpiration = Environment::Option('mcloud-storage-presigned-expiration', null, 10);
+		$this->presignedURLExpiration = Environment::Option('mcloud-storage-presigned-expiration', null, 300);
+		if (empty($this->presignedURLExpiration)) {
+			$this->presignedURLExpiration = 300;
+		}
 
 		if(StorageManager::driver() == 's3') {
 			$this->useTransferAcceleration = Environment::Option('mcloud-storage-s3-use-transfer-acceleration', 'ILAB_AWS_S3_TRANSFER_ACCELERATION', false);

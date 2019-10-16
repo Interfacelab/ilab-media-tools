@@ -31,6 +31,9 @@ final class StorageSettings {
 	/** @var string|null */
 	private $prefixFormat = '';
 
+	/** @var string[] */
+	private $subsitePrefixFormat = [];
+
 	/** @var string|null */
 	private $cacheControl = null;
 
@@ -84,6 +87,7 @@ final class StorageSettings {
 		$this->deleteFromStorage = Environment::Option('mcloud-storage-delete-from-server', null, false);
 		$this->queuedDeletes = Environment::Option('mcloud-storage-queue-deletes', null, true);
 		$this->prefixFormat = Environment::Option('mcloud-storage-prefix', '');
+		$this->subsitePrefixFormat = Environment::Option('mcloud-storage-subsite-prefixes', '', []);
 
 		$this->uploadImages = Environment::Option('mcloud-storage-upload-images', null, true);
 		$this->uploadAudio = Environment::Option('mcloud-storage-upload-audio', null, true);
@@ -162,6 +166,13 @@ final class StorageSettings {
 	//region Settings Properties
 	/** @return string|null */
 	public static function prefixFormat() {
+		if (is_multisite()) {
+			$blogId = get_current_blog_id();
+			if (isset(self::instance()->subsitePrefixFormat[$blogId])) {
+				return self::instance()->subsitePrefixFormat[$blogId];
+			}
+		}
+
 		return self::instance()->prefixFormat;
 	}
 

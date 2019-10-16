@@ -64,7 +64,7 @@ class GoogleStorage implements StorageInterface {
 	protected $usePresignedURLs = false;
 
 	/** @var int  */
-	protected $presignedURLExpiration = 10;
+	protected $presignedURLExpiration = 300;
 
 	/** @var bool  */
 	protected $useBucketPolicyOnly = false;
@@ -97,7 +97,10 @@ class GoogleStorage implements StorageInterface {
 		$this->settingsError = Environment::Option('mcloud-google-settings-error', null, false);
 
 		$this->usePresignedURLs = Environment::Option('mcloud-storage-use-presigned-urls', null, false);
-		$this->presignedURLExpiration = Environment::Option('mcloud-storage-presigned-expiration', null, 10);
+		$this->presignedURLExpiration = Environment::Option('mcloud-storage-presigned-expiration', null, 300);
+		if (empty($this->presignedURLExpiration)) {
+			$this->presignedURLExpiration = 300;
+		}
 
 		$this->useBucketPolicyOnly = Environment::Option('mcloud-storage-bucket-policy-only', null, false);
 

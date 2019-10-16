@@ -217,6 +217,15 @@ final class TaskManager {
 	 * @throws \Exception
 	 */
 	public function handleHeartbeat() {
+		$freq = get_site_option('mcloud-tasks-heartbeat-frequency', 15);
+		$lastHeartbeat = get_site_option('mcloud_last_heartbeat', 0);
+		$delta = microtime(true) - $lastHeartbeat;
+		if (($lastHeartbeat > 0) && ($delta < $freq)) {
+			wp_die();
+		}
+
+		update_site_option('mcloud_last_heartbeat', microtime(true));
+
 		$this->closeClientConnection();
 
 		foreach($this->runningTasks as $task) {

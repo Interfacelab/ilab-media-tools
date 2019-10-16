@@ -142,6 +142,74 @@ trait SettingsTrait {
         ]);
     }
 
+	/**
+	 * Registers an option with a text input UI
+	 * @param $option_name
+	 * @param $title
+	 * @param $settings_slug
+	 * @param null $description
+	 * @param null $placeholder
+	 * @param null $conditions
+	 */
+	protected function registerUploadPathFieldSetting($option_name, $title, $settings_slug, $description=null, $placeholder=null, $conditions=null) {
+		add_settings_field($option_name,
+			$title,
+			[$this,'renderUploadPathFieldSetting'],
+			$this->options_page,
+			$settings_slug,
+			['option'=>$option_name, 'description'=>$description, 'placeholder' => $placeholder, 'conditions' => $conditions]);
+	}
+
+	/**
+	 * Renders a text field
+	 * @param $args
+	 */
+	public function renderUploadPathFieldSetting($args) {
+		echo View::render_view('base/fields/upload-path.php',[
+			'value' => Environment::Option($args['option']),
+			'name' => $args['option'],
+			'placeholder' => $args['placeholder'],
+			'conditions' => $args['conditions'],
+			'description' => (isset($args['description'])) ? $args['description'] : false
+		]);
+	}
+
+	/**
+	 * Registers an option with a text input UI
+	 * @param $option_name
+	 * @param $title
+	 * @param $settings_slug
+	 * @param null $description
+	 * @param null $placeholder
+	 * @param null $conditions
+	 */
+	protected function registerSubsiteUploadPathsFieldSetting($option_name, $title, $settings_slug, $description=null, $placeholder=null, $conditions=null) {
+		add_settings_field($option_name,
+			$title,
+			[$this,'renderSubsiteUploadPathsFieldSetting'],
+			$this->options_page,
+			$settings_slug,
+			['option'=>$option_name, 'description'=>$description, 'placeholder' => $placeholder, 'conditions' => $conditions]);
+	}
+
+	/**
+	 * Renders a text field
+	 * @param $args
+	 */
+	public function renderSubsiteUploadPathsFieldSetting($args) {
+		if (!is_multisite() || !is_network_admin()) {
+			echo '';
+		} else {
+			echo View::render_view('base/fields/subsite-upload-paths.php',[
+				'value' => Environment::Option($args['option']),
+				'name' => $args['option'],
+				'placeholder' => $args['placeholder'],
+				'conditions' => $args['conditions'],
+				'description' => (isset($args['description'])) ? $args['description'] : false
+			]);
+		}
+	}
+
     /**
      * Registers an option with a password input
      * @param $option_name
