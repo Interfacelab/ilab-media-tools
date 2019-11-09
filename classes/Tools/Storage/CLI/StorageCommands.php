@@ -22,6 +22,7 @@ use  ILAB\MediaCloud\CLI\Command ;
 use  ILAB\MediaCloud\Storage\StorageSettings ;
 use  ILAB\MediaCloud\Tools\Browser\Tasks\ImportFromStorageTask ;
 use  ILAB\MediaCloud\Tools\Integrations\PlugIns\Elementor\Tasks\UpdateElementorTask ;
+use  ILAB\MediaCloud\Tools\Integrations\PlugIns\NextGenGallery\Tasks\MigrateNextGenTask ;
 use  ILAB\MediaCloud\Tools\Storage\StorageTool ;
 use  ILAB\MediaCloud\Tools\Storage\Tasks\MigrateTask ;
 use  ILAB\MediaCloud\Tools\Storage\Tasks\RegenerateThumbnailTask ;
@@ -254,6 +255,22 @@ class StorageCommands extends Command
         /** @var UnlinkTask $task */
         $task = new UnlinkTask();
         $this->runTask( $task, $options );
+    }
+    
+    /**
+     * Migrate NextGen Gallery images to cloud storage.
+     *
+     * @when after_wp_load
+     *
+     * @param $args
+     * @param $assoc_args
+     *
+     * @throws \Exception
+     */
+    public function migrateNGG( $args, $assoc_args )
+    {
+        global  $media_cloud_licensing ;
+        self::Error( "Only available in the Premium version.  To upgrade: https://mediacloud.press/pricing/" );
     }
     
     /**

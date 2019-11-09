@@ -16,6 +16,7 @@ namespace ILAB\MediaCloud\Tasks;
 use Carbon\Carbon;
 use function ILAB\MediaCloud\Utilities\gen_uuid;
 use ILAB\MediaCloud\Utilities\Logging\Logger;
+use function ILAB\MediaCloud\Utilities\phpMemoryLimit;
 use ILAB\MediaCloud\Utilities\Tracker;
 
 
@@ -615,33 +616,21 @@ abstract class Task extends Model implements \JsonSerializable {
 			return false;
 		}
 
-		$memory = memory_get_usage(true);
-		$limit = $this->memoryLimit() * 0.9;
+		if (empty($this->cli)) {
+			$memory = memory_get_usage(true);
+			$limit = phpMemoryLimit('32M') * 0.9;
 
-		if (!$firstTime) {
-			$limit -= $this->memoryPer;
-		}
-		if ($memory >= $limit) {
-			Logger::info("Out of memory!");
-			return false;
+			if (!$firstTime) {
+				$limit -= $this->memoryPer;
+			}
+			if ($memory >= $limit) {
+				Logger::info("Out of memory!");
+				return false;
+			}
 		}
 
 
 		return true;
-	}
-
-	private function memoryLimit() {
-		if (function_exists('ini_get')) {
-			$memory_limit = intval(ini_get('memory_limit'));
-		} else {
-			$memory_limit = 128;
-		}
-
-		if (empty($memory_limit) || ($memory_limit == -1)) {
-			$memory_limit = 64000;
-		}
-
-		return $memory_limit * 1024 * 1024;
 	}
 
 

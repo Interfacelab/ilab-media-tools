@@ -1341,7 +1341,7 @@ class StorageTool extends Tool
      * @return null|string
      * @throws StorageException
      */
-    private function getAttachmentURLFromMeta( $meta )
+    public function getAttachmentURLFromMeta( $meta )
     {
         if ( !isset( $meta['s3'] ) || !isset( $meta['s3']['key'] ) ) {
             return null;

@@ -179,5 +179,40 @@ namespace ILAB\MediaCloud\Utilities {
 	function postIdExists($postId) {
 		return is_string(get_post_status($postId));
 	}
+
+	/**
+	 * Returns the PHP memory limit in bytes.
+	 * @return int
+	 */
+	function phpMemoryLimit($default = '64M') {
+		$memory_limit = $default;
+
+		if (function_exists('ini_get')) {
+			$memory_limit = ini_get('memory_limit');
+		}
+
+		if (empty($memory_limit) || ($memory_limit == -1)) {
+			$memory_limit = $default;
+		}
+
+		preg_match('/^\s*([0-9.]+)\s*([KMGTPE])B?\s*$/i', $memory_limit, $matches);
+		$num = (float)$matches[1];
+		switch (strtoupper($matches[2])) {
+			case 'E':
+				$num = $num * 1024;
+			case 'P':
+				$num = $num * 1024;
+			case 'T':
+				$num = $num * 1024;
+			case 'G':
+				$num = $num * 1024;
+			case 'M':
+				$num = $num * 1024;
+			case 'K':
+				$num = $num * 1024;
+		}
+
+		return intval($num);
+	}
 }
 

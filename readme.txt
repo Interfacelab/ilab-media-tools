@@ -1,11 +1,11 @@
 === Media Cloud for Amazon S3, Imgix, Google Cloud Storage, DigitalOcean Spaces and more ===
-Contributors: mediacloud, interfacelab
+Contributors: mediacloud, interfacelab, freemius
 Tags: offload, amazon, s3, imgix, uploads, google cloud storage, digital ocean spaces, wasabi, minio, media, cdn, rekognition, cloudfront, images, crop, image editing, image editor, media library, offload, offload s3, filepicker, smush, ewww, imagify, shortpixel
 Requires at least: 4.4
 Tested up to: 5.2.4
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 3.2.3
+Stable tag: 3.2.4
 Requires PHP: 5.6.4
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -47,7 +47,6 @@ Compatible with Short Pixel, EWWW, Smush and Imagify image optimization plugins!
 
 * Upload to any of a variety of cloud storage providers (Amazon S3, Google Cloud Storage, Minio, Wasabi, Backblaze, DigitalOcean Spaces or any other S3 compatible service)
 * Host your media directly from your cloud storage provider or specify a CDN
-* Import your existing library to cloud storage
 * Integrate with Imgix media hosting
 * Use Amazon Rekognition to automatically tag and categorize images
 * Use third party cloud file providers that use S3 compatible APIs
@@ -108,6 +107,13 @@ No, I'm just one very enthusiastic customer.
 
 
 == Changelog ==
+
+= 3.2.4 =
+
+* Vastly improved NextGen Galleries integration (Premium)
+* New Migrate to NextGen Galleries task to import all of your existing NextGen Galleries to cloud storage (Premium)
+* Fix for you insane people have that PHP memory limits specified in gigabytes
+* Skip memory limit check when running tasks from the command line
 
 = 3.2.3 =
 
