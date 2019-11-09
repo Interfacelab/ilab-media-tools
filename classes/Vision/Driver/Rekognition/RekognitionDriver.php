@@ -55,6 +55,7 @@ class RekognitionDriver extends VisionDriver {
 	    "ap-northeast-2",
 	    "ap-southeast-1",
 	    "ap-southeast-2",
+	    "eu-central-1",
         "us-gov-west-1"
     ];
 
