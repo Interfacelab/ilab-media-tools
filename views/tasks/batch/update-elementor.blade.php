@@ -3,7 +3,7 @@
     'instructionsView' => $taskClass::instructionView(),
     'commandLine' => 'wp mediacloud updateElementor',
     'commandTitle' => 'Update Elementor',
-    'commandLink'=> 'https://help.mediacloud.press/article/104-update-elementor',
+    'commandLink'=> 'https://kb.mediacloud.press/articles/advanced-usage/command-line/update-elementor',
     'warning' => $warning,
     'taskClass' => $taskClass
 ])

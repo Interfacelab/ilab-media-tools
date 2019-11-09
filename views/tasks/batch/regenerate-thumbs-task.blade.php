@@ -3,7 +3,7 @@
     'instructionsView' => $taskClass::instructionView(),
     'commandLine' => 'wp mediacloud regenerate',
     'commandTitle' => 'Regenerate Thumbnails',
-    'commandLink'=> 'https://help.mediacloud.press/article/75-regenerate-thumbnails',
+    'commandLink'=> 'https://kb.mediacloud.press/articles/advanced-usage/command-line/regenerate-thumbnails',
     'warning' => $warning,
     'taskClass' => $taskClass
 ])

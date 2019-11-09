@@ -3,7 +3,7 @@
     'instructionsView' => $taskClass::instructionView(),
     'commandLine' => 'wp dynamicImages clearCache',
     'commandTitle' => 'Clear Dynamic Images Cache',
-    'commandLink'=> 'https://help.mediacloud.press/article/77-clear-dynamic-image-cache',
+    'commandLink'=> 'https://kb.mediacloud.press/articles/advanced-usage/command-line/clear-dynamic-image-cache',
     'warning' => $warning,
     'taskClass' => $taskClass
 ])

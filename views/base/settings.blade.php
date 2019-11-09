@@ -88,8 +88,8 @@
                     @if(!empty($section['title']))
                     <h2>
                         {{$section['title']}}
-                        @if(!empty($section['doc_beacon']))
-                            <a href="#" class="help-beacon" data-beacon-article-inline="{{$section['doc_beacon']}}">
+                        @if(!empty($section['doc_link']))
+                            <a href="{{$section['doc_link']}}" class="help-beacon" data-article-inline="{{$section['doc_link']}}">
                                 Help
                             </a>
                         @endif

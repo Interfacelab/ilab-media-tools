@@ -25,7 +25,6 @@ return [
 		"groups" => [
 			"ilab-media-crop-settings" => [
 				"title" => "Crop Settings",
-				"doc_beacon" => '51',
 				"options" => [
 					"mcloud-crop-quality" => [
 						"title" => "Crop Quality",

@@ -540,7 +540,7 @@ final class ToolsManager
             'Documentation',
             'Documentation',
             'manage_options',
-            'https://help.mediacloud.press/'
+            'https://kb.mediacloud.press/'
         );
         foreach ( $this->tools as $key => $tool ) {
             $tool->registerHelpMenu( 'media-cloud', $networkMode, $networkAdminMenu );
@@ -791,7 +791,7 @@ final class ToolsManager
                 $sections[] = [
                     'title'       => $section['title'],
                     'id'          => $section['id'],
-                    'doc_beacon'  => arrayPath( $selectedTool->toolInfo, "settings/groups/{$section['id']}/doc_beacon", null ),
+                    'doc_link'    => arrayPath( $selectedTool->toolInfo, "settings/groups/{$section['id']}/doc_link", null ),
                     'help'        => $help,
                     'description' => arrayPath( $selectedTool->toolInfo, "settings/groups/{$section['id']}/description", null ),
                 ];

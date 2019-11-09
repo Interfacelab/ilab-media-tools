@@ -48,7 +48,7 @@ return [
 			'config' => '/storage/s3.config.php',
 			'help' => [
 				[ 'title' => 'Watch Tutorial', 'url' => 'https://www.youtube.com/watch?v=kjFCACrPRtU' ],
-				[ 'title' => 'Read Documentation', 'url' => 'https://help.mediacloud.press/article/38-setting-up-amazon-s3', 'beacon_id' => '38' ],
+				[ 'title' => 'Read Documentation', 'url' => 'https://kb.mediacloud.press/articles/documentation/cloud-storage/setting-up-amazon-s3' ],
 			]
 		],
 		'google' => [
@@ -56,7 +56,7 @@ return [
 			'class' => "\\ILAB\\MediaCloud\\Storage\\Driver\\GoogleCloud\\GoogleStorage",
 			'config' => '/storage/google.config.php',
 			'help' => [
-				[ 'title' => 'Read Documentation', 'url' => 'https://help.mediacloud.press/article/45-setting-up-google-cloud-storage', 'beacon_id' => '45' ],
+				[ 'title' => 'Read Documentation', 'url' => 'https://kb.mediacloud.press/articles/documentation/cloud-storage/setting-up-google-cloud-storage' ],
 			]
 		],
 		'do' => [
@@ -64,7 +64,7 @@ return [
 			'class' => "\\ILAB\\MediaCloud\\Storage\\Driver\\S3\\DigitalOceanStorage",
 			'config' => '/storage/do.config.php',
 			'help' => [
-				[ 'title' => 'Read Documentation', 'url' => 'https://help.mediacloud.press/article/44-setting-up-digital-ocean-spaces', 'beacon_id' => '44' ],
+				[ 'title' => 'Read Documentation', 'url' => 'https://kb.mediacloud.press/articles/documentation/cloud-storage/setting-up-digitalocean-spaces' ],
 			]
 		],
 		'minio' => [
@@ -79,7 +79,7 @@ return [
 			'class' => "\\ILAB\\MediaCloud\\Storage\\Driver\\S3\\WasabiStorage",
 			'config' => '/storage/wasabi.config.php',
 			'help' => [
-				[ 'title' => 'Read Documentation', 'url' => 'https://help.mediacloud.press/article/46-setting-up-wasabi', 'beacon_id' => '46' ],
+				[ 'title' => 'Read Documentation', 'url' => 'https://kb.mediacloud.press/articles/documentation/cloud-storage/setting-up-wasabi' ],
 			]
 		],
 		'other-s3' => [
@@ -94,7 +94,7 @@ return [
 			'class' => \ILAB\MediaCloud\Storage\Driver\Backblaze\BackblazeStorage::class,
 			'config' => '/storage/backblaze.config.php',
 			'help' => [
-				[ 'title' => 'Read Documentation', 'url' => 'https://help.mediacloud.press/article/43-setting-up-backblaze', 'beacon_id' => '43' ],
+				[ 'title' => 'Read Documentation', 'url' => 'https://kb.mediacloud.press/articles/documentation/cloud-storage/setting-up-backblaze' ],
 			]
 		],
 	],
@@ -133,7 +133,7 @@ return [
 			"ilab-media-cloud-upload-handling" => [
 				"title" => "Upload Handling",
                 "dynamic" => true,
-				"doc_beacon" => '39',
+				"doc_link" => 'https://kb.mediacloud.press/articles/documentation/cloud-storage/upload-handling-settings',
 				"description" => "The following options control how the storage tool handles uploads.",
                 "options" => [
 	                "mcloud-storage-prefix" => [
@@ -205,7 +205,7 @@ return [
 			],
             "ilab-media-cloud-cdn-settings" => [
                 "title" => "CDN Settings",
-	            "doc_beacon" => '40',
+	            "doc_link" => 'https://kb.mediacloud.press/articles/documentation/cloud-storage/cdn-settings',
                 "description" => "If you are using CloudFront, Fastly or another CDN, enter the CDN domain here.  If you are using Imgix, the <b>CDN Base URL</b> setting is ignored, but the <b>Document CDN Base URL</b> is not.  If both are left blank, Media Tools will use the cloud storage URLs.",
                 "options" => [
                     "mcloud-storage-cdn-base" => [
@@ -222,7 +222,7 @@ return [
             ],
 			"ilab-media-cloud-display-settings" => [
 				"title" => "Display Settings",
-				"doc_beacon" => '41',
+				"doc_link" => 'https://kb.mediacloud.press/articles/documentation/cloud-storage/media-library-integration',
 				"description" => "",
 				"options" => [
 					"mcloud-storage-display-badge" => [
