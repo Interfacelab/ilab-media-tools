@@ -1,0 +1,1 @@
+Google Cloud Storage is another top choice, particularly if you are already hosting or using services in the Google Cloud ecosphere.

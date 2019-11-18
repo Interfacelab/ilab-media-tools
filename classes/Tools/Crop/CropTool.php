@@ -13,7 +13,7 @@
 
 namespace ILAB\MediaCloud\Tools\Crop;
 
-use ILAB\MediaCloud\Storage\StorageSettings;
+use ILAB\MediaCloud\Storage\StorageGlobals;
 use ILAB\MediaCloud\Tools\Storage\StorageTool;
 use ILAB\MediaCloud\Tools\Tool;
 use ILAB\MediaCloud\Tools\ToolsManager;
@@ -529,7 +529,7 @@ class CropTool extends Tool
 		list($full_src,$full_width,$full_height,$full_cropped)=$attrs;
 
 		if ($storageTool->enabled()) {
-			if(StorageSettings::deleteOnUpload() && !StorageSettings::queuedDeletes()) {
+			if(StorageGlobals::deleteOnUpload() && !StorageGlobals::queuedDeletes()) {
                 $toDelete = trailingslashit($save_path).$filename;
                 if (file_exists($toDelete)) {
                     @unlink($toDelete);

@@ -19,7 +19,7 @@ namespace ILAB\MediaCloud\Tools\Storage\CLI;
 use  GuzzleHttp\Client ;
 use  GuzzleHttp\Exception\ClientException ;
 use  ILAB\MediaCloud\CLI\Command ;
-use  ILAB\MediaCloud\Storage\StorageSettings ;
+use  ILAB\MediaCloud\Storage\StorageGlobals ;
 use  ILAB\MediaCloud\Tools\Browser\Tasks\ImportFromStorageTask ;
 use  ILAB\MediaCloud\Tools\Integrations\PlugIns\Elementor\Tasks\UpdateElementorTask ;
 use  ILAB\MediaCloud\Tools\Integrations\PlugIns\NextGenGallery\Tasks\MigrateNextGenTask ;

@@ -17,6 +17,7 @@
 namespace ILAB\MediaCloud\Storage;
 
 use ILAB\MediaCloud\Utilities\Logging\ErrorCollector;
+use ILAB\MediaCloud\Wizard\WizardBuilder;
 use League\Flysystem\AdapterInterface;
 
 if (!defined('ABSPATH')) { header('Location: /'); die; }
@@ -80,12 +81,14 @@ interface StorageInterface {
 	 */
 	public function pathLink($bucket, $key);
 
-    /**
-     * Returns true/false if this storage is using signed URLs.
-     *
-     * @return bool
-     */
-	public function usesSignedURLs();
+	/**
+	 * Returns true/false if this storage is using signed URLs.
+	 *
+	 * @param string|null $type
+	 *
+	 * @return bool
+	 */
+	public function usesSignedURLs($type = null);
 
 	/**
 	 * Insures that all the configuration settings are valid and that the storage is enabled.
@@ -216,10 +219,11 @@ interface StorageInterface {
 	/**
 	 * Returns the URL (not-signed) for the item in a bucket
 	 * @param string $key
+	 * @param string|null $type
 	 * @throws StorageException
 	 * @return string
 	 */
-	public function url($key);
+	public function url($key, $type = null);
 
 	/**
 	 * Generates a signed URL for direct uploads

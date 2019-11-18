@@ -42,9 +42,14 @@
                         </div>
                         <div class="title">
                             {{$tool->toolInfo['name']}}
-                            @if($tool->hasSettings())
-                            <a href="{{ilab_admin_url("admin.php?page=media-cloud-settings&tab=$key")}}">Settings</a>
-                            @endif
+                            <div class="tool-links">
+                                @if($tool->hasWizard())
+                                <a href="{{$tool->wizardLink()}}">Setup Wizard</a>
+                                @endif
+                                @if($tool->hasSettings())
+                                <a href="{{ilab_admin_url("admin.php?page=media-cloud-settings&tab=$key")}}">Settings</a>
+                                @endif
+                            </div>
                         </div>
                     </td>
                     <td class="description">

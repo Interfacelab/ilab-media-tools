@@ -1,0 +1,1 @@
+Amazon S3 is best in class cloud storage.  If you are hosting on Amazon AWS, or intend to use their other services like Rekognition or Media Encoder, picking Amazon S3 is your best bet.

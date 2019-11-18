@@ -35,25 +35,31 @@ return [
             ],
             "mcloud-storage-s3-region" => [
                 "title" => "Region",
-                "description" => "The region that your bucket is in.  Set to 'auto' to have Media Cloud automatically determine what region your bucket is in.",
+                "description" => "The region that your bucket is in.  Set to 'auto' to have Media Cloud automatically determine what region your bucket is in.  May not work with some S3 compatible providers.",
                 "display-order" => 11,
                 "type" => "select",
                 "options" => [
-                    "auto" => "Automatic",
-                    'us-east-2' => 'US East (Ohio)',
-                    'us-east-1' => 'US East (N. Virginia)',
-                    'us-west-1' => 'US West (N. California)',
-                    'us-west-2' => 'US West (Oregon)',
-                    'ca-central-1' => 'Canada (Central)',
-                    'ap-south-1' => 'Asia Pacific (Mumbai)',
-                    'ap-northeast-2' => 'Asia Pacific (Seoul)',
-                    'ap-southeast-1' => 'Asia Pacific (Singapore)',
-                    'ap-southeast-2' => 'Asia Pacific (Sydney)',
-                    'ap-northeast-1' => 'Asia Pacific (Tokyo)',
-                    'eu-central-1' => 'EU (Frankfurt)',
-                    'eu-west-1' => 'EU (Ireland)',
-                    'eu-west-2' => 'EU (London)',
-                    'sa-east-1' => 'South America (São Paulo)',
+	                "auto" => "Automatic",
+	                'us-east-2' => 'US East (Ohio)',
+	                'us-east-1' => 'US East (N. Virginia)',
+	                'us-west-1' => 'US West (N. California)',
+	                'us-west-2' => 'US West (Oregon)',
+	                'ca-central-1' => 'Canada (Central)',
+	                'ap-east-1' => 'Asia Pacific (Hong Kong)',
+	                'ap-south-1' => 'Asia Pacific (Mumbai)',
+	                'ap-northeast-1' => 'Asia Pacific (Tokyo)',
+	                'ap-northeast-2' => 'Asia Pacific (Seoul)',
+	                'ap-northeast-3' => 'Asia Pacific (Osaka-Local)',
+	                'ap-southeast-1' => 'Asia Pacific (Singapore)',
+	                'ap-southeast-2' => 'Asia Pacific (Sydney)',
+	                'eu-central-1' => 'EU (Frankfurt)',
+	                'eu-west-1' => 'EU (Ireland)',
+	                'eu-west-2' => 'EU (London)',
+	                'eu-west-3' => 'EU (Paris)',
+	                'eu-north-1' => 'EU (Stockholm)',
+	                'sa-east-1' => 'South America (São Paulo)',
+	                'cn-north-1' => 'China (Beijing)',
+	                'cn-northwest-1' => 'China (Ningxia)',
                 ],
             ],
             "mcloud-storage-s3-endpoint" => [
@@ -69,20 +75,6 @@ return [
                 "type" => "checkbox",
                 "default" => true,
             ],
-	        "mcloud-storage-use-presigned-urls" => [
-		        "title" => "Use Pre-Signed URLs",
-		        "description" => "Set to true to generate signed URLs that will expire within a specified time period.  You should use this if you've set the default ACL to private.",
-		        "display-order" => 14,
-		        "type" => "checkbox",
-		        "default" => false,
-	        ],
-	        "mcloud-storage-presigned-expiration" => [
-		        "title" => "Pre-Signed URL Expiration",
-		        "description" => "The number of minutes the signed URL is valid for.",
-		        "display-order" => 15,
-		        "type" => "number",
-		        "default" => 10,
-	        ],
         ]
     ],
     "ilab-media-cloud-upload-handling" => [
@@ -94,21 +86,70 @@ return [
                 "title" => "Upload Privacy ACL",
                 "description" => "This will set the privacy for each upload.  You should leave it as <code>public-read</code> unless you are using Imgix.",
                 "type" => "select",
+	            "display-order" => 1,
                 "options" => [
-                    "public-read" => "public-read",
-                    "authenticated-read" => "authenticated-read"
+                    "public-read" => "Public",
+                    "authenticated-read" => "Private"
                 ],
             ],
+	        "mcloud-storage-advanced-privacy" => [
+		        "title" => "Advanced Privacy",
+		        "description" => "",
+		        "display-order" => 2,
+		        "type" => "advanced-privacy",
+		        "plan" => "pro"
+	        ],
             "mcloud-storage-cache-control" => [
                 "title" => "Cache Control",
+	            "display-order" => 20,
                 "description" => "Sets the Cache-Control metadata for uploads, e.g. <code>public,max-age=2592000</code>.",
                 "type" => "text-field",
             ],
             "mcloud-storage-expires" => [
                 "title" => "Content Expiration",
+	            "display-order" => 21,
                 "description" => "Sets the Expire metadata for uploads.  This is the number of minutes from the date of upload.",
                 "type" => "text-field",
             ],
+	        "mcloud-storage-big-size-original-privacy" => [
+		        "title" => "Original Image Privacy ACL",
+		        "description" => "This will set the privacy for the original image upload.",
+		        "display-order" => 43,
+		        "type" => "select",
+		        "default" => 'authenticated-read',
+		        "options" => [
+			        "public-read" => "Public",
+			        "authenticated-read" => "Private"
+		        ],
+	        ],
         ]
     ],
+	"ilab-media-cloud-signed-urls" => [
+		"title" => "Pre-Signed URL Settings",
+		"description" => "These settings control how pre-signed URLs work.",
+		"dynamic" => true,
+		"options" => [
+			"mcloud-storage-use-presigned-urls" => [
+				"title" => "Use Pre-Signed URLs",
+				"description" => "Set to true to generate signed URLs that will expire within a specified time period.  You should use this if you've set the default ACL to private.",
+				"display-order" => 1,
+				"type" => "checkbox",
+				"default" => false,
+			],
+			"mcloud-storage-presigned-expiration" => [
+				"title" => "Pre-Signed URL Expiration",
+				"description" => "The number of minutes the signed URL is valid for.",
+				"display-order" => 2,
+				"type" => "number",
+				"default" => 10,
+			],
+			"mcloud-storage-use-presigned-urls-advanced" => [
+				"title" => "Advanced Pre-Signed URL Settings",
+				"description" => "",
+				"display-order" => 3,
+				"type" => "advanced-presigned",
+				"plan" => "pro"
+			],
+		]
+	],
 ];

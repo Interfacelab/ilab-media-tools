@@ -21,6 +21,7 @@ use  ILAB\MediaCloud\Utilities\Tracker ;
 use  ILAB\MediaCloud\Utilities\View ;
 use function  ILAB\MediaCloud\Utilities\arrayPath ;
 use function  ILAB\MediaCloud\Utilities\json_response ;
+use  ILAB\MediaCloud\Wizard\SetupWizard ;
 
 if ( !defined( 'ABSPATH' ) ) {
     header( 'Location: /' );
@@ -59,6 +60,8 @@ final class ToolsManager
     private  $multisiteTools = array() ;
     /** @var bool Determines if any media cloud settings have changed. */
     private  $settingsDidChange = false ;
+    /** @var SetupWizard|null */
+    private  $wizard = null ;
     //endregion
     //region Constructor
     public function __construct()
@@ -182,7 +185,12 @@ final class ToolsManager
             wp_enqueue_script(
                 'mcloud-admin-js',
                 ILAB_PUB_JS_URL . '/mcloud-admin.js',
-                [ 'jquery', 'wp-util' ],
+                [
+                'jquery',
+                'wp-util',
+                'wp-blocks',
+                'wp-element'
+            ],
                 MEDIA_CLOUD_VERSION,
                 true
             );
@@ -197,6 +205,7 @@ final class ToolsManager
         } );
         
         if ( is_admin() ) {
+            $this->wizard = new SetupWizard();
             add_action( 'wp_ajax_ilab_pin_tool', function () {
                 $this->handlePinTool();
             } );
@@ -385,6 +394,7 @@ final class ToolsManager
                     'media-cloud',
                     [ $this, 'renderFeatureSettings' ]
                 );
+                $this->wizard->registerMenu( 'media-cloud', $networkMode, $networkAdminMenu );
             } else {
                 add_menu_page(
                     'Settings',
@@ -409,6 +419,7 @@ final class ToolsManager
             $this->networkTool = new NetworkTool( 'network', include ILAB_CONFIG_DIR . '/network.config.php', $this );
             $this->networkTool->registerSettings();
             $this->networkTool->registerMenu( 'media-cloud', true, true );
+            $this->wizard->registerMenu( 'media-cloud', $networkMode, $networkAdminMenu );
         }
         
         if ( $isLocal || $isNetworkModeAdmin ) {
@@ -633,6 +644,9 @@ final class ToolsManager
         foreach ( static::instance()->tools as $key => $tool ) {
             $tool->activate();
         }
+        if ( empty(Environment::Option( 'mcloud-tool-enabled-storage', null, false )) ) {
+            update_option( 'mcloud_show_wizard', true );
+        }
     }
     
     /**
@@ -715,6 +729,7 @@ final class ToolsManager
         $page_slug = $_POST['option_page'];
         check_admin_referer( $page_slug . '-options' );
         global  $new_whitelist_options ;
+        $new_whitelist_options = apply_filters( 'whitelist_options', $new_whitelist_options );
         $options = $new_whitelist_options[$page_slug];
         foreach ( $options as $option ) {
             

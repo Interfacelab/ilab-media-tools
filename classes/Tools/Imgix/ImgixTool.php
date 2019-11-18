@@ -13,11 +13,16 @@
 
 namespace ILAB\MediaCloud\Tools\Imgix;
 
+use FasterImage\FasterImage;
+use ILAB\MediaCloud\Storage\StorageGlobals;
 use ILAB\MediaCloud\Tools\DynamicImages\DynamicImagesTool;
 use ILAB\MediaCloud\Tools\Storage\StorageTool;
 use ILAB\MediaCloud\Tools\ToolsManager;
 use ILAB\MediaCloud\Utilities\Environment;
 use ILAB\MediaCloud\Utilities\Logging\Logger;
+use ILAB\MediaCloud\Utilities\Tracker;
+use ILAB\MediaCloud\Wizard\ConfiguresWizard;
+use ILAB\MediaCloud\Wizard\WizardBuilder;
 use Imgix\UrlBuilder;
 use function ILAB\MediaCloud\Utilities\arrayPath;
 
@@ -32,28 +37,23 @@ if(!defined('ABSPATH')) {
  *
  * Imgix tool.
  */
-class ImgixTool extends DynamicImagesTool {
-	protected $imgixDomains;
-	protected $autoFormat;
-	protected $autoCompress;
-	protected $enableGifs;
-	protected $skipGifs;
-	protected $noGifSizes;
-	protected $useHTTPS;
-	protected $enabledAlternativeFormats;
-	protected $renderPDF;
-	protected $detectFaces;
+class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
+	/** @var ImgixToolSettings */
+	protected $settings;
+
 
     //region Constructor
     public function __construct($toolName, $toolInfo, $toolManager) {
 	    parent::__construct($toolName, $toolInfo, $toolManager);
+
+	    $this->settings = new ImgixToolSettings();
 
         add_filter('media-cloud/imgix/enabled', function($enabled){
             return $this->enabled();
         });
 
 	    add_filter('media-cloud/imgix/alternative-formats/enabled', function($enabled){
-	        return ($this->enabled() && $this->enabledAlternativeFormats);
+	        return ($this->enabled() && $this->settings->enabledAlternativeFormats);
         });
     }
     //endregion
@@ -62,8 +62,7 @@ class ImgixTool extends DynamicImagesTool {
 	public function enabled() {
 		$enabled = parent::enabled();
 
-		if(!Environment::Option('mcloud-imgix-domains')) {
-//			NoticeManager::instance()->displayAdminNotice('error', "To start using Imgix, you will need to <a href='admin.php?page=media-tools-imgix'>set it up</a>.", true, 'disable-ilab-imgix-warning');
+		if (empty($this->settings->imgixDomains)) {
 			return false;
 		}
 
@@ -74,6 +73,14 @@ class ImgixTool extends DynamicImagesTool {
         return true;
     }
 
+	public function hasWizard() {
+		return true;
+	}
+
+	public function wizardLink() {
+		return admin_url('admin.php?page=media-cloud-wizard&wizard=imgix');
+	}
+
 	public function setup() {
 		if(!$this->enabled()) {
 			return;
@@ -81,46 +88,7 @@ class ImgixTool extends DynamicImagesTool {
 
 		parent::setup();
 
-		$this->noGifSizes = [];
-		$noGifSizes = Environment::Option('mcloud-imgix-no-gif-sizes', null, '');
-		$noGifSizesArray = explode("\n", $noGifSizes);
-		if(count($noGifSizesArray) <= 1) {
-			$noGifSizesArray = explode(',', $noGifSizes);
-		}
-		foreach($noGifSizesArray as $gs) {
-			if(!empty($gs)) {
-				$this->noGifSizes[] = trim($gs);
-			}
-		}
-
-		$this->imgixDomains = [];
-		$domains = Environment::Option('mcloud-imgix-domains', null, '');
-		$domain_lines = explode("\n", $domains);
-		if(count($domain_lines) <= 1) {
-			$domain_lines = explode(',', $domains);
-		}
-		foreach($domain_lines as $d) {
-			if(!empty($d)) {
-				$this->imgixDomains[] = trim($d);
-			}
-		}
-
-		$this->useHTTPS = Environment::Option('mcloud-imgix-use-https', null, true);
-
-		$this->signingKey = Environment::Option('mcloud-imgix-signing-key');
-
-		$this->imageQuality = Environment::Option('mcloud-imgix-default-quality');
-		$this->autoFormat = Environment::Option('mcloud-imgix-auto-format');
-		$this->autoCompress = Environment::Option('mcloud-imgix-auto-compress');
-		$this->enableGifs = Environment::Option('mcloud-imgix-enable-gifs');
-		$this->skipGifs = Environment::Option('mcloud-imgix-skip-gifs', null, false);
-		$this->detectFaces = Environment::Option('mcloud-imgix-detect-faces', null, false);
-
-		$this->enabledAlternativeFormats = Environment::Option('mcloud-imgix-enable-alt-formats');
-		$this->renderPDF = Environment::Option('mcloud-imgix-render-pdf-files');
-        $this->keepThumbnails = Environment::Option('mcloud-imgix-generate-thumbnails', null, true);
-
-		if($this->enabledAlternativeFormats) {
+		if($this->settings->enabledAlternativeFormats) {
 			add_filter('file_is_displayable_image', [$this, "fileIsDisplayableImage"], 0, 2);
 
 			add_filter('upload_mimes', function($mime_types) {
@@ -149,17 +117,17 @@ class ImgixTool extends DynamicImagesTool {
 		add_filter('imgix_build_gif_jpeg', [$this, 'buildGifJpeg'], 0, 3);
 
 		add_filter('media-cloud/imgix/render-pdf', function() {
-			return $this->renderPDF;
+			return $this->settings->renderPDF;
 		});
 
 		do_action('media-cloud/imgix/setup');
 
-		if ($this->detectFaces) {
+		if ($this->settings->detectFaces) {
 			add_filter('media-cloud/storage/after-upload', [$this, 'processImageMeta'], 1000, 2);
         }
 
         add_filter('media-cloud/imgix/detect-faces', function($detectFaces) {
-        	return ($this->enabled() && $this->detectFaces);
+        	return ($this->enabled() && $this->settings->detectFaces);
         });
 	}
 	//endregion
@@ -176,11 +144,11 @@ class ImgixTool extends DynamicImagesTool {
 	private function buildImgixParams($params, $mimetype = '') {
 		$format = null;
 		if(!isset($params['fm'])) {
-			if(($mimetype == 'image/gif') && $this->enableGifs) {
+			if(($mimetype == 'image/gif') && $this->settings->enableGifs) {
 				$format = 'gif';
-			} else if(($mimetype == 'image/png') && !$this->autoFormat) {
+			} else if(($mimetype == 'image/png') && !$this->settings->autoFormat) {
 				$format = 'png';
-			} else if(!$this->autoFormat) {
+			} else if(!$this->settings->autoFormat) {
 				$format = 'pjpg';
 			}
 		} else {
@@ -200,22 +168,22 @@ class ImgixTool extends DynamicImagesTool {
         }
 
 		if(!$format) {
-			if($this->autoCompress && $this->autoFormat) {
+			if($this->settings->autoCompress && $this->settings->autoFormat) {
 				$auto[] = 'compress';
 				$auto[] = 'format';
-			} else if($this->autoCompress) {
+			} else if($this->settings->autoCompress) {
 				$auto[] = 'compress';
-			} else if($this->autoFormat) {
+			} else if($this->settings->autoFormat) {
 				$auto[] = 'format';
 			}
 		} else if($format) {
 			$params['fm'] = $format;
-			if($this->autoCompress) {
+			if($this->settings->autoCompress) {
 				$auto[] = 'compress';
 			}
 		} else {
 			$params['fm'] = 'pjpg';
-			if($this->autoCompress) {
+			if($this->settings->autoCompress) {
 				$auto[] = 'compress';
 			}
 		}
@@ -227,8 +195,8 @@ class ImgixTool extends DynamicImagesTool {
 		unset($params['enhance']);
 		unset($params['redeye']);
 
-		if($this->imageQuality) {
-			$params['q'] = $this->imageQuality;
+		if($this->settings->imageQuality) {
+			$params['q'] = $this->settings->imageQuality;
 		}
 
 		foreach($this->paramPropsByType['media-chooser'] as $key => $info) {
@@ -290,10 +258,10 @@ class ImgixTool extends DynamicImagesTool {
 			return [];
 		}
 
-		$imgix = new UrlBuilder($this->imgixDomains, $this->useHTTPS);
+		$imgix = new UrlBuilder($this->settings->imgixDomains, $this->settings->useHTTPS);
 
-		if($this->signingKey) {
-			$imgix->setSignKey($this->signingKey);
+		if($this->settings->signingKey) {
+			$imgix->setSignKey($this->settings->signingKey);
 		}
 
 		if (isset($size['crop'])) {
@@ -403,13 +371,13 @@ class ImgixTool extends DynamicImagesTool {
 
 		$mimetype = get_post_mime_type($id);
 
-        if (!$this->renderPDF && ($mimetype == 'application/pdf')) {
+        if (!$this->settings->renderPDF && ($mimetype == 'application/pdf')) {
             return false;
         }
 
 		$meta = wp_get_attachment_metadata($id);
 		if(!$meta || empty($meta)) {
-			if(($this->renderPDF && ($mimetype == 'application/pdf')) || ($this->enabledAlternativeFormats && ($mimetype == 'application/vnd.adobe.illustrator'))) {
+			if(($this->settings->renderPDF && ($mimetype == 'application/pdf')) || ($this->settings->enabledAlternativeFormats && ($mimetype == 'application/vnd.adobe.illustrator'))) {
 				$meta = get_post_meta($id, 'ilab_s3_info', true);
 			}
 
@@ -423,17 +391,17 @@ class ImgixTool extends DynamicImagesTool {
 		}
 
 		if(!isset($meta['s3'])) {
-			if(($this->renderPDF && ($mimetype == 'application/pdf')) || ($this->enabledAlternativeFormats && ($mimetype == 'application/vnd.adobe.illustrator'))) {
+			if(($this->settings->renderPDF && ($mimetype == 'application/pdf')) || ($this->settings->enabledAlternativeFormats && ($mimetype == 'application/vnd.adobe.illustrator'))) {
 				$meta = get_post_meta($id, 'ilab_s3_info', true);
 			} else {
 				return false;
 			}
 		}
 
-		$imgix = new UrlBuilder($this->imgixDomains, $this->useHTTPS);
+		$imgix = new UrlBuilder($this->settings->imgixDomains, $this->settings->useHTTPS);
 
-		if($this->signingKey) {
-			$imgix->setSignKey($this->signingKey);
+		if($this->settings->signingKey) {
+			$imgix->setSignKey($this->settings->signingKey);
 		}
 
 		if($size == 'full' && !$newSize) {
@@ -688,17 +656,17 @@ class ImgixTool extends DynamicImagesTool {
 	}
 
 	public function urlForStorageMedia($key, $params = []) {
-		$imgix = new UrlBuilder($this->imgixDomains, $this->useHTTPS);
+		$imgix = new UrlBuilder($this->settings->imgixDomains, $this->settings->useHTTPS);
 
-		if($this->signingKey) {
-			$imgix->setSignKey($this->signingKey);
+		if($this->settings->signingKey) {
+			$imgix->setSignKey($this->settings->signingKey);
 		}
 
 		return $imgix->createURL(str_replace('%2F', '/', urlencode($key)), $params);
 	}
 
 	public function fixCleanedUrls($good_protocol_url, $original_url, $context) {
-		foreach($this->imgixDomains as $domain) {
+		foreach($this->settings->imgixDomains as $domain) {
 			if (strpos($good_protocol_url, $domain) !== false) {
 				return $original_url;
 			}
@@ -780,7 +748,7 @@ class ImgixTool extends DynamicImagesTool {
 			return $response;
 		}
 
-		if($this->renderPDF && isset($meta['s3'])) {
+		if($this->settings->renderPDF && isset($meta['s3'])) {
 			if($attachment->post_mime_type == 'application/pdf') {
 				$response['type'] = 'image';
 				$response['mime'] = 'image/pdf';
@@ -798,7 +766,7 @@ class ImgixTool extends DynamicImagesTool {
 			}
 		}
 
-		$generateUrls = !($this->skipGifs && ($attachment->post_mime_type == 'image/gif'));
+		$generateUrls = !($this->settings->skipGifs && ($attachment->post_mime_type == 'image/gif'));
 		if ($generateUrls) {
             foreach($response['sizes'] as $key => $sizeInfo) {
                 $res = $this->buildImage($response['id'], $key);
@@ -819,7 +787,7 @@ class ImgixTool extends DynamicImagesTool {
      * @throws \ILAB\MediaCloud\Storage\StorageException
      */
 	public function getAttachmentURL($url, $post_id) {
-	    if ($this->skipGifs) {
+	    if ($this->settings->skipGifs) {
 	        $mimeType = get_post_mime_type($post_id);
 	        if ($mimeType == 'image/gif') {
                 /** @var StorageTool $storageTool */
@@ -842,7 +810,7 @@ class ImgixTool extends DynamicImagesTool {
      * @throws \ILAB\MediaCloud\Storage\StorageException
      */
 	public function imageDownsize($fail, $id, $size) {
-        if ($this->skipGifs) {
+        if ($this->settings->skipGifs) {
             $mimeType = get_post_mime_type($id);
             if ($mimeType == 'image/gif') {
                 /** @var StorageTool $storageTool */
@@ -865,7 +833,7 @@ class ImgixTool extends DynamicImagesTool {
 	 * @return array
 	 */
 	public function generateAttachmentMetadata($metadata, $attachment_id) {
-		if(!$this->enabledAlternativeFormats) {
+		if(!$this->settings->enabledAlternativeFormats) {
 			return $metadata;
 		}
 
@@ -968,7 +936,7 @@ class ImgixTool extends DynamicImagesTool {
 	 * @return string
 	 */
 	public function mediaSendToEditor($html, $id, $attachment) {
-		if(!$this->renderPDF) {
+		if(!$this->settings->renderPDF) {
 			return $html;
 		}
 
@@ -1000,14 +968,140 @@ class ImgixTool extends DynamicImagesTool {
     //region Testing
 
     public function urlForKey($key) {
-        $imgix = new UrlBuilder($this->imgixDomains, $this->useHTTPS);
+        $imgix = new UrlBuilder($this->settings->imgixDomains, $this->settings->useHTTPS);
 
-        if($this->signingKey) {
-            $imgix->setSignKey($this->signingKey);
+        if($this->settings->signingKey) {
+            $imgix->setSignKey($this->settings->signingKey);
         }
 
         return $imgix->createURL($key, []);
     }
 
     //endregion
+
+
+	//region Wizard
+	/**
+	 * @param WizardBuilder|null $builder
+	 *
+	 * @return WizardBuilder|null
+	 * @throws \Exception
+	 */
+	public static function configureWizard($builder = null) {
+		if ($builder == null) {
+			$builder = new WizardBuilder('imgix', true);
+		}
+
+		$builder
+			->section('imgix', true)
+				->select('Intro', "Let's get started setting up imgix!")
+					->group('wizard.imgix.intro', 'select-buttons')
+						->option('imgix-doc', 'imgix Documentation', null, null, null, null, 'https://docs.imgix.com/setup', '_blank')
+					->endGroup()
+				->endStep()
+				->form('wizard.imgix.settings', 'imgix Settings', 'Configure Media Cloud with your imgix settings.', [ImgixTool::class, 'processWizardSettings'])
+					->hiddenField('nonce', wp_create_nonce('update-imgix-settings'))
+					->textField('mcloud-imgix-domains', 'imgix Domain', "Your imgix domain name. For more information, please read the <a href='https://www.imgix.com/docs/tutorials/creating-sources' target='_blank'>imgix documentation</a>", null)
+					->passwordField('mcloud-imgix-signing-key', 'Signing Key', "Optional signing key to create secure URLs.  <strong>Recommended</strong>.  For information on setting it up, refer to the <a href='https://www.imgix.com/docs/tutorials/securing-images' target='_blank'>imgix documentation</a>.", null, false)
+					->checkboxField('mcloud-imgix-use-https', 'Use HTTPS', 'Use HTTPS for image URLs', true)
+				->endStep()
+				->testStep('wizard.imgix.test', 'Test Settings', 'Perform tests to insure that imgix is configured correctly.', false)
+					->test('Test imgix Configuration', 'Running tests ...', [static::class, 'testImgix'])
+				->endStep()
+				->select('Complete', 'imgix setup is now complete!')
+					->group('wizard.imgix.success', 'select-buttons')
+						->option('other-features', 'Explore Other Features', null, null, null, null, 'admin:admin.php?page=media-cloud')
+						->option('advanced-imgix-settings', 'Advanced Settings', null, null, null, null, 'admin:admin.php?page=media-cloud-settings-imgix')
+					->endGroup()
+				->endStep();
+
+		return $builder;
+	}
+
+	public static function processWizardSettings() {
+		if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'update-imgix-settings')) {
+			wp_send_json(['status' => 'error', 'message' => 'Nonce is invalid.  Please try refreshing the page and submitting the form again.'], 200);
+		}
+
+		$domain = arrayPath($_POST, 'mcloud-imgix-domains', null);
+		$signingKey = arrayPath($_POST, 'mcloud-imgix-signing-key', null);
+		$useHttps = arrayPath($_POST, 'mcloud-imgix-use-https', null);
+
+		if (empty($domain)) {
+			wp_send_json(['status' => 'error', 'message' => 'Missing imgix domain.'], 200);
+		}
+
+		Environment::UpdateOption('mcloud-imgix-domains', $domain);
+		Environment::UpdateOption('mcloud-imgix-signing-key', $signingKey);
+		Environment::UpdateOption('mcloud-imgix-use-https', $useHttps);
+
+		wp_send_json([ 'status' => 'ok'], 200);
+	}
+
+	public static function testImgix() {
+		if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'media-cloud-wizard-test')) {
+			wp_send_json(['status' => 'error', 'message' => 'Nonce is invalid.  Please try refreshing the page and submitting the form again.'], 200);
+		}
+
+		Tracker::trackView("System Test - Imgix", "/system-test/imgix");
+
+		/** @var StorageTool $storageTool */
+		$storageTool = ToolsManager::instance()->tools['storage'];
+		if (!$storageTool->enabled()) {
+			wp_send_json([
+				'status' => 'error',
+				'message' => 'Cloud Storage is not currently enabled.',
+				'errors' => []
+			]);
+		}
+
+		/** @var ImgixTool $imgixTool */
+		$imgixTool = ToolsManager::instance()->tools['imgix'];
+
+
+		$errors = [];
+
+		try {
+			$storageTool->client()->upload('_troubleshooter/sample.jpg',ILAB_TOOLS_DIR.'/public/img/test-image.jpg', StorageGlobals::privacy());
+			$imgixURL = $imgixTool->urlForKey('_troubleshooter/sample.jpg');
+
+			$faster = new FasterImage();
+			$result = $faster->batch([$imgixURL]);
+			$result = $result[$imgixURL];
+			$size = $result['size'];
+
+			if (empty($size) || ($size == 'failed')) {
+				$errors[] = "Unable to access <a href='$imgixURL'>Imgix sample image</a>.  Possibly wrong signing key or Imgix can't access the master image.";
+			} else if (count($size) > 1) {
+				list($w, $h) = $size;
+
+				if (($w != 320) && ($h != 320)) {
+					$errors[] = "Invalid image size for sample image.  $w x $h (should be 320 x 320)";
+				}
+			}
+		} catch (\Exception $ex) {
+			$errors[] = $ex->getMessage();
+		}
+
+		if (empty($errors)) {
+			Environment::UpdateOption('mcloud-tool-enabled-imgix', true);
+			Environment::UpdateOption('mcloud-tool-enabled-crop', true);
+
+			Tracker::trackView("System Test - Imgix - Success", "/system-test/imgix/success");
+			wp_send_json([
+				'status' => 'success',
+				'message' => 'Was able to view sample image on imgix.'
+			]);
+		} else {
+			Environment::UpdateOption('mcloud-tool-enabled-imgix', false);
+			Tracker::trackView("System Test - Imgix - Error", "/system-test/imgix/error");
+			wp_send_json([
+				'status' => 'error',
+				'message' => 'There was an error attempting to view an image on imgix.  Please check that your domain or signing key are correct.',
+				'errors' => []
+			]);
+		}
+	}
+
+	//endregion
 }

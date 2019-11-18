@@ -1,0 +1,1 @@
+<p>Provide your Amazon credentials and the name of your S3 bucket to configure Media Cloud. Clicking on <strong>Next</strong> will verify your settings.</p>

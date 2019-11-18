@@ -170,6 +170,22 @@ namespace ILAB\MediaCloud\Utilities {
 	}
 
 	/**
+	 * Insures all items are not null
+	 * @param array $set
+	 *
+	 * @return bool
+	 */
+	function anyNull(...$set) {
+		foreach($set as $item) {
+			if($item === null) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Determines if a postIdExists
 	 *
 	 * @param $postId
@@ -213,6 +229,36 @@ namespace ILAB\MediaCloud\Utilities {
 		}
 
 		return intval($num);
+	}
+
+	/**
+	 * Determines the mime type based on the metadata for an attachment
+	 *
+	 * @param $meta
+	 *
+	 * @return string|null
+	 */
+	function typeFromMeta($meta) {
+		if (isset($meta['sizes']) || isset($meta['image_meta'])) {
+			return 'image';
+		}
+
+		if (isset($meta['type'])) {
+			$typeParts = explode('/', $meta['type']);
+			return $typeParts[0];
+		}
+
+		if (isset($meta['mime-type'])) {
+			$typeParts = explode('/', $meta['mime-type']);
+			return $typeParts[0];
+		}
+
+		if (isset($meta['s3']) && isset($meta['s3']['mime-type'])) {
+			$typeParts = explode('/', $meta['s3']['mime-type']);
+			return $typeParts[0];
+		}
+
+		return null;
 	}
 }
 

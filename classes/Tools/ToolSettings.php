@@ -79,8 +79,7 @@ abstract class ToolSettings {
 		}
 
 		$this->settings[$name] = $val = Environment::Option($setting, $envSetting, $default);
-		Logger::info("SETTINGS $name = $val");
-		return $val;
+			return $val;
 	}
 
 	/**

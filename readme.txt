@@ -5,7 +5,7 @@ Requires at least: 4.4
 Tested up to: 5.3
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 3.2.7
+Stable tag: 3.3.0
 Requires PHP: 5.6.4
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -107,6 +107,21 @@ No, I'm just one very enthusiastic customer.
 
 
 == Changelog ==
+
+= 3.3.0 =
+
+* Wizards? Wizards! WIZARDS!
+* New setup wizards to quickly setup the basic settings you need to get started with Media Cloud
+* Ability to specify using expiring signed URLs for different types of media (images, video, audio, docs).  Allows you to upload images and use them without signing, but have signing enabled for videos, audio, etc.  (Premium)
+* Ability to specify different upload privacy settings for different types of media.  Allows you to upload images and have them publicly accessible, but keep video, audio, etc. private. (Premium)
+* All core Gutenberg blocks now have image or file URLs rewritten dynamically so that they are always correct.
+* Ability to control WordPress's 5.3 new "big image" support, including disabling, setting the threshold and uploading the original unscaled image to cloud storage.
+* Fix for importing items from Offload Media when migrating to Media Cloud
+* Fix for srcset generation in WordPress 5.3
+* Fix for Migrate tool not including non-media files in migration (zip, text, etc).
+* New configuration toggle for replacing the WordPress generated srcset with a bettter optimized version (WordPress 5.3+ only)
+* Update regions for Amazon Rekognition
+* New integration with Foo Gallery (Premium)
 
 = 3.2.7 =
 

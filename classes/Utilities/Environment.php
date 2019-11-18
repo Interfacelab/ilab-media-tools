@@ -122,6 +122,20 @@ final class Environment {
 	}
 
 	/**
+	 * Replaces an option, returning the previous valus
+	 *
+	 * @param $optionName
+	 * @param $value
+	 *
+	 * @return array|false|mixed|string|null
+	 */
+	public static function ReplaceOption($optionName, $value) {
+		$oldValue = static::Option($optionName);
+		static::UpdateOption($optionName, $value);
+		return $oldValue;
+	}
+
+	/**
 	 * Deletes an option, automatically updating for network if in network mode
 	 * @param $optionName
 	 */

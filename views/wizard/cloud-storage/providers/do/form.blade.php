@@ -1,0 +1,1 @@
+<p>Enter your credentials, the name of your bucket and pick the custom endpoint you are using for your space.  Clicking on <strong>Next</strong> will verify your settings.</p>

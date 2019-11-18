@@ -15,7 +15,7 @@ namespace ILAB\MediaCloud\Tools\Debugging\System;
 
 use Carbon\CarbonInterval;
 use FasterImage\FasterImage;
-use ILAB\MediaCloud\Storage\StorageSettings;
+use ILAB\MediaCloud\Storage\StorageGlobals;
 use ILAB\MediaCloud\Tasks\TaskRunner;
 use ILAB\MediaCloud\Tools\Imgix\ImgixTool;
 use ILAB\MediaCloud\Tools\Storage\StorageTool;
@@ -374,7 +374,7 @@ class SystemCompatibilityTool extends Tool {
         $errors = [];
 
         try {
-            $url = $storageTool->client()->upload('_troubleshooter/sample.txt',ILAB_TOOLS_DIR.'/public/text/sample-upload.txt', StorageSettings::privacy());
+            $url = $storageTool->client()->upload('_troubleshooter/sample.txt',ILAB_TOOLS_DIR.'/public/text/sample-upload.txt', StorageGlobals::privacy());
 	        Tracker::trackView("System Test - Test Uploads - Success", "/system-test/uploads/success");
         } catch (\Exception $ex) {
 	        Tracker::trackView("System Test - Test Uploads - Error", "/system-test/uploads/error");
@@ -534,7 +534,7 @@ class SystemCompatibilityTool extends Tool {
         $errors = [];
 
         try {
-            $storageTool->client()->upload('_troubleshooter/sample.jpg',ILAB_TOOLS_DIR.'/public/img/test-image.jpg', StorageSettings::privacy());
+            $storageTool->client()->upload('_troubleshooter/sample.jpg',ILAB_TOOLS_DIR.'/public/img/test-image.jpg', StorageGlobals::privacy());
             $imgixURL = $imgixTool->urlForKey('_troubleshooter/sample.jpg');
 
             $faster = new FasterImage();

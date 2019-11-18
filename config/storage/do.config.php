@@ -46,20 +46,6 @@ return [
                 "type" => "checkbox",
                 "default" => true,
             ],
-	        "mcloud-storage-use-presigned-urls" => [
-		        "title" => "Use Pre-Signed URLs",
-		        "description" => "Set to true to generate signed URLs that will expire within a specified time period.  You should use this if you've set the default ACL to private.",
-		        "display-order" => 14,
-		        "type" => "checkbox",
-		        "default" => false,
-	        ],
-	        "mcloud-storage-presigned-expiration" => [
-		        "title" => "Pre-Signed URL Expiration",
-		        "description" => "The number of minutes the signed URL is valid for.",
-		        "display-order" => 15,
-		        "type" => "number",
-		        "default" => 10,
-	        ],
         ]
     ],
     "ilab-media-cloud-upload-handling" => [
@@ -73,22 +59,68 @@ return [
                 "display-order" => 1,
                 "type" => "select",
                 "options" => [
-                    "public-read" => "public-read",
-                    "authenticated-read" => "authenticated-read"
+                    "public-read" => "Public",
+                    "authenticated-read" => "Private"
                 ],
             ],
+	        "mcloud-storage-advanced-privacy" => [
+		        "title" => "Advanced Privacy",
+		        "display-order" => 2,
+		        "description" => "",
+		        "type" => "advanced-privacy",
+		        "plan" => "pro"
+	        ],
             "mcloud-storage-cache-control" => [
                 "title" => "Cache Control",
                 "description" => "Sets the Cache-Control metadata for uploads, e.g. <code>public,max-age=2592000</code>.",
-                "display-order" => 2,
+                "display-order" => 20,
                 "type" => "text-field",
             ],
             "mcloud-storage-expires" => [
                 "title" => "Content Expiration",
                 "description" => "Sets the Expire metadata for uploads.  This is the number of minutes from the date of upload.",
-                "display-order" => 3,
+                "display-order" => 21,
                 "type" => "text-field",
             ],
+	        "mcloud-storage-big-size-original-privacy" => [
+		        "title" => "Original Image Privacy ACL",
+		        "description" => "This will set the privacy for the original image upload.",
+		        "display-order" => 43,
+		        "type" => "select",
+		        "default" => 'authenticated-read',
+		        "options" => [
+			        "public-read" => "Public",
+			        "authenticated-read" => "Private"
+		        ],
+	        ],
         ]
     ],
+	"ilab-media-cloud-signed-urls" => [
+		"title" => "Pre-Signed URL Settings",
+		"description" => "These settings control how pre-signed URLs work.",
+		"dynamic" => true,
+		"options" => [
+			"mcloud-storage-use-presigned-urls" => [
+				"title" => "Use Pre-Signed URLs",
+				"description" => "Set to true to generate signed URLs that will expire within a specified time period.  You should use this if you've set the default ACL to private.",
+				"display-order" => 1,
+				"type" => "checkbox",
+				"default" => false,
+			],
+			"mcloud-storage-presigned-expiration" => [
+				"title" => "Pre-Signed URL Expiration",
+				"description" => "The number of minutes the signed URL is valid for.",
+				"display-order" => 2,
+				"type" => "number",
+				"default" => 10,
+			],
+			"mcloud-storage-use-presigned-urls-advanced" => [
+				"title" => "Advanced Pre-Signed URL Settings",
+				"description" => "",
+				"display-order" => 3,
+				"type" => "advanced-presigned",
+				"plan" => "pro"
+			],
+		]
+	],
 ];

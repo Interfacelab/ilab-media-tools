@@ -23,9 +23,9 @@ use ILAB\MediaCloud\Utilities\Prefixer;
 
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
-final class StorageSettings {
+final class StorageGlobals {
 	//region Class variables
-	/** @var StorageSettings */
+	/** @var StorageGlobals */
 	private static $instance = null;
 
 	/** @var string|null */
@@ -42,6 +42,18 @@ final class StorageSettings {
 
 	/** @var string */
 	private $privacy = 'public-read';
+
+	/** @var string */
+	private $privacyImages = 'inherit';
+
+	/** @var string */
+	private $privacyVideo = 'inherit';
+
+	/** @var string */
+	private $privacyAudio = 'inherit';
+
+	/** @var string */
+	private $privacyDocs = 'inherit';
 
 	/** @var array */
 	private $ignoredMimeTypes = [];
@@ -100,6 +112,11 @@ final class StorageSettings {
 			$this->privacy = 'public-read';
 		}
 
+		$this->privacyImages = Environment::Option('mcloud-storage-privacy-images', null, "inherit");
+		$this->privacyAudio = Environment::Option('mcloud-storage-privacy-audio', null, "inherit");
+		$this->privacyVideo = Environment::Option('mcloud-storage-privacy-video', null, "inherit");
+		$this->privacyDocs = Environment::Option('mcloud-storage-privacy-docs', null, "inherit");
+
 		$ignored = Environment::Option('mcloud-storage-ignored-mime-types', null, '');
 		$ignored_lines = explode("\n", $ignored);
 		if(count($ignored_lines) <= 1) {
@@ -152,11 +169,11 @@ final class StorageSettings {
 	}
 
 	/**
-	 * @return StorageSettings|null
+	 * @return StorageGlobals|null
 	 */
 	private static function instance() {
 		if (!self::$instance) {
-			self::$instance = new StorageSettings();
+			self::$instance = new StorageGlobals();
 		}
 
 		return self::$instance;
@@ -195,8 +212,31 @@ final class StorageSettings {
 	}
 
 	/** @return string */
-	public static function privacy() {
-		return self::instance()->privacy;
+	public static function privacy($type = null) {
+		/** @var StorageGlobals $instance */
+		$instance = self::instance();
+
+		if ($type === null) {
+			return $instance->privacy;
+		}
+
+		if (strpos($type, 'image') === 0) {
+			return ($instance->privacyImages === 'inherit') ? $instance->privacy : $instance->privacyImages;
+		}
+
+		if (strpos($type, 'video') === 0) {
+			return ($instance->privacyVideo === 'inherit') ? $instance->privacy : $instance->privacyVideo;
+		}
+
+		if (strpos($type, 'audio') === 0) {
+			return ($instance->privacyAudio === 'inherit') ? $instance->privacy : $instance->privacyAudio;
+		}
+
+		if ((strpos($type, 'application') === 0) || (strpos($type, 'text') === 0)) {
+			return ($instance->privacyDocs === 'inherit') ? $instance->privacy : $instance->privacyDocs;
+		}
+
+		return $instance->privacy;
 	}
 
 	/** @return array */
@@ -382,6 +422,14 @@ final class StorageSettings {
 		}
 
 		return true;
+	}
+
+	//endregion
+
+	//region Maintenance
+
+	public static function reloadSettings() {
+		self::$instance = new StorageGlobals();
 	}
 
 	//endregion

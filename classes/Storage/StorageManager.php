@@ -59,6 +59,7 @@ final class StorageManager {
 	 * Resets the current storage interface
 	 */
 	public static function resetStorageInstance() {
+		self::$driver = null;
 		self::$instance = null;
 	}
 

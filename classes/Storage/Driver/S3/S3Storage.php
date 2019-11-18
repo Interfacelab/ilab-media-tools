@@ -21,12 +21,16 @@ use ILAB\MediaCloud\Storage\FileInfo;
 use ILAB\MediaCloud\Storage\InvalidStorageSettingsException;
 use ILAB\MediaCloud\Storage\StorageException;
 use ILAB\MediaCloud\Storage\StorageFile;
-use ILAB\MediaCloud\Storage\StorageInterface;
 use ILAB\MediaCloud\Storage\StorageManager;
+use function ILAB\MediaCloud\Utilities\anyNull;
+use function ILAB\MediaCloud\Utilities\arrayPath;
 use ILAB\MediaCloud\Utilities\Environment;
 use ILAB\MediaCloud\Utilities\Logging\ErrorCollector;
 use ILAB\MediaCloud\Utilities\Logging\Logger;
 use ILAB\MediaCloud\Utilities\NoticeManager;
+use ILAB\MediaCloud\Wizard\ConfiguresWizard;
+use ILAB\MediaCloud\Wizard\StorageWizardTrait;
+use ILAB\MediaCloud\Wizard\WizardBuilder;
 use ILABAmazon\Credentials\CredentialProvider;
 use ILABAmazon\Exception\AwsException;
 use ILABAmazon\Exception\CredentialsException;
@@ -41,122 +45,24 @@ if(!defined('ABSPATH')) {
 	die;
 }
 
-class S3Storage implements StorageInterface {
+class S3Storage implements S3StorageInterface, ConfiguresWizard {
+	use StorageWizardTrait;
+
 	//region Properties
-	/*** @var string */
-	protected $key = null;
-
-	/*** @var string */
-	protected $secret = null;
-
-	/*** @var string */
-	protected $bucket = null;
-
-	/*** @var bool */
-	protected $useCredentialProvider = false;
-
-	/*** @var string */
-	protected $region = false;
-
-	/*** @var bool */
-	protected $settingsError = false;
-
-	/*** @var string */
-	protected $endpoint = null;
-
-	/*** @var bool */
-	protected $endPointPathStyle = true;
-
-	/*** @var bool */
-	protected $useTransferAcceleration = false;
-
-	/*** @var S3Client|S3MultiRegionClient|null */
-	protected $client = null;
-
-	/** @var bool  */
-	protected $usePresignedURLs = false;
-
-	/** @var int  */
-	protected $presignedURLExpiration = 300;
+	/** @var S3StorageSettings|null  */
+	protected $settings = null;
 
 	/** @var null|AdapterInterface */
 	protected $adapter = null;
+
+	/*** @var S3Client|S3MultiRegionClient|null */
+	protected $client = null;
 
 	//endregion
 
 	//region Constructor
 	public function __construct() {
-		$this->bucket = Environment::Option('mcloud-storage-s3-bucket', [
-			'ILAB_AWS_S3_BUCKET',
-			'ILAB_CLOUD_BUCKET'
-		]);
-
-		$this->key = Environment::Option('mcloud-storage-s3-access-key', [
-			'ILAB_AWS_S3_ACCESS_KEY',
-			'ILAB_CLOUD_ACCESS_KEY'
-		]);
-
-		$this->secret = Environment::Option('mcloud-storage-s3-secret', [
-			'ILAB_AWS_S3_ACCESS_SECRET',
-			'ILAB_CLOUD_ACCESS_SECRET'
-		]);
-
-		$this->useCredentialProvider = Environment::Option('mcloud-storage-s3-use-credential-provider', [
-			'ILAB_AWS_S3_USE_CREDENTIAL_PROVIDER',
-			'ILAB_CLOUD_USE_CREDENTIAL_PROVIDER'
-		], false);
-
-		$thisClass = get_class($this);
-
-		$this->usePresignedURLs = Environment::Option('mcloud-storage-use-presigned-urls', null, false);
-		$this->presignedURLExpiration = Environment::Option('mcloud-storage-presigned-expiration', null, 300);
-		if (empty($this->presignedURLExpiration)) {
-			$this->presignedURLExpiration = 300;
-		}
-
-		if(StorageManager::driver() == 's3') {
-			$this->useTransferAcceleration = Environment::Option('mcloud-storage-s3-use-transfer-acceleration', 'ILAB_AWS_S3_TRANSFER_ACCELERATION', false);
-		} else {
-			if ($thisClass::endpoint() !== null) {
-				$this->endpoint = $thisClass::endpoint();
-			} else {
-				$this->endpoint = Environment::Option('mcloud-storage-s3-endpoint', [
-					'ILAB_AWS_S3_ENDPOINT',
-					'ILAB_CLOUD_ENDPOINT'
-				], false);
-			}
-
-			if(!empty($this->endpoint)) {
-				if(!preg_match('#^[aA-zZ0-9]+\:\/\/#', $this->endpoint)) {
-					$this->endpoint = 'https://'.$this->endpoint;
-				}
-			}
-
-			if ($thisClass::pathStyleEndpoint() !== null) {
-				$this->endPointPathStyle = $thisClass::pathStyleEndpoint();
-			} else {
-				$this->endPointPathStyle = Environment::Option('mcloud-storage-s3-use-path-style-endpoint', [
-					'ILAB_AWS_S3_ENDPOINT_PATH_STYLE',
-					'ILAB_CLOUD_ENDPOINT_PATH_STYLE'
-				], true);
-			}
-		}
-
-		$this->settingsError = Environment::Option($this->settingsErrorOptionName(), null, false);
-
-		if ($thisClass::defaultRegion() !== null) {
-			$this->region = $thisClass::defaultRegion();
-		} else if ((StorageManager::driver() != 'wasabi') && (StorageManager::driver() != 'do')) {
-			$region = Environment::Option('mcloud-storage-s3-region', [
-				'ILAB_AWS_S3_REGION',
-				'ILAB_CLOUD_REGION'
-			], 'auto');
-
-			if($region != 'auto') {
-				$this->region = $region;
-			}
-		}
-
+		$this->settings = new S3StorageSettings($this);
 		$this->client = $this->getClient(null);
 	}
 	//endregion
@@ -187,20 +93,64 @@ class S3Storage implements StorageInterface {
 	}
 
 	public function pathLink($bucket, $key) {
-		return "https://s3.console.aws.amazon.com/s3/object/{$bucket}/{$key}?region={$this->region}&tab=overview";
+		return "https://s3.console.aws.amazon.com/s3/object/{$bucket}/{$key}?region={$this->settings->region}&tab=overview";
 	}
 	//endregion
 	
 	//region Enabled/Options
-    public function usesSignedURLs() {
-	    return $this->usePresignedURLs;
+    public function usesSignedURLs($type = null) {
+		if (($type == null) || (!empty($this->settings->usePresignedURLs))) {
+			return $this->settings->usePresignedURLs;
+		}
+
+		if (strpos($type, 'image') === 0) {
+			return $this->settings->usePresignedURLsForImages;
+		}
+
+	    if (strpos($type, 'video') === 0) {
+		    return $this->settings->usePresignedURLsForVideo;
+	    }
+
+	    if (strpos($type, 'audio') === 0) {
+		    return $this->settings->usePresignedURLsForAudio;
+	    }
+
+	    if (strpos($type, 'application') === 0) {
+		    return $this->settings->usePresignedURLsForDocs;
+	    }
+
+	    return $this->settings->usePresignedURLs;
+    }
+
+    public function signedURLExpirationForType($type = null) {
+	    if (($type == null) || (!empty($this->settings->usePresignedURLs))) {
+		    return $this->settings->presignedURLExpiration;
+	    }
+
+	    if (strpos($type, 'image') === 0) {
+		    return (empty($this->settings->presignedURLExpirationForImages)) ? $this->settings->presignedURLExpiration : $this->settings->presignedURLExpirationForImages;
+	    }
+
+	    if (strpos($type, 'video') === 0) {
+		    return (empty($this->settings->presignedURLExpirationForVideo)) ? $this->settings->presignedURLExpiration : $this->settings->presignedURLExpirationForVideo;
+	    }
+
+	    if (strpos($type, 'audio') === 0) {
+		    return (empty($this->settings->presignedURLExpirationForAudio)) ? $this->settings->presignedURLExpiration : $this->settings->presignedURLExpirationForAudio;
+	    }
+
+	    if (strpos($type, 'application') === 0) {
+		    return (empty($this->settings->presignedURLExpirationForDocs)) ? $this->settings->presignedURLExpiration : $this->settings->presignedURLExpirationForDocs;
+	    }
+
+	    return $this->settings->presignedURLExpiration;
     }
 
     public function supportsDirectUploads() {
-		return (StorageManager::driver() == 's3');
+		return (StorageManager::driver() === 's3');
 	}
 
-	protected function settingsErrorOptionName() {
+	public static function settingsErrorOptionName() {
 		return 'ilab-s3-settings-error';
 	}
 
@@ -213,8 +163,8 @@ class S3Storage implements StorageInterface {
      * @return bool
      */
     public function validateSettings($errorCollector = null) {
-		Environment::DeleteOption($this->settingsErrorOptionName());
-		$this->settingsError = false;
+		Environment::DeleteOption(static::settingsErrorOptionName());
+		$this->settings->settingsError = false;
 
         $valid = false;
 		$this->client = null;
@@ -225,7 +175,7 @@ class S3Storage implements StorageInterface {
 				$connectError = false;
 
 				try {
-					if($client->doesBucketExist($this->bucket)) {
+					if($client->doesBucketExist($this->settings->bucket)) {
 						$valid = true;
 					}
 				} catch (\Exception $ex) {
@@ -234,7 +184,7 @@ class S3Storage implements StorageInterface {
 
 					if ($errorCollector) {
 						if ($ex instanceof CredentialsException) {
-							if ($this->useCredentialProvider) {
+							if ($this->settings->useCredentialProvider) {
 								$errorCollector->addError("Your Amazon credentials are invalid.  You have enabled <strong>Use Credential Provider</strong> but it appears that isn't configured properly.  Either turn off that setting and provide an access key and secret, or double check your credential provider setup.");
 							} else {
 								$errorCollector->addError("Your Amazon credentials are invalid.  Verify that the access key, secret and bucket name are correct and try this test again.");
@@ -255,7 +205,7 @@ class S3Storage implements StorageInterface {
 						$buckets = $result->get('Buckets');
 						if(!empty($buckets)) {
 							foreach($buckets as $bucket) {
-								if($bucket['Name'] == $this->bucket) {
+								if($bucket['Name'] == $this->settings->bucket) {
 									$valid = true;
 									break;
 								}
@@ -264,7 +214,7 @@ class S3Storage implements StorageInterface {
 
 						if (!$valid) {
                             if ($errorCollector) {
-                                $errorCollector->addError("Bucket {$this->bucket} does not exist.");
+                                $errorCollector->addError("Bucket {$this->settings->bucket} does not exist.");
                             }
 
                             Logger::info("Bucket does not exist.");
@@ -272,11 +222,11 @@ class S3Storage implements StorageInterface {
 					} catch(AwsException $ex) {
                         if ($errorCollector) {
                         	$adminUrl = admin_url('admin.php?page=media-cloud-settings&tab=storage');
-	                        if ($ex->getAwsErrorCode() == 'SignatureDoesNotMatch') {
+	                        if ($ex->getAwsErrorCode() === 'SignatureDoesNotMatch') {
 		                        $errorCollector->addError("Your S3 credentials are invalid.  It appears that the <strong>Secret</strong> you specified is invalid.  Please double check <a href='$adminUrl'>your settings</a>.");
-	                        } else if ($ex->getAwsErrorCode() == 'InvalidAccessKeyId') {
+	                        } else if ($ex->getAwsErrorCode() === 'InvalidAccessKeyId') {
 		                        $errorCollector->addError("Your S3 credentials are invalid.  It appears that the <strong>Access Key</strong> you specified is invalid.  Please double check <a href='$adminUrl'>your settings</a>.");
-	                        } else if ($ex->getAwsErrorCode() == 'AccessDenied') {
+	                        } else if ($ex->getAwsErrorCode() === 'AccessDenied') {
 		                        $errorCollector->addError("The <strong>Bucket</strong> you specified doesn't exist or you don't have access to it.  You may have also specified the wrong <strong>Region</strong>.  It's also possible that you don't have the correct permissions specified in your IAM policy.  Please set the <strong>Region</strong> to <strong>Automatic</strong> and double check the <strong>Bucket Name</strong> in <a href='$adminUrl'>your settings</a>.");
 	                        } else {
 		                        $errorCollector->addError($ex->getAwsErrorMessage());
@@ -289,8 +239,7 @@ class S3Storage implements StorageInterface {
 			}
 
 			if(!$valid) {
-				$this->settingsError = true;
-				Environment::UpdateOption($this->settingsErrorOptionName(), true);
+				$this->settings->settingsError = true;
 			} else {
 				$this->client = $client;
 			}
@@ -304,14 +253,14 @@ class S3Storage implements StorageInterface {
 	}
 
 	public function enabled() {
-		if (!((($this->key && $this->secret) || $this->useCredentialProvider) && $this->bucket)) {
+		if (!((($this->settings->key && $this->settings->secret) || $this->settings->useCredentialProvider) && $this->settings->bucket)) {
 			$adminUrl = admin_url('admin.php?page=media-cloud-settings&tab=storage');
 			NoticeManager::instance()->displayAdminNotice('info', "Welcome to Media Cloud!  To get started, <a href='$adminUrl'>configure your cloud storage</a>.", true, 'ilab-cloud-storage-setup-warning', 'forever');
 
 			return false;
 		}
 
-		if ($this->settingsError) {
+		if ($this->settings->settingsError) {
 			return false;
 		}
 
@@ -319,7 +268,7 @@ class S3Storage implements StorageInterface {
 	}
 
 	public function settingsError() {
-    	return $this->settingsError;
+    	return $this->settings->settingsError;
 	}
 
 	public function client() {
@@ -342,7 +291,7 @@ class S3Storage implements StorageInterface {
 			return false;
 		}
 
-		if($this->useCredentialProvider) {
+		if($this->settings->useCredentialProvider) {
 			$config = [
 				'version' => 'latest',
 				'credentials' => CredentialProvider::defaultProvider()
@@ -351,15 +300,15 @@ class S3Storage implements StorageInterface {
 			$config = [
 				'version' => 'latest',
 				'credentials' => [
-					'key' => $this->key,
-					'secret' => $this->secret
+					'key' => $this->settings->key,
+					'secret' => $this->settings->secret
 				]
 			];
 		}
 
-		if(!empty($this->endpoint)) {
-			$config['endpoint'] = $this->endpoint;
-			if($this->endPointPathStyle) {
+		if(!empty($this->settings->endpoint)) {
+			$config['endpoint'] = $this->settings->endpoint;
+			if($this->settings->endPointPathStyle) {
 				$config['use_path_style_endpoint'] = true;
 			}
 		}
@@ -367,7 +316,7 @@ class S3Storage implements StorageInterface {
 		$s3 = new S3MultiRegionClient($config);
 		$region = false;
 		try {
-			$region = $s3->determineBucketRegion($this->bucket);
+			$region = $s3->determineBucketRegion($this->settings->bucket);
 		}
 		catch(AwsException $ex) {
 			Logger::error("AWS Error fetching region", ['exception' => $ex->getMessage()]);
@@ -385,9 +334,7 @@ class S3Storage implements StorageInterface {
 			return null;
 		}
 
-
-
-		if($this->useCredentialProvider) {
+		if($this->settings->useCredentialProvider) {
 			$config = [
 				'version' => 'latest',
 				'credentials' => CredentialProvider::defaultProvider()
@@ -396,21 +343,21 @@ class S3Storage implements StorageInterface {
 			$config = [
 				'version' => 'latest',
 				'credentials' => [
-					'key' => $this->key,
-					'secret' => $this->secret
+					'key' => $this->settings->key,
+					'secret' => $this->settings->secret
 				]
 			];
 		}
 
-		if(!empty($this->endpoint)) {
-			$config['endpoint'] = $this->endpoint;
+		if(!empty($this->settings->endpoint)) {
+			$config['endpoint'] = $this->settings->endpoint;
 
-			if($this->endPointPathStyle) {
+			if($this->settings->endPointPathStyle) {
 				$config['use_path_style_endpoint'] = true;
 			}
 		}
 
-		if($this->useTransferAcceleration) {
+		if($this->settings->useTransferAcceleration && (StorageManager::driver() === 's3')) {
 			$config['use_accelerate_endpoint'] = true;
 		}
 
@@ -432,9 +379,9 @@ class S3Storage implements StorageInterface {
 		}
 
 		if(empty($region)) {
-			if(empty($this->region)) {
-				$this->region = $this->getBucketRegion();
-				if(empty($this->region)) {
+			if(empty($this->settings->region)) {
+				$this->settings->region = $this->getBucketRegion();
+				if(empty($this->settings->region)) {
                     if ($errorCollector) {
                         $errorCollector->addError('Could not determine region.');
                     }
@@ -444,10 +391,10 @@ class S3Storage implements StorageInterface {
 					return null;
 				}
 
-				Environment::UpdateOption('mcloud-storage-s3-region', $this->region);
+				Environment::UpdateOption('mcloud-storage-s3-region', $this->settings->region);
 			}
 
-			$region = $this->region;
+			$region = $this->settings->region;
 		}
 
 		if(empty($region)) {
@@ -458,9 +405,7 @@ class S3Storage implements StorageInterface {
 			return null;
 		}
 
-
-
-		if($this->useCredentialProvider) {
+		if($this->settings->useCredentialProvider) {
 			$config = [
 				'version' => 'latest',
 				'credentials' => CredentialProvider::defaultProvider(),
@@ -470,21 +415,21 @@ class S3Storage implements StorageInterface {
 			$config = [
 				'version' => 'latest',
 				'credentials' => [
-					'key' => $this->key,
-					'secret' => $this->secret
+					'key' => $this->settings->key,
+					'secret' => $this->settings->secret
 				],
 				'region' => $region
 			];
 		}
 
-		if(!empty($this->endpoint)) {
-			$config['endpoint'] = $this->endpoint;
-			if($this->endPointPathStyle) {
+		if(!empty($this->settings->endpoint)) {
+			$config['endpoint'] = $this->settings->endpoint;
+			if($this->settings->endPointPathStyle) {
 				$config['use_path_style_endpoint'] = true;
 			}
 		}
 
-		if($this->useTransferAcceleration) {
+		if($this->settings->useTransferAcceleration) {
 			$config['use_accelerate_endpoint'] = true;
 		}
 
@@ -528,11 +473,11 @@ class S3Storage implements StorageInterface {
 
 	//region File Functions
 	public function bucket() {
-		return $this->bucket;
+		return $this->settings->bucket;
 	}
 
 	public function region() {
-		return $this->region;
+		return $this->settings->region;
 	}
 
 	public function insureACL($key, $acl) {
@@ -544,7 +489,7 @@ class S3Storage implements StorageInterface {
 			throw new InvalidStorageSettingsException('Storage settings are invalid');
 		}
 
-		return $this->client->doesObjectExist($this->bucket, $key);
+		return $this->client->doesObjectExist($this->settings->bucket, $key);
 	}
 
 	public function copy($sourceKey, $destKey, $acl, $mime = false, $cacheControl = false, $expires = false) {
@@ -554,9 +499,9 @@ class S3Storage implements StorageInterface {
 
 		$copyOptions = [
 			'MetadataDirective' => 'REPLACE',
-			'Bucket' => $this->bucket,
+			'Bucket' => $this->settings->bucket,
 			'Key' => $destKey,
-			'CopySource' => $this->bucket.'/'.$sourceKey,
+			'CopySource' => $this->settings->bucket.'/'.$sourceKey,
 			'ACL' => $acl
 		];
 
@@ -617,7 +562,7 @@ class S3Storage implements StorageInterface {
 			$file = fopen($fileName, 'r');
 
 			Logger::startTiming("Start Upload", ['file' => $key]);
-			$result = $this->client->upload($this->bucket, $key, $file, $acl, $options);
+			$result = $this->client->upload($this->settings->bucket, $key, $file, $acl, $options);
 			Logger::endTiming("End Upload", ['file' => $key]);
 
 			fclose($file);
@@ -628,7 +573,7 @@ class S3Storage implements StorageInterface {
 			fclose($file);
 			Logger::error('S3 Upload Error', [
 				'exception' => $ex->getMessage(),
-				'bucket' => $this->bucket,
+				'bucket' => $this->settings->bucket,
 				'key' => $key,
 				'privacy' => $acl,
 				'options' => $options
@@ -645,13 +590,13 @@ class S3Storage implements StorageInterface {
 
 		try {
 			Logger::startTiming("Deleting '$key'");
-			$this->client->deleteObject(['Bucket' => $this->bucket, 'Key' => $key]);
+			$this->client->deleteObject(['Bucket' => $this->settings->bucket, 'Key' => $key]);
 			Logger::endTiming("Deleted '$key'");
 		}
 		catch(AwsException $ex) {
 			Logger::error('S3 Delete File Error', [
 				'exception' => $ex->getMessage(),
-				'Bucket' => $this->bucket,
+				'Bucket' => $this->settings->bucket,
 				'Key' => $key
 			]);
 		}
@@ -664,13 +609,13 @@ class S3Storage implements StorageInterface {
 
 		try {
 			Logger::startTiming("Deleting directory '$key'");
-			$this->client->deleteMatchingObjects($this->bucket, $key);
+			$this->client->deleteMatchingObjects($this->settings->bucket, $key);
 			Logger::endTiming("Deleted directory '$key'");
 		}
 		catch(AwsException $ex) {
 			Logger::error('S3 Delete File Error', [
 				'exception' => $ex->getMessage(),
-				'Bucket' => $this->bucket,
+				'Bucket' => $this->settings->bucket,
 				'Key' => $key
 			]);
 		}
@@ -687,7 +632,7 @@ class S3Storage implements StorageInterface {
 
 			Logger::startTiming("Creating folder '$key'");
 			$this->client->putObject([
-				'Bucket' => $this->bucket,
+				'Bucket' => $this->settings->bucket,
 				'Key' => $key,
 				'Body' => '',
 				'ACL' => 'public-read',
@@ -700,7 +645,7 @@ class S3Storage implements StorageInterface {
 		catch(AwsException $ex) {
 			Logger::error('S3 Delete File Error', [
 				'exception' => $ex->getMessage(),
-				'Bucket' => $this->bucket,
+				'Bucket' => $this->settings->bucket,
 				'Key' => $key
 			]);
 		}
@@ -714,7 +659,7 @@ class S3Storage implements StorageInterface {
 		}
 
 		try {
-			$result = $this->client->headObject(['Bucket' => $this->bucket, 'Key' => $key]);
+			$result = $this->client->headObject(['Bucket' => $this->settings->bucket, 'Key' => $key]);
 			$length = $result->get('ContentLength');
 			$type = $result->get('ContentType');
 		}
@@ -750,7 +695,7 @@ class S3Storage implements StorageInterface {
 		$contents = [];
 		try {
 			$args =  [
-				'Bucket' => $this->bucket,
+				'Bucket' => $this->settings->bucket,
 				'Prefix' => $path
 			];
 
@@ -792,7 +737,7 @@ class S3Storage implements StorageInterface {
 		$contents = [];
 		try {
 			$args =  [
-				'Bucket' => $this->bucket,
+				'Bucket' => $this->settings->bucket,
 				'Prefix' => $path
 			];
 
@@ -828,10 +773,14 @@ class S3Storage implements StorageInterface {
 		}
 
 		if (empty($expiration)) {
-			$expiration = $this->presignedURLExpiration;
+			$expiration = $this->settings->presignedURLExpiration;
 		}
 
-		$command = $this->client->getCommand('GetObject', ['Bucket' => $this->bucket, 'Key' => $key]);
+		if (empty($expiration)) {
+			$expiration = 1;
+		}
+
+		$command = $this->client->getCommand('GetObject', ['Bucket' => $this->settings->bucket, 'Key' => $key]);
 
 		return $this->client->createPresignedRequest($command, "+".((int)$expiration)." minutes");
 	}
@@ -844,15 +793,16 @@ class S3Storage implements StorageInterface {
 	    return $url;
 	}
 
-	public function url($key) {
+	public function url($key, $type = null) {
 		if(!$this->client) {
 			throw new InvalidStorageSettingsException('Storage settings are invalid');
 		}
 
-		if ($this->usePresignedURLs) {
-		    return $this->presignedUrl($key);
+		if ($this->usesSignedURLs($type)) {
+			$expiration = $this->signedURLExpirationForType($type);
+		    return $this->presignedUrl($key, $expiration);
         } else {
-            return $this->client->getObjectUrl($this->bucket, $key);
+            return $this->client->getObjectUrl($this->settings->bucket, $key);
         }
 	}
 	//endregion
@@ -868,7 +818,7 @@ class S3Storage implements StorageInterface {
 	 */
 	protected function getOptionsData($acl, $key) {
 		return [
-			['bucket' => $this->bucket],
+			['bucket' => $this->settings->bucket],
 			['acl' => $acl],
 			['key' => $key],
 			['starts-with', '$Content-Type', '']
@@ -887,7 +837,7 @@ class S3Storage implements StorageInterface {
 				$optionsData[] = ['Expires' => $expires];
 			}
 
-			$postObject = new PostObjectV4($this->client, $this->bucket, [], $optionsData, '+15 minutes');
+			$postObject = new PostObjectV4($this->client, $this->settings->bucket, [], $optionsData, '+15 minutes');
 
 			return new S3UploadInfo($key, $postObject, $acl, $cacheControl, $expires);
 		}
@@ -908,8 +858,168 @@ class S3Storage implements StorageInterface {
 	        return $this->adapter;
         }
 
-	    $this->adapter = new AwsS3Adapter($this->client, $this->bucket);
+	    $this->adapter = new AwsS3Adapter($this->client, $this->settings->bucket);
 	    return $this->adapter;
     }
     //endregion
+
+	//region Wizard
+
+	/**
+	 * @param WizardBuilder|null $builder
+	 *
+	 * @return WizardBuilder|null
+	 * @throws \Exception
+	 */
+	public static function configureWizard($builder = null) {
+		if (empty($builder)) {
+			$builder = new WizardBuilder('cloud-storage-s3', true);
+		}
+
+		$builder
+			->section('cloud-storage-s3', true)
+				->select('Getting Started', 'Learn about Amazon S3 and how to setup your Amazon AWS Account to work with Media Cloud.')
+					->group('wizard.cloud-storage.providers.s3.intro', 'select-buttons')
+						->option('watch-tutorial', 'Watch Video Tutorial', null, null, 'cloud-storage-s3-video-tutorial')
+						->option('read-tutorial', 'Step By Step Tutorial', null, null, 'cloud-storage-s3-tutorial')
+					->endGroup()
+				->endStep()
+				->form('wizard.cloud-storage.providers.s3.form', 'Amazon S3 Settings', 'Configure Media Cloud with your Amazon S3 settings.', [S3Storage::class, 'processWizardSettings'])
+					->hiddenField('nonce', wp_create_nonce('update-storage-settings'))
+					->hiddenField('mcloud-storage-provider', 's3')
+					->textField('mcloud-storage-s3-access-key', 'Access Key', '', null)
+					->passwordField('mcloud-storage-s3-secret', 'Secret', '', null)
+					->hiddenField('mcloud-storage-s3-region', 'auto')
+					->textField('mcloud-storage-s3-bucket', 'Bucket', 'The name of bucket you wish to store your media in.', null)
+					->checkboxField('mcloud-storage-s3-use-transfer-acceleration', 'Use Transfer Acceleration', 'Amazon S3 Transfer Acceleration enables fast, easy, and secure transfers of files over long distances between your client and an S3 bucket. Transfer Acceleration takes advantage of Amazon CloudFront’s globally distributed edge locations.  <strong>You must have it enabled on your bucket in the S3 console.</strong>', false)
+				->endStep()
+				->testStep('wizard.cloud-storage.providers.s3.test', 'Test Settings', 'Perform tests to insure that Amazon S3 is configured correctly.', false);
+
+		static::addTests($builder);
+
+		$builder->select('Complete', 'Basic setup is now complete!  Configure advanced settings or setup imgix.')
+			->group('wizard.cloud-storage.providers.s3.success', 'select-buttons')
+				->option('configure-imgix', 'Set Up imgix', null, null, 'imgix')
+				->option('advanced-settings', 'Advanced Settings', null, null, null, null, 'admin:admin.php?page=media-cloud-settings-storage')
+			->endGroup()
+		->endStep();
+
+//		$builder->next('wizard.cloud-storage.providers.s3.success', 'Complete', 'Success!  Everything is setup and ready to go.', null);
+
+		$builder->section('cloud-storage-s3-video-tutorial', false)
+				->video('https://www.youtube.com/watch?v=kjFCACrPRtU', null, null, null, true)
+			->endSection();
+
+		$builder
+			->tutorialSection('cloud-storage-s3-tutorial', true)
+				->tutorial('wizard.cloud-storage.providers.s3.tutorial.step-1', 'Create an S3 Bucket', 'Learn how to create an S3 bucket for use with Media Cloud.')
+				->tutorial('wizard.cloud-storage.providers.s3.tutorial.step-2', 'Create Policy', 'Policies control how Media Cloud interacts with your S3 bucket and what it can do.', null, true)
+				->tutorial('wizard.cloud-storage.providers.s3.tutorial.step-3', 'Create IAM User', 'Creates the IAM user credentials that Media Cloud will use to access your S3 bucket.', null, true)
+				->tutorial('wizard.cloud-storage.providers.s3.tutorial.step-4', 'CORS Configuration (Optional)', 'If you plan on using the Direct Uploads functionality, learn how to configure CORS to make that happen.', null, true)
+			->endSection();
+
+		return $builder;
+	}
+
+	protected static function validateWizardInput($provider, $accessKey, $secret, $bucket, $region, $endpoint) {
+		return !anyNull($provider, $accessKey, $secret, $bucket, $region);
+	}
+
+	/**
+	 * @return array[
+	 *  'providerName' => string,
+	 *  'accessKeyName' => string,
+	 *  'secretName' => string,
+	 *  'bucketName' => string,
+	 *  'regionName' => string,
+	 *  'endpointName' => string,
+	 *  'pathStyleEndpointName' => string,
+	 *  'useTransferAccelerationName' => string
+	 * ]
+	 */
+	protected static function fetchWizardInputNames() {
+		return [
+			'providerName' => 'mcloud-storage-provider',
+			'accessKeyName' => 'mcloud-storage-s3-access-key',
+			'secretName' => 'mcloud-storage-s3-secret',
+			'bucketName' => 'mcloud-storage-s3-bucket',
+			'regionName' => 'mcloud-storage-s3-region',
+			'endpointName' => 'mcloud-storage-s3-endpoint',
+			'pathStyleEndpointName' => 'mcloud-storage-s3-use-path-style-endpoint',
+			'useTransferAccelerationName' => 'mcloud-storage-s3-use-transfer-acceleration'
+		];
+	}
+
+	public static function processWizardSettings() {
+		if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'update-storage-settings')) {
+			wp_send_json(['status' => 'error', 'message' => 'Nonce is invalid.  Please try refreshing the page and submitting the form again.'], 200);
+		}
+
+		/**
+		 * @var string $providerName
+		 * @var string $accessKeyName
+		 * @var string $secretName
+		 * @var string $bucketName
+		 * @var string $regionName
+		 * @var string $endpointName
+		 * @var string $pathStyleEndpointName
+		 * @var string $useTransferAccelerationName
+		 */
+		extract(static::fetchWizardInputNames(), EXTR_OVERWRITE);
+
+		$provider = arrayPath($_POST, $providerName, null);
+		$accessKey = arrayPath($_POST, $accessKeyName, null);
+		$secret = arrayPath($_POST, $secretName, null);
+		$bucket = arrayPath($_POST, $bucketName, null);
+		$region = arrayPath($_POST, $regionName, 'auto');
+		$endpoint = arrayPath($_POST, $endpointName, null);
+		$pathStyleEndpoint = arrayPath($_POST, $pathStyleEndpointName, true);
+		$useTransferAcceleration = arrayPath($_POST, $useTransferAccelerationName, false);
+
+		if (!static::validateWizardInput($provider, $accessKey, $secret, $bucket, $region, $endpoint)) {
+			wp_send_json(['status' => 'error', 'message' => 'Missing required fields'], 200);
+		}
+
+		$oldProvider = Environment::ReplaceOption($providerName, $provider);
+		$oldBucket = Environment::ReplaceOption($bucketName, $bucket);
+		$oldKey = Environment::ReplaceOption($accessKeyName, $accessKey);
+		$oldSecret = Environment::ReplaceOption($secretName, $secret);
+		$oldRegion = Environment::ReplaceOption($regionName, $region);
+		$oldEndpoint = Environment::ReplaceOption($endpointName, $endpoint);
+		$oldPathStyleEndpoint = Environment::ReplaceOption($pathStyleEndpointName, $pathStyleEndpoint);
+		$oldUseTransferAcceleration = Environment::ReplaceOption($useTransferAccelerationName, $useTransferAcceleration);
+
+		StorageManager::resetStorageInstance();
+
+		try {
+			$storage = new static();
+			$restoreOld = !$storage->validateSettings();
+		} catch (\Exception $ex) {
+			$restoreOld = true;
+		}
+
+		if ($restoreOld) {
+			Environment::UpdateOption($providerName, $oldProvider);
+			Environment::UpdateOption($bucketName, $oldBucket);
+			Environment::UpdateOption($accessKeyName, $oldKey);
+			Environment::UpdateOption($secretName, $oldSecret);
+			Environment::UpdateOption($regionName, $oldRegion);
+			Environment::UpdateOption($endpointName, $oldEndpoint);
+			Environment::UpdateOption($pathStyleEndpointName, $oldPathStyleEndpoint);
+			Environment::UpdateOption($useTransferAccelerationName, $oldUseTransferAcceleration);
+
+			StorageManager::resetStorageInstance();
+
+			$message = "There was a problem with your settings.  Please double check entries for potential mistakes.";
+
+			wp_send_json([ 'status' => 'error', 'message' => $message], 200);
+		} else {
+			wp_send_json([ 'status' => 'ok'], 200);
+		}
+
+	}
+
+
+
+	//endregion
 }

@@ -114,18 +114,6 @@ return [
 					]
 				]
 			],
-			"ilab-media-imgix-gutenberg-settings" => [
-				"title" => "Imgix Gutenberg Integration",
-				"description" => "Controls integration of Imgix with Gutenberg",
-				"options" => [
-					"mcloud-imgix-disable-srcset" => [
-						"title" => "Disable srcset on image tags",
-						"description" => "Gutenberg's image block has a lot of issues and problems.  For example, it omits the width and height attributes which is a really bad practice.  And it's also because of this that it's impossible to calculate a srcset that is realistic when using Imgix.  Until they fix this, we recommend disabling srcset on image tags - <strong>but only if you use Gutenberg</strong>.  If you are not using Gutenberg, carry on with your bad self!",
-						"type" => "checkbox",
-						"default" => false
-					]
-				]
-			],
 			"ilab-media-imgix-gif-settings" => [
 				"title" => "Imgix GIF Settings",
 				"description" => "Controls how animated gifs appear on the site.  <strong>You must have a premium Imgix account to have animated GIF support.</strong>  <a target='_blank' href='https://docs.imgix.com/apis/url/format/fm'>See here for more details</a> or <a target='_blank' href='https://www.imgix.com/contact-us'>contact their sales team</a> for more information.",

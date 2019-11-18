@@ -1,0 +1,9 @@
+<?php /** @var \ILAB\MediaCloud\Wizard\Config\Field $field */?>
+<div class="form-field">
+    <label for="{{$field->name()}}">{{ $field->title() }}</label>
+    <select name="{{$field->name()}}" id="{{$field->name()}}" value="{{$field->default()}}" required>
+        @foreach($field->options() as $value => $name)
+        <option value="{{$value}}" {{($value == $field->default()) ? 'selected' : ''}}>{{$name}}</option>
+        @endforeach
+    </select>
+</div>

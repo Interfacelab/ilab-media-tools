@@ -13,7 +13,7 @@
 
 namespace ILAB\MediaCloud\Tools\Storage\Tasks;
 
-use ILAB\MediaCloud\Storage\StorageSettings;
+use ILAB\MediaCloud\Storage\StorageGlobals;
 use ILAB\MediaCloud\Tasks\AttachmentTask;
 use ILAB\MediaCloud\Tools\Storage\StorageTool;
 use ILAB\MediaCloud\Tools\ToolsManager;

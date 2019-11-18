@@ -1,3 +1,8 @@
+<?php
+if (empty($value)) {
+	$value = $default;
+}
+?>
 <div id="setting-{{$name}}" {{(($conditions) ? 'data-conditions="true"' : '')}}>
 	<select id="{{$name}}" name='{{$name}}'>
 	@foreach($options as $val => $optionName)

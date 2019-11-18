@@ -124,16 +124,6 @@ abstract class DynamicImagesTool extends Tool {
 
         add_filter('image_get_intermediate_size', [$this, 'imageGetIntermediateSize'], 0, 3);
 
-	    if (Environment::Option('mcloud-imgix-disable-srcset', null, false)) {
-	        add_filter('media-cloud/storage/can-calculate-srcset', function($can) {
-	            return false;
-            });
-
-		    add_filter('wp_calculate_image_srcset', function($sources, $size_array, $image_src, $image_meta, $attachment_id) {
-		        return [];
-            }, 10001, 5);
-        }
-
 	    add_action('admin_enqueue_scripts', [$this, 'enqueueTheGoods']);
         add_action('wp_ajax_ilab_dynamic_images_edit_page', [$this, 'displayEditUI']);
         add_action('wp_ajax_ilab_dynamic_images_save', [$this, 'saveAdjustments']);

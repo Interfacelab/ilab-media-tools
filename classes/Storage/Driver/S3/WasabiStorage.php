@@ -20,28 +20,16 @@ use FasterImage\FasterImage;
 use ILAB\MediaCloud\Storage\FileInfo;
 use ILAB\MediaCloud\Storage\InvalidStorageSettingsException;
 use ILAB\MediaCloud\Storage\StorageException;
+use function ILAB\MediaCloud\Utilities\anyNull;
 use ILAB\MediaCloud\Utilities\Environment;
 use ILAB\MediaCloud\Utilities\Logging\Logger;
+use ILAB\MediaCloud\Utilities\Tracker;
+use ILAB\MediaCloud\Wizard\WizardBuilder;
 use ILABAmazon\Exception\AwsException;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
 class WasabiStorage extends OtherS3Storage {
-	//region Properties
-
-	//endregion
-
-	//region Constructor
-	public function __construct() {
-		parent::__construct();
-
-		$region = Environment::Option('mcloud-storage-wasabi-region', null, null);
-		if(!empty($region)) {
-			$this->region = $region;
-		}
-	}
-	//endregion
-
 	//region Static Information Methods
 	public static function identifier() {
 		return 'wasabi';
@@ -69,7 +57,7 @@ class WasabiStorage extends OtherS3Storage {
 		return true;
 	}
 
-	protected function settingsErrorOptionName() {
+	public static function settingsErrorOptionName() {
 		return 'ilab-wasabi-settings-error';
 	}
 
@@ -102,7 +90,7 @@ class WasabiStorage extends OtherS3Storage {
 		}
 
 		try {
-			$this->client->putObjectAcl(['Bucket' => $this->bucket, 'Key' => $key, 'ACL' => $acl]);
+			$this->client->putObjectAcl(['Bucket' => $this->settings->bucket, 'Key' => $key, 'ACL' => $acl]);
 		} catch (AwsException $ex) {
 			throw new StorageException($ex->getMessage(), $ex->getStatusCode(), $ex);
 		}
@@ -114,7 +102,7 @@ class WasabiStorage extends OtherS3Storage {
 		}
 
 		try {
-			$result = $this->client->headObject(['Bucket' => $this->bucket, 'Key' => $key]);
+			$result = $this->client->headObject(['Bucket' => $this->settings->bucket, 'Key' => $key]);
 			$length = $result->get('ContentLength');
 			$type = $result->get('ContentType');
 		}
@@ -146,7 +134,7 @@ class WasabiStorage extends OtherS3Storage {
 	public function uploadUrl($key, $acl, $mimeType = null, $cacheControl = null, $expires = null) {
 		try {
 			$optionsData = [
-				'Bucket' => $this->bucket,
+				'Bucket' => $this->settings->bucket,
 				'ContentType' => $mimeType,
 				'Key' => $key
 			];
@@ -175,4 +163,122 @@ class WasabiStorage extends OtherS3Storage {
 		wp_enqueue_script('ilab-media-upload-other-s3', ILAB_PUB_JS_URL.'/ilab-media-direct-upload-other-s3.js', [], false, true);
 	}
 	//endregion
+
+	//region Wizard
+	/**
+	 * @param WizardBuilder|null $builder
+	 *
+	 * @return WizardBuilder|null
+	 * @throws \Exception
+	 */
+	public static function configureWizard($builder = null) {
+		if (empty($builder)) {
+			$builder = new WizardBuilder('cloud-storage-wasabi', true);
+		}
+
+		$builder
+			->section('cloud-storage-wasabi', true)
+				->select('Getting Started', 'Learn about Wasabi and how to set it up to work with Media Cloud.')
+					->group('wizard.cloud-storage.providers.wasabi.intro', 'select-buttons')
+						->option('read-tutorial', 'Step By Step Tutorial', null, null, 'cloud-storage-wasabi-tutorial')
+					->endGroup()
+				->endStep()
+				->form('wizard.cloud-storage.providers.wasabi.form', 'Cloud Storage Settings', 'Configure Media Cloud with your cloud storage settings.', [static::class, 'processWizardSettings'])
+					->hiddenField('nonce', wp_create_nonce('update-storage-settings'))
+					->hiddenField('mcloud-storage-provider', 'wasabi')
+					->textField('mcloud-storage-s3-access-key', 'Access Key', '', null)
+					->passwordField('mcloud-storage-s3-secret', 'Secret', '', null)
+					->textField('mcloud-storage-s3-bucket', 'Bucket', 'The name of bucket you wish to store your media in.', null)
+					->selectField('mcloud-storage-wasabi-region', 'Region', '', null, [
+						'us-east-1' => 'US East',
+						'us-west-1' => 'US West',
+						'eu-central-1' => 'EU'
+					])
+				->endStep()
+				->testStep('wizard.cloud-storage.providers.wasabi.test', 'Test Settings', 'Perform tests to insure that your cloud storage provider is configured correctly.', false);
+
+		static::addTests($builder);
+
+		$builder->select('Complete', 'Basic setup is now complete!  Configure advanced settings or setup imgix.')
+			->group('wizard.cloud-storage.providers.wasabi.success', 'select-buttons')
+				->option('configure-imgix', 'Set Up imgix', null, null, 'imgix')
+				->option('advanced-settings', 'Advanced Settings', null, null, null, null, 'admin:admin.php?page=media-cloud-settings-storage')
+			->endGroup()
+		->endStep();
+
+		$builder
+			->tutorialSection('cloud-storage-wasabi-tutorial', true)
+				->tutorial('wizard.cloud-storage.providers.wasabi.tutorial.step-1', 'Create IAM User', 'Create the IAM user account and credentials Media Cloud will use to access Wasabi.')
+				->tutorial('wizard.cloud-storage.providers.wasabi.tutorial.step-2', 'Create Bucket', 'Create the bucket that Media Cloud will use.', null, true)
+			->endSection();
+
+		return $builder;
+	}
+
+	protected static function validateWizardInput($provider, $accessKey, $secret, $bucket, $region, $endpoint) {
+		return !anyNull($provider, $accessKey, $secret, $bucket, $region);
+	}
+
+	/**
+	 * @return array[
+	 *  'providerName' => string,
+	 *  'accessKeyName' => string,
+	 *  'secretName' => string,
+	 *  'bucketName' => string,
+	 *  'regionName' => string,
+	 *  'endpointName' => string,
+	 *  'pathStyleEndpointName' => string,
+	 *  'useTransferAccelerationName' => string
+	 * ]
+	 */
+	protected static function fetchWizardInputNames() {
+		return [
+			'providerName' => 'mcloud-storage-provider',
+			'accessKeyName' => 'mcloud-storage-s3-access-key',
+			'secretName' => 'mcloud-storage-s3-secret',
+			'bucketName' => 'mcloud-storage-s3-bucket',
+			'regionName' => 'mcloud-storage-wasabi-region',
+			'endpointName' => 'mcloud-storage-s3-endpoint',
+			'pathStyleEndpointName' => 'mcloud-storage-s3-use-path-style-endpoint',
+			'useTransferAccelerationName' => 'mcloud-storage-s3-use-transfer-acceleration'
+		];
+	}
+
+	public static function testStorageAcl() {
+		if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'media-cloud-wizard-test')) {
+			wp_send_json(['status' => 'error', 'message' => 'Nonce is invalid.  Please try refreshing the page and submitting the form again.'], 200);
+		}
+
+		Tracker::trackView("System Test - Test Public", "/system-test/public");
+
+		$client = new static();
+		$errors = [];
+		try {
+			$result = null;
+			$url = $client->url('_troubleshooter/sample.txt');
+
+			$result = ilab_file_get_contents($url);
+
+			if ($result != file_get_contents(ILAB_TOOLS_DIR.'/public/text/sample-upload.txt')) {
+				$errors[] = "Upload <a href='$url'>sample file</a> is not publicly viewable.";
+			}
+		} catch (\Exception $ex) {
+			$errors[] = $ex->getMessage();
+		}
+
+		if (empty($errors)) {
+			wp_send_json([
+				'status' => 'success',
+				'message' => 'The uploaded file is publicly accessible.',
+			]);
+		} else {
+			wp_send_json([
+				'status' => 'warning',
+				'message' => 'The uploaded file is not publicly accessible.  If you are using a Wasabi trial account, this is expected because trial accounts don\'t allow public files.  If you are using a paid account, double check your bucket settings because this shouldn\'t happen.',
+				'errors' => $errors
+			]);
+		}
+	}
+	//endregion
+
 }

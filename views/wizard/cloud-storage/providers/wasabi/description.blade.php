@@ -1,0 +1,1 @@
+Wasabi is a cost effective offering, but with limited points of presence the performance doesn't match Amazon, Google Cloud or DigitalOcean.

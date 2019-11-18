@@ -13,7 +13,7 @@
 
 namespace ILAB\MediaCloud\Tasks;
 
-use ILAB\MediaCloud\Storage\StorageSettings;
+use ILAB\MediaCloud\Storage\StorageGlobals;
 use ILAB\MediaCloud\Utilities\Logging\Logger;
 
 abstract class AttachmentTask extends Task {
@@ -110,7 +110,7 @@ abstract class AttachmentTask extends Task {
 				$args['nopaging'] = true;
 			}
 
-			$args['post_mime_type'] = StorageSettings::allowedMimeTypes();
+			$args['post_mime_type'] = StorageGlobals::allowedMimeTypes();
 
 			$args = $this->filterPostArgs($args);
 

@@ -1,0 +1,1 @@
+<p>To configure imgix, we'll need to know your imgix domain and the signing key (optional) to use to secure your image URLs.  If you haven't set this up yet, consult the <a href="https://docs.imgix.com/setup" target="_blank">imgix documentation</a> for more details.</p>

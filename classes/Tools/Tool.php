@@ -16,7 +16,7 @@
 
 namespace ILAB\MediaCloud\Tools;
 
-use ILAB\MediaCloud\Storage\StorageSettings;
+use ILAB\MediaCloud\Storage\StorageGlobals;
 use ILAB\MediaCloud\Utilities\Environment;
 use ILAB\MediaCloud\Utilities\NoticeManager;
 use function ILAB\MediaCloud\Utilities\arrayPath;
@@ -282,6 +282,24 @@ abstract class Tool {
         return false;
     }
 
+
+	/**
+	 * Determines if the tool has a setup wizard
+	 * @return bool
+	 */
+	public function hasWizard() {
+		return false;
+	}
+
+
+	/**
+	 * The URL for the wizard
+	 * @return bool
+	 */
+	public function wizardLink() {
+		return false;
+	}
+
 	/**
      * Determines if this tool installs, or wants to install, items in the admin menu bar
 	 * @return bool
@@ -404,6 +422,8 @@ abstract class Tool {
             }, 10, 3);
         }
 
+        global $wp_version;
+
         $groups=$this->toolInfo['settings']['groups'];
         foreach($groups as $group => $groupInfo)  {
             $groupWatch = !empty($groupInfo['watch']);
@@ -411,6 +431,25 @@ abstract class Tool {
             $this->registerSettingsSection($group, $groupInfo['title'], arrayPath($groupInfo, 'description', null));
             if (isset($groupInfo['options']))  {
                 foreach($groupInfo['options'] as $option => $optionInfo)  {
+                    if (isset($optionInfo['wp_version'])) {
+                        $comparison = $optionInfo['wp_version'];
+                        if (!version_compare($wp_version, $comparison[1], $comparison[0])) {
+                            continue;
+                        }
+                    }
+
+                    if (!empty($optionInfo['multisite'])) {
+                        if (!is_multisite()) {
+                            continue;
+                        }
+                    }
+
+                    if (!empty($optionInfo['plan'])) {
+                        if (!media_cloud_licensing()->is_plan($optionInfo['plan'])) {
+                            continue;
+                        }
+                    }
+
                     $optionWatch = !empty($optionInfo['watch']);
 
                     $this->registerSetting($option);
@@ -455,7 +494,7 @@ abstract class Tool {
                                 $this->registerNumberFieldSetting($option,$optionInfo['title'],$group,$description, $default, $conditions, $min, $max, $increment);
                                 break;
 	                        case 'select':
-		                        $this->registerSelectSetting($option,$optionInfo['options'],$optionInfo['title'],$group,$description, $conditions);
+		                        $this->registerSelectSetting($option, $optionInfo['options'], $optionInfo['title'], $group, isset($optionInfo['default']) ? $optionInfo['default'] : null,  $description, $conditions);
 		                        break;
                             case 'dynamic-select':
                                 $this->registerDynamicSelectSetting($option,$optionInfo['options'],$optionInfo['title'],$group,$description, $conditions);
@@ -465,6 +504,12 @@ abstract class Tool {
 		                        break;
 	                        case 'sites':
 		                        $this->registerSiteSelectSetting($option,$optionInfo['title'],$group,$description, $conditions);
+		                        break;
+	                        case 'advanced-presigned':
+		                        $this->registerAdvancedPresignedURLs($option, $optionInfo['title'], $group, $conditions);
+		                        break;
+	                        case 'advanced-privacy':
+		                        $this->registerAdvancedPrivacy($option, $optionInfo['title'], $group, $conditions);
 		                        break;
                         }
                     }

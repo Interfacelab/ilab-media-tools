@@ -372,13 +372,13 @@ trait SettingsTrait {
 	 * @param null $description
 	 * @param null $conditions
 	 */
-	protected function registerSelectSetting($option_name, $options, $title, $settings_slug, $description=null, $conditions=null) {
+	protected function registerSelectSetting($option_name, $options, $title, $settings_slug, $default, $description=null, $conditions=null) {
 		add_settings_field($option_name,
 			$title,
 			[$this,'renderSelectSetting'],
 			$this->options_page,
 			$settings_slug,
-			['option'=>$option_name,'options'=>$options,'description'=>$description, 'conditions'=>$conditions]);
+			['default' => $default, 'option'=>$option_name,'options'=>$options,'description'=>$description, 'conditions'=>$conditions]);
 	}
 
 	/**
@@ -412,6 +412,7 @@ trait SettingsTrait {
 		echo View::render_view('base/fields/select.php',[
 			'value' => Environment::Option($args['option']),
 			'name' => $args['option'],
+			'default' => isset($args['default']) ? $args['default'] : null,
 			'options' => $options,
 			'conditions' => $args['conditions'],
 			'description' => (isset($args['description'])) ? $args['description'] : false
@@ -441,6 +442,73 @@ trait SettingsTrait {
 			'description' => (isset($args['description'])) ? $args['description'] : false
 		]);
 	}
+
+	/**
+	 * Registers an option with a dropdown/select input
+	 * @param $option_name
+	 * @param $title
+	 * @param $settings_slug
+	 * @param $conditions
+	 * @throws \Freemius_Exception
+	 */
+	protected function registerAdvancedPresignedURLs($option_name, $title, $settings_slug, $conditions) {
+		if (media_cloud_licensing()->is_plan('pro')) {
+			add_settings_field($option_name,
+				$title,
+				[$this,'renderAdvancedPresignedURLs'],
+				$this->options_page,
+				$settings_slug,
+				['option' => $option_name, 'conditions' => $conditions]);
+		}
+	}
+
+	/**
+	 * Renders the select
+	 * @param $args
+	 * @throws \Freemius_Exception
+	 */
+	public function renderAdvancedPresignedURLs($args) {
+		if (media_cloud_licensing()->is_plan('pro')) {
+			echo View::render_view('base/fields/advanced-presigned-urls', [
+				'name' => $args['option'],
+				'conditions' => $args['conditions']
+			]);
+		}
+	}
+
+	/**
+	 * Registers an option with a dropdown/select input
+	 * @param $option_name
+	 * @param $title
+	 * @param $settings_slug
+	 * @param $conditions
+	 * @throws \Freemius_Exception
+	 */
+	protected function registerAdvancedPrivacy($option_name, $title, $settings_slug, $conditions) {
+		if (media_cloud_licensing()->is_plan('pro')) {
+			add_settings_field($option_name,
+				$title,
+				[$this,'renderAdvancedPrivacy'],
+				$this->options_page,
+				$settings_slug,
+				['option' => $option_name, 'conditions' => $conditions]);
+		}
+	}
+
+	/**
+	 * Renders the select
+	 * @param $args
+	 * @throws \Freemius_Exception
+	 */
+	public function renderAdvancedPrivacy($args) {
+		if (media_cloud_licensing()->is_plan('pro')) {
+			echo View::render_view('base/fields/advanced-privacy', [
+				'name' => $args['option'],
+				'conditions' => $args['conditions']
+			]);
+		}
+	}
+
 
     /**
      * Registers an option with a dropdown/select input

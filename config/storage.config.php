@@ -47,7 +47,8 @@ return [
 			'class' => "\\ILAB\\MediaCloud\\Storage\\Driver\\S3\\S3Storage",
 			'config' => '/storage/s3.config.php',
 			'help' => [
-				[ 'title' => 'Watch Tutorial', 'url' => 'https://www.youtube.com/watch?v=kjFCACrPRtU' ],
+				[ 'title' => 'Setup Wizard', 'wizard' => 's3' ],
+				[ 'title' => 'Watch Tutorial', 'video_url' => 'https://www.youtube.com/watch?v=kjFCACrPRtU' ],
 				[ 'title' => 'Read Documentation', 'url' => 'https://kb.mediacloud.press/articles/documentation/cloud-storage/setting-up-amazon-s3' ],
 			]
 		],
@@ -56,6 +57,7 @@ return [
 			'class' => "\\ILAB\\MediaCloud\\Storage\\Driver\\GoogleCloud\\GoogleStorage",
 			'config' => '/storage/google.config.php',
 			'help' => [
+				[ 'title' => 'Setup Wizard', 'wizard' => 'google' ],
 				[ 'title' => 'Read Documentation', 'url' => 'https://kb.mediacloud.press/articles/documentation/cloud-storage/setting-up-google-cloud-storage' ],
 			]
 		],
@@ -64,6 +66,7 @@ return [
 			'class' => "\\ILAB\\MediaCloud\\Storage\\Driver\\S3\\DigitalOceanStorage",
 			'config' => '/storage/do.config.php',
 			'help' => [
+				[ 'title' => 'Setup Wizard', 'wizard' => 'do' ],
 				[ 'title' => 'Read Documentation', 'url' => 'https://kb.mediacloud.press/articles/documentation/cloud-storage/setting-up-digitalocean-spaces' ],
 			]
 		],
@@ -72,6 +75,7 @@ return [
 			'class' => "\\ILAB\\MediaCloud\\Storage\\Driver\\S3\\MinioStorage",
 			'config' => '/storage/minio.config.php',
 			'help' => [
+				[ 'title' => 'Setup Wizard', 'wizard' => 'minio' ]
 			]
 		],
 		'wasabi' => [
@@ -79,6 +83,7 @@ return [
 			'class' => "\\ILAB\\MediaCloud\\Storage\\Driver\\S3\\WasabiStorage",
 			'config' => '/storage/wasabi.config.php',
 			'help' => [
+				[ 'title' => 'Setup Wizard', 'wizard' => 'wasabi' ],
 				[ 'title' => 'Read Documentation', 'url' => 'https://kb.mediacloud.press/articles/documentation/cloud-storage/setting-up-wasabi' ],
 			]
 		],
@@ -87,6 +92,7 @@ return [
 			'class' => "\\ILAB\\MediaCloud\\Storage\\Driver\\S3\\OtherS3Storage",
 			'config' => '/storage/other-s3.config.php',
 			'help' => [
+				[ 'title' => 'Setup Wizard', 'wizard' => 'other-s3' ],
 			]
 		],
 		'backblaze' => [
@@ -94,6 +100,7 @@ return [
 			'class' => \ILAB\MediaCloud\Storage\Driver\Backblaze\BackblazeStorage::class,
 			'config' => '/storage/backblaze.config.php',
 			'help' => [
+				[ 'title' => 'Setup Wizard', 'wizard' => 'backblaze' ],
 				[ 'title' => 'Read Documentation', 'url' => 'https://kb.mediacloud.press/articles/documentation/cloud-storage/setting-up-backblaze' ],
 			]
 		],
@@ -124,12 +131,6 @@ return [
 				"dynamic" => true,
 				"options" => [],
 			],
-			"ilab-media-cloud-signed-urls" => [
-				"title" => "Pre-Signed URL Settings",
-				"description" => "These settings control how pre-signed URLs work.",
-				"dynamic" => true,
-				"options" => [],
-			],
 			"ilab-media-cloud-upload-handling" => [
 				"title" => "Upload Handling",
                 "dynamic" => true,
@@ -144,64 +145,98 @@ return [
 	                ],
 	                "mcloud-storage-subsite-prefixes" => [
 		                "title" => "Subsite Upload Paths",
-		                "display-order" => 10,
+		                "display-order" => 11,
 		                "description" => "This allows you to override the default upload path for individual subsites in your multisite network.  If left blank, that subsite will use your default upload path.  As with the <strong>Upload Path</strong> setting, you can use the following variables: <code>@{date:format}</code>, <code>@{site-name}</code>, <code>@{site-host}</code>, <code>@{site-id}</code>, <code>@{versioning}</code>, <code>@{user-name}</code>, <code>@{unique-id}</code>, <code>@{unique-path}</code>, <code>@{type}</code>.",
-		                "type" => "subsite-upload-paths"
+		                "type" => "subsite-upload-paths",
+		                "multisite" => true,
 	                ],
 	                "mcloud-storage-upload-images" => [
 		                "title" => "Upload Images",
 		                "description" => "Upload image files to cloud storage.",
-		                "display-order" => 10,
+		                "display-order" => 12,
 		                "type" => "checkbox",
 		                "default" => true
 	                ],
 	                "mcloud-storage-upload-videos" => [
 		                "title" => "Upload Video Files",
 		                "description" => "Upload video files to cloud storage.",
-		                "display-order" => 10,
+		                "display-order" => 13,
 		                "type" => "checkbox",
 		                "default" => true
 	                ],
 	                "mcloud-storage-upload-audio" => [
 		                "title" => "Upload Audio Files",
 		                "description" => "Upload audio files to cloud storage.",
-		                "display-order" => 10,
+		                "display-order" => 14,
 		                "type" => "checkbox",
 		                "default" => true
 	                ],
 	                "mcloud-storage-upload-documents" => [
 		                "title" => "Upload Documents",
 		                "description" => "Upload non-image files such as Word documents, PDF files, zip files, etc.",
-		                "display-order" => 10,
+		                "display-order" => 15,
 		                "type" => "checkbox",
 		                "default" => true
 	                ],
                     "mcloud-storage-ignored-mime-types" => [
                         "title" => "Ignored MIME Types",
                         "description" => "List of MIME types to ignore.  Any files with matching MIME types will not be uploaded.  You can also use wildcards.  For example <code>image/*</code> would disable uploading for any image.",
-                        "display-order" => 10,
+                        "display-order" => 16,
                         "type" => "text-area"
                     ],
                     "mcloud-storage-delete-uploads" => [
                         "title" => "Delete Uploaded Files",
                         "description" => "Deletes uploaded files from the WordPress server after they've been uploaded.",
-                        "display-order" => 10,
+                        "display-order" => 30,
                         "type" => "checkbox"
                     ],
 	                "mcloud-storage-queue-deletes" => [
 		                "title" => "Queue Deletes",
 		                "description" => "When this option is enabled, uploads won't be deleted right away, they will be queued for deletion two to five minutes later.  This allows other plugins the ability to process any uploads before they are deleted from your WordPress server.  If <strong>Delete From Storage</strong> is disabled, this setting is ignored.",
-		                "display-order" => 10,
+		                "display-order" => 31,
 		                "type" => "checkbox",
 		                "default" => true
 	                ],
 	                "mcloud-storage-delete-from-server" => [
 		                "title" => "Delete From Storage",
 		                "description" => "When you delete from the media library, turning this on will also delete the file from cloud storage.",
-		                "display-order" => 10,
+		                "display-order" => 32,
 		                "type" => "checkbox"
 	                ],
+	                "mcloud-storage-enable-big-size-threshold" => [
+		                "title" => "Enable Big Size Threshold",
+		                "description" => "WordPress 5.3 introduced a new feature that automatically resizes large image uploads to be 'web-ready'.  It essentially replaces your uploaded master image with a version scaled down to 2560x2560.  Use this toggle to enable or disable this feature.",
+		                "display-order" => 40,
+		                "wp_version" => ['>=', "5.3"],
+		                "type" => "checkbox",
+		                "default" => true,
+	                ],
+	                "mcloud-storage-big-size-threshold" => [
+		                "title" => "Big Size Threshold",
+		                "description" => "WordPress 5.3 introduced a new feature that automatically resizes large image uploads to be 'web-ready'.  Use this setting to control the threshold that triggers the resize.",
+		                "display-order" => 41,
+		                "wp_version" => ['>=', "5.3"],
+		                "type" => "number",
+		                "min" => 1024,
+		                "max" => 100000,
+		                "default" => 2560,
+	                ],
+	                "mcloud-storage-big-size-upload-original" => [
+		                "title" => "Upload Original",
+		                "description" => "WordPress 5.3 introduced a new feature that automatically resizes large image uploads to be 'web-ready'.  Use this setting to upload the unscaled original image to cloud storage.  If this is disabled and you have <strong>Delete Uploads</strong> enabled, the original file will not be deleted.",
+		                "display-order" => 42,
+		                "wp_version" => ['>=', "5.3"],
+		                "type" => "checkbox",
+		                "default" => true,
+	                ],
                 ]
+			],
+			"ilab-media-cloud-signed-urls" => [
+				"title" => "Pre-Signed URL Settings",
+				"description" => "These settings control how pre-signed URLs work.",
+				"doc_link" => 'https://kb.mediacloud.press/articles/documentation/cloud-storage/pre-signed-url-settings/',
+				"dynamic" => true,
+				"options" => [],
 			],
             "ilab-media-cloud-cdn-settings" => [
                 "title" => "CDN Settings",
@@ -239,15 +274,22 @@ return [
 					]
 				]
 			],
-			"ilab-media-cloud-gutenberg-settings" => [
-				"title" => "Gutenberg Integration",
-				"description" => "Controls integration of Dynamic Images with Gutenberg",
+			"ilab-media-cloud-srcset-settings" => [
+				"title" => "Responsive Image Settings",
+				"description" => "Controls how responsive image tags are generated.",
 				"options" => [
 					"mcloud-storage-disable-srcset" => [
 						"title" => "Disable srcset on image tags",
-						"description" => "Gutenberg's image block has a lot of issues and problems.  For example, it omits the width and height attributes which is a really bad practice.  And it's also because of this that it's impossible to calculate a srcset that is realistic when using Imgix.  Until they fix this, we recommend disabling srcset on image tags - <strong>but only if you use Gutenberg</strong>.  If you are not using Gutenberg, carry on with your bad self!",
+						"description" => "Gutenberg's image block, before WordPress 5.3, had a lot of issues and problems.  For example, which is still an issue in 5.3, WordPress omits the width and height attributes which is a really bad practice.  And it's also because of this that it's impossible to calculate a <code>srcset</code> that is realistic.  If you are using WordPress prior to 5.3, we recommend disabling <code>srcset</code> on image tags - <strong>but only if you use Gutenberg</strong>.  If you are using the Classic Editor, you do not need to disable this!",
 						"type" => "checkbox",
 						"default" => false
+					],
+					"mcloud-storage-replace-srcset" => [
+						"title" => "Replace srcset on image tags",
+						"description" => "MediaCloud can generate a more optimal <code>srcset</code> for image tags with WordPress versions greater than 5.3.  This is enabled by default, however if you are having issues, you should disable it to use WordPress's default <code>srcset</code> generation.  If <strong>Disable srcset on image tags</strong> is enabled, this setting will have no effect.",
+						"type" => "checkbox",
+						"wp_version" => ['>=', "5.3"],
+						"default" => true
 					]
 				]
 			]

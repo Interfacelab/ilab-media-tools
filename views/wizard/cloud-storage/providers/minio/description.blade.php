@@ -1,0 +1,1 @@
+Minio is an S3 compatible cloud storage software that you install and host yourself.

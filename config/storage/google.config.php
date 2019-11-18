@@ -29,20 +29,6 @@ return [
                 "display-order" => 2,
                 "type" => "text-field",
             ],
-	        "mcloud-storage-use-presigned-urls" => [
-		        "title" => "Use Pre-Signed URLs",
-		        "description" => "Set to true to generate signed URLs that will expire within a specified time period.  You should use this if you've set the default ACL to private.",
-		        "display-order" => 14,
-		        "type" => "checkbox",
-		        "default" => false,
-	        ],
-	        "mcloud-storage-presigned-expiration" => [
-		        "title" => "Pre-Signed URL Expiration",
-		        "description" => "The number of minutes the signed URL is valid for.",
-		        "display-order" => 15,
-		        "type" => "number",
-		        "default" => 10,
-	        ],
 	        "mcloud-storage-bucket-policy-only" => [
 		        "title" => "Use Bucket Policy Only",
 		        "description" => "Set to true to when using a bucket which has the 'Bucket Policy Only' flag enabled.  See <a target='_blank' href='https://cloud.google.com/storage/docs/bucket-policy-only'>this documentation</a> for more information.  Also, make sure to make the bucket public, as specified in <a target-'_blank' href='https://cloud.google.com/storage/docs/access-control/making-data-public#buckets'>this documentation</a>.",
@@ -63,22 +49,57 @@ return [
 	            "display-order" => 1,
                 "type" => "select",
                 "options" => [
-                    "public-read" => "public-read",
-                    "authenticated-read" => "authenticated-read"
+                    "public-read" => "Public",
+                    "authenticated-read" => "Private"
                 ],
             ],
+	        "mcloud-storage-advanced-privacy" => [
+		        "title" => "Advanced Privacy",
+		        "description" => "",
+		        "display-order" => 2,
+		        "type" => "advanced-privacy",
+		        "plan" => "pro"
+	        ],
             "mcloud-storage-cache-control" => [
                 "title" => "Cache Control",
                 "description" => "Sets the Cache-Control metadata for uploads, e.g. <code>public,max-age=2592000</code>.",
-                "display-order" => 2,
+                "display-order" => 20,
                 "type" => "text-field",
             ],
             "mcloud-storage-expires" => [
                 "title" => "Content Expiration",
                 "description" => "Sets the Expire metadata for uploads.  This is the number of minutes from the date of upload.",
-                "display-order" => 3,
+                "display-order" => 21,
                 "type" => "text-field",
             ],
         ]
     ],
+	"ilab-media-cloud-signed-urls" => [
+		"title" => "Pre-Signed URL Settings",
+		"description" => "These settings control how pre-signed URLs work.",
+		"dynamic" => true,
+		"options" => [
+			"mcloud-storage-use-presigned-urls" => [
+				"title" => "Use Pre-Signed URLs",
+				"description" => "Set to true to generate signed URLs that will expire within a specified time period.  You should use this if you've set the default ACL to private.",
+				"display-order" => 1,
+				"type" => "checkbox",
+				"default" => false,
+			],
+			"mcloud-storage-presigned-expiration" => [
+				"title" => "Pre-Signed URL Expiration",
+				"description" => "The number of minutes the signed URL is valid for.",
+				"display-order" => 2,
+				"type" => "number",
+				"default" => 10,
+			],
+			"mcloud-storage-use-presigned-urls-advanced" => [
+				"title" => "Advanced Pre-Signed URL Settings",
+				"description" => "",
+				"display-order" => 3,
+				"type" => "advanced-presigned",
+				"plan" => "pro"
+			],
+		]
+	],
 ];

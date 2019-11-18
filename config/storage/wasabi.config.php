@@ -35,7 +35,7 @@ return [
             ],
 	        "mcloud-storage-wasabi-region" => [
 		        "title" => "Region",
-		        "description" => "The region that your bucket is in.  Set to 'auto' to have Media Cloud automatically determine what region your bucket is in.",
+		        "description" => "The region that your bucket is in.",
 		        "display-order" => 11,
 		        "type" => "select",
 		        "options" => [
@@ -55,21 +55,49 @@ return [
                 "title" => "Upload Privacy ACL",
                 "description" => "This will set the privacy for each upload.  You should leave it as <code>public-read</code> unless you are using Imgix.",
                 "type" => "select",
+	            "display-order" => 1,
                 "options" => [
-                    "public-read" => "public-read",
-                    "authenticated-read" => "authenticated-read"
+                    "public-read" => "Public",
+                    "authenticated-read" => "Private"
                 ],
             ],
+	        "mcloud-storage-advanced-privacy" => [
+		        "title" => "Advanced Privacy",
+		        "display-order" => 2,
+		        "description" => "",
+		        "type" => "advanced-privacy",
+		        "plan" => "pro"
+	        ],
             "mcloud-storage-cache-control" => [
                 "title" => "Cache Control",
+	            "display-order" => 20,
                 "description" => "Sets the Cache-Control metadata for uploads, e.g. <code>public,max-age=2592000</code>.",
                 "type" => "text-field",
             ],
             "mcloud-storage-expires" => [
                 "title" => "Content Expiration",
+	            "display-order" => 21,
                 "description" => "Sets the Expire metadata for uploads.  This is the number of minutes from the date of upload.",
                 "type" => "text-field",
             ],
+	        "mcloud-storage-big-size-original-privacy" => [
+		        "title" => "Original Image Privacy ACL",
+		        "description" => "This will set the privacy for the original image upload.",
+		        "display-order" => 43,
+		        "type" => "select",
+		        "default" => 'authenticated-read',
+		        "options" => [
+			        "public-read" => "Public",
+			        "authenticated-read" => "Private"
+		        ],
+	        ],
         ]
     ],
+	"ilab-media-cloud-signed-urls" => [
+		"title" => "Pre-Signed URL Settings",
+		"description" => "These settings control how pre-signed URLs work.",
+		"dynamic" => true,
+		"options" => [
+		]
+	],
 ];
