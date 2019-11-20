@@ -2152,8 +2152,11 @@ class StorageTool extends Tool
     
     private function generateSrcSet( $id, $sizeName )
     {
-        if ( $this->allSizes == null ) {
+        if ( $this->allSizes === null ) {
             $this->allSizes = ilab_get_image_sizes();
+        }
+        if ( !is_string( $sizeName ) ) {
+            return '';
         }
         if ( $sizeName !== 'full' && !isset( $this->allSizes[$sizeName] ) ) {
             return '';
@@ -3764,13 +3767,23 @@ class StorageTool extends Tool
      * @return array|bool
      * @throws StorageException
      */
-    public function importExistingAttachmentFromStorage( $postId, $fileInfo, $thumbs = array() )
+    public function importExistingAttachmentFromStorage(
+        $postId,
+        $fileInfo,
+        $thumbs = array(),
+        $scaled = null
+    )
     {
         if ( !$this->client || !$this->client->enabled() ) {
             return null;
         }
         if ( $fileInfo->mimeType() && strpos( $fileInfo->mimeType(), 'image/' ) === 0 ) {
-            return $this->importExistingImageAttachmentFromStorage( $postId, $fileInfo, $thumbs );
+            return $this->importExistingImageAttachmentFromStorage(
+                $postId,
+                $fileInfo,
+                $thumbs,
+                $scaled
+            );
         }
         $url = $this->client->url( $fileInfo->key() );
         $s3Info = [
@@ -3810,10 +3823,19 @@ class StorageTool extends Tool
      * @return array|bool
      * @throws StorageException
      */
-    public function importExistingImageAttachmentFromStorage( $postId, $fileInfo, $thumbs = array() )
+    public function importExistingImageAttachmentFromStorage(
+        $postId,
+        $fileInfo,
+        $thumbs = array(),
+        $scaled = null
+    )
     {
         if ( !$this->client || !$this->client->enabled() ) {
             return null;
+        }
+        $originalFileInfo = $fileInfo;
+        if ( !empty($scaled) ) {
+            $fileInfo = $this->client->info( $scaled );
         }
         if ( !is_array( $fileInfo->size() ) ) {
             return null;
@@ -3893,6 +3915,25 @@ class StorageTool extends Tool
             }
         
         }
+        
+        if ( !empty($scaled) ) {
+            $meta['file'] = $scaled;
+            $url = $this->client->url( $originalFileInfo->key() );
+            $s3Info = [
+                'url'       => $url,
+                'mime-type' => $originalFileInfo->mimeType(),
+                'bucket'    => $this->client->bucket(),
+                'privacy'   => StorageGlobals::privacy( $originalFileInfo->mimeType() ),
+                'key'       => $originalFileInfo->key(),
+                'v'         => MEDIA_CLOUD_INFO_VERSION,
+                'options'   => [
+                'params' => [],
+            ],
+            ];
+            $meta['original_image_s3'] = $s3Info;
+            $meta['original_image'] = pathinfo( $originalFileInfo->key(), PATHINFO_BASENAME );
+        }
+        
         update_post_meta( $postId, '_wp_attachment_metadata', $meta );
         $thumbUrl = image_downsize( $postId, [ 128, 128 ] );
         if ( is_array( $thumbUrl ) ) {
@@ -3914,7 +3955,7 @@ class StorageTool extends Tool
      * @return array|bool
      * @throws StorageException
      */
-    public function importAttachmentFromStorage( $fileInfo, $thumbs = array() )
+    public function importAttachmentFromStorage( $fileInfo, $thumbs = array(), $scaled = null )
     {
         if ( !$this->client || !$this->client->enabled() ) {
             return null;
@@ -4013,10 +4054,31 @@ class StorageTool extends Tool
                         }
                     
                     } else {
-                        $fileList[$file] = [
-                            'key'    => $file,
-                            'thumbs' => [],
-                        ];
+                        
+                        if ( preg_match( '/.*-scaled\\.[aA-zZ]+/', $file, $scaledMatch ) ) {
+                            $sourceFile = str_replace( '-scaled', '', $file );
+                            
+                            if ( isset( $fileList[$sourceFile] ) ) {
+                                $fileList[$sourceFile]['scaled'] = $file;
+                            } else {
+                                
+                                if ( isset( $unmatchedFileList[$sourceFile] ) ) {
+                                    $unmatchedFileList[$sourceFile]['scaled'] = $file;
+                                } else {
+                                    $unmatchedFileList[$sourceFile] = [
+                                        'scaled' => $file,
+                                    ];
+                                }
+                            
+                            }
+                        
+                        } else {
+                            $fileList[$file] = [
+                                'key'    => $file,
+                                'thumbs' => [],
+                            ];
+                        }
+                    
                     }
                 
                 }
@@ -4031,9 +4093,14 @@ class StorageTool extends Tool
         }
         
         foreach ( $unmatchedFileList as $key => $thumbs ) {
+            
             if ( isset( $fileList[$key] ) ) {
+                if ( isset( $thumbs['scaled'] ) ) {
+                    $fileList[$key]['scaled'] = $thumbs['scaled'];
+                }
                 $fileList[$key]['thumbs'] = array_merge( $fileList[$key]['thumbs'], $thumbs['thumbs'] );
             }
+        
         }
         return array_values( $fileList );
     }
@@ -4132,7 +4199,7 @@ Optimizer;
     
     //endregion
     //region Importing From Cloud
-    private function doImportFile( $key, $thumbs )
+    private function doImportFile( $key, $thumbs, $scaled = null )
     {
         global  $wpdb ;
         $dir = wp_upload_dir();
@@ -4147,6 +4214,24 @@ Optimizer;
         if ( empty($postId) ) {
             $query = $wpdb->prepare( "select ID from {$wpdb->posts} where guid = %s", $this->client()->url( $key ) );
             $postId = $wpdb->get_var( $query );
+        }
+        
+        
+        if ( empty($postId) ) {
+            $query = $wpdb->prepare( "select post_id from {$wpdb->postmeta} where meta_key='_wp_attached_file' and meta_value = %s", $key );
+            $results = $wpdb->get_results( $query, ARRAY_A );
+            if ( count( $results ) === 1 ) {
+                $postId = $results[0]['post_id'];
+            }
+            
+            if ( empty($postId) ) {
+                $query = $wpdb->prepare( "select post_id from {$wpdb->postmeta} where meta_key='_wp_attachment_metadata' and meta_value LIKE %s", '%' . $key . '%' );
+                $results = $wpdb->get_results( $query, ARRAY_A );
+                if ( count( $results ) === 1 ) {
+                    $postId = $results[0]['post_id'];
+                }
+            }
+        
         }
         
         $destDir = pathinfo( $destFile, PATHINFO_DIRNAME );
@@ -4191,6 +4276,23 @@ Optimizer;
             
             }
         }
+        
+        if ( !empty($scaled) ) {
+            $scaledFile = $base . $scaled;
+            
+            if ( !file_exists( $scaledFile ) ) {
+                $url = $this->client()->presignedUrl( $scaled );
+                $client = new Client();
+                $response = $client->get( $url, [
+                    'save_to' => $scaledFile,
+                ] );
+                if ( $response->getStatusCode() != 200 ) {
+                    $scaled = null;
+                }
+            }
+        
+        }
+        
         require_once ABSPATH . 'wp-admin/includes/image.php';
         
         if ( empty($postId) ) {
@@ -4284,7 +4386,7 @@ Optimizer;
         return true;
     }
     
-    private function doImportDynamicFile( $key, $thumbs )
+    private function doImportDynamicFile( $key, $thumbs, $scaled = null )
     {
         global  $wpdb ;
         $dir = wp_upload_dir();
@@ -4293,10 +4395,39 @@ Optimizer;
         $query = $wpdb->prepare( "select ID from {$wpdb->posts} where (guid = %s) or (guid = %s)", $desturl, $info->url() );
         $postId = $wpdb->get_var( $query );
         
+        if ( empty($postId) ) {
+            $query = $wpdb->prepare( "select ID from {$wpdb->posts} where guid = %s", $this->client()->url( $key ) );
+            $postId = $wpdb->get_var( $query );
+        }
+        
+        
+        if ( empty($postId) ) {
+            $query = $wpdb->prepare( "select post_id from {$wpdb->postmeta} where meta_key='_wp_attached_file' and meta_value = %s", $key );
+            $results = $wpdb->get_results( $query, ARRAY_A );
+            if ( count( $results ) === 1 ) {
+                $postId = $results[0]['post_id'];
+            }
+            
+            if ( empty($postId) ) {
+                $query = $wpdb->prepare( "select post_id from {$wpdb->postmeta} where meta_key='_wp_attachment_metadata' and meta_value LIKE %s", '%' . $key . '%' );
+                $results = $wpdb->get_results( $query, ARRAY_A );
+                if ( count( $results ) === 1 ) {
+                    $postId = $results[0]['post_id'];
+                }
+            }
+        
+        }
+        
+        
         if ( !empty($postId) ) {
-            $this->importExistingAttachmentFromStorage( $postId, $info, $thumbs );
+            $this->importExistingAttachmentFromStorage(
+                $postId,
+                $info,
+                $thumbs,
+                $scaled
+            );
         } else {
-            $this->importAttachmentFromStorage( $info, $thumbs );
+            $this->importAttachmentFromStorage( $info, $thumbs, $scaled );
         }
         
         return true;
@@ -4306,7 +4437,8 @@ Optimizer;
         $key,
         $thumbs,
         $importOnly,
-        $preservePaths
+        $preservePaths,
+        $scaled = null
     )
     {
         $oldPreserve = $this->preserveFilePaths;
@@ -4314,9 +4446,9 @@ Optimizer;
         try {
             
             if ( $importOnly ) {
-                $success = $this->doImportDynamicFile( $key, $thumbs );
+                $success = $this->doImportDynamicFile( $key, $thumbs, $scaled );
             } else {
-                $success = $this->doImportFile( $key, $thumbs );
+                $success = $this->doImportFile( $key, $thumbs, $scaled );
             }
         
         } catch ( \Exception $ex ) {

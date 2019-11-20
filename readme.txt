@@ -108,6 +108,11 @@ No, I'm just one very enthusiastic customer.
 
 == Changelog ==
 
+= 3.3.1 =
+
+* Fix for illegal offset error warning
+* Fix for importing from cloud storage (Premium)
+
 = 3.3.0 =
 
 * Wizards? Wizards! WIZARDS!
