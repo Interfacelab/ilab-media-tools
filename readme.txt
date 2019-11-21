@@ -5,7 +5,7 @@ Requires at least: 4.4
 Tested up to: 5.3
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 3.3.2
+Stable tag: 3.3.4
 Requires PHP: 5.6.4
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -107,6 +107,10 @@ No, I'm just one very enthusiastic customer.
 
 
 == Changelog ==
+
+= 3.3.4 =
+
+* Critical fix for Minio, DigitalOcean and other S3 compatible services.
 
 = 3.3.3 =
 

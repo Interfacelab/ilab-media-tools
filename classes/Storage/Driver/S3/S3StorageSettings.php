@@ -122,9 +122,9 @@ class S3StorageSettings extends ToolSettings {
 			$storageClass = get_class($this->storage);
 
 			if ($storageClass::pathStyleEndpoint() !== null) {
-				$this->_endPointPathStyle = $storageClass::pathStyleEndpoint();
+				$this->_pathStyleEndpoint = $storageClass::pathStyleEndpoint();
 			} else {
-				$this->_endPointPathStyle = Environment::Option('mcloud-storage-s3-use-path-style-endpoint', ['ILAB_AWS_S3_ENDPOINT_PATH_STYLE', 'ILAB_CLOUD_ENDPOINT_PATH_STYLE'], true);
+				$this->_pathStyleEndpoint = Environment::Option('mcloud-storage-s3-use-path-style-endpoint', ['ILAB_AWS_S3_ENDPOINT_PATH_STYLE', 'ILAB_CLOUD_ENDPOINT_PATH_STYLE'], true);
 			}
 
 			return $this->_pathStyleEndpoint;

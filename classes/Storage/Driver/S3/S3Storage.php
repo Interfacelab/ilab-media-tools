@@ -429,7 +429,7 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 			}
 		}
 
-		if($this->settings->useTransferAcceleration) {
+		if($this->settings->useTransferAcceleration && (StorageManager::driver() === 's3')) {
 			$config['use_accelerate_endpoint'] = true;
 		}
 
