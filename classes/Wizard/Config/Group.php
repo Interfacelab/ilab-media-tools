@@ -61,7 +61,7 @@ class Group {
 	/**
 	 * @return string|null
 	 */
-	public function class() {
+	public function groupClass() {
 		return $this->class;
 	}
 

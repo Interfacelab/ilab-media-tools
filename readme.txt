@@ -108,6 +108,10 @@ No, I'm just one very enthusiastic customer.
 
 == Changelog ==
 
+= 3.3.3 =
+
+* Fixes for PHP 5.6 - people, it's time to upgrade to PHP 7.x!
+
 = 3.3.2 =
 
 * Fix for illegal offset error warning

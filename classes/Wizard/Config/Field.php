@@ -115,7 +115,7 @@ class Field {
 	/**
 	 * @return mixed|null
 	 */
-	function default() {
+	function defaultValue() {
 		return $this->default;
 	}
 

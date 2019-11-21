@@ -71,7 +71,7 @@ class Section {
 	/**
 	 * @return string|null
 	 */
-	public function class() {
+	public function sectionClass() {
 		return $this->class;
 	}
 

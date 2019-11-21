@@ -156,7 +156,7 @@ class Step {
 	/**
 	 * @return string|null
 	 */
-	function class() {
+	function stepClass() {
 		return $this->class;
 	}
 
@@ -226,7 +226,7 @@ class Step {
 	/**
 	 * @return string|null
 	 */
-	function return() {
+	function returnLink() {
 		return $this->return;
 	}
 

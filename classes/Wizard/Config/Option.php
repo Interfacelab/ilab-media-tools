@@ -87,7 +87,7 @@ class Option {
 	/**
 	 * @return string|null
 	 */
-	public function class() {
+	public function optionClass() {
 		return $this->class;
 	}
 

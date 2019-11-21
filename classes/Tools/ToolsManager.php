@@ -232,6 +232,15 @@ final class ToolsManager
                 Tracker::trackSettings();
             }
         } );
+        if ( !defined( 'PHP_MAJOR_VERSION' ) || PHP_MAJOR_VERSION < 7 ) {
+            NoticeManager::instance()->displayAdminNotice(
+                'warning',
+                'Media Cloud will stop supporting PHP 5 in the next major release of Media Cloud.  You should contact your hosting provider about upgrading.',
+                true,
+                'media-cloud-php-56-warning',
+                30
+            );
+        }
     }
     
     protected function setup()
