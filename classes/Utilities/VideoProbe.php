@@ -149,6 +149,7 @@ class VideoProbe {
 			'length_formatted' => $this->timecode(floatval(arrayPath($data,'format/duration'))),
 			'dataformat' => arrayPath($data, 'format/format_long_name', "unknown"),
 			'fileformat' => strtolower($extension),
+			'mime_type' => 'video/'.strtolower($extension),
 			'video' => [
 				'codec' => arrayPath($videoStream, 'codec_name', null),
 				'profile' => arrayPath($videoStream, 'profile', null),

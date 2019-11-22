@@ -57,6 +57,11 @@
 		'plugin_version'    => $fs->get_plugin_version(),
 	);
 
+	$bundle_id = $fs->get_bundle_id();
+	if ( ! is_null( $bundle_id ) ) {
+	    $context_params['bundle_id'] = $bundle_id;
+    }
+
 	// Get site context secure params.
 	if ( $fs->is_registered() ) {
 		$context_params = array_merge( $context_params, FS_Security::instance()->get_context_params(
@@ -83,6 +88,7 @@
 		// Billing cycle.
 		'billing_cycle'    => fs_request_get( 'billing_cycle', WP_FS__PERIOD_ANNUALLY ),
 		'is_network_admin' => fs_is_network_admin() ? 'true' : 'false',
+		'currency'         => $fs->apply_filters( 'default_currency', 'usd' ),
 	) );
 
 	if ( ! $fs->is_registered() ) {

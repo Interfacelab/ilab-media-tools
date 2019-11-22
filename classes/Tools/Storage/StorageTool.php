@@ -180,7 +180,34 @@ class StorageTool extends Tool
             }
         
         }
-    
+        
+        add_filter(
+            'do_parse_request',
+            function ( $do, \WP $wp ) {
+            
+            if ( strpos( $_SERVER['REQUEST_URI'], '/__mcloud/attachment' ) === 0 ) {
+                $postId = sanitize_text_field( arrayPath( $_REQUEST, 'pid', null ) );
+                $nonce = sanitize_text_field( arrayPath( $_REQUEST, 'nonce', null ) );
+                if ( empty($postId) || empty($nonce) ) {
+                    return $do;
+                }
+                if ( !wp_verify_nonce( $nonce, 'mcloud_view_attachment_' . $postId ) ) {
+                    return $do;
+                }
+                $url = wp_get_attachment_url( $postId );
+                
+                if ( !empty($url) ) {
+                    wp_redirect( $url, 302 );
+                    exit;
+                }
+            
+            }
+            
+            return $do;
+        },
+            100,
+            2
+        );
     }
     
     //endregion
@@ -460,6 +487,18 @@ class StorageTool extends Tool
                 }
                 return $sizes;
             } );
+            add_filter(
+                'wp_video_shortcode',
+                [ $this, 'filterVideoShortcode' ],
+                PHP_INT_MAX,
+                5
+            );
+            add_filter(
+                'wp_audio_shortcode',
+                [ $this, 'filterAudioShortcode' ],
+                PHP_INT_MAX,
+                5
+            );
             $this->hookupUI();
         } else {
             
@@ -1396,9 +1435,23 @@ class StorageTool extends Tool
         if ( empty($meta) || !isset( $meta['s3'] ) ) {
             $meta = get_post_meta( $attachment->ID, 'ilab_s3_info', true );
         }
+        if ( isset( $response['filename'] ) && strpos( $response['filename'], '?' ) !== false ) {
+            $response['filename'] = preg_replace( '/(\\?.*)/', '', $response['filename'] );
+        }
         
         if ( isset( $meta['s3'] ) ) {
             $response['s3'] = $meta['s3'];
+            if ( isset( $response['type'] ) && is_admin() ) {
+                if ( $this->client()->usesSignedURLs( $response['type'] ) ) {
+                    
+                    if ( empty($_REQUEST['post_id']) ) {
+                        $response['url'] = home_url( '/__mcloud/attachment?pid=' . $attachment->ID . '&nonce=' . wp_create_nonce( 'mcloud_view_attachment_' . $attachment->ID ) );
+                    } else {
+                        $response['url'] = $this->client()->url( $meta['s3']['key'] );
+                    }
+                
+                }
+            }
             if ( !isset( $response['s3']['privacy'] ) ) {
                 $response['s3']['privacy'] = StorageGlobals::privacy( $attachment->post_mime_type );
             }
@@ -1673,15 +1726,21 @@ class StorageTool extends Tool
      */
     private function importOffloadMetadata( $post_id, $meta, $offloadS3Data )
     {
-        $provider = arrayPath( $offloadS3Data, 'provider', null );
+        $provider = arrayPath( $offloadS3Data, 'provider', 's3' );
         $bucket = arrayPath( $offloadS3Data, 'bucket', null );
         $region = arrayPath( $offloadS3Data, 'region', null );
         $key = arrayPath( $offloadS3Data, 'key', null );
-        if ( empty($provider) || empty($bucket) || empty($key) || !in_array( $provider, [ 'aws', 'do', 'gcp' ] ) ) {
+        if ( empty($provider) || empty($bucket) || empty($key) || !in_array( $provider, [
+            's3',
+            'aws',
+            'do',
+            'gcp'
+        ] ) ) {
             return null;
         }
         $providerMap = [
             'aws' => 's3',
+            's3'  => 's3',
             'do'  => 'do',
             'gcp' => 'google',
         ];
@@ -2148,6 +2207,132 @@ class StorageTool extends Tool
             $content = $this->replaceImageInContent( $data['id'], $data, $content );
         }
         return $content;
+    }
+    
+    /**
+     * @param string $output  Video shortcode HTML output.
+     * @param array  $atts    Array of video shortcode attributes.
+     * @param string $video   Video file.
+     * @param int    $post_id Post ID.
+     * @param string $library Media library used for the video shortcode.
+     * @return string
+     * @throws StorageException
+     */
+    public function filterVideoShortcode(
+        $output,
+        $atts,
+        $video,
+        $post_id,
+        $library
+    )
+    {
+        
+        if ( isset( $atts['src'] ) ) {
+            $default_types = wp_get_video_extensions();
+            $postId = null;
+            foreach ( $default_types as $type ) {
+                
+                if ( !empty($atts[$type]) ) {
+                    $url = $atts[$type];
+                    if ( strpos( $url, '?' ) !== false ) {
+                        $url = preg_replace( '/(\\?.*)/', '', $url );
+                    }
+                    $baseFile = ltrim( parse_url( $url, PHP_URL_PATH ), '/' );
+                    if ( empty($baseFile) ) {
+                        return $output;
+                    }
+                    global  $wpdb ;
+                    $query = $wpdb->prepare( "select post_id from {$wpdb->postmeta} where meta_key='_wp_attached_file' and meta_value = %s", $baseFile );
+                    $postId = $wpdb->get_var( $query );
+                    if ( empty($postId) ) {
+                        return $output;
+                    }
+                    break;
+                }
+            
+            }
+            if ( empty($postId) ) {
+                return $output;
+            }
+            $post = get_post( $postId );
+            $meta = wp_get_attachment_metadata( $post->ID );
+            $url = $this->getAttachmentURL( null, $post->ID );
+            
+            if ( !empty($url) ) {
+                $mime = arrayPath( $meta, 'mime_type', $post->post_mime_type );
+                $insert = "<source type='{$mime}' src='{$url}'/>";
+                $insert .= "<a href='{$url}'>{$post->post_title}</a>";
+                if ( preg_match( '/<video(?:[^>]*)>((?s).*)<\\/video>/m', $output, $matches ) ) {
+                    $output = str_replace( $matches[1], $insert, $output );
+                }
+            }
+        
+        }
+        
+        return $output;
+    }
+    
+    /**
+     * @param string $output  Audio shortcode HTML output.
+     * @param array  $atts    Array of audio shortcode attributes.
+     * @param string $audio   Audio file.
+     * @param int    $post_id Post ID.
+     * @param string $library Media library used for the audio shortcode.
+     * @return string
+     * @throws StorageException
+     */
+    public function filterAudioShortcode(
+        $output,
+        $atts,
+        $audio,
+        $post_id,
+        $library
+    )
+    {
+        
+        if ( isset( $atts['src'] ) ) {
+            $default_types = wp_get_audio_extensions();
+            $postId = null;
+            foreach ( $default_types as $type ) {
+                
+                if ( !empty($atts[$type]) ) {
+                    $url = $atts[$type];
+                    if ( strpos( $url, '?' ) !== false ) {
+                        $url = preg_replace( '/(\\?.*)/', '', $url );
+                    }
+                    $baseFile = ltrim( parse_url( $url, PHP_URL_PATH ), '/' );
+                    if ( empty($baseFile) ) {
+                        return $output;
+                    }
+                    global  $wpdb ;
+                    $query = $wpdb->prepare( "select post_id from {$wpdb->postmeta} where meta_key='_wp_attached_file' and meta_value = %s", $baseFile );
+                    $postId = $wpdb->get_var( $query );
+                    if ( empty($postId) ) {
+                        return $output;
+                    }
+                    break;
+                }
+            
+            }
+            if ( empty($postId) ) {
+                return $output;
+            }
+            $post = get_post( $postId );
+            $meta = wp_get_attachment_metadata( $post->ID );
+            $url = $this->getAttachmentURL( null, $post->ID );
+            
+            if ( !empty($url) ) {
+                $mime = arrayPath( $meta, 'mime_type', $post->post_mime_type );
+                $insert = "<source type='{$mime}' src='{$url}'/>";
+                $insert .= "<a href='{$url}'>{$post->post_title}</a>";
+                if ( preg_match( '/<audio(?:[^>]*)>((?s).*)<\\/audio>/m', $output, $matches ) ) {
+                    $output = str_replace( $matches[1], $insert, $output );
+                }
+            }
+        
+        }
+        
+        return $output;
     }
     
     private function generateSrcSet( $id, $sizeName )
