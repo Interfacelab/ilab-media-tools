@@ -28,7 +28,7 @@ class NoticeManager {
 
 	protected function __construct() {
 		add_action( 'admin_enqueue_scripts', function(){
-			wp_enqueue_script('ilab-dismissible-notices', ILAB_PUB_JS_URL . '/ilab-dismiss-notice.js', ['jquery', 'common'], false, true);
+			wp_enqueue_script('ilab-dismissible-notices', ILAB_PUB_JS_URL . '/ilab-dismiss-notice.js', ['jquery', 'common'], MEDIA_CLOUD_VERSION, true);
 			wp_localize_script('ilab-dismissible-notices', 'ilab_dismissible_notice', ['nonce' => wp_create_nonce( 'dismissible-notice' )]);
 		});
 

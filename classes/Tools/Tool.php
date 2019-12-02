@@ -308,6 +308,15 @@ abstract class Tool {
         return false;
     }
 
+	/**
+	 * Determines if the plugin is always enabled
+	 *
+	 * @return bool
+	 */
+	public function alwaysEnabled() {
+	    return false;
+	}
+
     /**
      * Determines if the plugin is set to enabled, regardless if it is really enabled or not
      *
@@ -511,6 +520,8 @@ abstract class Tool {
 	                        case 'advanced-privacy':
 		                        $this->registerAdvancedPrivacy($option, $optionInfo['title'], $group, $conditions);
 		                        break;
+                            default:
+                                do_action('media-cloud/tools/register-setting-type', $option, $optionInfo, $group, $groupInfo, $conditions);
                         }
                     }
                 }

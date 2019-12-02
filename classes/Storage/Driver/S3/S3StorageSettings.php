@@ -20,6 +20,7 @@ use ILAB\MediaCloud\Storage\StorageInterface;
 use ILAB\MediaCloud\Storage\StorageManager;
 use ILAB\MediaCloud\Tools\ToolSettings;
 use ILAB\MediaCloud\Utilities\Environment;
+use function ILAB\MediaCloud\Utilities\gen_uuid;
 
 /**
  * Class S3StorageSettings
@@ -44,6 +45,9 @@ use ILAB\MediaCloud\Utilities\Environment;
  * @property int presignedURLExpirationForAudio
  * @property int presignedURLExpirationForDocs
  * @property bool settingsError
+ * @property string signedCDNURL
+ * @property string cloudfrontKeyID
+ * @property-read string cloudfrontPrivateKey
  *
  */
 class S3StorageSettings extends ToolSettings {
@@ -68,6 +72,8 @@ class S3StorageSettings extends ToolSettings {
 		'usePresignedURLsForDocs' => ['mcloud-storage-use-presigned-urls-docs', null, false],
 		'presignedURLExpirationForDocs' => ['mcloud-storage-presigned-expiration-docs', null, 0],
 		'settingsError' => ['ilab-backblaze-settings-error',  null, false],
+		'signedCDNURL' => ['mcloud-storage-signed-cdn-base',  null, false],
+		'cloudfrontKeyID' => ['mcloud-storage-cloudfront-key-id',  null, false],
 	];
 
 	/** @var S3StorageInterface  */
@@ -77,6 +83,12 @@ class S3StorageSettings extends ToolSettings {
 	private $_pathStyleEndpoint = null;
 	private $_region = null;
 	private $_settingsError = null;
+	private $_cloudfrontPrivateKey = null;
+
+	private $deletePrivateKey = false;
+
+	/** @var callable */
+	private $dieHandler = null;
 
 	/**
 	 * S3StorageSettings constructor.
@@ -85,6 +97,13 @@ class S3StorageSettings extends ToolSettings {
 	 */
 	public function __construct($storage) {
 		$this->storage = $storage;
+
+		add_filter('wp_die_ajax_handler', [$this, 'hookDieHandler']);
+		add_filter('wp_die_json_handler', [$this, 'hookDieHandler']);
+		add_filter('wp_die_jsonp_handler', [$this, 'hookDieHandler']);
+		add_filter('wp_die_xmlrpc_handler', [$this, 'hookDieHandler']);
+		add_filter('wp_die_xml_handler', [$this, 'hookDieHandler']);
+		add_filter('wp_die_handler', [$this, 'hookDieHandler']);
 	}
 
 	public function __get($name) {
@@ -160,6 +179,29 @@ class S3StorageSettings extends ToolSettings {
 			$storageClass = get_class($this->storage);
 			$this->_settingsError = Environment::Option($storageClass::settingsErrorOptionName(), null, false);
 			return $this->_settingsError;
+		} else if ($name === 'cloudfrontPrivateKey') {
+			if ($this->_cloudfrontPrivateKey !== null) {
+				return $this->_cloudfrontPrivateKey;
+			}
+
+			$keyTemp = tempnam('/tmp', gen_uuid(8));
+
+			$keyFile = Environment::Option('mcloud-storage-cloudfront-private-key-file', null, null);
+			if (!empty($keyFile) && file_exists($keyFile)) {
+				$this->deletePrivateKey = false;
+				$this->_cloudfrontPrivateKey = $keyFile;
+			}
+
+			if (empty($this->_cloudfrontPrivateKey)) {
+				$keyContents = Environment::Option('mcloud-storage-cloudfront-private-key');
+				if (!empty($keyContents)) {
+					$this->deletePrivateKey = true;
+					file_put_contents($keyTemp, $keyContents);
+					$this->_cloudfrontPrivateKey = $keyTemp;
+				}
+			}
+
+			return $this->_cloudfrontPrivateKey;
 		}
 
 		return parent::__get($name);
@@ -180,11 +222,28 @@ class S3StorageSettings extends ToolSettings {
 	}
 
 	public function __isset($name) {
-		if (in_array($name, ['region', 'endPointPathStyle', 'endpoint', 'settingsError'])) {
+		if (in_array($name, ['region', 'endPointPathStyle', 'endpoint', 'settingsError', 'cloudfrontPrivateKey'])) {
 			return true;
 		}
 
 		return parent::__isset($name);
+	}
+
+	public function validSignedCDNSettings() {
+		return (!empty($this->signedCDNURL) && !empty($this->cloudfrontKeyID) && !empty($this->cloudfrontPrivateKey));
+	}
+
+	public function hookDieHandler($handler) {
+		$this->dieHandler = $handler;
+		return [$this, 'deletePrivateKey'];
+	}
+
+	public function deletePrivateKey($message, $title = '', $args = array()) {
+		if ($this->deletePrivateKey && file_exists($this->_cloudfrontPrivateKey)) {
+			unlink($this->_cloudfrontPrivateKey);
+		}
+
+		call_user_func( $this->dieHandler, $message, $title, $args );
 	}
 
 }

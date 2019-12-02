@@ -14,6 +14,7 @@
 namespace ILAB\MediaCloud\Tasks;
 
 use Carbon\Carbon;
+use ILAB\MediaCloud\Model\Model;
 use function ILAB\MediaCloud\Utilities\gen_uuid;
 use ILAB\MediaCloud\Utilities\Logging\Logger;
 use function ILAB\MediaCloud\Utilities\phpMemoryLimit;

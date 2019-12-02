@@ -125,6 +125,7 @@ return [
 		                "options" => "providerOptions",
 	                ],
                 ],
+	            "hide-save" => true
             ],
 			"ilab-media-cloud-provider-settings" => [
 				"title" => "Provider Settings",
@@ -195,7 +196,7 @@ return [
 		                "description" => "When this option is enabled, uploads won't be deleted right away, they will be queued for deletion two to five minutes later.  This allows other plugins the ability to process any uploads before they are deleted from your WordPress server.  If <strong>Delete From Storage</strong> is disabled, this setting is ignored.",
 		                "display-order" => 31,
 		                "type" => "checkbox",
-		                "default" => true
+		                "default" => false
 	                ],
 	                "mcloud-storage-delete-from-server" => [
 		                "title" => "Delete From Storage",
@@ -232,7 +233,7 @@ return [
                 ]
 			],
 			"ilab-media-cloud-signed-urls" => [
-				"title" => "Pre-Signed URL Settings",
+				"title" => "Secure URL Settings",
 				"description" => "These settings control how pre-signed URLs work.",
 				"doc_link" => 'https://kb.mediacloud.press/articles/documentation/cloud-storage/pre-signed-url-settings/',
 				"dynamic" => true,
@@ -240,6 +241,7 @@ return [
 			],
             "ilab-media-cloud-cdn-settings" => [
                 "title" => "CDN Settings",
+	            "dynamic" => true,
 	            "doc_link" => 'https://kb.mediacloud.press/articles/documentation/cloud-storage/cdn-settings',
                 "description" => "If you are using CloudFront, Fastly or another CDN, enter the CDN domain here.  If you are using Imgix, the <b>CDN Base URL</b> setting is ignored, but the <b>Document CDN Base URL</b> is not.  If both are left blank, Media Tools will use the cloud storage URLs.",
                 "options" => [

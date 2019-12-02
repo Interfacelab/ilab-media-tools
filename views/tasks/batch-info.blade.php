@@ -46,7 +46,7 @@
                             @elseif($option['type'] == 'browser')
                                 <input type="text" name="{{$optionName}}" disabled="disabled" value="{{$option['default']}}"><button type="button" class="button button-small button-primary" data-nonce="{{wp_create_nonce('storage-browser')}}">Browse</button>
                             @elseif($option['type'] == 'media-select')
-                                <div id="{{$optionName}}-display" class="media-select-label">All Media Items</div><input type="hidden" name="{{$optionName}}"><button type="button" class="button button-small button-primary button-select-media">Select Media</button><button type="button" class="button button-small button-primary button-clear-media">Clear Selection</button>
+                                <div id="{{$optionName}}-display" class="media-select-label">All Media Items</div><input type="hidden" name="{{$optionName}}"><button type="button" class="button button-small button-primary button-select-media" @if(!empty($option['media-types']))data-media-types="{{implode(',',$option['media-types'])}}" @endif>Select Media</button><button type="button" class="button button-small button-primary button-clear-media">Clear Selection</button>
                             @endif
                         </div>
                         <div class="description">{!! $option['description'] !!}</div>

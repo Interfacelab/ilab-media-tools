@@ -52,7 +52,8 @@ return [
                         "type" => "select",
                         "options" => 'providerOptions',
                     ],
-                ]
+                ],
+	            'hide-save' => true,
             ],
             "mcloud-vision-provider-settings" => [
                 "title" => "Vision Provider Settings",

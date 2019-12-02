@@ -348,7 +348,10 @@ class StorageTool extends Tool
                 
                 $addFilter = apply_filters( 'media-cloud/storage/add-upload-filter', $addFilter );
                 if ( $addFilter ) {
-                    add_filter( 'upload_dir', [ $this, 'getUploadDir' ], 1000 );
+                    add_filter( 'upload_dir', function ( $uploads ) use( $file ) {
+                        $mimeType = arrayPath( $file, 'type', null );
+                        return $this->getUploadDir( $uploads, $mimeType );
+                    }, 1000 );
                 }
                 return $file;
             }, 1000 );
@@ -416,13 +419,13 @@ class StorageTool extends Tool
             add_filter(
                 'the_content',
                 [ $this, 'filterContent' ],
-                PHP_INT_MAX,
+                PHP_INT_MAX - 1,
                 1
             );
             add_filter(
                 'render_block',
                 [ $this, 'filterBlocks' ],
-                PHP_INT_MAX,
+                PHP_INT_MAX - 1,
                 2
             );
             add_filter(
@@ -912,9 +915,10 @@ class StorageTool extends Tool
      * Filters the uploads directory data.  (https://core.trac.wordpress.org/browser/tags/4.8/src/wp-includes/functions.php#L1880)
      *
      * @param array $uploads
+     * @param string|null $type
      * @return array
      */
-    public function getUploadDir( $uploads )
+    public function getUploadDir( $uploads, $type = null )
     {
         global  $job_manager_upload, $job_manager_uploading_file ;
         if ( !empty($job_manager_upload) && !empty($job_manager_uploading_file) ) {
@@ -923,7 +927,14 @@ class StorageTool extends Tool
         if ( empty(StorageGlobals::prefixFormat()) ) {
             return $uploads;
         }
+        $lastType = Prefixer::currentType();
+        if ( !empty($type) ) {
+            Prefixer::setType( $type );
+        }
         $prefix = trim( StorageGlobals::prefix( null ), '/' );
+        if ( !empty($type) ) {
+            Prefixer::setType( $lastType );
+        }
         
         if ( is_multisite() && !is_main_site() ) {
             
@@ -1601,14 +1612,20 @@ class StorageTool extends Tool
         if ( $this->client->usesSignedURLs( $type ) ) {
             $url = $this->client->url( $meta['s3']['key'], $type );
             
-            if ( !empty(StorageGlobals::cdn()) ) {
-                $cdnScheme = parse_url( StorageGlobals::cdn(), PHP_URL_SCHEME );
-                $cdnHost = parse_url( StorageGlobals::cdn(), PHP_URL_HOST );
-                $urlScheme = parse_url( $url, PHP_URL_SCHEME );
-                $urlHost = parse_url( $url, PHP_URL_HOST );
-                return str_replace( "{$urlScheme}://{$urlHost}", "{$cdnScheme}://{$cdnHost}", $url );
-            } else {
+            if ( StorageManager::driver() === 's3' && !empty(StorageGlobals::signedCDN()) ) {
                 return $url;
+            } else {
+                
+                if ( !empty(StorageGlobals::cdn()) ) {
+                    $cdnScheme = parse_url( StorageGlobals::cdn(), PHP_URL_SCHEME );
+                    $cdnHost = parse_url( StorageGlobals::cdn(), PHP_URL_HOST );
+                    $urlScheme = parse_url( $url, PHP_URL_SCHEME );
+                    $urlHost = parse_url( $url, PHP_URL_HOST );
+                    return str_replace( "{$urlScheme}://{$urlHost}", "{$cdnScheme}://{$cdnHost}", $url );
+                } else {
+                    return $url;
+                }
+            
             }
         
         } else {
@@ -3065,7 +3082,7 @@ class StorageTool extends Tool
                 'ilab-media-grid-js',
                 ILAB_PUB_JS_URL . '/ilab-media-grid.js',
                 [ 'jquery' ],
-                false,
+                MEDIA_CLOUD_VERSION,
                 true
             );
         } );
@@ -3263,7 +3280,7 @@ class StorageTool extends Tool
                     display: none;
                     position: absolute;
                     right: 5px;
-                    bottom: 4px;
+                    bottom: 5px;
                     z-index: 5;
                 }
 
@@ -3274,6 +3291,8 @@ class StorageTool extends Tool
 			<?php 
         } );
         add_action( 'admin_footer', function () {
+            $additionalClasses = apply_filters( 'media-cloud/media-library/attachment-classes', '' );
+            $additionalIcons = apply_filters( 'media-cloud/media-library/attachment-icons', '' );
             ?>
             <script>
                 jQuery(document).ready(function () {
@@ -3282,7 +3301,11 @@ class StorageTool extends Tool
                         var txt = attachTemplate.text();
 
                         var search = '<div class="attachment-preview js--select-attachment type-{{ data.type }} subtype-{{ data.subtype }} {{ data.orientation }}">';
-                        var replace = '<div class="attachment-preview js--select-attachment type-{{ data.type }} subtype-{{ data.subtype }} {{ data.orientation }} <# if (data.hasOwnProperty("s3")) {#>has-s3<#}#>"><img data-post-id="{{data.id}}" data-container="grid" data-mime-type="{{data.type}}" src="<?php 
+                        var replace = '<div class="attachment-preview js--select-attachment type-{{ data.type }} subtype-{{ data.subtype }} {{ data.orientation }} <# if (data.hasOwnProperty("s3")) {#>has-s3<#}#> <?php 
+            echo  $additionalClasses ;
+            ?>"><?php 
+            echo  $additionalIcons ;
+            ?><img data-post-id="{{data.id}}" data-container="grid" data-mime-type="{{data.type}}" src="<?php 
             echo  ILAB_PUB_IMG_URL . '/ilab-cloud-icon.svg' ;
             ?>" width="29" height="18" class="ilab-s3-logo">\n';
                         txt = txt.replace(search, replace);
@@ -3294,7 +3317,11 @@ class StorageTool extends Tool
                         var txt = attachTemplate.text();
 
                         var search = '<div class="attachment-preview js--select-attachment type-{{ data.type }} subtype-{{ data.subtype }} {{ data.orientation }}">';
-                        var replace = '<div class="attachment-preview js--select-attachment type-{{ data.type }} subtype-{{ data.subtype }} {{ data.orientation }} <# if (data.hasOwnProperty("s3")) {#>has-s3<#}#>"><img data-post-id="{{data.id}}" data-container="grid" data-mime-type="{{data.type}}" src="<?php 
+                        var replace = '<div class="attachment-preview js--select-attachment type-{{ data.type }} subtype-{{ data.subtype }} {{ data.orientation }} <# if (data.hasOwnProperty("s3")) {#>has-s3<#}#> <?php 
+            echo  $additionalClasses ;
+            ?>"><?php 
+            echo  $additionalIcons ;
+            ?><img data-post-id="{{data.id}}" data-container="grid" data-mime-type="{{data.type}}" src="<?php 
             echo  ILAB_PUB_IMG_URL . '/ilab-cloud-icon.svg' ;
             ?>" width="29" height="18" class="ilab-s3-logo">\n';
                         txt = txt.replace(search, replace);
@@ -4174,14 +4201,18 @@ class StorageTool extends Tool
             'filesize' => $fileInfo->length(),
             's3'       => $s3Info,
         ];
-        $post = wp_insert_post( [
+        if ( strpos( $url, '?' ) !== false ) {
+            $url = $this->client->url( $fileInfo->key(), 'skip' );
+        }
+        $postData = [
             'post_author'    => get_current_user_id(),
             'post_title'     => $filename,
             'post_status'    => 'inherit',
             'post_type'      => 'attachment',
             'guid'           => $url,
             'post_mime_type' => $fileInfo->mimeType(),
-        ] );
+        ];
+        $post = wp_insert_post( $postData );
         if ( is_wp_error( $post ) ) {
             return false;
         }

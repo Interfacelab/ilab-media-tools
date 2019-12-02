@@ -5,7 +5,7 @@ Requires at least: 4.4
 Tested up to: 5.3
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 3.3.5
+Stable tag: 3.3.6
 Requires PHP: 5.6.4
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -107,6 +107,16 @@ No, I'm just one very enthusiastic customer.
 
 
 == Changelog ==
+
+= 3.3.6 =
+
+* The @{type} dynamic path prefix now works in all cases
+* EDD Free Downloads now triggers a warning instead of an error.  It is usable with Media Cloud, but if you are using Imgix and offering image downloads, it will not work as you intend.
+* Fix for server overload when running tasks
+* Support for URL signing when using CloudFront
+* Revamped Settings UI
+* Updated Freemius SDK
+* Queued deletes were on by default, they are now off by default
 
 = 3.3.5 =
 

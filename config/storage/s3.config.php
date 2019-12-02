@@ -127,7 +127,7 @@ return [
         ]
     ],
 	"ilab-media-cloud-signed-urls" => [
-		"title" => "Pre-Signed URL Settings",
+		"title" => "Secure URL Settings",
 		"description" => "These settings control how pre-signed URLs work.",
 		"dynamic" => true,
 		"options" => [
@@ -151,6 +151,24 @@ return [
 				"display-order" => 3,
 				"type" => "advanced-presigned",
 				"plan" => "pro"
+			],
+			"mcloud-storage-signed-cdn-base" => [
+				"display-order" => 10,
+				"title" => "Signed CDN Base URL",
+				"description" => "If you are using CloudFront as your CDN <strong>AND</strong> you are using signed URLs, specify the URL for the CloudFront distribution that you've set up for signed URLs.  For more information, read through Amazon's documentation for <a href='https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-signed-urls.html' target='_blank'>Using Signed URLs with CloudFront</a>.",
+				"type" => "text-field"
+			],
+			"mcloud-storage-cloudfront-key-id" => [
+				"title" => "CloudFront Key ID",
+				"description" => "If you are using CloudFront and signed URLs, specify the Key ID for the signing key to use with CloudFront.",
+				"display-order" => 11,
+				"type" => "text-field",
+			],
+			"mcloud-storage-cloudfront-private-key" => [
+				"title" => "CloudFront Private Key",
+				"description" => "If you are using CloudFont and signed URLs, paste the private key used for CloudFront signing.  You can also use the <code>MCLOUD_STORAGE_CLOUDFRONT_PRIVATE_KEY_FILE</code> environment variable to load this key from a file on your server.",
+				"display-order" => 12,
+				"type" => "text-area",
 			],
 		],
 	],

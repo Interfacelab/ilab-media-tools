@@ -599,7 +599,7 @@ class GoogleStorage implements StorageInterface, ConfiguresWizard {
 			throw new InvalidStorageSettingsException('Storage settings are invalid');
 		}
 
-		if ($this->usesSignedURLs($type)) {
+		if (($type !== 'skip') && $this->usesSignedURLs($type)) {
 			$expiration = $this->signedURLExpirationForType($type);
 			return $this->presignedUrl($key, $expiration);
 		}
@@ -641,7 +641,7 @@ class GoogleStorage implements StorageInterface, ConfiguresWizard {
 	}
 
 	public function enqueueUploaderScripts() {
-		wp_enqueue_script('ilab-media-direct-upload-google', ILAB_PUB_JS_URL.'/ilab-media-direct-upload-google.js', [], false, true);
+		wp_enqueue_script('ilab-media-direct-upload-google', ILAB_PUB_JS_URL.'/ilab-media-direct-upload-google.js', [], MEDIA_CLOUD_VERSION, true);
 	}
 	//endregion
 

@@ -39,5 +39,9 @@ class OptInTool extends Tool {
 		return true;
 	}
 
+	public function alwaysEnabled() {
+		return true;
+	}
+
 	//endregion
 }

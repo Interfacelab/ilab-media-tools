@@ -21,6 +21,7 @@ return [
 	"dependencies" => [],
 	"env" => "ILAB_MEDIA_BATCH_PROCESSING_ENABLED",  // this is always enabled btw
 	"settings" => [
+		"jump-links" => false,
 		"options-page" => "media-tools-batch-processing",
 		"options-group" => "ilab-media-batch-processing",
 		"groups" => [

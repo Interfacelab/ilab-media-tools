@@ -33,16 +33,16 @@ return [
             "plugin" => "wp-smushit/wp-smush.php",
             "description" => "The free version of this plugin does not optimize the main image, only thumbnails.  When the Imgix tool is enabled, thumbnails are not generated - therefore this plugin isn't any use.  The Pro (paid) version of this plugin DOES optimize the main image though."
         ],
+	    "EDD Free Downloads" => [
+		    "plugin" => "edd-free-downloads/edd-free-downloads.php",
+		    "description" => "EDD Free Downloads do not work with Imgix images.  For other types of files, EDD Free Downloads works great."
+	    ],
     ],
     "badPlugins" => [
         "BuddyPress" => [
             "plugin" => "buddypress/bp-loader.php",
             "description" => "Uploading profile or cover images results in broken images."
         ],
-	    "EDD Free Downloads" => [
-		    "plugin" => "edd-free-downloads/edd-free-downloads.php",
-		    "description" => "EDD Free Downloads does not work with Imgix URLs.  Imgix works fine with EDD, just not this particular extension."
-	    ],
     ],
 	"settings" => [
 		"options-page" => "media-tools-imgix",

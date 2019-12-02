@@ -76,6 +76,9 @@ final class StorageGlobals {
 	/** @var string|null */
 	private $cdn = null;
 
+	/** @var string|null */
+	private $signedCDN = null;
+
 	/** @var bool */
 	private $deleteOnUpload = false;
 
@@ -97,7 +100,7 @@ final class StorageGlobals {
 	private function  __construct() {
 		$this->deleteOnUpload = Environment::Option('mcloud-storage-delete-uploads', null, false);
 		$this->deleteFromStorage = Environment::Option('mcloud-storage-delete-from-server', null, false);
-		$this->queuedDeletes = Environment::Option('mcloud-storage-queue-deletes', null, true);
+		$this->queuedDeletes = Environment::Option('mcloud-storage-queue-deletes', null, false);
 		$this->prefixFormat = Environment::Option('mcloud-storage-prefix', '');
 		$this->subsitePrefixFormat = Environment::Option('mcloud-storage-subsite-prefixes', '', []);
 
@@ -149,6 +152,11 @@ final class StorageGlobals {
 		$this->cdn = Environment::Option('mcloud-storage-cdn-base', 'ILAB_AWS_S3_CDN_BASE');
 		if($this->cdn) {
 			$this->cdn = rtrim($this->cdn, '/');
+		}
+
+		$this->signedCDN = Environment::Option('mcloud-storage-signed-cdn-base', null, null);
+		if($this->signedCDN) {
+			$this->signedCDN = rtrim($this->signedCDN, '/');
 		}
 
 		$this->docCdn = Environment::Option('mcloud-storage-doc-cdn-base', 'ILAB_AWS_S3_DOC_CDN_BASE', $this->cdn);
@@ -324,6 +332,11 @@ final class StorageGlobals {
 	/** @return string|null */
 	public static function cdn() {
 		return self::instance()->cdn;
+	}
+
+	/** @return string|null */
+	public static function signedCDN() {
+		return self::instance()->signedCDN;
 	}
 
 	/** @return bool */

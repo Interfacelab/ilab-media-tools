@@ -72,6 +72,10 @@ abstract class ToolSettings {
 			return $this->settings[$name];
 		}
 
+		if (!isset($this->settingsMap[$name])) {
+			return null;
+		}
+
 		list($setting, $envSetting, $default) = $this->settingsMap[$name];
 
 		if (empty($setting) && empty($envSetting)) {

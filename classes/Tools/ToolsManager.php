@@ -201,7 +201,12 @@ final class ToolsManager
                 MEDIA_CLOUD_VERSION,
                 true
             );
-            wp_enqueue_style( 'ilab-media-cloud-css', ILAB_PUB_CSS_URL . '/ilab-media-cloud.css' );
+            wp_enqueue_style(
+                'ilab-media-cloud-css',
+                ILAB_PUB_CSS_URL . '/ilab-media-cloud.css',
+                null,
+                MEDIA_CLOUD_VERSION
+            );
         } );
         
         if ( is_admin() ) {
@@ -472,7 +477,8 @@ final class ToolsManager
                     if ( $this->tools[$pinnedTool]->envEnabled() && $tool->hasSettings() ) {
                         $pinnedSlug = 'media-cloud-settings-' . $pinnedTool;
                     } else {
-                        $pinnedSlug = 'media-cloud-settings-' . $pinnedTool . '&pinned=true';
+                        $pinnedSlug = 'media-cloud-settings-pinned-' . $pinnedTool;
+                        //.'&pinned=true';
                     }
                     
                     add_submenu_page(
@@ -785,6 +791,9 @@ final class ToolsManager
                 
                 if ( strpos( $_GET['page'], 'media-cloud-settings-' ) === 0 ) {
                     $tab = str_replace( 'media-cloud-settings-', '', $_GET['page'] );
+                    if ( strpos( $tab, 'pinned-' ) === 0 ) {
+                        $tab = str_replace( 'pinned-', '', $tab );
+                    }
                 } else {
                     $tab = array_keys( $this->tools )[0];
                 }
@@ -818,17 +827,19 @@ final class ToolsManager
                     'doc_link'    => arrayPath( $selectedTool->toolInfo, "settings/groups/{$section['id']}/doc_link", null ),
                     'help'        => $help,
                     'description' => arrayPath( $selectedTool->toolInfo, "settings/groups/{$section['id']}/description", null ),
+                    'hide-save'   => arrayPath( $selectedTool->toolInfo, "settings/groups/{$section['id']}/hide-save", false ),
                 ];
             }
             echo  View::render_view( 'base/settings', [
-                'title'    => 'All Settings',
-                'tab'      => $tab,
-                'tools'    => $this->tools,
-                'tool'     => $selectedTool,
-                'group'    => $group,
-                'page'     => $page,
-                'manager'  => $this,
-                'sections' => $sections,
+                'title'      => 'All Settings',
+                'tab'        => $tab,
+                'tools'      => $this->tools,
+                'tool'       => $selectedTool,
+                'group'      => $group,
+                'page'       => $page,
+                'jump_links' => arrayPath( $selectedTool->toolInfo, "settings/jump-links", true ),
+                'manager'    => $this,
+                'sections'   => $sections,
             ] ) ;
         }
     

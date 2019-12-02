@@ -171,5 +171,9 @@ final class Prefixer {
 
 		self::instance()->currentType = $type;
 	}
+
+	public static function currentType() {
+		return self::instance()->currentType;
+	}
 	//endregion
 }

@@ -13,6 +13,7 @@
 
 namespace ILAB\MediaCloud\Tasks;
 
+use ILAB\MediaCloud\Model\Model;
 use function ILAB\MediaCloud\Utilities\arrayPath;
 use ILAB\MediaCloud\Utilities\Logging\Logger;
 

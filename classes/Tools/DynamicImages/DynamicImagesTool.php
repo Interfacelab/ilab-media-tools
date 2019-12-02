@@ -372,8 +372,8 @@ abstract class DynamicImagesTool extends Tool {
         wp_enqueue_style('wp-color-picker');
         wp_enqueue_script('wp-pointer');
         wp_enqueue_script('wp-color-picker');
-        wp_enqueue_script('ilab-modal-js', ILAB_PUB_JS_URL.'/ilab-modal.js', ['jquery'], false, true);
-        wp_enqueue_script('ilab-media-tools-js', ILAB_PUB_JS_URL.'/ilab-media-tools.js', ['ilab-modal-js'], false, true);
+        wp_enqueue_script('ilab-modal-js', ILAB_PUB_JS_URL.'/ilab-modal.js', ['jquery'], MEDIA_CLOUD_VERSION, true);
+        wp_enqueue_script('ilab-media-tools-js', ILAB_PUB_JS_URL.'/ilab-media-tools.js', ['ilab-modal-js'], MEDIA_CLOUD_VERSION, true);
     }
 
     /**

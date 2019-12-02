@@ -17,10 +17,12 @@
 namespace ILAB\MediaCloud\Storage\Driver\S3;
 
 use FasterImage\FasterImage;
+use ILAB\MediaCloud\Storage\Driver\GoogleCloud\GoogleStorageSettings;
 use ILAB\MediaCloud\Storage\FileInfo;
 use ILAB\MediaCloud\Storage\InvalidStorageSettingsException;
 use ILAB\MediaCloud\Storage\StorageException;
 use ILAB\MediaCloud\Storage\StorageFile;
+use ILAB\MediaCloud\Storage\StorageGlobals;
 use ILAB\MediaCloud\Storage\StorageManager;
 use function ILAB\MediaCloud\Utilities\anyNull;
 use function ILAB\MediaCloud\Utilities\arrayPath;
@@ -31,6 +33,7 @@ use ILAB\MediaCloud\Utilities\NoticeManager;
 use ILAB\MediaCloud\Wizard\ConfiguresWizard;
 use ILAB\MediaCloud\Wizard\StorageWizardTrait;
 use ILAB\MediaCloud\Wizard\WizardBuilder;
+use ILABAmazon\CloudFront\CloudFrontClient;
 use ILABAmazon\Credentials\CredentialProvider;
 use ILABAmazon\Exception\AwsException;
 use ILABAmazon\Exception\CredentialsException;
@@ -786,11 +789,44 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 	}
 
 	public function presignedUrl($key, $expiration = 0) {
-	    $req = $this->presignedRequest($key, $expiration);
-	    $uri = $req->getUri();
-	    $url = $uri->__toString();
+		if ((StorageManager::driver() === 's3') && ($this->settings->validSignedCDNSettings())) {
+			if (empty($expiration)) {
+				$expiration = $this->settings->presignedURLExpiration;
+			}
 
-	    return $url;
+			if (empty($expiration)) {
+				$expiration = 1;
+			}
+
+			$cloudfrontClient = new CloudFrontClient([
+				'profile' => 'default',
+				'version' => 'latest',
+				'region' => $this->settings->region
+			]);
+
+			$srcUrl = $this->client->getObjectUrl($this->settings->bucket, $key);
+			$cdnHost = parse_url($this->settings->signedCDNURL, PHP_URL_HOST);
+			$srcHost = parse_url($srcUrl, PHP_URL_HOST);
+			$srcScheme = parse_url($srcUrl, PHP_URL_SCHEME);
+
+			$srcUrl = str_replace($srcScheme, 'https', $srcUrl);
+			$srcUrl = str_replace($srcHost, $cdnHost, $srcUrl);
+
+			$url = $cloudfrontClient->getSignedUrl([
+				'url' => $srcUrl,
+				'expires' => time() + ($expiration * 60),
+				'key_pair_id' => $this->settings->cloudfrontKeyID,
+				'private_key' => $this->settings->cloudfrontPrivateKey
+			]);
+
+			return $url;
+		} else {
+		    $req = $this->presignedRequest($key, $expiration);
+		    $uri = $req->getUri();
+		    $url = $uri->__toString();
+
+		    return $url;
+		}
 	}
 
 	public function url($key, $type = null) {
@@ -798,7 +834,7 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 			throw new InvalidStorageSettingsException('Storage settings are invalid');
 		}
 
-		if ($this->usesSignedURLs($type)) {
+		if (($type !== 'skip') && $this->usesSignedURLs($type)) {
 			$expiration = $this->signedURLExpirationForType($type);
 		    return $this->presignedUrl($key, $expiration);
         } else {
@@ -848,7 +884,7 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 	}
 
 	public function enqueueUploaderScripts() {
-		wp_enqueue_script('ilab-media-direct-upload-s3', ILAB_PUB_JS_URL.'/ilab-media-direct-upload-s3.js', [], false, true);
+		wp_enqueue_script('ilab-media-direct-upload-s3', ILAB_PUB_JS_URL.'/ilab-media-direct-upload-s3.js', [], MEDIA_CLOUD_VERSION, true);
 	}
 	//endregion
 

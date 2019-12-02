@@ -268,7 +268,7 @@ final class TaskRunner {
 				Logger::info("Loop #{$loops}!");
 			}
 
-			if ($loops == 21) {
+			if ($loops == 2) {
 				break;
 			}
 

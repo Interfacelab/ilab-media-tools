@@ -160,7 +160,7 @@ class WasabiStorage extends OtherS3Storage {
 	}
 
 	public function enqueueUploaderScripts() {
-		wp_enqueue_script('ilab-media-upload-other-s3', ILAB_PUB_JS_URL.'/ilab-media-direct-upload-other-s3.js', [], false, true);
+		wp_enqueue_script('ilab-media-upload-other-s3', ILAB_PUB_JS_URL.'/ilab-media-direct-upload-other-s3.js', [], MEDIA_CLOUD_VERSION, true);
 	}
 	//endregion
 

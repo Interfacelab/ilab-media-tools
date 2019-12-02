@@ -1,43 +1,72 @@
 <div class="settings-container">
     <header class="all-settings">
-        <img src="{{ILAB_PUB_IMG_URL}}/icon-cloud-w-type.svg">
-        <div class="settings-select-container">
-            <nav class="dropdown">
-                <div>Settings:</div>
-                <div class="dropdown">
-                    <div class="current">
-                        @if($tool->enabled())
-                            <span class="tool-indicator tool-active"></span>
-                        @elseif($tool->envEnabled())
-                            <span class="tool-indicator tool-env-active"></span>
-                        @else
-                            <span class="tool-indicator tool-inactive"></span>
+        <div class="contents">
+            <img class="logo" src="{{ILAB_PUB_IMG_URL}}/icon-cloud-w-type.svg">
+            <div class="settings-select-container">
+                <nav class="dropdown">
+                    <div>Settings:</div>
+                    <div class="dropdown">
+                        <div class="current">
+                            @if($tool->enabled())
+                                <span class="tool-indicator tool-active"></span>
+                            @elseif($tool->envEnabled())
+                                <span class="tool-indicator tool-env-active"></span>
+                            @else
+                                <span class="tool-indicator tool-inactive"></span>
+                            @endif
+                            {{ $tool->toolInfo['name'] }}
+                        </div>
+                        <div class="items">
+                            <ul>
+                                @foreach($tools as $key => $atool)
+                                    @if(!empty($atool->toolInfo['settings']))
+                                        <li class="{{($tab == $key) ? 'active' : ''}}">
+                                            <a class="tool" href="{{ilab_admin_url('admin.php?page=media-cloud-settings&tab='.$key)}}">
+                                                @if($atool->enabled())
+                                                    <span class="tool-indicator tool-active"></span>
+                                                @elseif($atool->envEnabled())
+                                                    <span class="tool-indicator tool-env-active"></span>
+                                                @else
+                                                    <span class="tool-indicator tool-inactive"></span>
+                                                @endif
+                                                {{$atool->toolInfo['name']}}
+                                            </a>
+                                            <a title="Pin these settings to the admin menu." data-tool-name="{{$atool->toolName}}" data-tool-title="{{$atool->toolInfo['name']}}" class="tool-pin {{($atool->pinned()) ? 'pinned' : ''}}" href="#"></a>
+                                        </li>
+                                    @endif
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </div>
+        <div class="mcloud-settings-tabs">
+            <div class="navwrap">
+                <ul>
+                    @foreach($tools as $key => $atool)
+                        @if(!empty($atool->toolInfo['settings']))
+                            <li class="{{($tab == $key) ? 'active' : ''}}">
+                                <a class="tool" href="{{ilab_admin_url('admin.php?page=media-cloud-settings&tab='.$key)}}">
+                                    @if(!$atool->alwaysEnabled())
+                                        @if($atool->enabled())
+                                            <span class="tool-indicator tool-active"></span>
+                                        @elseif($atool->envEnabled())
+                                            <span class="tool-indicator tool-env-active"></span>
+                                        @else
+                                            <span class="tool-indicator tool-inactive"></span>
+                                        @endif
+                                    @endif
+                                    {{$atool->toolInfo['name']}}
+                                </a>
+                                <a title="Pin these settings to the admin menu." data-tool-name="{{$atool->toolName}}" data-tool-title="{{$atool->toolInfo['name']}}" class="tool-pin {{($atool->pinned()) ? 'pinned' : ''}}" href="#"></a>
+                            </li>
                         @endif
-                        {{ $tool->toolInfo['name'] }}
-                    </div>
-                    <div class="items">
-                        <ul>
-                            @foreach($tools as $key => $atool)
-                                @if(!empty($atool->toolInfo['settings']))
-                                    <li class="{{($tab == $key) ? 'active' : ''}}">
-                                        <a class="tool" href="{{ilab_admin_url('admin.php?page=media-cloud-settings&tab='.$key)}}">
-                                            @if($atool->enabled())
-                                                <span class="tool-indicator tool-active"></span>
-                                            @elseif($atool->envEnabled())
-                                                <span class="tool-indicator tool-env-active"></span>
-                                            @else
-                                                <span class="tool-indicator tool-inactive"></span>
-                                            @endif
-                                            {{$atool->toolInfo['name']}}
-                                        </a>
-                                        <a title="Pin these settings to the admin menu." data-tool-name="{{$atool->toolName}}" data-tool-title="{{$atool->toolInfo['name']}}" class="tool-pin {{($atool->pinned()) ? 'pinned' : ''}}" href="#"></a>
-                                    </li>
-                                @endif
-                            @endforeach
-                        </ul>
-                    </div>
-                </div>
-            </nav>
+                    @endforeach
+                </ul>
+            </div>
+            <a class="tabs-nav tabs-prev hidden" href="#"><span>LEFT</span></a>
+            <a class="tabs-nav tabs-next hidden" href="#"><span>RIGHT</span></a>
         </div>
     </header>
     <div class="settings-body @plan('free') show-upgrade @endplan">
@@ -82,9 +111,20 @@
                     </table>
                 </div>
                 @endif
+                @if((count($sections) > 1) && !empty($jump_links))
+                <div class="section-jumps">
+                    <span class="label">Quick Jump</span>
+                    @foreach($sections as $section)
+                        @continue($loop->first)
+                        <a href="#{{sanitize_title($section['title'])}}">{{$section['title']}}</a>
+                        @if(!$loop->last)
+                        <span class="sep">|</span>
+                        @endif
+                    @endforeach
+                </div>
+                @endif
                 @foreach($sections as $section)
-                <a name="{{sanitize_title($section['title'])}}"></a>
-                <div class="ilab-settings-section">
+                <div id="{{sanitize_title($section['title'])}}" class="ilab-settings-section">
                     @if(!empty($section['title']))
                     <h2>
                         {{$section['title']}}
@@ -111,18 +151,28 @@
                             @include('base.fields.help', $section['help'])
                         </div>
                     @endif
+                    @if((empty($section['hide-save']) && (count($sections) > 1)))
+                        <div class="section-submit">
+	                        <?php submit_button('', 'primary small'); ?>
+                        </div>
+                    @endif
                 </div>
                 @endforeach
+
+                @if((count($sections) <= 1) || (count($tool->actions()) > 0))
                 <div class="ilab-settings-button">
                     @if(!empty($tool->actions()))
-                        <div class="ilab-settings-batch-tools">
+                        <div class="ilab-settings-batch-tools {{(count($sections) <= 1) ? 'has-submit' : ''}}">
                             @foreach($tool->actions() as $key => $action)
                             <a class="button ilab-ajax-button" data-ajax-action="{{str_replace('-','_',$key)}}" data-ajax-nonce="{{wp_create_nonce(str_replace('-','_',$key))}}" href="#">{{$action['name']}}</a>
                             @endforeach
                         </div>
                     @endif
+                    @if(count($sections) <= 1)
                     <?php submit_button(); ?>
+                    @endif
                 </div>
+                @endif
             </form>
         </div>
         @plan('free')
@@ -251,9 +301,12 @@
             menuUL.find('li').each(function(){
                var item = $(this);
                item.find('a').each(function(){
-                   currentLabels.push($(this).text());
+                   var label = $(this).text();
+                   if (currentLabels.indexOf(label) == -1) {
+                    currentLabels.push(label);
+                   }
 
-                   const regex = /\page\=media\-cloud\-settings\-(.*)\&pinned=true$/gm;
+                   const regex = /\page\=media\-cloud\-settings\-pinned\-(.*)$/gm;
                    var m = regex.exec($(this).attr('href'));
                    if ((m != null) && (m.length > 1)) {
                        var tool = m[m.length - 1];
@@ -268,12 +321,16 @@
             pin.on('click', function(e) {
                 e.preventDefault();
 
+                console.log('pin');
+
                 const data={
                     action: 'ilab_pin_tool',
                     tool: pinToolName
                 };
 
                 $.post(ajaxurl, data, function(response){
+                    console.log(response);
+
                     if (response.status == 'error') {
                         console.log(response);
                         return;
@@ -290,15 +347,22 @@
                             pinItem = null;
                         }
 
+                        if (currentLabels.indexOf(pinToolTitle) != -1) {
+                            console.log('removing');
+                            currentLabels.splice(currentLabels.indexOf(pinToolTitle), 1);
+                        }
+
+
                         pin.removeClass('pinned');
                     } else {
                         pin.addClass('pinned');
 
                         if (currentLabels.indexOf(pinToolTitle) != -1) {
+                            console.log('exiting');
                             return;
                         }
 
-                        pinItem = $('<li id="pinned-tool-'+pinToolName+'"><a href="admin.php?page=media-cloud-settings-'+pinToolName+'" aria-current="page">'+pinToolTitle+'</a></li>');
+                        pinItem = $('<li id="pinned-tool-'+pinToolName+'"><a href="admin.php?page=media-cloud-settings-pinned-'+pinToolName+'" aria-current="page">'+pinToolTitle+'</a></li>');
 
                         if (lastPinnedItems.length > 0) {
                             pinItem.insertAfter(lastPinnedItems[lastPinnedItems.length - 1]);

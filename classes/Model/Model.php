@@ -11,11 +11,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Tasks;
-
-use function ILAB\MediaCloud\Utilities\arrayPath;
-use function ILAB\MediaCloud\Utilities\gen_uuid;
-use ILAB\MediaCloud\Utilities\Logging\Logger;
+namespace ILAB\MediaCloud\Model;
 
 /**
  * Represents a database model
@@ -59,6 +55,13 @@ abstract class Model {
 	 */
 	protected $serializedProperties = [];
 
+	/**
+	 * Name of properties that are JSON serialized, must map to database and must be properties on model class.
+	 *
+	 * @var array
+	 */
+	protected $jsonProperties = [];
+
 	//endregion
 
 	//region Static Methods
@@ -99,6 +102,10 @@ abstract class Model {
 				if (property_exists($data, $prop)) {
 					if (in_array($prop, $this->serializedProperties)) {
 						$this->{$prop} = maybe_unserialize($data->{$prop});
+					} else if (in_array($prop, $this->jsonProperties)) {
+						if (!empty($data->{$prop})) {
+							$this->{$prop} = json_decode($data->{$prop}, true);
+						}
 					} else {
 						$this->{$prop} = $data->{$prop};
 					}
@@ -187,6 +194,14 @@ abstract class Model {
 			if (in_array($prop, $this->serializedProperties)) {
 				$data[$prop] = maybe_serialize($this->{$prop});
 				$formats[] = '%s';
+			} else if (in_array($prop, $this->jsonProperties)) {
+				if (!empty($this->{$prop})) {
+					$data[$prop] = json_encode($this->{$prop}, JSON_PRETTY_PRINT);
+				} else {
+					$data[$prop] = null;
+				}
+
+				$formats[] = '%s';
 			} else {
 				$data[$prop] = $this->{$prop};
 				$formats[] = $format;
@@ -212,6 +227,13 @@ abstract class Model {
 	}
 
 	/**
+	 * Called before the model deletes itself
+	 */
+	protected function willDelete() {
+
+	}
+
+	/**
 	 * Deletes the model.
 	 *
 	 * @return bool
@@ -221,6 +243,8 @@ abstract class Model {
 		if (($this->modelState == self::MODEL_DELETED) || ($this->modelState == self::MODEL_NEW)) {
 			return false;
 		}
+
+		$this->willDelete();
 
 		global $wpdb;
 
@@ -249,6 +273,41 @@ abstract class Model {
 
 		$table = static::table();
 		$rows = $wpdb->get_results($wpdb->prepare("select * from {$table} where id = %d", $id));
+
+		foreach($rows as $row) {
+			return new static($row);
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns all of the models
+	 *
+	 * @param null|string $orderBy
+	 * @param int $limit
+	 * @param int $page
+	 *
+	 * @return Model|null
+	 * @throws \Exception
+	 */
+	public static function all($orderBy = null, $limit = 0, $page = 0) {
+		global $wpdb;
+
+		$table = static::table();
+
+		$query = "select * from {$table}";
+
+		if (!empty($orderBy)) {
+			$query = "{$query} order by {$orderBy}";
+		}
+
+		if (!empty($limit)) {
+			$offset = ($page * $limit);
+			$query = "{$query} limit {$limit} offset {$offset}";
+		}
+
+		$rows = $wpdb->get_results($query);
 
 		foreach($rows as $row) {
 			return new static($row);
