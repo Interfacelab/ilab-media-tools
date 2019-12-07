@@ -18,6 +18,7 @@ use ILAB\MediaCloud\Tasks\AttachmentTask;
 use ILAB\MediaCloud\Tools\Storage\StorageTool;
 use ILAB\MediaCloud\Tools\ToolsManager;
 use ILAB\MediaCloud\Utilities\Logging\Logger;
+use function ILAB\MediaCloud\Utilities\arrayPath;
 use function ILAB\MediaCloud\Utilities\postIdExists;
 use Symfony\Component\Finder\Iterator\RecursiveDirectoryIterator;
 
@@ -204,37 +205,47 @@ class CleanUploadsTask extends AttachmentTask {
 	 */
 	public function performTask($item) {
 		$post_id = $item['id'];
+
+		if ($post_id == -1) {
+			Logger::info("Cleaning empty directories.");
+			return $this->cleanEmptyDirectories();
+		}
+
 		if (!postIdExists($post_id)) {
 			return true;
 		}
 
 		Logger::info("Processing $post_id");
 
-		if ($post_id == -1) {
-			return $this->cleanEmptyDirectories();
-		}
-
 		$this->updateCurrentPost($post_id);
-
-		Logger::info("Processing $post_id");
 
 		$file = get_attached_file($post_id, true);
 		$meta = wp_get_attachment_metadata($post_id, true);
 
+
 		$baseDir = pathinfo($file, PATHINFO_DIRNAME);
 
 		$filesToDelete = [$file];
-		foreach($meta['sizes'] as $size => $sizeData) {
-			if (empty($sizeData['file'])) {
-				continue;
-			}
+		if (isset($meta['sizes'])) {
+			foreach($meta['sizes'] as $size => $sizeData) {
+				if (empty($sizeData['file'])) {
+					continue;
+				}
 
-			$filesToDelete[] = trailingslashit($baseDir).basename($sizeData['file']);
+				$filesToDelete[] = trailingslashit($baseDir).basename($sizeData['file']);
+			}
+		}
+
+		$og = arrayPath($meta, 'original_image', null);
+		if (!empty($og)) {
+			$filesToDelete[] = trailingslashit($baseDir).$og;
 		}
 
 		foreach($filesToDelete as $file) {
-			Logger::info("Deleting $file");
-			@unlink($file);
+			if (file_exists($file)) {
+				Logger::info("Deleting $file");
+				@unlink($file);
+			}
 		}
 
 		Logger::info("Finished processing $post_id");

@@ -310,6 +310,11 @@ final class ToolsManager
                 ToolsManager::registerTool( "opt-in", include ILAB_CONFIG_DIR . '/opt-in.config.php' );
             }
             do_action( 'media-cloud/tools/register-tools' );
+            if ( LicensingManager::ScreenSharingEnabled() ) {
+                add_action( 'admin_footer', function () {
+                    echo  View::render_view( 'support.screen-sharing', [] ) ;
+                } );
+            }
         }
         
         // Make sure the NoticeManager is initialized

@@ -156,16 +156,19 @@ class TaskData extends Model {
 
 	/**
 	 * @param Task $task
+	 * @param int $limit
 	 *
+	 * @return array
 	 * @throws \Exception
 	 */
-	public static function dataForTask($task) {
+	public static function dataForTask($task, $limit = 0) {
 		global $wpdb;
 
 		$result = [];
 
 		$dataTable = static::table();
-		$results = $wpdb->get_results("select * from {$dataTable} where complete != 1 and taskId = {$task->id()} order by id asc");
+		$limitQuery = ($limit !== 0) ? "limit {$limit}" : "";
+		$results = $wpdb->get_results("select * from {$dataTable} where complete != 1 and taskId = {$task->id()} order by id asc {$limitQuery}");
 		if (!empty($results)) {
 			foreach($results as $taskData) {
 				$result[] = new TaskData($task, $taskData);
@@ -173,6 +176,39 @@ class TaskData extends Model {
 		}
 
 		return $result;
+	}
+
+	/**
+	 * @param Task $task
+	 *
+	 * @return int
+	 * @throws \Exception
+	 */
+	public static function dataCountForTask($task) {
+		global $wpdb;
+
+		$dataTable = static::table();
+		$results = $wpdb->get_var("select count(id) from {$dataTable} where complete != 1 and taskId = {$task->id()}");
+		if (!empty($results)) {
+			return $results;
+		}
+
+		return (int)0;
+	}
+
+	/**
+	 * @param Task $task
+	 *
+	 * @return bool
+	 * @throws \Exception
+	 */
+	public static function deleteDataForTask($task) {
+		global $wpdb;
+
+		$dataTable = static::table();
+		$wpdb->query("delete from {$dataTable} where taskId = {$task->id()}");
+
+		return true;
 	}
 	//endregion
 

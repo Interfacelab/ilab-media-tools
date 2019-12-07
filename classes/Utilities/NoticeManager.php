@@ -48,6 +48,15 @@ class NoticeManager {
 		return self::$instance;
 	}
 
+	public function displayGroupedAdminNotices($type, $notices, $dismissible = false, $dismissibleIdentifier = null, $dismissibleLength = 30) {
+		$items = array_map(function($tag) {
+			return "<li>{$tag}</li>";
+		}, $notices);
+
+		$itemsHTML = implode('', $items);
+		$this->displayAdminNotice('warning', "<ol>{$itemsHTML}</ol>", $dismissible, $dismissibleIdentifier, $dismissibleLength);
+	}
+
 	public function displayAdminNotice($type, $message, $dismissible=false, $dismissibleIdentifier = null, $dismissibleLength = 30) {
 		if (isset($this->adminNotices[$message])) {
 			return;

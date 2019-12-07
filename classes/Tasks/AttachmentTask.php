@@ -116,10 +116,16 @@ abstract class AttachmentTask extends Task {
 
 			$query = new \WP_Query($args);
 			$postIds = $query->posts;
+			if (count($postIds) === 0) {
+				return false;
+			}
+
 			foreach($postIds as $postId) {
 				$this->addItem(['id' => $postId]);
 			}
 		}
+
+		$this->state = Task::STATE_WAITING;
 
 		Logger::info("Added {$this->totalItems} to the task.");
 		return ($this->totalItems > 0);

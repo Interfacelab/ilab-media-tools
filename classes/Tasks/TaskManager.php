@@ -509,7 +509,7 @@ final class TaskManager {
 	 */
 	public function queueTask($task) {
 		Logger::info("Queueing task ...");
-		$task->save();
+		$task->wait();
 		TaskRunner::dispatch($task);
 	}
 
@@ -541,6 +541,11 @@ final class TaskManager {
 
 		if (empty($task)) {
 			Logger::info("No task with with id '{$taskOrId}'.");
+			return;
+		}
+
+		if ($task->state === Task::STATE_PREPARING) {
+			Logger::info("Task is preparing, exiting.");
 			return;
 		}
 

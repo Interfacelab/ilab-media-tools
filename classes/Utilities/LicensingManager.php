@@ -44,4 +44,12 @@ final class LicensingManager {
 
 		return Environment::Option($optInOption, null, false);
 	}
+
+	public static function ScreenSharingEnabled() {
+		if (!LicensingManager::CanTrack()) {
+			return false;
+		}
+
+		return Environment::Option('mcloud-opt-screen-sharing', null, false);
+	}
 }

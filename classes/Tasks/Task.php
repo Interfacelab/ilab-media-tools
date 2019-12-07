@@ -14,9 +14,11 @@
 namespace ILAB\MediaCloud\Tasks;
 
 use Carbon\Carbon;
+use GPBMetadata\Google\Api\Log;
 use ILAB\MediaCloud\Model\Model;
 use function ILAB\MediaCloud\Utilities\gen_uuid;
 use ILAB\MediaCloud\Utilities\Logging\Logger;
+use ILAB\MediaCloud\Utilities\Performance;
 use function ILAB\MediaCloud\Utilities\phpMemoryLimit;
 use ILAB\MediaCloud\Utilities\Tracker;
 
@@ -62,6 +64,7 @@ abstract class Task extends Model implements \JsonSerializable {
 	const STATE_COMPLETE = 100;
 	const STATE_ERROR = 101;
 	const STATE_CANCELLED = 102;
+	const STATE_PREPARING = 200;
 
 	//endregion
 
@@ -199,6 +202,12 @@ abstract class Task extends Model implements \JsonSerializable {
 	 * @var TaskData[]
 	 */
 	protected $data = [];
+
+	/**
+	 * Total number of data associated with this task
+	 * @var int
+	 */
+	protected $totalDataCount = 0;
 
 	/**
 	 * The current data chunk
@@ -359,26 +368,32 @@ abstract class Task extends Model implements \JsonSerializable {
 		$this->type = static::identifier();
 
 		if ($this->id != null) {
-			$this->data = TaskData::dataForTask($this);
+			$this->totalDataCount = TaskData::dataCountForTask($this);
+			$this->data = TaskData::dataForTask($this, 10);
 		}
 	}
 
 	//endregion
 
+	//region Task Data
+	public function loadNextData() {
+		$this->data = TaskData::dataForTask($this, 10);
+	}
+
+	public function dumpExisting() {
+		$this->data = [];
+		gc_collect_cycles();
+	}
+	//endregion
+
 	//region Saving/Deleting
 
 	public function save() {
-		Logger::info("SAVING TASK");
-
 		if ($this->tuid == null) {
 			$this->tuid = gen_uuid(12);
 		}
 
-		if (parent::save()) {
-			foreach($this->data as $data) {
-				$data->save();
-			}
-		}
+		return parent::save();
 	}
 
 	/**
@@ -389,9 +404,7 @@ abstract class Task extends Model implements \JsonSerializable {
 	 */
 	public function delete() {
 		if (parent::delete()) {
-			foreach($this->data as $data) {
-				$data->delete();
-			}
+			TaskData::deleteDataForTask($this);
 
 			return true;
 		}
@@ -400,9 +413,7 @@ abstract class Task extends Model implements \JsonSerializable {
 	}
 
 	public function cleanUp() {
-		foreach($this->data as $data) {
-			$data->delete();
-		}
+		TaskData::deleteDataForTask($this);
 	}
 
 	//endregion
@@ -421,6 +432,7 @@ abstract class Task extends Model implements \JsonSerializable {
 			return self::TASK_ALREADY_RUNNING;
 		}
 
+
 		$this->lock();
 
 		$this->taskStartTime = time();
@@ -431,9 +443,11 @@ abstract class Task extends Model implements \JsonSerializable {
 
 			$this->save();
 
+
 			if (!empty(static::analyticsId())) {
 				Tracker::trackView(static::title(), static::analyticsId().'/start');
 			}
+
 		}
 
 		Logger::info("Grabbing first chunk.");
@@ -449,11 +463,14 @@ abstract class Task extends Model implements \JsonSerializable {
 
 			$this->unlock();
 
+
 			if (!empty(static::analyticsId())) {
 				Tracker::trackView(static::title(), static::analyticsId().'/finish');
 			}
 
+
 			$this->complete();
+
 
 			return self::TASK_COMPLETE;
 		}
@@ -471,24 +488,33 @@ abstract class Task extends Model implements \JsonSerializable {
 
 				Logger::info("Task was cancelled.  Exiting.");
 				$this->state = self::STATE_CANCELLED;
+
 				$this->updateTiming();
+
 				$this->save();
 
+
 				$this->unlock();
+
 
 				if (!empty(static::analyticsId())) {
 					Tracker::trackView(static::title(), static::analyticsId().'/cancel');
 				}
 
+
 				$this->complete();
+
 
 				return self::TASK_CANCELLED;
 			}
 
 			$nextItem = $chunk->nextItem();
 			if (empty($nextItem)) {
+
 				$this->updateTiming();
+
 				$this->save();
+
 
 				$result = self::TASK_CHUNK_COMPLETE;
 				break;
@@ -499,7 +525,9 @@ abstract class Task extends Model implements \JsonSerializable {
 				$memory = memory_get_usage(true);
 				$this->currentItem++;
 				$this->info("[{$this->currentItem} of {$this->totalItems}] Processing ... ", false);
+
 				$result = $this->performTask($nextItem);
+
 				$this->info("{$this->currentFile} ... Done.", true);
 
 				$this->lastTime = microtime(true) - $time;
@@ -510,12 +538,16 @@ abstract class Task extends Model implements \JsonSerializable {
 					$this->memoryPer = ($this->memoryPer + (memory_get_usage(true) - $memory)) / 2;
 				}
 
+
 				$this->lastRun = time();
 				$this->updateTiming();
+
 				$this->save();
+
 
 				if (empty($result) || is_wp_error($result)) {
 					$result = self::TASK_ERROR;
+
 
 					$this->endTime = time();
 					$this->updateTiming();
@@ -531,29 +563,38 @@ abstract class Task extends Model implements \JsonSerializable {
 					$this->info("{$this->currentFile} ... Error.", true);
 					$this->error($this->errorMessage);
 
+
 					$this->save();
+
+
 
 					if (!empty(static::analyticsId())) {
 						Tracker::trackView(static::title(), static::analyticsId().'/error');
 					}
+
 
 					$this->complete();
 
 					break;
 				}
 			} catch (\Exception $ex) {
+
 				$this->state = self::STATE_ERROR;
 				$this->endTime = time();
 				$this->errorMessage = $ex->getMessage();
 				$this->updateTiming();
+
 				$this->save();
+
 
 				$this->info("{$this->currentFile} ... Error.", true);
 				$this->error($this->errorMessage);
 
+
 				if (!empty(static::analyticsId())) {
 					Tracker::trackView(static::title(), static::analyticsId().'/error');
 				}
+
 
 				$this->complete();
 
@@ -564,6 +605,8 @@ abstract class Task extends Model implements \JsonSerializable {
 		Logger::info("Unlocking ...");
 		$this->didFinish();
 		$this->unlock();
+
+
 		return $result;
 	}
 
@@ -600,6 +643,7 @@ abstract class Task extends Model implements \JsonSerializable {
 	 * @return bool
 	 */
 	public function canWork($firstTime) {
+
 		$maxTime = null;
 
 		if (function_exists('ini_get')) {
@@ -614,6 +658,7 @@ abstract class Task extends Model implements \JsonSerializable {
 
 		if (time() > $this->taskStartTime + $maxTime) {
 			Logger::info("Time is up!");
+
 			return false;
 		}
 
@@ -626,9 +671,11 @@ abstract class Task extends Model implements \JsonSerializable {
 			}
 			if ($memory >= $limit) {
 				Logger::info("Out of memory!");
+
 				return false;
 			}
 		}
+
 
 
 		return true;
@@ -641,6 +688,7 @@ abstract class Task extends Model implements \JsonSerializable {
 			return false;
 		}
 
+
 		/** @var TaskData $data */
 		$data = $this->data[0];
 		if ($data->complete()) {
@@ -649,10 +697,21 @@ abstract class Task extends Model implements \JsonSerializable {
 			$data->delete();
 			array_shift($this->data);
 
+			$this->totalDataCount--;
+			Logger::info("Data chunks remaining: ".$this->totalDataCount);
+
+			if (count($this->data) === 0) {
+				gc_collect_cycles();
+				$this->data = TaskData::dataForTask($this, 10);
+				Logger::info("Loaded ".count($this->data)." additional chunks.");
+			}
+
 
 			Logger::info("Returning next chunk!");
+
 			return $this->nextChunk();
 		}
+
 
 		return $data;
 	}
@@ -737,6 +796,7 @@ abstract class Task extends Model implements \JsonSerializable {
 			return;
 		}
 
+
 		$maxTime = 60;
 
 		if ($this->lastTime > 0) {
@@ -749,6 +809,8 @@ abstract class Task extends Model implements \JsonSerializable {
 
 		global $wpdb;
 		$wpdb->update(static::table(), ['locked' => time() + $maxTime], ['id' => $this->id], ['%f']);
+
+
 	}
 
 	/**
@@ -759,8 +821,11 @@ abstract class Task extends Model implements \JsonSerializable {
 			return;
 		}
 
+
 		global $wpdb;
 		$wpdb->update(static::table(), ['locked' => null], ['id' => $this->id]);
+
+
 	}
 
 	/**
@@ -831,14 +896,40 @@ abstract class Task extends Model implements \JsonSerializable {
 	abstract public function prepare($options = [], $selectedItems = []);
 
 	/**
-	 * Adds an arbitrary item to the task's data.
+	 * Performs any clean up after prepare()
+	 * @throws \Exception
+	 */
+	public function wait() {
+		$this->state = TASK::STATE_WAITING;
+		$this->save();
+
+		if (!empty($this->currentData)) {
+			$this->currentData->save();
+		}
+	}
+
+
+	/**
+	 * @param $item
 	 *
-	 * @param mixed $item
+	 * @throws \Exception
 	 */
 	public function addItem($item) {
 		if (($this->currentData == null) || $this->currentData->full()) {
+			if ($this->id === null) {
+				$this->state = Task::STATE_PREPARING;
+				$this->save();
+			}
+
+			if (!empty($this->currentData)) {
+				$this->currentData->save();
+			}
+
+			$this->totalDataCount++;
+
+			$memory = memory_get_usage(true);
+			Logger::info("Added {$this->totalDataCount} data chunks, memory: $memory.");
 			$this->currentData = new TaskData($this, null);
-			$this->data[] = $this->currentData;
 		}
 
 		$this->currentData->addItem($item);

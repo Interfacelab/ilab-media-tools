@@ -282,13 +282,13 @@ return [
 				"options" => [
 					"mcloud-storage-disable-srcset" => [
 						"title" => "Disable srcset on image tags",
-						"description" => "Gutenberg's image block, before WordPress 5.3, had a lot of issues and problems.  For example, which is still an issue in 5.3, WordPress omits the width and height attributes which is a really bad practice.  And it's also because of this that it's impossible to calculate a <code>srcset</code> that is realistic.  If you are using WordPress prior to 5.3, we recommend disabling <code>srcset</code> on image tags - <strong>but only if you use Gutenberg</strong>.  If you are using the Classic Editor, you do not need to disable this!",
+						"description" => "Gutenberg's image block, before WordPress 5.3, had a lot of issues and problems.  For example, which is still an issue in 5.3, WordPress omits the width and height attributes which is a really bad practice.  And it's also because of this that it's impossible to calculate a <code>srcset</code> that is realistic.  If you are using WordPress prior to 5.3, we recommend disabling <code>srcset</code> on image tags - <strong>but only if you use Gutenberg and WordPress version 5.2 or lower</strong>.  If you are using the Classic Editor, you do not need to disable this!",
 						"type" => "checkbox",
 						"default" => false
 					],
 					"mcloud-storage-replace-srcset" => [
 						"title" => "Replace srcset on image tags",
-						"description" => "MediaCloud can generate a more optimal <code>srcset</code> for image tags with WordPress versions greater than 5.3.  This is enabled by default, however if you are having issues, you should disable it to use WordPress's default <code>srcset</code> generation.  If <strong>Disable srcset on image tags</strong> is enabled, this setting will have no effect.",
+						"description" => "MediaCloud can generate a more optimal <code>srcset</code> for image tags with WordPress versions greater than 5.3.  This is enabled by default, however if you are having issues, you should disable it to use WordPress's default <code>srcset</code> generation.  If <strong>Disable srcset on image tags</strong> is enabled, this setting will have no effect.  This setting only has an effect with post content via the classic editor or gutenberg blocks, it has no effect for image tags generated with <code>wp_get_attachment_image()</code>.",
 						"type" => "checkbox",
 						"wp_version" => ['>=', "5.3"],
 						"default" => true
@@ -298,3 +298,4 @@ return [
 		]
 	]
 ];
+

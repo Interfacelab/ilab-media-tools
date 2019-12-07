@@ -41,6 +41,12 @@ return [
 						"type" => "checkbox",
 						"default" => false
 					],
+					"mcloud-opt-screen-sharing" => [
+						"title" => "Screen Sharing",
+						"description" => "When this is enabled, the support team can send you a screen sharing request through the support chat to help troubleshoot issues.  This option should only be enabled if and when support requests it.",
+						"type" => "checkbox",
+						"default" => false
+					],
 				]
 			],
 		]

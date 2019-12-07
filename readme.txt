@@ -5,7 +5,7 @@ Requires at least: 4.4
 Tested up to: 5.3
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 3.3.6
+Stable tag: 3.3.7
 Requires PHP: 5.6.4
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -107,6 +107,13 @@ No, I'm just one very enthusiastic customer.
 
 
 == Changelog ==
+
+= 3.3.7 =
+
+* Massive improvement to background tasks performance.  Processing times reduced by 50 to 90% in most cases.
+* Fixed settings toggle in Google Chrome
+* Fix for srcset generation when using wp_get_attachment_image() in your theme
+
 
 = 3.3.6 =
 

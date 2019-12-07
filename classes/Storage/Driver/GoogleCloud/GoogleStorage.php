@@ -127,20 +127,19 @@ class GoogleStorage implements StorageInterface, ConfiguresWizard {
 		    return $this->settings->usePresignedURLs;
 	    }
 
+	    $use = false;
 	    if (strpos($type, 'image') === 0) {
-		    return $this->settings->usePresignedURLsForImages;
+		    $use = $this->settings->usePresignedURLsForImages;
+	    } else if (strpos($type, 'video') === 0) {
+		    $use = $this->settings->usePresignedURLsForVideo;
+	    } else if (strpos($type, 'audio') === 0) {
+		    $use = $this->settings->usePresignedURLsForAudio;
+	    } else if (strpos($type, 'application') === 0) {
+		    $use = $this->settings->usePresignedURLsForDocs;
 	    }
 
-	    if (strpos($type, 'video') === 0) {
-		    return $this->settings->usePresignedURLsForVideo;
-	    }
-
-	    if (strpos($type, 'audio') === 0) {
-		    return $this->settings->usePresignedURLsForAudio;
-	    }
-
-	    if ((strpos($type, 'application') === 0) || (strpos($type, 'text') === 0)) {
-		    return $this->settings->usePresignedURLsForDocs;
+	    if (!empty($use)) {
+		    return true;
 	    }
 
 	    return $this->settings->usePresignedURLs;

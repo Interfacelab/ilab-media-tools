@@ -412,6 +412,10 @@ class BackblazeStorage implements StorageInterface, AuthCacheInterface, Configur
 	public function url($key, $type = null) {
 		return $this->bucketUrl.$key;
 	}
+
+	public function signedURLExpirationForType($type = null) {
+		return null;
+	}
 	//endregion
 
 	//region Direct Uploads

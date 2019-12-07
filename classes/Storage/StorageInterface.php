@@ -91,6 +91,15 @@ interface StorageInterface {
 	public function usesSignedURLs($type = null);
 
 	/**
+	 * Returns the expiration for a particular type
+	 *
+	 * @param null|string $type
+	 *
+	 * @return int|null
+	 */
+	public function signedURLExpirationForType($type = null);
+
+	/**
 	 * Insures that all the configuration settings are valid and that the storage is enabled.
 	 * @return bool
 	 */

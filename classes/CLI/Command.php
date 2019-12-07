@@ -58,7 +58,9 @@ abstract class Command extends \WP_CLI_Command {
 			exit(0);
 		}
 
-		$task->save();
+		$task->wait();
+		$task->dumpExisting();
+		$task->loadNextData();
 
 
 		Command::Out("", true);
