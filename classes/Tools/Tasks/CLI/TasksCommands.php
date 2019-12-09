@@ -16,10 +16,10 @@
 
 namespace ILAB\MediaCloud\Tools\Tasks\CLI;
 
-use Carbon\Carbon;
 use ILAB\MediaCloud\CLI\Command;
 use ILAB\MediaCloud\Tasks\TaskSchedule;
 use ILAB\MediaCloud\Tasks\TestTask;
+use ILAB\MediaCloud\Utilities\Misc\Carbon\Carbon;
 use function ILAB\MediaCloud\Utilities\arrayPath;
 use function ILAB\MediaCloud\Utilities\gen_uuid;
 

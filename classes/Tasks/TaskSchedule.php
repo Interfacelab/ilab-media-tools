@@ -13,9 +13,9 @@
 
 namespace ILAB\MediaCloud\Tasks;
 
-use Carbon\Carbon;
 use Cron\CronExpression;
 use ILAB\MediaCloud\Model\Model;
+use ILAB\MediaCloud\Utilities\Misc\Carbon\Carbon;
 use function ILAB\MediaCloud\Utilities\gen_uuid;
 use Lorisleiva\CronTranslator\CronParsingException;
 use Lorisleiva\CronTranslator\CronTranslator;

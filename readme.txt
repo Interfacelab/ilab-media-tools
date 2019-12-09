@@ -5,7 +5,7 @@ Requires at least: 4.4
 Tested up to: 5.3
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 3.3.7
+Stable tag: 3.3.8
 Requires PHP: 5.6.4
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -107,6 +107,11 @@ No, I'm just one very enthusiastic customer.
 
 
 == Changelog ==
+
+= 3.3.8 =
+
+* Fix for errors on Task Manager pages caused by a library conflict with other plugins.
+* When using the post editor after migrating an existing site to cloud storage, images appeared broken if the original images were deleted from the server.  This is now fixed.
 
 = 3.3.7 =
 

@@ -158,21 +158,6 @@ final class ToolsManager
                 'ilab-media-tools-extime-notice'
             );
         }
-        $runTime = Environment::Option( 'ilab_media_tools_run_time', null, 0 );
-        
-        if ( $runTime == 0 ) {
-            Environment::UpdateOption( 'ilab_media_tools_run_time', microtime( true ) );
-        } else {
-            if ( microtime( true ) - floatval( $runTime ) > 1209600 ) {
-                NoticeManager::instance()->displayAdminNotice(
-                    'info',
-                    "Thanks for using Media Cloud!  If you like it, please <a href='https://wordpress.org/support/plugin/ilab-media-tools/reviews/#new-post' target=_blank>leave a review</a>.  Thank you!",
-                    true,
-                    'ilab-media-tools-nag-notice'
-                );
-            }
-        }
-        
         if ( !extension_loaded( 'mbstring' ) ) {
             NoticeManager::instance()->displayAdminNotice(
                 'warning',

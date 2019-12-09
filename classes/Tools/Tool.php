@@ -520,6 +520,9 @@ abstract class Tool {
 	                        case 'advanced-privacy':
 		                        $this->registerAdvancedPrivacy($option, $optionInfo['title'], $group, $conditions);
 		                        break;
+	                        case 'image':
+		                        $this->registerImageFieldSetting($option, $optionInfo['title'], $group, $description, $conditions);
+		                        break;
                             default:
                                 do_action('media-cloud/tools/register-setting-type', $option, $optionInfo, $group, $groupInfo, $conditions);
                         }

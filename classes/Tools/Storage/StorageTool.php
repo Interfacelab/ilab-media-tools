@@ -423,6 +423,12 @@ class StorageTool extends Tool
                 1
             );
             add_filter(
+                'the_editor_content',
+                [ $this, 'filterContent' ],
+                PHP_INT_MAX - 1,
+                2
+            );
+            add_filter(
                 'render_block',
                 [ $this, 'filterBlocks' ],
                 PHP_INT_MAX - 1,
@@ -2121,13 +2127,20 @@ class StorageTool extends Tool
      * @return mixed
      * @throws StorageException
      */
-    public function filterContent( $content )
+    public function filterContent( $content, $context = 'post' )
     {
         if ( !apply_filters( 'media-cloud/storage/can-filter-content', true ) ) {
             return $content;
         }
+        $originalContent = $content;
+        
+        if ( $context !== 'post' ) {
+            $content = str_replace( '&lt;', '<', $content );
+            $content = str_replace( '&gt;', '>', $content );
+        }
+        
         if ( !preg_match_all( '/<img [^>]+>/', $content, $matches ) ) {
-            return $content;
+            return $originalContent;
         }
         $uploadDir = wp_get_upload_dir();
         $replacements = [];
@@ -2261,6 +2274,12 @@ class StorageTool extends Tool
         foreach ( $resizedReplacements as $id => $data ) {
             $content = $this->replaceImageInContent( $data['id'], $data, $content );
         }
+        
+        if ( $context !== 'post' ) {
+            $content = str_replace( '<', '&lt;', $content );
+            $content = str_replace( '>', '&gt;', $content );
+        }
+        
         return $content;
     }
     

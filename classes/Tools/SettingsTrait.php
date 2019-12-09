@@ -364,6 +364,49 @@ trait SettingsTrait {
     }
 
 	/**
+	 * Registers an option with a number input
+	 *
+	 * @param $option_name
+	 * @param $title
+	 * @param $settings_slug
+	 * @param null $description
+	 * @param null $conditions
+	 */
+	protected function registerImageFieldSetting($option_name, $title, $settings_slug, $description=null, $conditions=null) {
+		add_settings_field($option_name,
+			$title,
+			[$this, 'renderImageFieldSetting'],
+			$this->options_page,
+			$settings_slug,
+			['option'=>$option_name,'description'=>$description, 'conditions' => $conditions]);
+
+	}
+
+	/**
+	 * Renders a number input
+	 * @param $args
+	 */
+	public function renderImageFieldSetting($args) {
+		$value = Environment::Option($args['option'], null, null);
+
+		$imageUrl = null;
+		if (!empty($value)) {
+			$src = wp_get_attachment_image_src($value, 'medium');
+			if (!empty($src)) {
+				$imageUrl = $src[0];
+			}
+		}
+
+		echo View::render_view('base/fields/image.php',[
+			'value' => $value,
+			'imageUrl' => $imageUrl,
+			'name' => $args['option'],
+			'conditions' => $args['conditions'],
+			'description' => (isset($args['description'])) ? $args['description'] : false
+		]);
+	}
+
+	/**
 	 * Registers an option with a dropdown/select input
 	 * @param $option_name
 	 * @param $options

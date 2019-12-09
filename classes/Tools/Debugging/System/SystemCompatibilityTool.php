@@ -13,7 +13,7 @@
 
 namespace ILAB\MediaCloud\Tools\Debugging\System;
 
-use Carbon\CarbonInterval;
+use ILAB\MediaCloud\Utilities\Misc\Carbon\CarbonInterval;
 use FasterImage\FasterImage;
 use ILAB\MediaCloud\Storage\StorageGlobals;
 use ILAB\MediaCloud\Tasks\TaskRunner;

@@ -16,7 +16,8 @@
 
 namespace ILAB\MediaCloud\Storage;
 
-use Carbon\Carbon;
+
+use ILAB\MediaCloud\Utilities\Misc\Carbon\Carbon;
 
 class StorageFile {
 	/** @var string The type of file (DIR or FILE) */

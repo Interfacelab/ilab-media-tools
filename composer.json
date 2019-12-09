@@ -27,12 +27,11 @@
     "duncan3dc/blade": ">3.3",
     "superbalist/flysystem-google-storage": "^7.1",
     "google/cloud-vision": "^0.19.0",
-    "nesbot/carbon": "^1.21",
     "ilab/b2-sdk-php": "^1.4",
     "psr/http-message-implementation": "*",
     "mikey179/vfsstream": "*",
-    "ivopetkov/html5-dom-document-php": "^2.0",
     "ralouphie/mimey": "^2.1",
+    "ivopetkov/html5-dom-document-php": "^2.0",
     "zumba/amplitude-php": "^1.0"
   },
   "autoload": {
