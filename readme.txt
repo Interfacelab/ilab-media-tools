@@ -1,11 +1,11 @@
 === Media Cloud for Amazon S3, Imgix, Google Cloud Storage, DigitalOcean Spaces and more ===
-Contributors: mediacloud, interfacelab
+Contributors: mediacloud, interfacelab, freemius
 Tags: offload, amazon, s3, imgix, uploads, google cloud storage, digital ocean spaces, wasabi, minio, media, cdn, rekognition, cloudfront, images, crop, image editing, image editor, media library, offload, offload s3, filepicker, smush, ewww, imagify, shortpixel
 Requires at least: 4.4
 Tested up to: 5.3
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 3.3.8
+Stable tag: 3.3.10
 Requires PHP: 5.6.4
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -108,7 +108,12 @@ No, I'm just one very enthusiastic customer.
 
 == Changelog ==
 
-= 3.3.8 =
+= 3.3.10 =
+
+* CRITICAL FIX.  Previous version introduced a library that could cause issues on some systems, it has been fixed in this version.  Please update ASAP.
+* Added new filter, "media-cloud/storage/override-privacy" that allows you to override privacy per upload.
+
+= 3.3.9 =
 
 * Fix for errors on Task Manager pages caused by a library conflict with other plugins.
 * When using the post editor after migrating an existing site to cloud storage, images appeared broken if the original images were deleted from the server.  This is now fixed.

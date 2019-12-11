@@ -2922,6 +2922,13 @@ class StorageTool extends Tool
             if ( !empty($forcedAcl) ) {
                 $privacy = $forcedAcl;
             }
+            $privacy = apply_filters(
+                'media-cloud/storage/override-privacy',
+                $privacy,
+                $prefix . $bucketFilename,
+                trailingslashit( $upload_path ) . $filename,
+                $data
+            );
             
             if ( $uploadFile || empty($url) ) {
                 Logger::info( "\tUploading {$filename} to S3." );
