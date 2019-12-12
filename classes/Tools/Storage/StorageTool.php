@@ -14,6 +14,7 @@ namespace ILAB\MediaCloud\Tools\Storage;
 
 use  GuzzleHttp\Client ;
 use  ILAB\MediaCloud\Storage\FileInfo ;
+use  ILAB\MediaCloud\Storage\StorageConstants ;
 use  ILAB\MediaCloud\Storage\StorageException ;
 use  ILAB\MediaCloud\Storage\StorageInterface ;
 use  ILAB\MediaCloud\Storage\StorageManager ;
@@ -3171,11 +3172,17 @@ class StorageTool extends Tool
                 
                 if ( $column_name == "cloud" ) {
                     $meta = wp_get_attachment_metadata( $id );
+                    if ( empty($meta) && !isset( $meta['s3'] ) ) {
+                        $meta = get_post_meta( $id, 'ilab_s3_info', true );
+                    }
                     
                     if ( !empty($meta) && isset( $meta['s3'] ) ) {
+                        $privacy = arrayPath( $meta, 's3/privacy', null );
                         $mimeType = ( isset( $meta['s3']['mime-type'] ) ? $meta['s3']['mime-type'] : '' );
                         $cloudIcon = ILAB_PUB_IMG_URL . '/ilab-cloud-icon.svg';
-                        echo  "<a class='media-cloud-info-link' data-post-id='{$id}' data-container='list' data-mime-type='{$mimeType}' href='" . $meta['s3']['url'] . "' target=_blank><img src='{$cloudIcon}' width='24'></a>" ;
+                        $lockIcon = ILAB_PUB_IMG_URL . '/ilab-icon-lock.svg';
+                        $lockImg = ( !empty($privacy) && $privacy === StorageConstants::ACL_PRIVATE_READ ? "<img class='mcloud-lock' src='{$lockIcon}' height='22'>" : '' );
+                        echo  "<a class='media-cloud-info-link' data-post-id='{$id}' data-container='list' data-mime-type='{$mimeType}' href='" . $meta['s3']['url'] . "' target=_blank><img src='{$cloudIcon}' width='24'>{$lockImg}</a>" ;
                     }
                 
                 }
@@ -3183,6 +3190,70 @@ class StorageTool extends Tool
             },
                 10,
                 2
+            );
+            add_filter( 'bulk_actions-upload', function ( $actions ) {
+                
+                if ( $this->client()->canUpdateACL() ) {
+                    $actions['mcloud-make-private'] = "Change Privacy to Private";
+                    $actions['mcloud-make-public'] = "Change Privacy to Public";
+                }
+                
+                return $actions;
+            } );
+            add_filter(
+                'handle_bulk_actions-upload',
+                function ( $redirect_to, $action_name, $post_ids ) {
+                
+                if ( in_array( $action_name, [ 'mcloud-make-private', 'mcloud-make-public' ] ) ) {
+                    $privacy = ( $action_name === 'mcloud-make-private' ? StorageConstants::ACL_PRIVATE_READ : StorageConstants::ACL_PUBLIC_READ );
+                    foreach ( $post_ids as $postId ) {
+                        $attachmentMeta = true;
+                        $updated = false;
+                        $meta = wp_get_attachment_metadata( $postId );
+                        
+                        if ( empty($meta) || !isset( $meta['s3'] ) ) {
+                            $attachmentMeta = false;
+                            $meta = get_post_meta( $postId, 'ilab_s3_info', true );
+                            if ( empty($meta) ) {
+                                continue;
+                            }
+                        }
+                        
+                        $key = arrayPath( $meta, 's3/key', null );
+                        
+                        if ( !empty($key) ) {
+                            $updated = true;
+                            $this->client()->updateACL( $key, $privacy );
+                            $meta['s3']['privacy'] = $privacy;
+                        }
+                        
+                        $sizes = arrayPath( $meta, 'sizes', [] );
+                        foreach ( $sizes as $sizeKey => $sizeData ) {
+                            $key = arrayPath( $sizeData, 's3/key', null );
+                            
+                            if ( !empty($key) ) {
+                                $updated = true;
+                                $this->client()->updateACL( $key, $privacy );
+                                $meta['sizes'][$sizeKey]['s3']['privacy'] = $privacy;
+                            }
+                        
+                        }
+                        if ( $updated ) {
+                            
+                            if ( $attachmentMeta ) {
+                                update_post_meta( $postId, '_wp_attachment_metadata', $meta );
+                            } else {
+                                update_post_meta( $postId, 'ilab_s3_info', $meta );
+                            }
+                        
+                        }
+                    }
+                }
+                
+                return $redirect_to;
+            },
+                1000,
+                3
             );
         } );
         add_action( 'wp_enqueue_media', function () {
@@ -3340,6 +3411,14 @@ class StorageTool extends Tool
         add_action( 'admin_head', function () {
             ?>
             <style>
+                .mcloud-grid-lock {
+                    display: none;
+                    position: absolute;
+                    right: 34px;
+                    bottom: 5px;
+                    z-index: 5;
+                }
+
                 .ilab-s3-logo {
                     display: none;
                     position: absolute;
@@ -3349,6 +3428,10 @@ class StorageTool extends Tool
                 }
 
                 .has-s3 > .ilab-s3-logo {
+                    display: block;
+                }
+
+                .has-s3 > .mcloud-grid-lock {
                     display: block;
                 }
             </style>
@@ -3371,7 +3454,9 @@ class StorageTool extends Tool
             echo  $additionalIcons ;
             ?><img data-post-id="{{data.id}}" data-container="grid" data-mime-type="{{data.type}}" src="<?php 
             echo  ILAB_PUB_IMG_URL . '/ilab-cloud-icon.svg' ;
-            ?>" width="29" height="18" class="ilab-s3-logo">\n';
+            ?>" width="29" height="18" class="ilab-s3-logo"><# if (data.hasOwnProperty("s3") && (data.s3.privacy=="authenticated-read")) {#><img src="<?php 
+            echo  ILAB_PUB_IMG_URL . '/ilab-icon-lock.svg' ;
+            ?>" height="18" class="mcloud-grid-lock"><#}#>\n';
                         txt = txt.replace(search, replace);
                         attachTemplate.text(txt);
                     }
@@ -3387,7 +3472,9 @@ class StorageTool extends Tool
             echo  $additionalIcons ;
             ?><img data-post-id="{{data.id}}" data-container="grid" data-mime-type="{{data.type}}" src="<?php 
             echo  ILAB_PUB_IMG_URL . '/ilab-cloud-icon.svg' ;
-            ?>" width="29" height="18" class="ilab-s3-logo">\n';
+            ?>" width="29" height="18" class="ilab-s3-logo"><# if (data.hasOwnProperty("s3") && (data.s3.privacy=="authenticated-read")) {#><img src="<?php 
+            echo  ILAB_PUB_IMG_URL . '/ilab-icon-lock.svg' ;
+            ?>" height="18" class="mcloud-grid-lock"><#}#>\n';
                         txt = txt.replace(search, replace);
                         attachTemplate.text(txt);
                     }

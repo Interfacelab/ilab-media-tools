@@ -46,7 +46,7 @@ class GoogleStorageSettings extends ToolSettings {
 	 */
 	protected $settingsMap = [
 		'bucket' => ['mcloud-storage-google-bucket', ['ILAB_CLOUD_GOOGLE_BUCKET', 'ILAB_AWS_S3_BUCKET', 'ILAB_CLOUD_BUCKET'], null],
-		'useBucketPolicyOnly' => ['mcloud-storage-bucket-policy-only', false],
+		'useBucketPolicyOnly' => ['mcloud-storage-bucket-policy-only', null, false],
 		'usePresignedURLs' => ['mcloud-storage-use-presigned-urls', null, false],
 		'presignedURLExpiration' => ['mcloud-storage-presigned-expiration', null, 300],
 		'usePresignedURLsForImages' => ['mcloud-storage-use-presigned-urls-images', null, false],

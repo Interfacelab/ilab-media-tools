@@ -39,7 +39,8 @@ return [
 		        "display-order" => 11,
 		        "type" => "select",
 		        "options" => [
-			        'us-east-1' => 'US East',
+			        'us-east-1' => 'US East 1',
+			        'us-east-2' => 'US East 2',
 			        'us-west-1' => 'US West',
 			        'eu-central-1' => 'EU',
 		        ],

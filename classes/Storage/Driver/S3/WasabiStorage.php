@@ -190,7 +190,8 @@ class WasabiStorage extends OtherS3Storage {
 					->passwordField('mcloud-storage-s3-secret', 'Secret', '', null)
 					->textField('mcloud-storage-s3-bucket', 'Bucket', 'The name of bucket you wish to store your media in.', null)
 					->selectField('mcloud-storage-wasabi-region', 'Region', '', null, [
-						'us-east-1' => 'US East',
+						'us-east-1' => 'US East 1',
+						'us-east-2' => 'US East 2',
 						'us-west-1' => 'US West',
 						'eu-central-1' => 'EU'
 					])

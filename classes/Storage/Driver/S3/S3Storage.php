@@ -486,6 +486,25 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 
 	}
 
+	public function updateACL($key, $acl) {
+		try {
+			$result = $this->client->putObjectAcl([
+				'ACL' => $acl,
+				'Bucket' => $this->settings->bucket,
+				'Key' => $key
+			]);
+
+			return $result;
+		} catch (\Exception $ex) {
+			Logger::error("Error changing ACL for '$key' to '$acl'.  Exception: ".$ex->getMessage());
+			return false;
+		}
+	}
+
+	public function canUpdateACL() {
+		return true;
+	}
+
 	public function exists($key) {
 		if(!$this->client) {
 			throw new InvalidStorageSettingsException('Storage settings are invalid');

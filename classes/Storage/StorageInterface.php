@@ -207,13 +207,27 @@ interface StorageInterface {
 	 */
 	public function info($key);
 
-    /**
-     * Insures the ACL is set on the given key.
-     * @param $key
-     * @param $acl
-     * @return mixed
-     */
+	/**
+	 * Insures the ACL is set on the given key.
+	 * @param $key
+	 * @param $acl
+	 * @return mixed
+	 */
 	public function insureACL($key, $acl);
+
+	/**
+	 * Changes the ACL on a given key.
+	 * @param $key
+	 * @param $acl
+	 */
+	public function updateACL($key, $acl);
+
+	/**
+	 * Determines if this driver can update ACLs
+	 *
+	 * @return bool
+	 */
+	public function canUpdateACL();
 
 	/**
 	 * Generates a presigned URL for an item in a bucket.

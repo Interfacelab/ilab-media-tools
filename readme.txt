@@ -5,7 +5,7 @@ Requires at least: 4.4
 Tested up to: 5.3
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 3.3.10
+Stable tag: 3.3.11
 Requires PHP: 5.6.4
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -107,6 +107,15 @@ No, I'm just one very enthusiastic customer.
 
 
 == Changelog ==
+
+= 3.3.11 =
+
+* Added us-east-2 region for Wasabi
+* You can now bulk change the privacy for a selection of files in your media library.  To do this, switch to list view in the media library, select the images you want to change, select *Change Privacy to Public* or *Change Privacy to Private* from the Bulk Actions dropdown and then click *Apply*.
+* Media Library now displays a lock for uploads that are private.
+* For private upload the WordPress admin will use signed URLs to display media, but only in the admin (unless you have use presigned URLs enabled).
+* Fix for font issue in latest LearnDash
+
 
 = 3.3.10 =
 

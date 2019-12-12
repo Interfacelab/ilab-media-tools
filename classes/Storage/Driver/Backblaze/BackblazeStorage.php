@@ -224,6 +224,13 @@ class BackblazeStorage implements StorageInterface, AuthCacheInterface, Configur
 	public function insureACL($key, $acl) {
 	}
 
+	public function updateACL($key, $acl) {
+	}
+
+	public function canUpdateACL() {
+		return false;
+	}
+
 	public function exists($key) {
 		if(!$this->client) {
 			throw new InvalidStorageSettingsException('Storage settings are invalid');
