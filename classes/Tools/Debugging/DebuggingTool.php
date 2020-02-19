@@ -20,6 +20,8 @@ use ILAB\MediaCloud\Utilities\Logging\DatabaseLogTable;
 use ILAB\MediaCloud\Utilities\Logging\Logger;
 use ILAB\MediaCloud\Utilities\NoticeManager;
 use ILAB\MediaCloud\Utilities\View;
+use ParagonIE\EasyRSA\EasyRSA;
+use ParagonIE\EasyRSA\PublicKey;
 use Probe\ProviderFactory;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
@@ -36,7 +38,12 @@ class DebuggingTool extends Tool {
 		if ($this->enabled()) {
             Logger::instance();
 
+
             if (isset($_REQUEST['page']) && ($_REQUEST['page'] == 'media-tools-debug-log') && isset($_POST['action'])) {
+            	if (!current_user_can('manage_options')) {
+            		die;
+	            }
+
                 if ($_POST['action'] == 'csv') {
                     $this->generateCSV();
                 } else if ($_POST['action'] == 'bug') {
@@ -101,13 +108,11 @@ class DebuggingTool extends Tool {
             'PHP' => trim($probe->getPhpVersion()),
             'PHP SAPI' => trim($probe->getPhpSapiName()),
             'PHP Modules' => $probe->getPhpModules(),
-            'PHP Disabled Functions' => $probe->getPhpDisabledFunctions()
+		    'PHP Disabled Functions' => $probe->getPhpDisabledFunctions(),
         ];
 
 	    $active = [];
-
 	    $activePlugins = get_option('active_plugins');
-
 	    $plugins = get_plugins();
 
 	    foreach($activePlugins as $activePlugin) {
@@ -116,14 +121,58 @@ class DebuggingTool extends Tool {
             }
         }
 
-        $probeData['Must Use Plugins'] = get_mu_plugins();
-        $probeData['Plugins'] = $active;
-        $probeData['php.ini'] = ini_get_all(null, false);
+	    $inactivePlugins = [];
+	    foreach($plugins as $pluginSlug => $pluginData) {
+	    	if (!in_array($pluginSlug, $activePlugins)) {
+	    		$inactivePlugins[$pluginSlug] = $pluginData;
+		    }
+	    }
 
-        header('Content-Disposition: attachment;filename="media-cloud-debug.json";');
-        header('Content-Type: application/json; charset=UTF-8');
+	    $probeData['php.ini'] = ini_get_all(null, false);
 
-        echo json_encode($probeData, JSON_PRETTY_PRINT);
+	    $probeData['WordPress Settings'] = [];
+	    $probeData['WordPress Settings']['uploads_use_yearmonth_folders'] = get_option('uploads_use_yearmonth_folders', true);
+	    $probeData['WordPress Settings']['upload_path'] = get_option('upload_path');
+	    $probeData['WordPress Settings']['upload_url_path'] = get_option('upload_url_path');
+
+
+	    $probeData['Globals'] = [];
+	    $probeData['Globals']['UPLOADS'] = defined('UPLOADS') ? constant('UPLOADS') : null;
+	    $probeData['Globals']['DISABLE_WP_CRON'] = defined('DISABLE_WP_CRON') ? constant('DISABLE_WP_CRON') : null;
+
+	    $probeData['Uploads'] = wp_get_upload_dir();
+
+	    $probeData['Media Cloud Settings'] = [];
+	    global $wpdb;
+	    $settingsResults = $wpdb->get_results("select * from {$wpdb->options} where option_name like 'mcloud%'", ARRAY_A);
+	    foreach($settingsResults as $result) {
+		    $optName = $result['option_name'];
+		    $opVal = $result['option_value'];
+		    $probeData['Media Cloud Settings'][$optName] = $opVal;
+	    }
+
+	    $theme = wp_get_theme();
+	    $probeData['theme'] = [
+		    'name' => $theme->display('Name', false),
+		    'author' => $theme->display('Author', false),
+		    'author_uri' => $theme->display('AuthorURI', false),
+		    'version' => $theme->version,
+		    'uri' => $theme->display('ThemeURI', false)
+	    ];
+
+	    $probeData['Must Use Plugins'] = get_mu_plugins();
+	    $probeData['Active Plugins'] = $active;
+	    $probeData['In-Active Plugins'] = $inactivePlugins;
+
+
+        header('Content-Disposition: attachment;filename="media-cloud-debug.txt";');
+        header('Content-Type: text/plain; charset=UTF-8');
+
+        $jsonData = json_encode($probeData, JSON_PRETTY_PRINT);
+	    $pubKey = new PublicKey(file_get_contents(ILAB_TOOLS_DIR.'/keys/public.key'));
+
+	    echo EasyRSA::encrypt($jsonData, $pubKey);
+
         die;
     }
 

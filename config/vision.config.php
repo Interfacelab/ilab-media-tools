@@ -65,7 +65,7 @@ return [
             ],
 			"ilab-vision-options" => [
 				"title" => "Vision Options",
-				"doc_link" => 'https://kb.mediacloud.press/articles/documentation/vision/vision-options',
+				"doc_link" => 'https://support.mediacloud.press/articles/documentation/vision/vision-options',
                 "dynamic" => true,
 				"options" => [
 					"mcloud-vision-detect-faces" => [

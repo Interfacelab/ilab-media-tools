@@ -16,7 +16,7 @@ return [
     "ilab-media-cloud-provider-settings" => [
         "title" => "Provider Settings",
         "dynamic" => true,
-	    "doc_link" => 'https://kb.mediacloud.press/articles/documentation/cloud-storage/setting-up-amazon-s3',
+	    "doc_link" => 'https://support.mediacloud.press/articles/documentation/cloud-storage/setting-up-amazon-s3',
         "options" => [
             "mcloud-storage-s3-access-key" => [
                 "title" => "Access Key",

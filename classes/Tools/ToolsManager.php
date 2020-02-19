@@ -546,18 +546,27 @@ final class ToolsManager
         $this->insertHelpToolSeparator();
         add_submenu_page(
             'media-cloud',
-            'Plugin Support',
-            'Forums',
+            'Documentation',
+            'Documentation',
             'manage_options',
-            'https://talk.mediacloud.press/'
+            'https://support.mediacloud.press/'
         );
         add_submenu_page(
             'media-cloud',
-            'Documentation',
-            'Documentation',
+            'Plugin Support',
+            'Forums',
             'manage_options',
-            'https://kb.mediacloud.press/'
+            'https://forums.mediacloud.press/'
         );
+        if ( media_cloud_licensing()->is_plan( 'pro' ) ) {
+            add_submenu_page(
+                'media-cloud',
+                'Submit Issue',
+                'Submit Issue',
+                'manage_options',
+                'https://support.mediacloud.press/submit-issue/'
+            );
+        }
         foreach ( $this->tools as $key => $tool ) {
             $tool->registerHelpMenu( 'media-cloud', $networkMode, $networkAdminMenu );
         }

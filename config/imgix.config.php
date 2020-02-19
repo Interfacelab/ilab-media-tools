@@ -50,7 +50,7 @@ return [
 		"groups" => [
 			"ilab-media-imgix-settings" => [
 				"title" => "Imgix Settings",
-				"doc_link" => 'https://kb.mediacloud.press/articles/documentation/imgix/imgix-settings',
+				"doc_link" => 'https://support.mediacloud.press/articles/documentation/imgix/imgix-settings',
 				"description" => "Required settings for getting the Imgix integration working.",
 				"options" => [
 					"mcloud-imgix-domains" => [
@@ -73,7 +73,7 @@ return [
 			],
 			"ilab-media-imgix-image-settings" => [
 				"title" => "Imgix Image Settings",
-				"doc_link" => 'https://kb.mediacloud.press/articles/documentation/imgix/imgix-image-settings',
+				"doc_link" => 'https://support.mediacloud.press/articles/documentation/imgix/imgix-image-settings',
 				"options" => [
 					"mcloud-imgix-default-quality" => [
 						"title" => "Lossy Image Quality",

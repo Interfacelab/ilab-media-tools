@@ -43,7 +43,8 @@
     "symfony/finder": "3.4.29",
     "tecnickcom/tcpdf": "6.2.26",
     "trntv/probe": "1.0.1",
-    "zumba/amplitude-php": "1.0.1"
+    "zumba/amplitude-php": "1.0.1",
+    "paragonie/easyrsa": "^0.5.2"
   },
   "autoload": {
     "psr-4": {

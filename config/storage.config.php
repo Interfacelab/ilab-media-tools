@@ -53,7 +53,7 @@ return [
 			'help' => [
 				[ 'title' => 'Setup Wizard', 'wizard' => 's3' ],
 				[ 'title' => 'Watch Tutorial', 'video_url' => 'https://www.youtube.com/watch?v=kjFCACrPRtU' ],
-				[ 'title' => 'Read Documentation', 'url' => 'https://kb.mediacloud.press/articles/documentation/cloud-storage/setting-up-amazon-s3' ],
+				[ 'title' => 'Read Documentation', 'url' => 'https://support.mediacloud.press/articles/documentation/cloud-storage/setting-up-amazon-s3' ],
 			]
 		],
 		'google' => [
@@ -62,7 +62,7 @@ return [
 			'config' => '/storage/google.config.php',
 			'help' => [
 				[ 'title' => 'Setup Wizard', 'wizard' => 'google' ],
-				[ 'title' => 'Read Documentation', 'url' => 'https://kb.mediacloud.press/articles/documentation/cloud-storage/setting-up-google-cloud-storage' ],
+				[ 'title' => 'Read Documentation', 'url' => 'https://support.mediacloud.press/articles/documentation/cloud-storage/setting-up-google-cloud-storage' ],
 			]
 		],
 		'do' => [
@@ -71,7 +71,7 @@ return [
 			'config' => '/storage/do.config.php',
 			'help' => [
 				[ 'title' => 'Setup Wizard', 'wizard' => 'do' ],
-				[ 'title' => 'Read Documentation', 'url' => 'https://kb.mediacloud.press/articles/documentation/cloud-storage/setting-up-digitalocean-spaces' ],
+				[ 'title' => 'Read Documentation', 'url' => 'https://support.mediacloud.press/articles/documentation/cloud-storage/setting-up-digitalocean-spaces' ],
 			]
 		],
 		'minio' => [
@@ -88,7 +88,7 @@ return [
 			'config' => '/storage/wasabi.config.php',
 			'help' => [
 				[ 'title' => 'Setup Wizard', 'wizard' => 'wasabi' ],
-				[ 'title' => 'Read Documentation', 'url' => 'https://kb.mediacloud.press/articles/documentation/cloud-storage/setting-up-wasabi' ],
+				[ 'title' => 'Read Documentation', 'url' => 'https://support.mediacloud.press/articles/documentation/cloud-storage/setting-up-wasabi' ],
 			]
 		],
 		'other-s3' => [
@@ -105,7 +105,7 @@ return [
 			'config' => '/storage/backblaze.config.php',
 			'help' => [
 				[ 'title' => 'Setup Wizard', 'wizard' => 'backblaze' ],
-				[ 'title' => 'Read Documentation', 'url' => 'https://kb.mediacloud.press/articles/documentation/cloud-storage/setting-up-backblaze' ],
+				[ 'title' => 'Read Documentation', 'url' => 'https://support.mediacloud.press/articles/documentation/cloud-storage/setting-up-backblaze' ],
 			]
 		],
 	],
@@ -139,7 +139,7 @@ return [
 			"ilab-media-cloud-upload-handling" => [
 				"title" => "Upload Handling",
                 "dynamic" => true,
-				"doc_link" => 'https://kb.mediacloud.press/articles/documentation/cloud-storage/upload-handling-settings',
+				"doc_link" => 'https://support.mediacloud.press/articles/documentation/cloud-storage/upload-handling-settings',
 				"description" => "The following options control how the storage tool handles uploads.",
                 "options" => [
 	                "mcloud-storage-prefix" => [
@@ -239,14 +239,14 @@ return [
 			"ilab-media-cloud-signed-urls" => [
 				"title" => "Secure URL Settings",
 				"description" => "These settings control how pre-signed URLs work.",
-				"doc_link" => 'https://kb.mediacloud.press/articles/documentation/cloud-storage/pre-signed-url-settings/',
+				"doc_link" => 'https://support.mediacloud.press/articles/documentation/cloud-storage/pre-signed-url-settings/',
 				"dynamic" => true,
 				"options" => [],
 			],
             "ilab-media-cloud-cdn-settings" => [
                 "title" => "CDN Settings",
 	            "dynamic" => true,
-	            "doc_link" => 'https://kb.mediacloud.press/articles/documentation/cloud-storage/cdn-settings',
+	            "doc_link" => 'https://support.mediacloud.press/articles/documentation/cloud-storage/cdn-settings',
                 "description" => "If you are using CloudFront, Fastly or another CDN, enter the CDN domain here.  If you are using Imgix, the <b>CDN Base URL</b> setting is ignored, but the <b>Document CDN Base URL</b> is not.  If both are left blank, Media Tools will use the cloud storage URLs.",
                 "options" => [
                     "mcloud-storage-cdn-base" => [
@@ -275,7 +275,7 @@ return [
 			],
 			"ilab-media-cloud-display-settings" => [
 				"title" => "Display Settings",
-				"doc_link" => 'https://kb.mediacloud.press/articles/documentation/cloud-storage/media-library-integration',
+				"doc_link" => 'https://support.mediacloud.press/articles/documentation/cloud-storage/media-library-integration',
 				"description" => "",
 				"options" => [
 					"mcloud-storage-display-badge" => [
