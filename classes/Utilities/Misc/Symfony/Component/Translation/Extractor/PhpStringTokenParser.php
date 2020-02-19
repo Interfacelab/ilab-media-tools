@@ -82,7 +82,7 @@ class PhpStringTokenParser
         }
         return \preg_replace_callback('~\\\\([\\\\$nrtfve]|[xX][0-9a-fA-F]{1,2}|[0-7]{1,3})~', [__CLASS__, 'parseCallback'], $str);
     }
-    private static function parseCallback(array $matches) : string
+    private static function parseCallback($matches)
     {
         $str = $matches[1];
         if (isset(self::$replacements[$str])) {

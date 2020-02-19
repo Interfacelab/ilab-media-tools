@@ -5,7 +5,7 @@ Requires at least: 4.4
 Tested up to: 5.3
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 3.3.11
+Stable tag: 3.3.12
 Requires PHP: 5.6.4
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -107,6 +107,15 @@ No, I'm just one very enthusiastic customer.
 
 
 == Changelog ==
+
+= 3.3.12 =
+
+* Fix for non-image uploads when you have the WordPress setting "" turned off but no upload path set in Cloud Storage Settings.  If you were having problems with videos, PDF's, etc. this should fix it.
+* Performance fix for sites with huge post tables that were seeing slow page performance.
+* Fix for IPTC parsing that contains binary data
+* Fix for a library conflict
+* Warning that the built-in Dynamic Images functionality will be deprecated in the next major version
+* Warning about library incompatibility with TranslatePress
 
 = 3.3.11 =
 

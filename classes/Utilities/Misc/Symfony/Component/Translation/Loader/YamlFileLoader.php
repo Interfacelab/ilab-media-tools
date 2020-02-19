@@ -14,7 +14,6 @@ use ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\Exception\Inval
 use ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\Exception\LogicException;
 use ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Yaml\Exception\ParseException;
 use ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Yaml\Parser as YamlParser;
-use ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Yaml\Yaml;
 /**
  * YamlFileLoader loads translations from Yaml files.
  *
@@ -34,10 +33,16 @@ class YamlFileLoader extends \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\T
             }
             $this->yamlParser = new \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Yaml\Parser();
         }
+        $prevErrorHandler = \set_error_handler(function ($level, $message, $script, $line) use($resource, &$prevErrorHandler) {
+            $message = \E_USER_DEPRECATED === $level ? \preg_replace('/ on line \\d+/', ' in "' . $resource . '"$0', $message) : $message;
+            return $prevErrorHandler ? $prevErrorHandler($level, $message, $script, $line) : \false;
+        });
         try {
-            $messages = $this->yamlParser->parseFile($resource, \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Yaml\Yaml::PARSE_CONSTANT);
+            $messages = $this->yamlParser->parseFile($resource);
         } catch (\ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Yaml\Exception\ParseException $e) {
             throw new \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\Exception\InvalidResourceException(\sprintf('Error parsing YAML, invalid file "%s"', $resource), 0, $e);
+        } finally {
+            \restore_error_handler();
         }
         if (null !== $messages && !\is_array($messages)) {
             throw new \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\Exception\InvalidResourceException(\sprintf('Unable to load file "%s".', $resource));

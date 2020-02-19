@@ -27,11 +27,8 @@ class MessageCatalogue implements \ILAB\MediaCloud\Utilities\Misc\Symfony\Compon
      * @param string $locale   The locale
      * @param array  $messages An array of messages classified by domain
      */
-    public function __construct(?string $locale, array $messages = [])
+    public function __construct($locale, array $messages = [])
     {
-        if (null === $locale) {
-            @\trigger_error(\sprintf('Passing "null" to the first argument of the "%s" method has been deprecated since Symfony 4.4 and will throw an error in 5.0.', __METHOD__), \E_USER_DEPRECATED);
-        }
         $this->locale = $locale;
         $this->messages = $messages;
     }
@@ -47,35 +44,17 @@ class MessageCatalogue implements \ILAB\MediaCloud\Utilities\Misc\Symfony\Compon
      */
     public function getDomains()
     {
-        $domains = [];
-        $suffixLength = \strlen(self::INTL_DOMAIN_SUFFIX);
-        foreach ($this->messages as $domain => $messages) {
-            if (\strlen($domain) > $suffixLength && \false !== ($i = \strpos($domain, self::INTL_DOMAIN_SUFFIX, -$suffixLength))) {
-                $domain = \substr($domain, 0, $i);
-            }
-            $domains[$domain] = $domain;
-        }
-        return \array_values($domains);
+        return \array_keys($this->messages);
     }
     /**
      * {@inheritdoc}
      */
     public function all($domain = null)
     {
-        if (null !== $domain) {
-            return ($this->messages[$domain . self::INTL_DOMAIN_SUFFIX] ?? []) + ($this->messages[$domain] ?? []);
+        if (null === $domain) {
+            return $this->messages;
         }
-        $allMessages = [];
-        $suffixLength = \strlen(self::INTL_DOMAIN_SUFFIX);
-        foreach ($this->messages as $domain => $messages) {
-            if (\strlen($domain) > $suffixLength && \false !== ($i = \strpos($domain, self::INTL_DOMAIN_SUFFIX, -$suffixLength))) {
-                $domain = \substr($domain, 0, $i);
-                $allMessages[$domain] = $messages + ($allMessages[$domain] ?? []);
-            } else {
-                $allMessages[$domain] = ($allMessages[$domain] ?? []) + $messages;
-            }
-        }
-        return $allMessages;
+        return isset($this->messages[$domain]) ? $this->messages[$domain] : [];
     }
     /**
      * {@inheritdoc}
@@ -89,7 +68,7 @@ class MessageCatalogue implements \ILAB\MediaCloud\Utilities\Misc\Symfony\Compon
      */
     public function has($id, $domain = 'messages')
     {
-        if (isset($this->messages[$domain][$id]) || isset($this->messages[$domain . self::INTL_DOMAIN_SUFFIX][$id])) {
+        if (isset($this->messages[$domain][$id])) {
             return \true;
         }
         if (null !== $this->fallbackCatalogue) {
@@ -102,16 +81,13 @@ class MessageCatalogue implements \ILAB\MediaCloud\Utilities\Misc\Symfony\Compon
      */
     public function defines($id, $domain = 'messages')
     {
-        return isset($this->messages[$domain][$id]) || isset($this->messages[$domain . self::INTL_DOMAIN_SUFFIX][$id]);
+        return isset($this->messages[$domain][$id]);
     }
     /**
      * {@inheritdoc}
      */
     public function get($id, $domain = 'messages')
     {
-        if (isset($this->messages[$domain . self::INTL_DOMAIN_SUFFIX][$id])) {
-            return $this->messages[$domain . self::INTL_DOMAIN_SUFFIX][$id];
-        }
         if (isset($this->messages[$domain][$id])) {
             return $this->messages[$domain][$id];
         }
@@ -125,7 +101,7 @@ class MessageCatalogue implements \ILAB\MediaCloud\Utilities\Misc\Symfony\Compon
      */
     public function replace($messages, $domain = 'messages')
     {
-        unset($this->messages[$domain], $this->messages[$domain . self::INTL_DOMAIN_SUFFIX]);
+        $this->messages[$domain] = [];
         $this->add($messages, $domain);
     }
     /**
@@ -148,10 +124,6 @@ class MessageCatalogue implements \ILAB\MediaCloud\Utilities\Misc\Symfony\Compon
             throw new \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\Exception\LogicException(\sprintf('Cannot add a catalogue for locale "%s" as the current locale for this catalogue is "%s"', $catalogue->getLocale(), $this->locale));
         }
         foreach ($catalogue->all() as $domain => $messages) {
-            if ($intlMessages = $catalogue->all($domain . self::INTL_DOMAIN_SUFFIX)) {
-                $this->add($intlMessages, $domain . self::INTL_DOMAIN_SUFFIX);
-                $messages = \array_diff_key($messages, $intlMessages);
-            }
             $this->add($messages, $domain);
         }
         foreach ($catalogue->getResources() as $resource) {

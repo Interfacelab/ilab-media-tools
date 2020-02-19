@@ -17,8 +17,6 @@ use ILAB\MediaCloud\Utilities\Misc\Symfony\Component\HttpKernel\DataCollector\La
 use ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\DataCollectorTranslator;
 /**
  * @author Abdellatif Ait boudad <a.aitboudad@gmail.com>
- *
- * @final since Symfony 4.4
  */
 class TranslationDataCollector extends \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\HttpKernel\DataCollector\DataCollector implements \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\HttpKernel\DataCollector\LateDataCollectorInterface
 {
@@ -33,19 +31,17 @@ class TranslationDataCollector extends \ILAB\MediaCloud\Utilities\Misc\Symfony\C
     public function lateCollect()
     {
         $messages = $this->sanitizeCollectedMessages($this->translator->getCollectedMessages());
-        $this->data += $this->computeCount($messages);
+        $this->data = $this->computeCount($messages);
         $this->data['messages'] = $messages;
+        $this->data['locale'] = $this->translator->getLocale();
+        $this->data['fallback_locales'] = $this->translator->getFallbackLocales();
         $this->data = $this->cloneVar($this->data);
     }
     /**
      * {@inheritdoc}
-     *
-     * @param \Throwable|null $exception
      */
-    public function collect(\ILAB\MediaCloud\Utilities\Misc\Symfony\Component\HttpFoundation\Request $request, \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\HttpFoundation\Response $response)
+    public function collect(\ILAB\MediaCloud\Utilities\Misc\Symfony\Component\HttpFoundation\Request $request, \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\HttpFoundation\Response $response, \Exception $exception = null)
     {
-        $this->data['locale'] = $this->translator->getLocale();
-        $this->data['fallback_locales'] = $this->translator->getFallbackLocales();
     }
     /**
      * {@inheritdoc}
@@ -86,9 +82,6 @@ class TranslationDataCollector extends \ILAB\MediaCloud\Utilities\Misc\Symfony\C
     {
         return !empty($this->data['locale']) ? $this->data['locale'] : null;
     }
-    /**
-     * @internal since Symfony 4.2
-     */
     public function getFallbackLocales()
     {
         return isset($this->data['fallback_locales']) && \count($this->data['fallback_locales']) > 0 ? $this->data['fallback_locales'] : [];
@@ -100,7 +93,7 @@ class TranslationDataCollector extends \ILAB\MediaCloud\Utilities\Misc\Symfony\C
     {
         return 'translation';
     }
-    private function sanitizeCollectedMessages(array $messages)
+    private function sanitizeCollectedMessages($messages)
     {
         $result = [];
         foreach ($messages as $key => $message) {
@@ -120,7 +113,7 @@ class TranslationDataCollector extends \ILAB\MediaCloud\Utilities\Misc\Symfony\C
         }
         return $result;
     }
-    private function computeCount(array $messages)
+    private function computeCount($messages)
     {
         $count = [\ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\DataCollectorTranslator::MESSAGE_DEFINED => 0, \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\DataCollectorTranslator::MESSAGE_MISSING => 0, \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\DataCollectorTranslator::MESSAGE_EQUALS_FALLBACK => 0];
         foreach ($messages as $message) {
@@ -128,7 +121,7 @@ class TranslationDataCollector extends \ILAB\MediaCloud\Utilities\Misc\Symfony\C
         }
         return $count;
     }
-    private function sanitizeString(string $string, int $length = 80)
+    private function sanitizeString($string, $length = 80)
     {
         $string = \trim(\preg_replace('/\\s+/', ' ', $string));
         if (\false !== ($encoding = \mb_detect_encoding($string, null, \true))) {

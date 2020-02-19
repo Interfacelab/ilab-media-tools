@@ -21,7 +21,7 @@ class TranslationExtractorPass implements \ILAB\MediaCloud\Utilities\Misc\Symfon
 {
     private $extractorServiceId;
     private $extractorTag;
-    public function __construct(string $extractorServiceId = 'translation.extractor', string $extractorTag = 'translation.extractor')
+    public function __construct($extractorServiceId = 'translation.extractor', $extractorTag = 'translation.extractor')
     {
         $this->extractorServiceId = $extractorServiceId;
         $this->extractorTag = $extractorTag;

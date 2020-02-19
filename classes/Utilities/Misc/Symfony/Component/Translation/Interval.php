@@ -10,7 +10,6 @@
  */
 namespace ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation;
 
-@\trigger_error(\sprintf('The "%s" class is deprecated since Symfony 4.2, use IdentityTranslator instead.', \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\Interval::class), \E_USER_DEPRECATED);
 use ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\Exception\InvalidArgumentException;
 /**
  * Tests if a given number belongs to a given math interval.
@@ -31,7 +30,6 @@ use ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\Exception\Inval
  * @author Fabien Potencier <fabien@symfony.com>
  *
  * @see    http://en.wikipedia.org/wiki/Interval_%28mathematics%29#The_ISO_notation
- * @deprecated since Symfony 4.2, use IdentityTranslator instead
  */
 class Interval
 {
@@ -87,7 +85,7 @@ class Interval
         (?P<right_delimiter>[\\[\\]])
 EOF;
     }
-    private static function convertNumber(string $number) : float
+    private static function convertNumber($number)
     {
         if ('-Inf' === $number) {
             return \log(0);

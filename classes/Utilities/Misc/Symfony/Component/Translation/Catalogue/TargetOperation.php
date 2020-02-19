@@ -10,7 +10,6 @@
  */
 namespace ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\Catalogue;
 
-use ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\MessageCatalogueInterface;
 /**
  * Target operation between two catalogues:
  * intersection = source ∩ target = {x: x ∈ source ∧ x ∈ target}
@@ -29,7 +28,6 @@ class TargetOperation extends \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\
     protected function processDomain($domain)
     {
         $this->messages[$domain] = ['all' => [], 'new' => [], 'obsolete' => []];
-        $intlDomain = $domain . \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\MessageCatalogueInterface::INTL_DOMAIN_SUFFIX;
         // For 'all' messages, the code can't be simplified as ``$this->messages[$domain]['all'] = $target->all($domain);``,
         // because doing so will drop messages like {x: x ∈ source ∧ x ∉ target.all ∧ x ∈ target.fallback}
         //
@@ -41,7 +39,7 @@ class TargetOperation extends \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\
         foreach ($this->source->all($domain) as $id => $message) {
             if ($this->target->has($id, $domain)) {
                 $this->messages[$domain]['all'][$id] = $message;
-                $this->result->add([$id => $message], $this->target->defines($id, $intlDomain) ? $intlDomain : $domain);
+                $this->result->add([$id => $message], $domain);
                 if (null !== ($keyMetadata = $this->source->getMetadata($id, $domain))) {
                     $this->result->setMetadata($id, $keyMetadata, $domain);
                 }
@@ -53,7 +51,7 @@ class TargetOperation extends \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\
             if (!$this->source->has($id, $domain)) {
                 $this->messages[$domain]['all'][$id] = $message;
                 $this->messages[$domain]['new'][$id] = $message;
-                $this->result->add([$id => $message], $this->target->defines($id, $intlDomain) ? $intlDomain : $domain);
+                $this->result->add([$id => $message], $domain);
                 if (null !== ($keyMetadata = $this->target->getMetadata($id, $domain))) {
                     $this->result->setMetadata($id, $keyMetadata, $domain);
                 }

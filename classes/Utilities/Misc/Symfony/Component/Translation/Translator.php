@@ -18,16 +18,13 @@ use ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\Exception\Logic
 use ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\Exception\NotFoundResourceException;
 use ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\Exception\RuntimeException;
 use ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\Formatter\ChoiceMessageFormatterInterface;
-use ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\Formatter\IntlFormatterInterface;
 use ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\Formatter\MessageFormatter;
 use ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\Formatter\MessageFormatterInterface;
 use ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\Loader\LoaderInterface;
-use ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\TranslatorInterface as LegacyTranslatorInterface;
-use ILAB\MediaCloud\Utilities\Misc\Symfony\Contracts\Translation\TranslatorInterface;
 /**
  * @author Fabien Potencier <fabien@symfony.com>
  */
-class Translator implements \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\TranslatorInterface, \ILAB\MediaCloud\Utilities\Misc\Symfony\Contracts\Translation\TranslatorInterface, \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\TranslatorBagInterface
+class Translator implements \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\TranslatorInterface, \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\TranslatorBagInterface
 {
     /**
      * @var MessageCatalogueInterface[]
@@ -61,33 +58,30 @@ class Translator implements \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Tr
      * @var bool
      */
     private $debug;
-    private $cacheVary;
     /**
      * @var ConfigCacheFactoryInterface|null
      */
     private $configCacheFactory;
     /**
-     * @var array|null
-     */
-    private $parentLocales;
-    private $hasIntlFormatter;
-    /**
+     * @param string                         $locale    The locale
+     * @param MessageFormatterInterface|null $formatter The message formatter
+     * @param string|null                    $cacheDir  The directory to use for the cache
+     * @param bool                           $debug     Use cache in debug mode ?
+     *
      * @throws InvalidArgumentException If a locale contains invalid characters
      */
-    public function __construct(?string $locale, \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\Formatter\MessageFormatterInterface $formatter = null, string $cacheDir = null, bool $debug = \false, array $cacheVary = [])
+    public function __construct($locale, $formatter = null, $cacheDir = null, $debug = \false)
     {
-        if (null === $locale) {
-            @\trigger_error(\sprintf('Passing "null" as the $locale argument to %s() is deprecated since Symfony 4.4.', __METHOD__), \E_USER_DEPRECATED);
-        }
-        $this->setLocale($locale, \false);
-        if (null === $formatter) {
+        $this->setLocale($locale);
+        if ($formatter instanceof \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\MessageSelector) {
+            $formatter = new \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\Formatter\MessageFormatter($formatter);
+            @\trigger_error(\sprintf('Passing a "%s" instance into the "%s()" method as a second argument is deprecated since Symfony 3.4 and will be removed in 4.0. Inject a "%s" implementation instead.', \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\MessageSelector::class, __METHOD__, \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\Formatter\MessageFormatterInterface::class), \E_USER_DEPRECATED);
+        } elseif (null === $formatter) {
             $formatter = new \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\Formatter\MessageFormatter();
         }
         $this->formatter = $formatter;
         $this->cacheDir = $cacheDir;
         $this->debug = $debug;
-        $this->cacheVary = $cacheVary;
-        $this->hasIntlFormatter = $formatter instanceof \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\Formatter\IntlFormatterInterface;
     }
     public function setConfigCacheFactory(\ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Config\ConfigCacheFactoryInterface $configCacheFactory)
     {
@@ -96,7 +90,8 @@ class Translator implements \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Tr
     /**
      * Adds a Loader.
      *
-     * @param string $format The name of the loader (@see addResource())
+     * @param string          $format The name of the loader (@see addResource())
+     * @param LoaderInterface $loader A LoaderInterface instance
      */
     public function addLoader($format, \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\Loader\LoaderInterface $loader)
     {
@@ -117,9 +112,6 @@ class Translator implements \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Tr
         if (null === $domain) {
             $domain = 'messages';
         }
-        if (null === $locale) {
-            @\trigger_error(\sprintf('Passing "null" to the third argument of the "%s" method has been deprecated since Symfony 4.4 and will throw an error in 5.0.', __METHOD__), \E_USER_DEPRECATED);
-        }
         $this->assertValidLocale($locale);
         $this->resources[$locale][] = [$format, $resource, $domain];
         if (\in_array($locale, $this->fallbackLocales)) {
@@ -133,9 +125,6 @@ class Translator implements \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Tr
      */
     public function setLocale($locale)
     {
-        if (null === $locale && (2 > \func_num_args() || \func_get_arg(1))) {
-            @\trigger_error(\sprintf('Passing "null" as the $locale argument to %s() is deprecated since Symfony 4.4.', __METHOD__), \E_USER_DEPRECATED);
-        }
         $this->assertValidLocale($locale);
         $this->locale = $locale;
     }
@@ -158,17 +147,12 @@ class Translator implements \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Tr
         // needed as the fallback locales are linked to the already loaded catalogues
         $this->catalogues = [];
         foreach ($locales as $locale) {
-            if (null === $locale) {
-                @\trigger_error(\sprintf('Passing "null" as the $locale argument to %s() is deprecated since Symfony 4.4.', __METHOD__), \E_USER_DEPRECATED);
-            }
             $this->assertValidLocale($locale);
         }
-        $this->fallbackLocales = $this->cacheVary['fallback_locales'] = $locales;
+        $this->fallbackLocales = $locales;
     }
     /**
      * Gets the fallback locales.
-     *
-     * @internal since Symfony 4.2
      *
      * @return array The fallback locales
      */
@@ -181,44 +165,23 @@ class Translator implements \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Tr
      */
     public function trans($id, array $parameters = [], $domain = null, $locale = null)
     {
-        if ('' === ($id = (string) $id)) {
-            return '';
-        }
         if (null === $domain) {
             $domain = 'messages';
         }
-        $catalogue = $this->getCatalogue($locale);
-        $locale = $catalogue->getLocale();
-        while (!$catalogue->defines($id, $domain)) {
-            if ($cat = $catalogue->getFallbackCatalogue()) {
-                $catalogue = $cat;
-                $locale = $catalogue->getLocale();
-            } else {
-                break;
-            }
-        }
-        if ($this->hasIntlFormatter && $catalogue->defines($id, $domain . \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\MessageCatalogue::INTL_DOMAIN_SUFFIX)) {
-            return $this->formatter->formatIntl($catalogue->get($id, $domain), $locale, $parameters);
-        }
-        return $this->formatter->format($catalogue->get($id, $domain), $locale, $parameters);
+        return $this->formatter->format($this->getCatalogue($locale)->get((string) $id, $domain), $locale, $parameters);
     }
     /**
      * {@inheritdoc}
-     *
-     * @deprecated since Symfony 4.2, use the trans() method instead with a %count% parameter
      */
     public function transChoice($id, $number, array $parameters = [], $domain = null, $locale = null)
     {
-        @\trigger_error(\sprintf('The "%s()" method is deprecated since Symfony 4.2, use the trans() one instead with a "%%count%%" parameter.', __METHOD__), \E_USER_DEPRECATED);
-        if ('' === ($id = (string) $id)) {
-            return '';
-        }
         if (!$this->formatter instanceof \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\Formatter\ChoiceMessageFormatterInterface) {
             throw new \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\Exception\LogicException(\sprintf('The formatter "%s" does not support plural translations.', \get_class($this->formatter)));
         }
         if (null === $domain) {
             $domain = 'messages';
         }
+        $id = (string) $id;
         $catalogue = $this->getCatalogue($locale);
         $locale = $catalogue->getLocale();
         while (!$catalogue->defines($id, $domain)) {
@@ -228,9 +191,6 @@ class Translator implements \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Tr
             } else {
                 break;
             }
-        }
-        if ($this->hasIntlFormatter && $catalogue->defines($id, $domain . \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\MessageCatalogue::INTL_DOMAIN_SUFFIX)) {
-            return $this->formatter->formatIntl($catalogue->get($id, $domain), $locale, ['%count%' => $number] + $parameters);
         }
         return $this->formatter->choiceFormat($catalogue->get($id, $domain), $number, $locale, $parameters);
     }
@@ -284,7 +244,10 @@ class Translator implements \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Tr
         }
         $this->loadFallbackCatalogues($locale);
     }
-    private function initializeCacheCatalogue(string $locale) : void
+    /**
+     * @param string $locale
+     */
+    private function initializeCacheCatalogue($locale)
     {
         if (isset($this->catalogues[$locale])) {
             /* Catalogue already initialized. */
@@ -301,7 +264,7 @@ class Translator implements \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Tr
         /* Read catalogue from cache. */
         $this->catalogues[$locale] = (include $cache->getPath());
     }
-    private function dumpCatalogue(string $locale, \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Config\ConfigCacheInterface $cache) : void
+    private function dumpCatalogue($locale, \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Config\ConfigCacheInterface $cache)
     {
         $this->initializeCatalogue($locale);
         $fallbackContent = $this->getFallbackContent($this->catalogues[$locale]);
@@ -316,10 +279,10 @@ use Symfony\\Component\\Translation\\MessageCatalogue;
 return \$catalogue;
 
 EOF
-, $locale, \var_export($this->getAllMessages($this->catalogues[$locale]), \true), $fallbackContent);
+, $locale, \var_export($this->catalogues[$locale]->all(), \true), $fallbackContent);
         $cache->write($content, $this->catalogues[$locale]->getResources());
     }
-    private function getFallbackContent(\ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\MessageCatalogue $catalogue) : string
+    private function getFallbackContent(\ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\MessageCatalogue $catalogue)
     {
         $fallbackContent = '';
         $current = '';
@@ -334,20 +297,17 @@ $catalogue%s = new MessageCatalogue('%s', %s);
 $catalogue%s->addFallbackCatalogue($catalogue%s);
 
 EOF
-, $fallbackSuffix, $fallback, \var_export($this->getAllMessages($fallbackCatalogue), \true), $currentSuffix, $fallbackSuffix);
+, $fallbackSuffix, $fallback, \var_export($fallbackCatalogue->all(), \true), $currentSuffix, $fallbackSuffix);
             $current = $fallbackCatalogue->getLocale();
             $fallbackCatalogue = $fallbackCatalogue->getFallbackCatalogue();
         }
         return $fallbackContent;
     }
-    private function getCatalogueCachePath(string $locale) : string
+    private function getCatalogueCachePath($locale)
     {
-        return $this->cacheDir . '/catalogue.' . $locale . '.' . \strtr(\substr(\base64_encode(\hash('sha256', \serialize($this->cacheVary), \true)), 0, 7), '/', '_') . '.php';
+        return $this->cacheDir . '/catalogue.' . $locale . '.' . \strtr(\substr(\base64_encode(\hash('sha256', \serialize($this->fallbackLocales), \true)), 0, 7), '/', '_') . '.php';
     }
-    /**
-     * @internal
-     */
-    protected function doLoadCatalogue(string $locale) : void
+    private function doLoadCatalogue($locale)
     {
         $this->catalogues[$locale] = new \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\MessageCatalogue($locale);
         if (isset($this->resources[$locale])) {
@@ -359,14 +319,14 @@ EOF
             }
         }
     }
-    private function loadFallbackCatalogues(string $locale) : void
+    private function loadFallbackCatalogues($locale)
     {
         $current = $this->catalogues[$locale];
         foreach ($this->computeFallbackLocales($locale) as $fallback) {
             if (!isset($this->catalogues[$fallback])) {
                 $this->initializeCatalogue($fallback);
             }
-            $fallbackCatalogue = new \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\MessageCatalogue($fallback, $this->getAllMessages($this->catalogues[$fallback]));
+            $fallbackCatalogue = new \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\MessageCatalogue($fallback, $this->catalogues[$fallback]->all());
             foreach ($this->catalogues[$fallback]->getResources() as $resource) {
                 $fallbackCatalogue->addResource($resource);
             }
@@ -376,9 +336,6 @@ EOF
     }
     protected function computeFallbackLocales($locale)
     {
-        if (null === $this->parentLocales) {
-            $parentLocales = \json_decode(\file_get_contents(__DIR__ . '/Resources/data/parents.json'), \true);
-        }
         $locales = [];
         foreach ($this->fallbackLocales as $fallback) {
             if ($fallback === $locale) {
@@ -386,18 +343,8 @@ EOF
             }
             $locales[] = $fallback;
         }
-        while ($locale) {
-            $parent = $parentLocales[$locale] ?? null;
-            if (!$parent && \false !== \strrchr($locale, '_')) {
-                $locale = \substr($locale, 0, -\strlen(\strrchr($locale, '_')));
-            } elseif ('root' !== $parent) {
-                $locale = $parent;
-            } else {
-                $locale = null;
-            }
-            if (null !== $locale) {
-                \array_unshift($locales, $locale);
-            }
+        if (\false !== \strrchr($locale, '_')) {
+            \array_unshift($locales, \substr($locale, 0, -\strlen(\strrchr($locale, '_'))));
         }
         return \array_unique($locales);
     }
@@ -417,26 +364,14 @@ EOF
     /**
      * Provides the ConfigCache factory implementation, falling back to a
      * default implementation if necessary.
+     *
+     * @return ConfigCacheFactoryInterface $configCacheFactory
      */
-    private function getConfigCacheFactory() : \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Config\ConfigCacheFactoryInterface
+    private function getConfigCacheFactory()
     {
         if (!$this->configCacheFactory) {
             $this->configCacheFactory = new \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Config\ConfigCacheFactory($this->debug);
         }
         return $this->configCacheFactory;
-    }
-    private function getAllMessages(\ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\MessageCatalogueInterface $catalogue) : array
-    {
-        $allMessages = [];
-        foreach ($catalogue->all() as $domain => $messages) {
-            if ($intlMessages = $catalogue->all($domain . \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\MessageCatalogue::INTL_DOMAIN_SUFFIX)) {
-                $allMessages[$domain . \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\MessageCatalogue::INTL_DOMAIN_SUFFIX] = $intlMessages;
-                $messages = \array_diff_key($messages, $intlMessages);
-            }
-            if ($messages) {
-                $allMessages[$domain] = $messages;
-            }
-        }
-        return $allMessages;
     }
 }

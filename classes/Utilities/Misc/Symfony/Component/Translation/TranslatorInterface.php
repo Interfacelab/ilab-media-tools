@@ -11,15 +11,12 @@
 namespace ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation;
 
 use ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\Exception\InvalidArgumentException;
-use ILAB\MediaCloud\Utilities\Misc\Symfony\Contracts\Translation\LocaleAwareInterface;
 /**
  * TranslatorInterface.
  *
  * @author Fabien Potencier <fabien@symfony.com>
- *
- * @deprecated since Symfony 4.2, use Symfony\Contracts\Translation\TranslatorInterface instead
  */
-interface TranslatorInterface extends \ILAB\MediaCloud\Utilities\Misc\Symfony\Contracts\Translation\LocaleAwareInterface
+interface TranslatorInterface
 {
     /**
      * Translates the given message.
@@ -55,7 +52,7 @@ interface TranslatorInterface extends \ILAB\MediaCloud\Utilities\Misc\Symfony\Co
      *
      * @throws InvalidArgumentException If the locale contains invalid characters
      */
-    public function setLocale(string $locale);
+    public function setLocale($locale);
     /**
      * Returns the current locale.
      *

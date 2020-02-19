@@ -18,7 +18,6 @@ use ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Config\Resource\ResourceInt
  */
 interface MessageCatalogueInterface
 {
-    const INTL_DOMAIN_SUFFIX = '+intl-icu';
     /**
      * Gets the catalogue locale.
      *

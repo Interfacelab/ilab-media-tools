@@ -88,6 +88,9 @@ final class StorageGlobals {
 	/** @var bool */
 	private $deleteFromStorage = false;
 
+	/** @var bool */
+	private $cacheLookups = true;
+
 	/** @var array */
 	private $alternateFormatTypes = ['image/pdf', 'application/pdf', 'image/psd', 'application/vnd.adobe.illustrator'];
 
@@ -119,6 +122,8 @@ final class StorageGlobals {
 		$this->privacyAudio = Environment::Option('mcloud-storage-privacy-audio', null, "inherit");
 		$this->privacyVideo = Environment::Option('mcloud-storage-privacy-video', null, "inherit");
 		$this->privacyDocs = Environment::Option('mcloud-storage-privacy-docs', null, "inherit");
+
+		$this->cacheLookups = Environment::Option('mcloud-storage-cache-lookups', null, true);
 
 		$ignored = Environment::Option('mcloud-storage-ignored-mime-types', null, '');
 		$ignored_lines = explode("\n", $ignored);
@@ -352,6 +357,11 @@ final class StorageGlobals {
 	/** @return bool */
 	public static function deleteFromStorage() {
 		return self::instance()->deleteFromStorage;
+	}
+
+	/** @return bool */
+	public static function cacheLookups() {
+		return self::instance()->cacheLookups;
 	}
 
 	/**

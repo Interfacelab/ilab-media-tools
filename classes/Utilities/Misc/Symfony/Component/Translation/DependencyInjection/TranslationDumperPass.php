@@ -20,7 +20,7 @@ class TranslationDumperPass implements \ILAB\MediaCloud\Utilities\Misc\Symfony\C
 {
     private $writerServiceId;
     private $dumperTag;
-    public function __construct(string $writerServiceId = 'translation.writer', string $dumperTag = 'translation.dumper')
+    public function __construct($writerServiceId = 'translation.writer', $dumperTag = 'translation.dumper')
     {
         $this->writerServiceId = $writerServiceId;
         $this->dumperTag = $dumperTag;

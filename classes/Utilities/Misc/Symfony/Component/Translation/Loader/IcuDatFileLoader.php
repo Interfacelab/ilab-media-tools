@@ -35,6 +35,7 @@ class IcuDatFileLoader extends \ILAB\MediaCloud\Utilities\Misc\Symfony\Component
         try {
             $rb = new \ResourceBundle($locale, $resource);
         } catch (\Exception $e) {
+            // HHVM compatibility: constructor throws on invalid resource
             $rb = null;
         }
         if (!$rb) {

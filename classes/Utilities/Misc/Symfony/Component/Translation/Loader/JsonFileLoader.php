@@ -34,8 +34,12 @@ class JsonFileLoader extends \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\T
     }
     /**
      * Translates JSON_ERROR_* constant into meaningful message.
+     *
+     * @param int $errorCode Error code returned by json_last_error() call
+     *
+     * @return string Message string
      */
-    private function getJSONErrorMessage(int $errorCode) : string
+    private function getJSONErrorMessage($errorCode)
     {
         switch ($errorCode) {
             case \JSON_ERROR_DEPTH:

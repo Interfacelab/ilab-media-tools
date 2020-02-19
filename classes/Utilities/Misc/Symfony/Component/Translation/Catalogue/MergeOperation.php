@@ -10,7 +10,6 @@
  */
 namespace ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\Catalogue;
 
-use ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\MessageCatalogueInterface;
 /**
  * Merge operation between two catalogues as follows:
  * all = source ∪ target = {x: x ∈ source ∨ x ∈ target}
@@ -28,10 +27,9 @@ class MergeOperation extends \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\T
     protected function processDomain($domain)
     {
         $this->messages[$domain] = ['all' => [], 'new' => [], 'obsolete' => []];
-        $intlDomain = $domain . \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\MessageCatalogueInterface::INTL_DOMAIN_SUFFIX;
         foreach ($this->source->all($domain) as $id => $message) {
             $this->messages[$domain]['all'][$id] = $message;
-            $this->result->add([$id => $message], $this->source->defines($id, $intlDomain) ? $intlDomain : $domain);
+            $this->result->add([$id => $message], $domain);
             if (null !== ($keyMetadata = $this->source->getMetadata($id, $domain))) {
                 $this->result->setMetadata($id, $keyMetadata, $domain);
             }
@@ -40,7 +38,7 @@ class MergeOperation extends \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\T
             if (!$this->source->has($id, $domain)) {
                 $this->messages[$domain]['all'][$id] = $message;
                 $this->messages[$domain]['new'][$id] = $message;
-                $this->result->add([$id => $message], $this->target->defines($id, $intlDomain) ? $intlDomain : $domain);
+                $this->result->add([$id => $message], $domain);
                 if (null !== ($keyMetadata = $this->target->getMetadata($id, $domain))) {
                     $this->result->setMetadata($id, $keyMetadata, $domain);
                 }

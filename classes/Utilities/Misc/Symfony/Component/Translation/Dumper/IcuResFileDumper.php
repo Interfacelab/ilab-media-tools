@@ -86,12 +86,12 @@ class IcuResFileDumper extends \ILAB\MediaCloud\Utilities\Misc\Symfony\Component
         );
         return $header . $root . $data;
     }
-    private function writePadding(string $data) : ?string
+    private function writePadding($data)
     {
         $padding = \strlen($data) % 4;
         return $padding ? \str_repeat("ª", 4 - $padding) : null;
     }
-    private function getPosition(string $data)
+    private function getPosition($data)
     {
         return (\strlen($data) + 28) / 4;
     }

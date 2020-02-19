@@ -31,6 +31,10 @@ return [
 		    "plugin" => "robin-image-optimizer/robin-image-optimizer.php",
 		    "description" => "The image optimization process is a black box with no available way for Media Cloud to hook into it.  So while it will optimize your images, Media Cloud will be unaware that any optimizations occurred and will not transfer the result to cloud storage."
 	    ],
+	    "TranslatePress - Multilingual" => [
+		    "plugin" => "translatepress-multilingual/index.php",
+		    "description" => "There is a library conflict with TranslatePress that may prevent Media Cloud's background tasks from running.  We are working on a compatibility fix for the next release of Media Cloud."
+	    ],
     ],
     "badPlugins" => [
 	    "OptiMole" => [
@@ -257,6 +261,18 @@ return [
                     ]
                 ]
             ],
+			"ilab-media-cloud-performance-settings" => [
+				"title" => "Performance Settings",
+				"description" => "",
+				"options" => [
+					"mcloud-storage-cache-lookups" => [
+						"title" => "Cache Attachment Lookups",
+						"description" => "When this is enabled, Media Cloud will cache the results of any database queries it performs to map a URL to an attachment ID so that it can dynamically generate the correct URL.  This should be left on as some of the queries that Media Cloud uses can be slow on sites with a large number of rows in the <code>wp_post</code> database table.  But, if you are having problems, you can turn it off to restore the previous behavior.",
+						"type" => "checkbox",
+						"default" => true
+					],
+				]
+			],
 			"ilab-media-cloud-display-settings" => [
 				"title" => "Display Settings",
 				"doc_link" => 'https://kb.mediacloud.press/articles/documentation/cloud-storage/media-library-integration',

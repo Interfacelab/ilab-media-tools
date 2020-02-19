@@ -23,7 +23,7 @@ class ArrayLoader implements \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\T
      */
     public function load($resource, $locale, $domain = 'messages')
     {
-        $resource = $this->flatten($resource);
+        $this->flatten($resource);
         $catalogue = new \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\MessageCatalogue($locale);
         $catalogue->add($resource, $domain);
         return $catalogue;
@@ -35,19 +35,28 @@ class ArrayLoader implements \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\T
      *   'key' => ['key2' => ['key3' => 'value']]
      * Becomes:
      *   'key.key2.key3' => 'value'
+     *
+     * This function takes an array by reference and will modify it
+     *
+     * @param array  &$messages The array that will be flattened
+     * @param array  $subnode   Current subnode being parsed, used internally for recursive calls
+     * @param string $path      Current path being parsed, used internally for recursive calls
      */
-    private function flatten(array $messages) : array
+    private function flatten(array &$messages, array $subnode = null, $path = null)
     {
-        $result = [];
-        foreach ($messages as $key => $value) {
+        if (null === $subnode) {
+            $subnode =& $messages;
+        }
+        foreach ($subnode as $key => $value) {
             if (\is_array($value)) {
-                foreach ($this->flatten($value) as $k => $v) {
-                    $result[$key . '.' . $k] = $v;
+                $nodePath = $path ? $path . '.' . $key : $key;
+                $this->flatten($messages, $value, $nodePath);
+                if (null === $path) {
+                    unset($messages[$key]);
                 }
-            } else {
-                $result[$key] = $value;
+            } elseif (null !== $path) {
+                $messages[$path . '.' . $key] = $value;
             }
         }
-        return $result;
     }
 }

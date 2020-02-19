@@ -35,6 +35,7 @@ class IcuResFileLoader implements \ILAB\MediaCloud\Utilities\Misc\Symfony\Compon
         try {
             $rb = new \ResourceBundle($locale, $resource);
         } catch (\Exception $e) {
+            // HHVM compatibility: constructor throws on invalid resource
             $rb = null;
         }
         if (!$rb) {

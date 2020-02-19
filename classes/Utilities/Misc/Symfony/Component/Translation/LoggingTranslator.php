@@ -12,13 +12,10 @@ namespace ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation;
 
 use ILAB\MediaCloud\Utilities\Misc\Psr\Log\LoggerInterface;
 use ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\Exception\InvalidArgumentException;
-use ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\TranslatorInterface as LegacyTranslatorInterface;
-use ILAB\MediaCloud\Utilities\Misc\Symfony\Contracts\Translation\LocaleAwareInterface;
-use ILAB\MediaCloud\Utilities\Misc\Symfony\Contracts\Translation\TranslatorInterface;
 /**
  * @author Abdellatif Ait boudad <a.aitboudad@gmail.com>
  */
-class LoggingTranslator implements \ILAB\MediaCloud\Utilities\Misc\Symfony\Contracts\Translation\TranslatorInterface, \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\TranslatorInterface, \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\TranslatorBagInterface
+class LoggingTranslator implements \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\TranslatorInterface, \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\TranslatorBagInterface
 {
     /**
      * @var TranslatorInterface|TranslatorBagInterface
@@ -28,13 +25,10 @@ class LoggingTranslator implements \ILAB\MediaCloud\Utilities\Misc\Symfony\Contr
     /**
      * @param TranslatorInterface $translator The translator must implement TranslatorBagInterface
      */
-    public function __construct($translator, \ILAB\MediaCloud\Utilities\Misc\Psr\Log\LoggerInterface $logger)
+    public function __construct(\ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\TranslatorInterface $translator, \ILAB\MediaCloud\Utilities\Misc\Psr\Log\LoggerInterface $logger)
     {
-        if (!$translator instanceof \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\TranslatorInterface && !$translator instanceof \ILAB\MediaCloud\Utilities\Misc\Symfony\Contracts\Translation\TranslatorInterface) {
-            throw new \TypeError(\sprintf('Argument 1 passed to %s() must be an instance of %s, %s given.', __METHOD__, \ILAB\MediaCloud\Utilities\Misc\Symfony\Contracts\Translation\TranslatorInterface::class, \is_object($translator) ? \get_class($translator) : \gettype($translator)));
-        }
-        if (!$translator instanceof \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\TranslatorBagInterface || !$translator instanceof \ILAB\MediaCloud\Utilities\Misc\Symfony\Contracts\Translation\LocaleAwareInterface) {
-            throw new \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\Exception\InvalidArgumentException(\sprintf('The Translator "%s" must implement TranslatorInterface, TranslatorBagInterface and LocaleAwareInterface.', \get_class($translator)));
+        if (!$translator instanceof \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\TranslatorBagInterface) {
+            throw new \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\Exception\InvalidArgumentException(\sprintf('The Translator "%s" must implement TranslatorInterface and TranslatorBagInterface.', \get_class($translator)));
         }
         $this->translator = $translator;
         $this->logger = $logger;
@@ -50,17 +44,10 @@ class LoggingTranslator implements \ILAB\MediaCloud\Utilities\Misc\Symfony\Contr
     }
     /**
      * {@inheritdoc}
-     *
-     * @deprecated since Symfony 4.2, use the trans() method instead with a %count% parameter
      */
     public function transChoice($id, $number, array $parameters = [], $domain = null, $locale = null)
     {
-        @\trigger_error(\sprintf('The "%s()" method is deprecated since Symfony 4.2, use the trans() one instead with a "%%count%%" parameter.', __METHOD__), \E_USER_DEPRECATED);
-        if ($this->translator instanceof \ILAB\MediaCloud\Utilities\Misc\Symfony\Contracts\Translation\TranslatorInterface) {
-            $trans = $this->translator->trans($id, ['%count%' => $number] + $parameters, $domain, $locale);
-        } else {
-            $trans = $this->translator->transChoice($id, $number, $parameters, $domain, $locale);
-        }
+        $trans = $this->translator->transChoice($id, $number, $parameters, $domain, $locale);
         $this->log($id, $domain, $locale);
         return $trans;
     }
@@ -69,12 +56,7 @@ class LoggingTranslator implements \ILAB\MediaCloud\Utilities\Misc\Symfony\Contr
      */
     public function setLocale($locale)
     {
-        $prev = $this->translator->getLocale();
         $this->translator->setLocale($locale);
-        if ($prev === $locale) {
-            return;
-        }
-        $this->logger->debug(\sprintf('The locale of the translator has changed from "%s" to "%s".', $prev, $locale));
     }
     /**
      * {@inheritdoc}
@@ -107,12 +89,16 @@ class LoggingTranslator implements \ILAB\MediaCloud\Utilities\Misc\Symfony\Contr
      */
     public function __call($method, $args)
     {
-        return $this->translator->{$method}(...$args);
+        return \call_user_func_array([$this->translator, $method], $args);
     }
     /**
      * Logs for missing translations.
+     *
+     * @param string      $id
+     * @param string|null $domain
+     * @param string|null $locale
      */
-    private function log(?string $id, ?string $domain, ?string $locale)
+    private function log($id, $domain, $locale)
     {
         if (null === $domain) {
             $domain = 'messages';

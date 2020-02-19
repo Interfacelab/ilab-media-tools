@@ -41,8 +41,11 @@ class PhpExtractor extends \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Tra
     {
         $files = $this->extractFiles($resource);
         foreach ($files as $file) {
-            $this->parseTokens(\token_get_all(\file_get_contents($file)), $catalog, $file);
-            \gc_mem_caches();
+            $this->parseTokens(\token_get_all(\file_get_contents($file)), $catalog);
+            if (\PHP_VERSION_ID >= 70000) {
+                // PHP 7 memory manager will not release after token_get_all(), see https://bugs.php.net/70098
+                \gc_mem_caches();
+            }
         }
     }
     /**
@@ -140,15 +143,10 @@ class PhpExtractor extends \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Tra
     /**
      * Extracts trans message from PHP tokens.
      *
-     * @param array  $tokens
-     * @param string $filename
+     * @param array $tokens
      */
     protected function parseTokens($tokens, \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\MessageCatalogue $catalog)
     {
-        if (\func_num_args() < 3 && __CLASS__ !== \get_class($this) && __CLASS__ !== (new \ReflectionMethod($this, __FUNCTION__))->getDeclaringClass()->getName() && !$this instanceof \ILAB\MediaCloud\Utilities\Misc\PHPUnit\Framework\MockObject\MockObject && !$this instanceof \ILAB\MediaCloud\Utilities\Misc\Prophecy\Prophecy\ProphecySubjectInterface) {
-            @\trigger_error(\sprintf('The "%s()" method will have a new "string $filename" argument in version 5.0, not defining it is deprecated since Symfony 4.3.', __METHOD__), \E_USER_DEPRECATED);
-        }
-        $filename = 2 < \func_num_args() ? \func_get_arg(2) : '';
         $tokenIterator = new \ArrayIterator($tokens);
         for ($key = 0; $key < $tokenIterator->count(); ++$key) {
             foreach ($this->sequences as $sequence) {
@@ -179,10 +177,6 @@ class PhpExtractor extends \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Tra
                 }
                 if ($message) {
                     $catalog->set($message, $this->prefix . $message, $domain);
-                    $metadata = $catalog->getMetadata($message, $domain) ?? [];
-                    $normalizedFilename = \preg_replace('{[\\\\/]+}', '/', $filename);
-                    $metadata['sources'][] = $normalizedFilename . ':' . $tokens[$key][2];
-                    $catalog->setMetadata($message, $metadata, $domain);
                     break;
                 }
             }

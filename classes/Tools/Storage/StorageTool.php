@@ -19,6 +19,7 @@ use  ILAB\MediaCloud\Storage\StorageException ;
 use  ILAB\MediaCloud\Storage\StorageInterface ;
 use  ILAB\MediaCloud\Storage\StorageManager ;
 use  ILAB\MediaCloud\Storage\StorageGlobals ;
+use  ILAB\MediaCloud\Storage\StoragePostMap ;
 use  ILAB\MediaCloud\Tasks\TaskManager ;
 use  ILAB\MediaCloud\Tasks\TaskSchedule ;
 use  ILAB\MediaCloud\Tools\Storage\Tasks\CleanUploadsTask ;
@@ -251,6 +252,21 @@ class StorageTool extends Tool
         TaskManager::registerTask( UnlinkTask::class );
         
         if ( $this->enabled() ) {
+            if ( is_admin() ) {
+                
+                if ( empty(get_option( 'uploads_use_yearmonth_folders' )) && empty(StorageGlobals::prefixFormat()) ) {
+                    $mediaUrl = ilab_admin_url( 'options-media.php' );
+                    $settingsUrl = ilab_admin_url( 'admin.php?page=media-cloud-settings-storage#upload-handling' );
+                    NoticeManager::instance()->displayAdminNotice(
+                        'warning',
+                        "You have the WordPress setting <a href='{$mediaUrl}'><strong>Organize my uploads into month and year based folders</strong></a> disabled, but haven't specified an <em>Upload Path</em> in <a href='{$settingsUrl}'>Cloud Storage Settings</a>.  It is recommended that you either enable that setting, or set an upload directory.  We recommend setting the <em>Upload Path</em> to <code>@{date:Y/m}</code>.",
+                        true,
+                        'mcloud-no-upload-path',
+                        365
+                    );
+                }
+            
+            }
             TaskManager::registerTask( CleanUploadsTask::class );
             TaskManager::registerTask( DeleteUploadsTask::class );
             foreach ( $this->toolInfo['compatibleImageOptimizers'] as $key => $plugin ) {
@@ -1267,6 +1283,9 @@ class StorageTool extends Tool
     public function addAttachment( $post_id )
     {
         $file = get_post_meta( $post_id, '_wp_attached_file', true );
+        if ( !isset( $this->uploadedDocs[$file] ) ) {
+            $file = '/' . $file;
+        }
         
         if ( isset( $this->uploadedDocs[$file] ) ) {
             add_post_meta( $post_id, 'ilab_s3_info', $this->uploadedDocs[$file] );
@@ -1276,6 +1295,11 @@ class StorageTool extends Tool
                 $file,
                 $this->uploadedDocs[$file]
             );
+        } else {
+            Logger::info( "addAttachment - Missing '{$file}' key on uploadeDocs." );
+            $keys = array_keys( $this->uploadedDocs );
+            $keyList = implode( ' , ', $keys );
+            Logger::info( 'addAttachment - Have keys: ' . $keyList );
         }
     
     }
@@ -2588,19 +2612,7 @@ class StorageTool extends Tool
     
     public function attachmentIdFromURL( $postId, $url )
     {
-        if ( !empty($postId) ) {
-            return $postId;
-        }
-        global  $wpdb ;
-        $parsedUrl = parse_url( $url );
-        $path = ltrim( $parsedUrl['path'], '/' );
-        if ( strpos( $path, $this->client()->bucket() ) === 0 ) {
-            $path = ltrim( str_replace( $this->client()->bucket(), '', $path ), '/' );
-        }
-        $path = apply_filters( 'media-cloud/glide/clean-path', $path );
-        $query = $wpdb->prepare( "select ID from {$wpdb->posts} where post_type='attachment' and guid like %s order by ID desc limit 1", '%' . $path );
-        $postId = $wpdb->get_var( $query );
-        return $postId;
+        return StoragePostMap::attachmentIdFromURL( $postId, $url, $this->client()->bucket() );
     }
     
     //endregion

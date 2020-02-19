@@ -50,7 +50,7 @@ class MoFileDumper extends \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Tra
     {
         return 'mo';
     }
-    private function writeLong($str) : string
+    private function writeLong($str)
     {
         return \pack('V*', $str);
     }

@@ -22,7 +22,7 @@ use ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Yaml\Yaml;
 class YamlFileDumper extends \ILAB\MediaCloud\Utilities\Misc\Symfony\Component\Translation\Dumper\FileDumper
 {
     private $extension;
-    public function __construct(string $extension = 'yml')
+    public function __construct($extension = 'yml')
     {
         $this->extension = $extension;
     }
