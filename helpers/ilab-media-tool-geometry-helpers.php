@@ -14,18 +14,41 @@ if (!defined('ABSPATH')) { header('Location: /'); die; }
 
 function sizeToFitSize($innerWidth, $innerHeight, $outerWidth, $outerHeight)
 {
-    if ($innerWidth <= 0 || $innerHeight <= 0)
-        return [$outerWidth, $outerHeight];
+	if ($innerWidth <= 0 || $innerHeight <= 0) {
+		return [$outerWidth, $outerHeight];
+	}
 
-    $ratioW = $outerWidth / $innerWidth;
-    $ratioH = $outerHeight / $innerHeight;
+	if ($outerWidth <= 0 && $outerHeight <= 0) {
+		return [0, 0];
+	}
 
-    if ($ratioW < $ratioH)
-        return [$outerWidth, round($innerHeight * $ratioW)];
-    else
-        return [round($innerWidth * $ratioH),$outerHeight];
+	if ($outerWidth <= 0) {
+		if ($innerHeight <= $outerHeight) {
+			return [$innerWidth, $innerHeight];
+		}
 
-    return [$outerWidth, $outerHeight];
+		$ratio = $outerHeight / $innerHeight;
+		return [round($innerWidth * $ratio), $outerHeight];
+	}
+
+	if ($outerHeight <= 0) {
+		if ($innerWidth <= $outerWidth) {
+			return [$innerWidth, $innerHeight];
+		}
+
+		$ratio = $outerWidth / $innerWidth;
+		return [$outerWidth, round($innerHeight * $ratio)];
+	}
+
+	$ratioW = $outerWidth / $innerWidth;
+	$ratioH = $outerHeight / $innerHeight;
+
+	if ($ratioW < $ratioH)
+		return [$outerWidth, round($innerHeight * $ratioW)];
+	else
+		return [round($innerWidth * $ratioH),$outerHeight];
+
+	return [$outerWidth, $outerHeight];
 }
 
 function sizeToFillSize($innerWidth, $innerHeight, $outerWidth, $outerHeight, $preserveHeight=true)

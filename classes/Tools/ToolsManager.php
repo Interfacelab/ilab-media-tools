@@ -231,6 +231,18 @@ final class ToolsManager
                 30
             );
         }
+        
+        if ( !empty(constant( 'MCLOUD_IS_BETA' )) ) {
+            $message = View::render_view( 'beta.beta-notes', [] );
+            NoticeManager::instance()->displayAdminNotice(
+                'info',
+                $message,
+                true,
+                'mcloud-beta-notice' . MEDIA_CLOUD_VERSION,
+                'forever'
+            );
+        }
+    
     }
     
     protected function setup()

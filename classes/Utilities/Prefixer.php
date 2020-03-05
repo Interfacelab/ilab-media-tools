@@ -13,6 +13,8 @@
 
 namespace ILAB\MediaCloud\Utilities;
 
+use ILAB\MediaCloud\Utilities\Logging\Logger;
+
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
 /**
@@ -27,6 +29,7 @@ final class Prefixer {
 	/** @var array */
 	private $versionedIds = [];
 
+	private $previousVersion = null;
 	private $currentVersion = null;
 
 	private $currentType = null;
@@ -92,6 +95,8 @@ final class Prefixer {
 	 * Updates the current version
 	 */
 	private function updateVersion() {
+		$this->previousVersion = $this->currentVersion;
+
 		$date_format = 'dHis';
 		// Use current time so that object version is unique
 		$time = current_time('timestamp');
@@ -99,6 +104,22 @@ final class Prefixer {
 		$object_version = date($date_format, $time).'/';
 		$object_version = apply_filters('as3cf_get_object_version_string', $object_version);
 		$this->currentVersion = $object_version;
+
+		Logger::info("Prefixer::updateVersion - Set new version: {$this->currentVersion}");
+	}
+
+	/**
+	 * Restores the current version
+	 */
+	private function restoreVersion() {
+		if (!empty($this->previousVersion)) {
+			$this->currentVersion = $this->previousVersion;
+			$this->previousVersion = null;
+
+			Logger::info("Prefixer::restoreVersion - Restored version: {$this->currentVersion}");
+		} else {
+			Logger::info("Prefixer::restoreVersion - No previous version to restore");
+		}
 	}
 
 	/**
@@ -136,7 +157,11 @@ final class Prefixer {
 			}
 		}
 
-		return trim($prefix, '/').'/';
+		$prefix = trim($prefix, '/').'/';
+
+		Logger::info("Prefixer::parsePrefix - Generated prefix: {$prefix}");
+
+		return $prefix;
 	}
 
 	/**
@@ -158,6 +183,10 @@ final class Prefixer {
 
 	public static function nextVersion() {
 		self::instance()->updateVersion();
+	}
+
+	public static function previousVersion() {
+		self::instance()->restoreVersion();
 	}
 
 	public static function setType($type) {

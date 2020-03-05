@@ -24,6 +24,7 @@ use  ILAB\MediaCloud\Tools\Browser\Tasks\ImportFromStorageTask ;
 use  ILAB\MediaCloud\Tools\Integrations\PlugIns\Elementor\Tasks\UpdateElementorTask ;
 use  ILAB\MediaCloud\Tools\Integrations\PlugIns\NextGenGallery\Tasks\MigrateNextGenTask ;
 use  ILAB\MediaCloud\Tools\Storage\StorageTool ;
+use  ILAB\MediaCloud\Tools\Storage\Tasks\MigrateFromOtherTask ;
 use  ILAB\MediaCloud\Tools\Storage\Tasks\MigrateTask ;
 use  ILAB\MediaCloud\Tools\Storage\Tasks\RegenerateThumbnailTask ;
 use  ILAB\MediaCloud\Tools\Storage\Tasks\UnlinkTask ;
@@ -75,6 +76,9 @@ class StorageCommands extends Command
      *
      * [--order-by=<string>]
      * : The field to sort the items to be imported by. Valid values are 'date', 'title' and 'filename'.
+     *
+     * [--delete-migrated]
+     * : Deletes migrated media from your local WordPress server.  Note: You must have Delete Uploads enabled in Cloud Storage for this setting to have any effect.  If you have Delete Uploads disabled, turning this on will have zero effect.
      * ---
      * options:
      *   - date
@@ -288,6 +292,24 @@ class StorageCommands extends Command
     {
         global  $media_cloud_licensing ;
         self::Error( "Only available in the Premium version.  To upgrade: https://mediacloud.press/pricing/" );
+    }
+    
+    /**
+     * Migrate other plugin settings
+     *
+     *
+     * @when after_wp_load
+     *
+     * @param $args
+     * @param $assoc_args
+     *
+     * @throws \Exception
+     */
+    public function migrateFromOther( $args, $assoc_args )
+    {
+        /** @var MigrateFromOtherTask $task */
+        $task = new MigrateFromOtherTask();
+        $this->runTask( $task, [] );
     }
     
     /**

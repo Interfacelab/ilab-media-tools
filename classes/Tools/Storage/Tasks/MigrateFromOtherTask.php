@@ -18,10 +18,12 @@ use ILAB\MediaCloud\Tasks\AttachmentTask;
 use ILAB\MediaCloud\Tasks\Task;
 use ILAB\MediaCloud\Tools\Storage\StorageTool;
 use ILAB\MediaCloud\Tools\ToolsManager;
+use ILAB\MediaCloud\Utilities\Environment;
 use ILAB\MediaCloud\Utilities\Logging\Logger;
 use Symfony\Component\Finder\Iterator\RecursiveDirectoryIterator;
+use function ILAB\MediaCloud\Utilities\postIdExists;
 
-class DeleteUploadsTask extends Task {
+class MigrateFromOtherTask extends AttachmentTask {
 	//region Static Task Properties
 
 	/**
@@ -30,7 +32,7 @@ class DeleteUploadsTask extends Task {
 	 * @throws \Exception
 	 */
 	public static function identifier() {
-		return 'delete-uploads';
+		return 'migrate-from-other';
 	}
 
 	/**
@@ -39,7 +41,7 @@ class DeleteUploadsTask extends Task {
 	 * @throws \Exception
 	 */
 	public static function title() {
-		return 'Delete Uploads';
+		return 'Migrate From Other Plugin';
 	}
 
 	/**
@@ -82,13 +84,13 @@ class DeleteUploadsTask extends Task {
 	 * @return string
 	 */
 	public static function analyticsId() {
-		return '/batch/delete-uploads';
+		return '/batch/migrate-from-other';
 	}
 
 	public static function runFromTaskManager() {
-		return false;
+		return true;
 	}
-	
+
 
 	/**
 	 * The available options when running a task.
@@ -102,69 +104,10 @@ class DeleteUploadsTask extends Task {
 
 	//region Execution
 
-	public function prepare($options = [], $selectedItems = []) {
-		foreach($selectedItems as $selectedItem) {
-			if (file_exists($selectedItem)) {
-				$this->addItem(['filepath' => $selectedItem]);
-			} else {
-				Logger::info("DeleteUploadTasks::prepare - Skipping $selectedItem - does not exist.");
-			}
-		}
+	public function willStart() {
+		parent::willStart();
 
-		$this->addItem(['filepath' => -1]);
-		return true;
-	}
-
-	protected function cleanEmptyDirectories() {
-		if (defined('UPLOADS')) {
-			$root = trailingslashit(ABSPATH).UPLOADS;
-		} else {
-			$root = trailingslashit(WP_CONTENT_DIR).'uploads';
-		}
-
-		$root = trailingslashit($root);
-
-		$folders = [];
-
-		$rii = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($root));
-		foreach($rii as $file) {
-			if ($file->isDir()) {
-				$path = trailingslashit($file->getPath());
-				if (!in_array($path, $folders) && ($path != $root)) {
-					$folders[] = $path;
-				}
-			}
-		}
-
-		usort($folders, function($a, $b) {
-			$countA = count(explode(DIRECTORY_SEPARATOR, $a));
-			$countB = count(explode(DIRECTORY_SEPARATOR, $b));
-			if ($countA > $countB) {
-				return -1;
-			} else if ($countA == $countB) {
-				return 0;
-			}
-
-			return 1;
-		});
-
-		foreach($folders as $folder) {
-			$filecount = count(scandir($folder));
-			if ($filecount <= 2) {
-				Logger::info("Removing directory $folder");
-				@rmdir($folder);
-			} else if (($filecount == 3) && file_exists(trailingslashit($folder).'.DS_STORE')) {
-				Logger::info("Removing .DS_STORE");
-				unlink(trailingslashit($folder).'.DS_STORE');
-
-				Logger::info("Removing directory $folder");
-				@rmdir($folder);
-			} else {
-				Logger::info("NOT Removing directory $folder");
-			}
-		}
-
-		return true;
+		Environment::UpdateOption('mcloud-storage-skip-import-other-plugin', true);
 	}
 
 	/**
@@ -176,15 +119,20 @@ class DeleteUploadsTask extends Task {
 	 * @throws \Exception
 	 */
 	public function performTask($item) {
-		$filepath = $item['filepath'];
-		Logger::info("Delete {$filepath}");
-
-		if ($filepath == -1) {
-			return $this->cleanEmptyDirectories();
+		$post_id = $item['id'];
+		if (!postIdExists($post_id)) {
+			return true;
 		}
 
+		$this->updateCurrentPost($post_id);
 
-		@unlink($filepath);
+		Logger::info("Processing $post_id");
+
+		/** @var StorageTool $storageTool */
+		$storageTool = ToolsManager::instance()->tools['storage'];
+		$storageTool->migratePostFromOtherPlugin($post_id);
+
+		Logger::info("Finished processing $post_id");
 
 		return true;
 	}

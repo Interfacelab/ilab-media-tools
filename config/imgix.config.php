@@ -39,10 +39,6 @@ return [
 	    ],
     ],
     "badPlugins" => [
-        "BuddyPress" => [
-            "plugin" => "buddypress/bp-loader.php",
-            "description" => "Uploading profile or cover images results in broken images."
-        ],
     ],
 	"settings" => [
 		"options-page" => "media-tools-imgix",

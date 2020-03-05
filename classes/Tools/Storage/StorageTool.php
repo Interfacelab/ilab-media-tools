@@ -21,9 +21,11 @@ use  ILAB\MediaCloud\Storage\StorageManager ;
 use  ILAB\MediaCloud\Storage\StorageGlobals ;
 use  ILAB\MediaCloud\Storage\StoragePostMap ;
 use  ILAB\MediaCloud\Tasks\TaskManager ;
+use  ILAB\MediaCloud\Tasks\TaskRunner ;
 use  ILAB\MediaCloud\Tasks\TaskSchedule ;
 use  ILAB\MediaCloud\Tools\Storage\Tasks\CleanUploadsTask ;
 use  ILAB\MediaCloud\Tools\Storage\Tasks\DeleteUploadsTask ;
+use  ILAB\MediaCloud\Tools\Storage\Tasks\MigrateFromOtherTask ;
 use  ILAB\MediaCloud\Tools\Storage\Tasks\MigrateTask ;
 use  ILAB\MediaCloud\Tools\Storage\Tasks\RegenerateThumbnailTask ;
 use  ILAB\MediaCloud\Tools\Storage\Tasks\UnlinkTask ;
@@ -80,6 +82,7 @@ class StorageTool extends Tool
     private  $replaceSrcSet = false ;
     private  $disableBigImageSize = false ;
     private  $uploadOriginal = true ;
+    private  $skipOtherImport = false ;
     /** @var array Already processed post IDs */
     private  $processed = array() ;
     //endregion
@@ -157,30 +160,39 @@ class StorageTool extends Tool
                 }
             }
             
-            
-            if ( StorageGlobals::deleteOnUpload() ) {
-                add_filter( 'wp_die_ajax_handler', [ $this, 'hookDieHandler' ] );
-                add_filter( 'wp_die_json_handler', [ $this, 'hookDieHandler' ] );
-                add_filter( 'wp_die_jsonp_handler', [ $this, 'hookDieHandler' ] );
-                add_filter( 'wp_die_xmlrpc_handler', [ $this, 'hookDieHandler' ] );
-                add_filter( 'wp_die_xml_handler', [ $this, 'hookDieHandler' ] );
-                add_filter( 'wp_die_handler', [ $this, 'hookDieHandler' ] );
-            }
-            
-            $migratedFrom = get_option( 'mcloud-other-plugins-did-migrate' );
-            
-            if ( !empty($migratedFrom) ) {
-                $settingsUrl = admin_url( 'admin.php?page=media-cloud-settings&tab=storage' );
-                $systemCheck = admin_url( 'admin.php?page=media-tools-troubleshooter' );
-                NoticeManager::instance()->displayAdminNotice(
-                    'info',
-                    "Media Cloud noticed you were using {$migratedFrom} and has migrated your settings automatically.  Everything should be working as before, but make sure to double check your <a href='{$settingsUrl}'>Cloud Storage</a> settings.  You may also want to run a <a href='{$systemCheck}'>System Check</a> to make sure everything is running properly.",
-                    true,
-                    'mcloud-migrated-other-plugin',
-                    'forever'
-                );
-            }
+            $this->prepareMigrateFromOtherPlugin();
+        }
         
+        $canDelete = apply_filters( 'media-cloud/storage/delete_uploads', true );
+        
+        if ( !empty($canDelete) && StorageGlobals::deleteOnUpload() ) {
+            
+            if ( !isset( $_POST['action'] ) || isset( $_POST['action'] ) && !in_array( $_POST['action'], [ 'mcloud_task_heartbeat', 'mcloud_all_task_statuses', 'heartbeat' ] ) ) {
+                add_filter( 'wp_die_ajax_handler', [ $this, 'hookDieHandler' ], PHP_INT_MAX );
+                add_filter( 'wp_die_json_handler', [ $this, 'hookDieHandler' ], PHP_INT_MAX );
+                add_filter( 'wp_die_jsonp_handler', [ $this, 'hookDieHandler' ], PHP_INT_MAX );
+                add_filter( 'wp_die_xmlrpc_handler', [ $this, 'hookDieHandler' ], PHP_INT_MAX );
+                add_filter( 'wp_die_xml_handler', [ $this, 'hookDieHandler' ], PHP_INT_MAX );
+                add_filter( 'wp_die_handler', [ $this, 'hookDieHandler' ], PHP_INT_MAX );
+                add_action( 'shutdown', function () {
+                    $this->doCleanUploads();
+                }, PHP_INT_MAX );
+            }
+            
+            add_filter(
+                'rest_pre_serve_request',
+                function (
+                $served,
+                $result,
+                $request,
+                $server
+            ) {
+                $this->doCleanUploads();
+                return $served;
+            },
+                PHP_INT_MAX,
+                4
+            );
         }
         
         add_filter(
@@ -252,6 +264,7 @@ class StorageTool extends Tool
         TaskManager::registerTask( UnlinkTask::class );
         
         if ( $this->enabled() ) {
+            $this->skipOtherImport = Environment::Option( 'mcloud-storage-skip-import-other-plugin', null, false );
             if ( is_admin() ) {
                 
                 if ( empty(get_option( 'uploads_use_yearmonth_folders' )) && empty(StorageGlobals::prefixFormat()) ) {
@@ -335,8 +348,12 @@ class StorageTool extends Tool
                 $this->replaceSrcSet = Environment::Option( 'mcloud-storage-replace-srcset', null, true );
             }
             global  $wp_version ;
+            // NOTE: We handle this differently for 5.3 than versions prior.  Also, in the previous update
+            // we only did this if certain post requirements were met:
+            // (isset($_REQUEST['action']) && ($_REQUEST['action'] === 'upload-attachment')
+            // but I don't remember why we had that requirement.
             
-            if ( version_compare( $wp_version, '5.3', '>=' ) && (isset( $_REQUEST['action'] ) && $_REQUEST['action'] === 'upload-attachment') ) {
+            if ( version_compare( $wp_version, '5.3', '>=' ) ) {
                 add_filter(
                     'wp_update_attachment_metadata',
                     [ $this, 'handleUpdateAttachmentMetadataFor53' ],
@@ -676,6 +693,7 @@ class StorageTool extends Tool
         
         if ( $this->client && $this->client->enabled() ) {
             Logger::info( "\tProcessing main file {$newData['file']}" );
+            Prefixer::previousVersion();
             $privacy = Environment::Option( 'mcloud-storage-big-size-original-privacy', null, 'authenticated-read' );
             $doUpload = apply_filters( 'media-cloud/storage/upload-master', true );
             $newData = $this->processFile(
@@ -852,8 +870,8 @@ class StorageTool extends Tool
                             if ( $imgixEnabled ) {
                                 
                                 if ( !ilab_size_is_cropped( $key ) ) {
-                                    $w = ( !empty($size['width']) ? $size['width'] : 10000 );
-                                    $h = ( !empty($size['height']) ? $size['height'] : 10000 );
+                                    $w = ( !empty($size['width']) ? $size['width'] : 0 );
+                                    $h = ( !empty($size['height']) ? $size['height'] : 0 );
                                     $newSize = sizeToFitSize(
                                         $data['width'],
                                         $data['height'],
@@ -1242,39 +1260,6 @@ class StorageTool extends Tool
         return $result;
     }
     
-    private function fixOffloadS3Meta( $postId, $meta )
-    {
-        if ( empty($meta['s3']) ) {
-            return false;
-        }
-        $meta['s3']['provider'] = 's3';
-        $mimetype = get_post_mime_type( $postId );
-        $meta['s3']['mime-type'] = $mimetype;
-        $s3Url = $meta['s3']['url'];
-        if ( strpos( $s3Url, '//s3-.amazonaws' ) !== false ) {
-            $s3Url = str_replace( '//s3-.amazonaws', '//s3.amazonaws', $s3Url );
-        }
-        $url = parse_url( $s3Url );
-        $path = pathinfo( $url['path'] );
-        $baseUrl = "{$url['scheme']}://{$url['host']}{$path['dirname']}/";
-        $path = pathinfo( $meta['s3']['key'] );
-        $baseKey = $path['dirname'] . '/';
-        foreach ( $meta['sizes'] as $size => $sizeData ) {
-            $sizeS3 = $meta['s3'];
-            $sizeS3['url'] = $baseUrl . $sizeData['file'];
-            $sizeS3['key'] = $baseKey . $sizeData['file'];
-            $sizeS3['options'] = [];
-            $sizeS3['mime-type'] = $sizeData['mime-type'];
-            $sizeData['s3'] = $sizeS3;
-            $meta['sizes'][$size] = $sizeData;
-        }
-        $shouldSkip = $this->skipUpdate;
-        $this->skipUpdate = true;
-        wp_update_attachment_metadata( $postId, $meta );
-        $this->skipUpdate = $shouldSkip;
-        return true;
-    }
-    
     /**
      * Fires once an attachment has been added. (https://core.trac.wordpress.org/browser/tags/4.8/src/wp-includes/post.php#L3457)
      *
@@ -1574,28 +1559,6 @@ class StorageTool extends Tool
         return $url;
     }
     
-    private function loadOffloadMetadata( $post_id )
-    {
-        $offloadS3Info = get_post_meta( $post_id, 'amazonS3_info', true );
-        if ( !empty($offloadS3Info) ) {
-            return $offloadS3Info;
-        }
-        $schemaVersion = get_option( 'as3cf_schema_version' );
-        if ( empty($schemaVersion) ) {
-            return null;
-        }
-        if ( version_compare( $schemaVersion, '2.3', '<' ) ) {
-            return null;
-        }
-        global  $wpdb ;
-        /** @var array|null $info */
-        $info = $wpdb->get_row( "select * from {$wpdb->prefix}as3cf_items where source_id={$post_id}", ARRAY_A );
-        if ( !empty($info) ) {
-            $info['key'] = $info['path'];
-        }
-        return $info;
-    }
-    
     /**
      * Filters the attachment's url. (https://core.trac.wordpress.org/browser/tags/4.8/src/wp-includes/post.php#L5077)
      *
@@ -1622,7 +1585,7 @@ class StorageTool extends Tool
                 $new_url = $this->getAttachmentURLFromMeta( $s3Info );
             }
             
-            if ( empty($new_url) ) {
+            if ( empty($new_url) && empty($this->skipOtherImport) ) {
                 $offloadS3Info = $this->loadOffloadMetadata( $post_id );
                 
                 if ( !empty($offloadS3Info) ) {
@@ -1738,153 +1701,6 @@ class StorageTool extends Tool
             }
         }
     
-    }
-    
-    /**
-     * Imports metadata from WP-Stateless
-     *
-     * @param $post_id
-     * @param $meta
-     * @param $statelessData
-     *
-     * @return mixed|null
-     * @throws StorageException
-     */
-    private function importStatelessMetadata( $post_id, $meta, $statelessData )
-    {
-        $provider = 'google';
-        $key = arrayPath( $statelessData, 'name', null );
-        $bucket = arrayPath( $statelessData, 'bucket', null );
-        if ( empty($bucket) || empty($key) ) {
-            return null;
-        }
-        $mime = get_post_mime_type( $post_id );
-        $hasMeta = !empty($meta);
-        if ( empty($meta) ) {
-            $meta = [];
-        }
-        $s3Info = [
-            'url'       => $this->getStatelessURL( $bucket, $key ),
-            'provider'  => $provider,
-            'bucket'    => $bucket,
-            'privacy'   => 'public-read',
-            'v'         => MEDIA_CLOUD_INFO_VERSION,
-            'mime-type' => $mime,
-        ];
-        $meta['s3'] = $s3Info;
-        $sizes = $meta['sizes'];
-        $statelessSizes = arrayPath( $statelessData, 'sizes', [] );
-        $meta['sizes'] = [];
-        foreach ( $statelessSizes as $statelessSize => $statelessSizeData ) {
-            $sizeKey = arrayPath( $statelessSizeData, 'name' );
-            if ( !isset( $sizes[$statelessSize] ) || empty($sizeKey) ) {
-                continue;
-            }
-            $sizeData = $sizes[$statelessSize];
-            $sizeS3Info = $s3Info;
-            $sizeS3Info['url'] = $this->getStatelessURL( $bucket, $sizeKey );
-            $sizeS3Info['key'] = $sizeKey;
-            $sizeS3Info['mime-type'] = $sizeData['mime-type'];
-            $sizeData['s3'] = $sizeS3Info;
-            $meta['sizes'][$statelessSize] = $sizeData;
-        }
-        
-        if ( $hasMeta ) {
-            update_post_meta( $post_id, '_wp_attachment_metadata', $meta );
-        } else {
-            update_post_meta( $post_id, 'ilab_s3_info', [
-                's3' => $s3Info,
-            ] );
-        }
-        
-        return $s3Info['url'];
-    }
-    
-    /**
-     * Imports metadata from WP Offload
-     *
-     * @param $post_id
-     * @param $meta
-     * @param $offloadS3Data
-     *
-     * @return mixed|null
-     * @throws StorageException
-     */
-    private function importOffloadMetadata( $post_id, $meta, $offloadS3Data )
-    {
-        $provider = arrayPath( $offloadS3Data, 'provider', 's3' );
-        $bucket = arrayPath( $offloadS3Data, 'bucket', null );
-        $region = arrayPath( $offloadS3Data, 'region', null );
-        $key = arrayPath( $offloadS3Data, 'key', null );
-        if ( empty($provider) || empty($bucket) || empty($key) || !in_array( $provider, [
-            's3',
-            'aws',
-            'do',
-            'gcp'
-        ] ) ) {
-            return null;
-        }
-        $providerMap = [
-            'aws' => 's3',
-            's3'  => 's3',
-            'do'  => 'do',
-            'gcp' => 'google',
-        ];
-        $provider = $providerMap[$provider];
-        $mime = get_post_mime_type( $post_id );
-        $hasMeta = !empty($meta);
-        if ( empty($meta) ) {
-            $meta = [];
-        }
-        $s3Info = [
-            'url'       => $this->getOffloadS3URL(
-            $provider,
-            $region,
-            $bucket,
-            $key
-        ),
-            'provider'  => $provider,
-            'bucket'    => $bucket,
-            'key'       => $key,
-            'privacy'   => 'public-read',
-            'v'         => MEDIA_CLOUD_INFO_VERSION,
-            'mime-type' => $mime,
-        ];
-        if ( $provider !== 'google' ) {
-            $s3Info['region'] = $region;
-        }
-        $meta['s3'] = $s3Info;
-        
-        if ( isset( $meta['sizes'] ) ) {
-            $baseKey = ltrim( pathinfo( '/' . $key, PATHINFO_DIRNAME ), '/' );
-            $newSizes = [];
-            foreach ( $meta['sizes'] as $size => $sizeData ) {
-                $sizeKey = trailingslashit( $baseKey ) . $sizeData['file'];
-                $sizeS3Info = $s3Info;
-                $sizeS3Info['url'] = $this->getOffloadS3URL(
-                    $provider,
-                    $region,
-                    $bucket,
-                    $sizeKey
-                );
-                $sizeS3Info['key'] = $sizeKey;
-                $sizeS3Info['mime-type'] = $sizeData['mime-type'];
-                $sizeData['s3'] = $sizeS3Info;
-                $newSizes[$size] = $sizeData;
-            }
-            $meta['sizes'] = $newSizes;
-        }
-        
-        
-        if ( $hasMeta ) {
-            update_post_meta( $post_id, '_wp_attachment_metadata', $meta );
-        } else {
-            update_post_meta( $post_id, 'ilab_s3_info', [
-                's3' => $s3Info,
-            ] );
-        }
-        
-        return $s3Info['url'];
     }
     
     /**
@@ -2912,6 +2728,7 @@ class StorageTool extends Tool
         if ( $prefix === '/' ) {
             $prefix = '';
         }
+        $prefix = apply_filters( 'media-cloud/storage/custom-prefix', $prefix, $preserveFilePath );
         Logger::info( "({$preserveFilePath}) Prefix => {$prefix} " );
         $parts = explode( '/', $filename );
         $bucketFilename = array_pop( $parts );
@@ -2979,12 +2796,10 @@ class StorageTool extends Tool
                         StorageGlobals::expires(),
                         'image/webp'
                     );
-                    
-                    if ( StorageGlobals::deleteOnUpload() ) {
+                    $canDelete = apply_filters( 'media-cloud/storage/delete_uploads', true );
+                    if ( !empty($canDelete) && StorageGlobals::deleteOnUpload() ) {
                         $this->deleteCache[] = $webpPath;
-                        //                        unlink($webpPath);
                     }
-                
                 }
             
             }
@@ -3050,11 +2865,12 @@ class StorageTool extends Tool
         
         }
         
-        if ( StorageGlobals::deleteOnUpload() ) {
+        $canDelete = apply_filters( 'media-cloud/storage/delete_uploads', true );
+        if ( !empty($canDelete) && StorageGlobals::deleteOnUpload() ) {
             
             if ( file_exists( $upload_path . '/' . $filename ) ) {
                 $fileToDelete = $upload_path . '/' . $filename;
-                Logger::info( "Deleting {$fileToDelete}" );
+                Logger::info( "StorageTool::processFile - Adding {$fileToDelete} to delete cache." );
                 $this->deleteCache[] = $fileToDelete;
                 //unlink($fileToDelete);
             }
@@ -3069,16 +2885,18 @@ class StorageTool extends Tool
         return [ $this, 'cleanUploads' ];
     }
     
-    public function cleanUploads( $message, $title = '', $args = array() )
+    protected function doCleanUploads()
     {
         
         if ( count( $this->deleteCache ) > 0 ) {
             Logger::info( "Cleaning uploads ..." );
             
             if ( StorageGlobals::queuedDeletes() ) {
+                Logger::info( "Queueing deletes ..." );
                 $task = TaskSchedule::nextScheduledTaskOfType( DeleteUploadsTask::identifier() );
                 
                 if ( !empty($task) ) {
+                    Logger::info( "StorageTool::cleanUploads - Adding delete cache to delete task." );
                     $task->selection = array_merge( $task->selection, $this->deleteCache );
                     $task->save();
                 } else {
@@ -3087,13 +2905,22 @@ class StorageTool extends Tool
             
             } else {
                 foreach ( $this->deleteCache as $file ) {
+                    Logger::info( "StorageTool::cleanUploads - Deleting {$file}." );
                     @unlink( $file );
+                    if ( file_exists( $file ) ) {
+                        Logger::info( "StorageTool::cleanUploads - Unable to delete {$file} - maybe permissions issue?" );
+                    }
                 }
             }
             
             $this->deleteCache = [];
         }
-        
+    
+    }
+    
+    public function cleanUploads( $message, $title = '', $args = array() )
+    {
+        $this->doCleanUploads();
         call_user_func(
             $this->dieHandler,
             $message,
@@ -3110,11 +2937,14 @@ class StorageTool extends Tool
     private function deleteFile( $file )
     {
         try {
+            
             if ( $this->client && $this->client->enabled() ) {
+                Logger::info( "StorageTool::deleteFile - Delete {$file} from storage." );
                 $this->client->delete( $file );
             }
+        
         } catch ( StorageException $ex ) {
-            Logger::error( "Error deleting file '{$file}'.", [
+            Logger::error( "StorageTool::deleteFile - Error deleting file '{$file}'.", [
                 'exception' => $ex->getMessage(),
                 'Key'       => $file,
             ] );
@@ -3760,7 +3590,13 @@ class StorageTool extends Tool
             return $editors;
         } );
         @set_time_limit( 120 );
-        $fullsizepath = get_attached_file( $postId );
+        $fullsizepath = null;
+        if ( function_exists( 'wp_get_original_image_path' ) ) {
+            $fullsizepath = wp_get_original_image_path( $postId );
+        }
+        if ( empty($fullsizepath) ) {
+            $fullsizepath = get_attached_file( $postId );
+        }
         if ( !file_exists( $fullsizepath ) ) {
             
             if ( function_exists( '_load_image_to_edit_path' ) ) {
@@ -4899,6 +4735,276 @@ Optimizer;
             ], 400 );
         }
     
+    }
+    
+    //endregion
+    //region Other Plugin Migration
+    private function prepareMigrateFromOtherPlugin()
+    {
+        $migratedFrom = get_option( 'mcloud-other-plugins-did-migrate' );
+        
+        if ( !empty($migratedFrom) ) {
+            TaskManager::registerTask( MigrateFromOtherTask::class );
+            add_action( 'wp_ajax_mcloud_migrate_from_other', [ $this, 'migrateFromOtherAjax' ] );
+            $settingsUrl = admin_url( 'admin.php?page=media-cloud-settings&tab=storage' );
+            $systemCheck = admin_url( 'admin.php?page=media-tools-troubleshooter' );
+            $migrateNonce = wp_create_nonce( 'mcloud_migrate_from_other' );
+            $migrationMessage = <<<MIGRATED
+<h3>Welcome to Media Cloud!</h3>
+<p>Media Cloud noticed you were using {$migratedFrom} and has migrated your settings automatically.  Everything should be working as before, but make sure to double check your <a href='{$settingsUrl}'>Cloud Storage</a> settings.  You may also want to run a <a href='{$systemCheck}'>System Check</a> to make sure everything is running properly.</p>
+<p>Media Cloud will automatically migrate any media you uploaded with the other plugins as needed, however you may want to do a bulk migration first.</p>
+<p><a href="#" class="button button-primary button-migrate-from-other" data-nonce="{$migrateNonce}">Migrate From {$migratedFrom} Now</a></p>
+MIGRATED;
+            NoticeManager::instance()->displayAdminNotice(
+                'info',
+                $migrationMessage,
+                true,
+                'mcloud-migrated-other-plugin',
+                'forever'
+            );
+        }
+    
+    }
+    
+    /**
+     * Imports metadata from WP-Stateless
+     *
+     * @param $post_id
+     * @param $meta
+     * @param $statelessData
+     *
+     * @return mixed|null
+     * @throws StorageException
+     */
+    private function importStatelessMetadata( $post_id, $meta, $statelessData )
+    {
+        $provider = 'google';
+        $key = arrayPath( $statelessData, 'name', null );
+        $bucket = arrayPath( $statelessData, 'bucket', null );
+        if ( empty($bucket) || empty($key) ) {
+            return null;
+        }
+        $mime = get_post_mime_type( $post_id );
+        $hasMeta = !empty($meta);
+        if ( empty($meta) ) {
+            $meta = [];
+        }
+        $s3Info = [
+            'url'       => $this->getStatelessURL( $bucket, $key ),
+            'provider'  => $provider,
+            'bucket'    => $bucket,
+            'privacy'   => 'public-read',
+            'v'         => MEDIA_CLOUD_INFO_VERSION,
+            'mime-type' => $mime,
+        ];
+        $meta['s3'] = $s3Info;
+        $sizes = $meta['sizes'];
+        $statelessSizes = arrayPath( $statelessData, 'sizes', [] );
+        $meta['sizes'] = [];
+        foreach ( $statelessSizes as $statelessSize => $statelessSizeData ) {
+            $sizeKey = arrayPath( $statelessSizeData, 'name' );
+            if ( !isset( $sizes[$statelessSize] ) || empty($sizeKey) ) {
+                continue;
+            }
+            $sizeData = $sizes[$statelessSize];
+            $sizeS3Info = $s3Info;
+            $sizeS3Info['url'] = $this->getStatelessURL( $bucket, $sizeKey );
+            $sizeS3Info['key'] = $sizeKey;
+            $sizeS3Info['mime-type'] = $sizeData['mime-type'];
+            $sizeData['s3'] = $sizeS3Info;
+            $meta['sizes'][$statelessSize] = $sizeData;
+        }
+        
+        if ( $hasMeta ) {
+            update_post_meta( $post_id, '_wp_attachment_metadata', $meta );
+        } else {
+            update_post_meta( $post_id, 'ilab_s3_info', [
+                's3' => $s3Info,
+            ] );
+        }
+        
+        return $s3Info['url'];
+    }
+    
+    /**
+     * Imports metadata from WP Offload
+     *
+     * @param $post_id
+     * @param $meta
+     * @param $offloadS3Data
+     *
+     * @return mixed|null
+     * @throws StorageException
+     */
+    private function importOffloadMetadata( $post_id, $meta, $offloadS3Data )
+    {
+        $provider = arrayPath( $offloadS3Data, 'provider', 's3' );
+        $bucket = arrayPath( $offloadS3Data, 'bucket', null );
+        $region = arrayPath( $offloadS3Data, 'region', null );
+        $key = arrayPath( $offloadS3Data, 'key', null );
+        if ( empty($provider) || empty($bucket) || empty($key) || !in_array( $provider, [
+            's3',
+            'aws',
+            'do',
+            'gcp'
+        ] ) ) {
+            return null;
+        }
+        $providerMap = [
+            'aws' => 's3',
+            's3'  => 's3',
+            'do'  => 'do',
+            'gcp' => 'google',
+        ];
+        $provider = $providerMap[$provider];
+        $mime = get_post_mime_type( $post_id );
+        $hasMeta = !empty($meta);
+        if ( empty($meta) ) {
+            $meta = [];
+        }
+        $s3Info = [
+            'url'       => $this->getOffloadS3URL(
+            $provider,
+            $region,
+            $bucket,
+            $key
+        ),
+            'provider'  => $provider,
+            'bucket'    => $bucket,
+            'key'       => $key,
+            'privacy'   => 'public-read',
+            'v'         => MEDIA_CLOUD_INFO_VERSION,
+            'mime-type' => $mime,
+        ];
+        if ( $provider !== 'google' ) {
+            $s3Info['region'] = $region;
+        }
+        $meta['s3'] = $s3Info;
+        
+        if ( isset( $meta['sizes'] ) ) {
+            $baseKey = ltrim( pathinfo( '/' . $key, PATHINFO_DIRNAME ), '/' );
+            $newSizes = [];
+            foreach ( $meta['sizes'] as $size => $sizeData ) {
+                $sizeKey = trailingslashit( $baseKey ) . $sizeData['file'];
+                $sizeS3Info = $s3Info;
+                $sizeS3Info['url'] = $this->getOffloadS3URL(
+                    $provider,
+                    $region,
+                    $bucket,
+                    $sizeKey
+                );
+                $sizeS3Info['key'] = $sizeKey;
+                $sizeS3Info['mime-type'] = $sizeData['mime-type'];
+                $sizeData['s3'] = $sizeS3Info;
+                $newSizes[$size] = $sizeData;
+            }
+            $meta['sizes'] = $newSizes;
+        }
+        
+        
+        if ( $hasMeta ) {
+            update_post_meta( $post_id, '_wp_attachment_metadata', $meta );
+        } else {
+            update_post_meta( $post_id, 'ilab_s3_info', [
+                's3' => $s3Info,
+            ] );
+        }
+        
+        return $s3Info['url'];
+    }
+    
+    private function fixOffloadS3Meta( $postId, $meta )
+    {
+        if ( empty($meta['s3']) ) {
+            return false;
+        }
+        $meta['s3']['provider'] = 's3';
+        $mimetype = get_post_mime_type( $postId );
+        $meta['s3']['mime-type'] = $mimetype;
+        $s3Url = $meta['s3']['url'];
+        if ( strpos( $s3Url, '//s3-.amazonaws' ) !== false ) {
+            $s3Url = str_replace( '//s3-.amazonaws', '//s3.amazonaws', $s3Url );
+        }
+        $url = parse_url( $s3Url );
+        $path = pathinfo( $url['path'] );
+        $baseUrl = "{$url['scheme']}://{$url['host']}{$path['dirname']}/";
+        $path = pathinfo( $meta['s3']['key'] );
+        $baseKey = $path['dirname'] . '/';
+        foreach ( $meta['sizes'] as $size => $sizeData ) {
+            $sizeS3 = $meta['s3'];
+            $sizeS3['url'] = $baseUrl . $sizeData['file'];
+            $sizeS3['key'] = $baseKey . $sizeData['file'];
+            $sizeS3['options'] = [];
+            $sizeS3['mime-type'] = $sizeData['mime-type'];
+            $sizeData['s3'] = $sizeS3;
+            $meta['sizes'][$size] = $sizeData;
+        }
+        $shouldSkip = $this->skipUpdate;
+        $this->skipUpdate = true;
+        wp_update_attachment_metadata( $postId, $meta );
+        $this->skipUpdate = $shouldSkip;
+        return true;
+    }
+    
+    private function loadOffloadMetadata( $post_id )
+    {
+        $offloadS3Info = get_post_meta( $post_id, 'amazonS3_info', true );
+        if ( !empty($offloadS3Info) ) {
+            return $offloadS3Info;
+        }
+        $schemaVersion = get_option( 'as3cf_schema_version' );
+        if ( empty($schemaVersion) ) {
+            return null;
+        }
+        if ( version_compare( $schemaVersion, '2.3', '<' ) ) {
+            return null;
+        }
+        global  $wpdb ;
+        /** @var array|null $info */
+        $info = $wpdb->get_row( "select * from {$wpdb->prefix}as3cf_items where source_id={$post_id}", ARRAY_A );
+        if ( !empty($info) ) {
+            $info['key'] = $info['path'];
+        }
+        return $info;
+    }
+    
+    public function migrateFromOtherAjax()
+    {
+        if ( !is_admin() || !current_user_can( 'manage_options' ) ) {
+            wp_send_json( [
+                'status'  => 'error',
+                'message' => 'Invalid security credentials.',
+            ], 400 );
+        }
+        NoticeManager::instance()->dismissAdminNotice( 'mcloud-migrated-other-plugin', 'forever' );
+        $migrate = new MigrateFromOtherTask();
+        $migrate->prepare();
+        $migrate->wait();
+        TaskRunner::dispatch( $migrate );
+        wp_send_json( [
+            'redirect' => admin_url( 'admin.php?page=media-cloud-task-manager' ),
+        ] );
+    }
+    
+    public function migratePostFromOtherPlugin( $postId )
+    {
+        $meta = wp_get_attachment_metadata( $postId );
+        if ( empty($meta) ) {
+            return false;
+        }
+        $offloadS3Info = $this->loadOffloadMetadata( $postId );
+        $new_url = null;
+        
+        if ( !empty($offloadS3Info) ) {
+            $new_url = $this->importOffloadMetadata( $postId, $meta, $offloadS3Info );
+        } else {
+            $statelessInfo = get_post_meta( $postId, 'sm_cloud', true );
+            if ( !empty($statelessInfo) ) {
+                $new_url = $this->importStatelessMetadata( $postId, $meta, $statelessInfo );
+            }
+        }
+        
+        return !empty($new_url);
     }
 
 }

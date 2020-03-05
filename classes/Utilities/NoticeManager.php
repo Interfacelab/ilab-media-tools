@@ -32,7 +32,7 @@ class NoticeManager {
 			wp_localize_script('ilab-dismissible-notices', 'ilab_dismissible_notice', ['nonce' => wp_create_nonce( 'dismissible-notice' )]);
 		});
 
-		add_action('wp_ajax_ilab_dismiss_admin_notice', [$this, 'dismissAdminNotice']);
+		add_action('wp_ajax_ilab_dismiss_admin_notice', [$this, 'dismissAdminNoticeAjax']);
 	}
 
 	/**
@@ -94,19 +94,23 @@ class NoticeManager {
 		});
 	}
 
-	public function dismissAdminNotice() {
-		$option_name        = sanitize_text_field( $_POST['option_name'] );
-		$dismissible_length = sanitize_text_field( $_POST['dismissible_length'] );
-		$transient          = 0;
+	public function dismissAdminNotice($identifier, $length) {
+		$transient = 0;
 
-		if ( 'forever' != $dismissible_length ) {
-			$dismissible_length = ( 0 == absint( $dismissible_length ) ) ? 1 : $dismissible_length;
-			$transient          = absint( $dismissible_length ) * DAY_IN_SECONDS;
-			$dismissible_length = strtotime( absint( $dismissible_length ) . ' days' );
+		if ( 'forever' !== $length ) {
+			$length = ( 0 == absint( $length ) ) ? 1 : $length;
+			$transient = absint( $length ) * DAY_IN_SECONDS;
+			$length = strtotime( absint( $length ) . ' days' );
 		}
 
+		set_site_transient($identifier, $length, $transient);
+	}
+
+	public function dismissAdminNoticeAjax() {
 		check_ajax_referer( 'dismissible-notice', 'nonce' );
-		set_site_transient( $option_name, $dismissible_length, $transient );
+
+		$this->dismissAdminNotice(sanitize_text_field($_POST['option_name']), sanitize_text_field($_POST['dismissible_length']));
+
 		wp_die();
 	}
 

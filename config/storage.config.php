@@ -234,6 +234,13 @@ return [
 		                "type" => "checkbox",
 		                "default" => true,
 	                ],
+	                "mcloud-storage-skip-import-other-plugin" => [
+		                "title" => "Skip Importing From Other Plugins",
+		                "description" => "Skip importing from other plugins like WP Offload Media, WP-Stateless and other cloud storage plugins.",
+		                "display-order" => 50,
+		                "type" => "checkbox",
+		                "default" => false,
+	                ],
                 ]
 			],
 			"ilab-media-cloud-signed-urls" => [

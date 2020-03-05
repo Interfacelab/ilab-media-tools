@@ -16,6 +16,7 @@
 
 namespace ILAB\MediaCloud\Storage;
 
+use ILAB\MediaCloud\Utilities\Logging\Logger;
 use function ILAB\MediaCloud\Utilities\arrayPath;
 use ILAB\MediaCloud\Utilities\Environment;
 use ILAB\MediaCloud\Utilities\NoticeManager;
@@ -351,7 +352,9 @@ final class StorageGlobals {
 
 	/** @return bool */
 	public static function queuedDeletes() {
-		return self::instance()->queuedDeletes;
+		$canQueue = apply_filters('media-cloud/storage/queue-deletes', true);
+		Logger::info("StorageGlobals::queuedDeletes - Filter returned: '$canQueue'");
+		return (!empty($canQueue) && self::instance()->queuedDeletes);
 	}
 
 	/** @return bool */

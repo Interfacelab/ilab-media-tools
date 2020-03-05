@@ -529,7 +529,8 @@ class CropTool extends Tool
 		list($full_src,$full_width,$full_height,$full_cropped)=$attrs;
 
 		if ($storageTool->enabled()) {
-			if(StorageGlobals::deleteOnUpload() && !StorageGlobals::queuedDeletes()) {
+			$canDelete = apply_filters('media-cloud/storage/delete_uploads', true);
+			if(!empty($canDelete) && StorageGlobals::deleteOnUpload() && !StorageGlobals::queuedDeletes()) {
                 $toDelete = trailingslashit($save_path).$filename;
                 if (file_exists($toDelete)) {
                     @unlink($toDelete);

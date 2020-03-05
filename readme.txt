@@ -5,7 +5,7 @@ Requires at least: 4.4
 Tested up to: 5.3
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 3.3.14
+Stable tag: 3.3.18
 Requires PHP: 5.6.4
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -108,6 +108,20 @@ No, I'm just one very enthusiastic customer.
 
 == Changelog ==
 
+= 3.3.18 =
+
+* Fix for NOTICE "error" when using DigitalOcean or another S3 compatible service
+* Fix for Imgix when an image size has been defined with a width or height of zero.
+* Ability to override the upload path for cloud uploads via the `media-cloud/storage/custom-prefix` filter.
+* When migrating from another plugin like Offload Media or WP-Stateless, you can now choose to manually migrate any media uploaded with the other plugin.  This is a very fast process.  If you do not do the manual migration, media will be migrated the first time a URL for an attachment is generated.  You should choose to do the manual migration though.
+* New option in Cloud Storage settings to turn off the automatic migration of media uploaded with another plugin.
+* Fix for Regenerate Thumbnails not using the original image with 5.3's big image feature
+* Fix for uploads not being deleted from WordPress in certain circumstances
+* Fix for duplicates being uploaded to Cloud Storage when the upload path prefix `@{versioning}` is being used
+* Fix for some uploads not being deleted when deleted from the WordPress media library
+* Support for direct uploading on the front end when using plugins like WC Frontend Manager for WooCommerce.
+* BuddyPress integration for uploading profile and cover images on profiles and groups.
+
 = 3.3.14 =
 
 * Fix support knowledge base links for the inline help pop-ups
@@ -122,6 +136,7 @@ No, I'm just one very enthusiastic customer.
 * Fix for a library conflict
 * Warning that the built-in Dynamic Images functionality will be deprecated in the next major version
 * Warning about library incompatibility with TranslatePress
+* Migrating media no longer deletes local files unless explicitly enabled.
 
 = 3.3.11 =
 
