@@ -135,6 +135,8 @@ class DebuggingTool extends Tool {
 	    $probeData['WordPress Settings']['upload_path'] = get_option('upload_path');
 	    $probeData['WordPress Settings']['upload_url_path'] = get_option('upload_url_path');
 
+	    $probeData['Image Sizes'] = ilab_get_image_sizes();
+
 
 	    $probeData['Globals'] = [];
 	    $probeData['Globals']['UPLOADS'] = defined('UPLOADS') ? constant('UPLOADS') : null;

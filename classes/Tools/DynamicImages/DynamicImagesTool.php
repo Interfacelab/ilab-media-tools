@@ -178,6 +178,7 @@ abstract class DynamicImagesTool extends Tool {
 			    $sizeWidth = intval($sizeData['width']);
 			    $sizeHeight = intval($sizeData['height']);
 			    $sizeS3 = arrayPath($metadata, "sizes/$sizeKey/s3", $metadata['s3']);
+			    $cropData = arrayPath($metadata, "sizes/$sizeKey/crop", []);
 
 		        if (!empty($sizeData['crop'])) {
 		            $newWidth = $sizeWidth;
@@ -193,6 +194,10 @@ abstract class DynamicImagesTool extends Tool {
                     'mime-type' => $mime,
                     's3' => $sizeS3
                 ];
+
+		        if (!empty($cropData)) {
+		            $metadata['sizes'][$sizeKey]['crop'] = $cropData;
+                }
 
 		        $didChange = true;
             }
