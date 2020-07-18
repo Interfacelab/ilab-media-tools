@@ -15,7 +15,9 @@ namespace ILAB\MediaCloud\Utilities\Logging;
 
 use ILAB\MediaCloud\CLI\Command;
 use ILAB\MediaCloud\Utilities\Environment;
+use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\ErrorLogHandler;
+use Monolog\Handler\SyslogUdpHandler;
 use Monolog\Logger as MonologLogger;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
@@ -59,9 +61,22 @@ class Logger {
 					$realLevel = MonologLogger::ERROR;
 				}
 
-				$this->logger = new MonologLogger('ilab-media-tool');
-				$this->logger->pushHandler(new ErrorLogHandler(ErrorLogHandler::OPERATING_SYSTEM, $realLevel));
-				$this->logger->pushHandler(new DatabaseLoggerHandler($realLevel));
+				$this->logger = new MonologLogger('media-cloud');
+                $errorLogHandler = new ErrorLogHandler(ErrorLogHandler::OPERATING_SYSTEM, $realLevel);
+                $errorLogHandler->setFormatter(new LineFormatter("%channel%.%level_name%: %message% %context% %extra%"));
+				$this->logger->pushHandler($errorLogHandler);
+
+				$papertrailHost = Environment::Option('mcloud-debug-remote-url', null, null);
+				$papertrailPort = Environment::Option('mcloud-debug-remote-url-port', null, null);
+
+				if (!empty($papertrailHost) && !empty($papertrailPort)) {
+					$papertrail = new SyslogUdpHandler($papertrailHost, $papertrailPort);
+					$papertrail->setFormatter(new LineFormatter("%channel%.%level_name%: %message%"));
+					$this->logger->pushHandler($papertrail);
+				} else {
+					$this->logger->pushHandler(new DatabaseLoggerHandler($realLevel));
+				}
+
 			}
 
             set_error_handler(function($errno, $errstr, $errfile, $errline, $errContext) {
@@ -102,74 +117,72 @@ class Logger {
         }
     }
 
-	protected function doLogInfo($message, $context=[]) {
+	private function prepMessage($message, $function = null, $line = null) {
+		if (!empty($function)) {
+			if (!empty($line)) {
+				$message = ':'.$line.' '.$message;
+			}
+
+			$functionParts = explode('\\', $function);
+			$function = array_pop($functionParts);
+
+			$message = $function.$message.(empty($line) ? '' : ' ');
+		}
+
+		$pid = @getmypid();
+		if (!empty($pid)) {
+			$message = "[$pid] ".$message;
+		}
+
+		return $message;
+	}
+
+	protected function doLogInfo($message, $context=[], $function = null, $line = null) {
 	    if ($this->useWPCLI) {
             Command::Info($message, true);
         }
 
 		if ($this->logger) {
-			$pid = getmypid();
-			if (!empty($pid)) {
-				$message = "[$pid] ".$message;
-			}
-
+			$message = $this->prepMessage($message, $function, $line);
 			$this->logger->addInfo($message, array_merge($this->context, $context));
 		}
 	}
 
-	protected function doLogWarning($message, $context=[]) {
+	protected function doLogWarning($message, $context=[], $function = null, $line = null) {
         if ($this->useWPCLI) {
             Command::Warn($message);
         }
 
 		if ($this->logger) {
-			$pid = getmypid();
-			if (!empty($pid)) {
-				$message = "[$pid] ".$message;
-			}
-
+			$message = $this->prepMessage($message, $function, $line);
 			$this->logger->addWarning($message, array_merge($this->context, $context));
 		}
 	}
 
-	protected function doLogError($message, $context=[]) {
+	protected function doLogError($message, $context=[], $function = null, $line = null) {
         if ($this->useWPCLI) {
             Command::Error($message." => ".((isset($context['exception'])) ? $context['exception'] : "No error message"));
         }
 
         if ($this->logger) {
-	        $pid = getmypid();
-	        if (!empty($pid)) {
-		        $message = "[$pid] ".$message;
-	        }
-
+	        $message = $this->prepMessage($message, $function, $line);
 	        $this->logger->addError($message, array_merge($this->context, $context));
 		}
 	}
 
-	protected function doStartTiming($message, $context=[]) {
+	protected function doStartTiming($message, $context=[], $function = null, $line = null) {
 		if ($this->logger) {
 			$this->time[] = microtime(true);
-
-			$pid = getmypid();
-			if (!empty($pid)) {
-				$message = "[$pid] ".$message;
-			}
-
+			$message = $this->prepMessage($message, $function, $line);
 			$this->logger->addInfo($message, array_merge($this->context, $context));
 		}
 	}
 
-	protected function doEndTiming($message, $context=[]) {
+	protected function doEndTiming($message, $context=[], $function = null, $line = null) {
 		if ($this->logger) {
 			$time = array_pop($this->time);
 			$context['time'] = microtime(true) - $time;
-
-			$pid = getmypid();
-			if (!empty($pid)) {
-				$message = "[$pid] ".$message;
-			}
-
+			$message = $this->prepMessage($message, $function, $line);
 			$this->logger->addInfo($message, array_merge($this->context, $context));
 		}
 	}
@@ -189,24 +202,54 @@ class Logger {
 		return self::$instance;
 	}
 
-	public static function info($message, $context=[]) {
-		self::instance()->doLogInfo($message, (empty($context) || !is_array($context)) ? [] : $context);
+	/**
+	 * @param string $message
+	 * @param array $context
+	 * @param null|string $function
+	 * @param null|string $line
+	 */
+	public static function info($message, $context=[], $function = null, $line = null) {
+		self::instance()->doLogInfo($message, (empty($context) || !is_array($context)) ? [] : $context, $function, $line);
 	}
 
-	public static function warning($message, $context=[]) {
-		self::instance()->doLogWarning($message, (empty($context) || !is_array($context)) ? [] : $context);
+	/**
+	 * @param string $message
+	 * @param array $context
+	 * @param null|string $function
+	 * @param null|string $line
+	 */
+	public static function warning($message, $context=[], $function = null, $line = null) {
+		self::instance()->doLogWarning($message, (empty($context) || !is_array($context)) ? [] : $context, $function, $line);
 	}
 
-	public static function error($message, $context=[]) {
-		self::instance()->doLogError($message, (empty($context) || !is_array($context)) ? [] : $context);
+	/**
+	 * @param string $message
+	 * @param array $context
+	 * @param null|string $function
+	 * @param null|string $line
+	 */
+	public static function error($message, $context=[], $function = null, $line = null) {
+		self::instance()->doLogError($message, (empty($context) || !is_array($context)) ? [] : $context, $function, $line);
 	}
 
-	public static function startTiming($message, $context=[]) {
-		self::instance()->doStartTiming($message, (empty($context) || !is_array($context)) ? [] : $context);
+	/**
+	 * @param string $message
+	 * @param array $context
+	 * @param null|string $function
+	 * @param null|string $line
+	 */
+	public static function startTiming($message, $context=[], $function = null, $line = null) {
+		self::instance()->doStartTiming($message, (empty($context) || !is_array($context)) ? [] : $context, $function, $line);
 	}
 
-	public static function endTiming($message, $context=[]) {
-		self::instance()->doEndTiming($message, (empty($context) || !is_array($context)) ? [] : $context);
+	/**
+	 * @param string $message
+	 * @param array $context
+	 * @param null|string $function
+	 * @param null|string $line
+	 */
+	public static function endTiming($message, $context=[], $function = null, $line = null) {
+		self::instance()->doEndTiming($message, (empty($context) || !is_array($context)) ? [] : $context, $function, $line);
 	}
 	//endregion
 }

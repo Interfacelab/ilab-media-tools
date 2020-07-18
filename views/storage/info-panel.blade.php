@@ -26,6 +26,7 @@
 		        'bucketLink' => $bucketLink,
 		        'pathLink' => $pathLink,
                 'readOnly' => $readOnly,
+                'optimization' => isset($optimization) ? $optimization : false,
                 'isSize' => false,
                 'topLevel' => true,
                 'imgixEnabled' => $imgixEnabled

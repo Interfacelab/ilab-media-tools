@@ -27,7 +27,7 @@ use ILAB\MediaCloud\Storage\InvalidStorageSettingsException;
 use ILAB\MediaCloud\Storage\StorageException;
 use ILAB\MediaCloud\Storage\StorageFile;
 use ILAB\MediaCloud\Storage\StorageInterface;
-use ILAB\MediaCloud\Storage\StorageManager;
+use ILAB\MediaCloud\Storage\StorageToolSettings;
 use function ILAB\MediaCloud\Utilities\anyNull;
 use function ILAB\MediaCloud\Utilities\arrayPath;
 use ILAB\MediaCloud\Utilities\Environment;
@@ -50,10 +50,10 @@ class BackblazeStorage implements StorageInterface, AuthCacheInterface, Configur
 	/** @var BackblazeSettings|null  */
 	protected $settings = null;
 
-	/*** @var string */
-	protected $bucketUrl = false;
+	/** @var string|null */
+	protected $bucketUrl = null;
 
-	/*** @var Client */
+	/** @var Client|null */
 	protected $client = null;
 	//endregion
 
@@ -104,6 +104,10 @@ class BackblazeStorage implements StorageInterface, AuthCacheInterface, Configur
     }
 
     public function supportsDirectUploads() {
+		return false;
+	}
+
+	public function supportsWildcardDirectUploads() {
 		return false;
 	}
 
@@ -191,7 +195,8 @@ class BackblazeStorage implements StorageInterface, AuthCacheInterface, Configur
 
 	/**
 	 * Returns the Backblaze client
-	 * @return Client
+	 *
+	 * @return Client|null
 	 */
 	protected function getClient() {
 		if(!$this->enabled()) {
@@ -248,17 +253,17 @@ class BackblazeStorage implements StorageInterface, AuthCacheInterface, Configur
 		}
 
 		try {
-			Logger::startTiming("Start Upload", ['file' => $key]);
+			Logger::startTiming("Start Upload", ['file' => $key], __METHOD__, __LINE__);
 			$this->client->upload([
 				                      'BucketName' => $this->settings->bucket,
 				                      'FileName' => $key,
 				                      'Body' => fopen($fileName, 'r')
 			                      ]);
-			Logger::endTiming("End Upload", ['file' => $key]);
+			Logger::endTiming("End Upload", ['file' => $key], __METHOD__, __LINE__);
 
 			return $this->bucketUrl.$key;
 		} catch (\Exception $ex) {
-			Logger::error("Backblaze upload error", ['exception' => $ex->getMessage()]);
+			Logger::error("Backblaze upload error", ['exception' => $ex->getMessage()], __METHOD__, __LINE__);
 			if ($tries < 4) {
 			    return $this->upload($key, $fileName, $acl, $cacheControl, $expires, null, null, null, $tries + 1);
             } else {
@@ -279,7 +284,7 @@ class BackblazeStorage implements StorageInterface, AuthCacheInterface, Configur
 				'exception' => $ex->getMessage(),
 				'Bucket' => $this->settings->bucket,
 				'Key' => $key
-			]);
+			], __METHOD__, __LINE__);
 		}
 	}
 
@@ -303,7 +308,7 @@ class BackblazeStorage implements StorageInterface, AuthCacheInterface, Configur
 						'exception' => $ex->getMessage(),
 						'Bucket' => $this->settings->bucket,
 						'Key' => $file->key()
-					]);
+					], __METHOD__, __LINE__);
 				}
 			}
 		}
@@ -318,7 +323,7 @@ class BackblazeStorage implements StorageInterface, AuthCacheInterface, Configur
 						'exception' => $ex->getMessage(),
 						'Bucket' => $this->settings->bucket,
 						'Key' => $file->key()
-					]);
+					], __METHOD__, __LINE__);
 				}
 			}
 		}
@@ -330,7 +335,7 @@ class BackblazeStorage implements StorageInterface, AuthCacheInterface, Configur
 				'exception' => $ex->getMessage(),
 				'Bucket' => $this->settings->bucket,
 				'Key' => $key
-			]);
+			], __METHOD__, __LINE__);
 		}
 	}
 
@@ -433,12 +438,6 @@ class BackblazeStorage implements StorageInterface, AuthCacheInterface, Configur
 	}
 	//endregion
 
-    //region Adapter
-    public function adapter() {
-	    return new BackblazeAdapter($this->client, $this->settings->bucket);
-    }
-    //endregion
-
     //region Auth Cache
     public function cacheB2Auth($key, $authData) {
 	    update_option('ilab_media_cloud_b2_auth_cache', [
@@ -502,7 +501,7 @@ class BackblazeStorage implements StorageInterface, AuthCacheInterface, Configur
 		$builder->select('Complete', 'Basic setup is now complete!  Configure advanced settings or setup imgix.')
 			->group('wizard.cloud-storage.providers.backblaze.success', 'select-buttons')
 				->option('configure-imgix', 'Set Up imgix', null, null, 'imgix')
-				->option('advanced-settings', 'Advanced Settings', null, null, null, null, 'admin:admin.php?page=media-cloud-settings-storage')
+				->option('advanced-settings', 'Advanced Settings', null, null, null, null, 'admin:admin.php?page=media-cloud-settings&tab=storage')
 			->endGroup()
 		->endStep();
 
@@ -539,7 +538,7 @@ class BackblazeStorage implements StorageInterface, AuthCacheInterface, Configur
 		$oldKey = Environment::ReplaceOption($accessKeyName, $accessKey);
 		$oldSecret = Environment::ReplaceOption($secretName, $secret);
 
-		StorageManager::resetStorageInstance();
+		StorageToolSettings::resetStorageInstance();
 
 		try {
 			$storage = new static();
@@ -554,7 +553,7 @@ class BackblazeStorage implements StorageInterface, AuthCacheInterface, Configur
 			Environment::UpdateOption($accessKeyName, $oldKey);
 			Environment::UpdateOption($secretName, $oldSecret);
 
-			StorageManager::resetStorageInstance();
+			StorageToolSettings::resetStorageInstance();
 
 			$message = "There was a problem with your settings.  Please double check entries for potential mistakes.";
 
@@ -566,4 +565,10 @@ class BackblazeStorage implements StorageInterface, AuthCacheInterface, Configur
 
 	//endregion
 
+	//region Optimization
+	public function prepareOptimizationInfo() {
+		return [
+		];
+	}
+	//endregion
 }

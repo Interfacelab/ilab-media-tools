@@ -14,7 +14,7 @@
 namespace ILAB\MediaCloud\Tools\Imgix;
 
 use FasterImage\FasterImage;
-use ILAB\MediaCloud\Storage\StorageGlobals;
+use ILAB\MediaCloud\Storage\StorageToolSettings;
 use ILAB\MediaCloud\Tools\DynamicImages\DynamicImagesTool;
 use ILAB\MediaCloud\Tools\Storage\StorageTool;
 use ILAB\MediaCloud\Tools\ToolsManager;
@@ -38,15 +38,11 @@ if(!defined('ABSPATH')) {
  * Imgix tool.
  */
 class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
-	/** @var ImgixToolSettings */
-	protected $settings;
-
-
     //region Constructor
     public function __construct($toolName, $toolInfo, $toolManager) {
-	    parent::__construct($toolName, $toolInfo, $toolManager);
+	    $this->settings = ImgixToolSettings::instance();
 
-	    $this->settings = new ImgixToolSettings();
+	    parent::__construct($toolName, $toolInfo, $toolManager);
 
         add_filter('media-cloud/imgix/enabled', function($enabled){
             return $this->enabled();
@@ -313,8 +309,8 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
 	}
 
 	/**
-     * Builds an Imgix URL for an MPEG-4 video for an animated GIF source.  This is called with apply_filter('imgix_build_gif_mpeg4').
-     *
+	 * Builds an Imgix URL for an MPEG-4 video for an animated GIF source.  This is called with apply_filter('imgix_build_gif_mpeg4').
+	 *
 	 * @param mixed $value
 	 * @param int $postId
 	 * @param string $size
@@ -352,8 +348,8 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
 	}
 
 	/**
-     * Builds an Imgix URL
-     *
+	 * Builds an Imgix URL
+	 *
 	 * @param int $id
 	 * @param string|array $size
 	 * @param array|null $params
@@ -424,7 +420,17 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
 				return null;
 			}
 
-			$imageFile = (isset($meta['s3'])) ? $meta['s3']['key'] : $meta['file'];
+			if (!isset($meta['s3']['key']) && ($meta['s3']['provider'] == 'google')) {
+				$path = parse_url($meta['s3']['url'], PHP_URL_PATH);
+				$pathParts = explode('/', ltrim($path, '/'));
+				array_shift($pathParts);
+				$meta['s3']['key'] = $imageFile = ltrim(implode('/', $pathParts), '/');
+
+				update_post_meta($id, '_wp_attachment_metadata', $meta);
+			} else {
+				$imageFile = (isset($meta['s3']['key'])) ? $meta['s3']['key'] : $meta['file'];
+			}
+
 
 			$result = [
 				$imgix->createURL(str_replace('%2F', '/', urlencode($imageFile)), ($skipParams) ? [] : $params),
@@ -643,7 +649,16 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
 		$params = $this->buildImgixParams($params, $mimetype);
 		$params = apply_filters('media-cloud/dynamic-images/filter-parameters', $params, $size, $id, $meta);
 
-		$imageFile = (isset($meta['s3'])) ? $meta['s3']['key'] : $meta['file'];
+		if (!isset($meta['s3']['key']) && ($meta['s3']['provider'] == 'google')) {
+			$path = parse_url($meta['s3']['url'], PHP_URL_PATH);
+			$pathParts = explode('/', ltrim($path, '/'));
+			array_shift($pathParts);
+			$meta['s3']['key'] = $imageFile = ltrim(implode('/', $pathParts), '/');
+
+			update_post_meta($id, '_wp_attachment_metadata', $meta);
+		} else {
+			$imageFile = (isset($meta['s3']['key'])) ? $meta['s3']['key'] : $meta['file'];
+		}
 
 		$result = [
 			$imgix->createURL(str_replace('%2F', '/', urlencode($imageFile)), $params),
@@ -695,7 +710,7 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
         }
 
 		if (!isset($meta['s3'])) {
-			Logger::warning( "Post $postID is  missing 's3' metadata.", $meta);
+			Logger::warning( "Post $postID is  missing 's3' metadata.", $meta, __METHOD__, __LINE__);
 			return $meta;
 		}
 
@@ -1062,7 +1077,7 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
 		$errors = [];
 
 		try {
-			$storageTool->client()->upload('_troubleshooter/sample.jpg',ILAB_TOOLS_DIR.'/public/img/test-image.jpg', StorageGlobals::privacy());
+			$storageTool->client()->upload('_troubleshooter/sample.jpg',ILAB_TOOLS_DIR.'/public/img/test-image.jpg', StorageToolSettings::privacy());
 			$imgixURL = $imgixTool->urlForKey('_troubleshooter/sample.jpg');
 
 			$faster = new FasterImage();

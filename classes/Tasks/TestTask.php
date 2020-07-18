@@ -82,28 +82,28 @@ class TestTask extends Task {
 
 	public function performTask($item) {
 		$tuid = arrayPath($this->options, 'tuid', null);
-		Logger::info("Processing test item {$this->currentItem} ($tuid)");
+		Logger::info("Processing test item {$this->currentItem} ($tuid)", [], __METHOD__, __LINE__);
 
 		if (arrayPath($this->options, 'sleep', false)) {
-			Logger::info("Sleeping ...");
+			Logger::info("Sleeping ...", [], __METHOD__, __LINE__);
 			sleep(1);
 		}
 
 		if (arrayPath($this->options, 'memory', false)) {
-			Logger::info("Testing Memory ...");
+			Logger::info("Testing Memory ...", [], __METHOD__, __LINE__);
 			$this->stuff[] = str_repeat("0", 1048576 * rand(1, 2));
 		}
 
 		if (arrayPath($this->options, 'errors', false)) {
 			if (rand(1,5) == 2) {
-				Logger::info("Throwing an error ...");
+				Logger::info("Throwing an error ...", [], __METHOD__, __LINE__);
 				return false;
 			}
 		}
 
 		if (arrayPath($this->options, 'exceptions', false)) {
 			if (rand(1,4) == 2) {
-				Logger::info("Throwing an exception...");
+				Logger::info("Throwing an exception...", [], __METHOD__, __LINE__);
 				throw new \Exception('Random exception');
 			}
 		}

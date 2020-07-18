@@ -126,13 +126,13 @@ class MigrateFromOtherTask extends AttachmentTask {
 
 		$this->updateCurrentPost($post_id);
 
-		Logger::info("Processing $post_id");
+		Logger::info("Processing $post_id", [], __METHOD__, __LINE__);
 
 		/** @var StorageTool $storageTool */
 		$storageTool = ToolsManager::instance()->tools['storage'];
 		$storageTool->migratePostFromOtherPlugin($post_id);
 
-		Logger::info("Finished processing $post_id");
+		Logger::info("Finished processing $post_id", [], __METHOD__, __LINE__);
 
 		return true;
 	}

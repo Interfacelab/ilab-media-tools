@@ -17,7 +17,7 @@
 namespace ILAB\MediaCloud\Storage\Driver\S3;
 
 use ILAB\MediaCloud\Storage\StorageInterface;
-use ILAB\MediaCloud\Storage\StorageManager;
+use ILAB\MediaCloud\Storage\StorageToolSettings;
 use ILAB\MediaCloud\Tools\ToolSettings;
 use ILAB\MediaCloud\Utilities\Environment;
 use function ILAB\MediaCloud\Utilities\gen_uuid;
@@ -108,7 +108,7 @@ class S3StorageSettings extends ToolSettings {
 
 	public function __get($name) {
 		if ($name === 'endpoint') {
-			if (StorageManager::driver() === 's3') {
+			if (StorageToolSettings::driver() === 's3') {
 				return null;
 			}
 
@@ -159,13 +159,13 @@ class S3StorageSettings extends ToolSettings {
 
 			if ($storageClass::defaultRegion() !== null) {
 				$this->region = $storageClass::defaultRegion();
-			} else if ((StorageManager::driver() !== 'wasabi') && (StorageManager::driver() !== 'do')) {
+			} else if ((StorageToolSettings::driver() !== 'wasabi') && (StorageToolSettings::driver() !== 'do')) {
 				$region = Environment::Option('mcloud-storage-s3-region', ['ILAB_AWS_S3_REGION', 'ILAB_CLOUD_REGION'], 'auto');
 
 				if($region !== 'auto') {
 					$this->_region = $region;
 				}
-			} else if (StorageManager::driver() === 'wasabi') {
+			} else if (StorageToolSettings::driver() === 'wasabi') {
 				$this->_region = Environment::Option('mcloud-storage-wasabi-region', null, null);
 			}
 

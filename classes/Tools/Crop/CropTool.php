@@ -13,7 +13,7 @@
 
 namespace ILAB\MediaCloud\Tools\Crop;
 
-use ILAB\MediaCloud\Storage\StorageGlobals;
+use ILAB\MediaCloud\Storage\StorageToolSettings;
 use ILAB\MediaCloud\Tools\Storage\StorageTool;
 use ILAB\MediaCloud\Tools\Tool;
 use ILAB\MediaCloud\Tools\ToolsManager;
@@ -30,15 +30,14 @@ if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
  *
  * Crop tool
  */
-class CropTool extends Tool
-{
-	protected $cropQuality = 100;
+class CropTool extends Tool  {
+	/** @var CropToolSettings  */
+	private $settings = null;
 
-	public function __construct($toolName, $toolInfo, $toolManager)
-	{
+	public function __construct($toolName, $toolInfo, $toolManager) {
+		$this->settings = CropToolSettings::instance();
+		
 		parent::__construct($toolName, $toolInfo, $toolManager);
-
-		$this->cropQuality = Environment::Option('mcloud-crop-quality', null, 100);
 
 		$this->testForBadPlugins();
 		$this->testForUselessPlugins();
@@ -190,6 +189,7 @@ class CropTool extends Tool
 
 	/**
 	 * Generate the url for the crop UI
+	 *
 	 * @param $id
 	 * @param string $size
 	 * @return string
@@ -425,10 +425,22 @@ class CropTool extends Tool
 		$this->doPerformCrop($post_id, $size, $crop_x, $crop_y, $crop_width, $crop_height, false);
 	}
 
+	private function suspendOptimizer() {
+		add_filter('media-cloud/optimizer/can-upload', '__return_false', 10);
+		add_filter('media-cloud/optimizer/no-background', '__return_true', 10);
+    }
+
+    private function resumeOptimizer() {
+	    remove_filter('media-cloud/optimizer/can-upload', '__return_false', 10);
+	    remove_filter('media-cloud/optimizer/no-background', '__return_true', 10);
+    }
+
 	/**
 	 * Perform the actual crop
 	 */
 	private function doPerformCrop($post_id, $size, $crop_x, $crop_y, $crop_width, $crop_height, $reset_crop)  {
+	    $this->suspendOptimizer();
+
 		$img_path = _load_image_to_edit_path( $post_id );
 		$meta = wp_get_attachment_metadata( $post_id );
 		$img_editor = wp_get_image_editor( $img_path );
@@ -449,7 +461,7 @@ class CropTool extends Tool
 		}
 
 		$img_editor->crop($crop_x, $crop_y, $crop_width, $crop_height, $dest_width, $dest_height, false );
-		$img_editor->set_quality($this->cropQuality);
+		$img_editor->set_quality($this->settings->cropQuality);
 		$save_path_parts = pathinfo($img_path);
 
 		$path_url=parse_url($img_path);
@@ -463,6 +475,7 @@ class CropTool extends Tool
 
 			if (!file_exists($save_path)) {
 				if(!mkdir($save_path, 0777, true) && !is_dir($save_path)) {
+					$this->resumeOptimizer();
 					json_response([
 						'status'=>'error',
 						'message'=> "Path '$save_path' cannot be created."
@@ -530,13 +543,15 @@ class CropTool extends Tool
 
 		if ($storageTool->enabled()) {
 			$canDelete = apply_filters('media-cloud/storage/delete_uploads', true);
-			if(!empty($canDelete) && StorageGlobals::deleteOnUpload() && !StorageGlobals::queuedDeletes()) {
+			if(!empty($canDelete) && StorageToolSettings::deleteOnUpload() && !StorageToolSettings::queuedDeletes()) {
                 $toDelete = trailingslashit($save_path).$filename;
                 if (file_exists($toDelete)) {
                     @unlink($toDelete);
                 }
 			}
 		}
+
+		$this->resumeOptimizer();
 
 		json_response([
 			'status'=>'ok',

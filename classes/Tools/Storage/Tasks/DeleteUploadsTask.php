@@ -13,7 +13,7 @@
 
 namespace ILAB\MediaCloud\Tools\Storage\Tasks;
 
-use ILAB\MediaCloud\Storage\StorageGlobals;
+use ILAB\MediaCloud\Storage\StorageToolSettings;
 use ILAB\MediaCloud\Tasks\AttachmentTask;
 use ILAB\MediaCloud\Tasks\Task;
 use ILAB\MediaCloud\Tools\Storage\StorageTool;
@@ -98,6 +98,7 @@ class DeleteUploadsTask extends Task {
 		return [];
 	}
 
+
 	//endregion
 
 	//region Execution
@@ -107,7 +108,7 @@ class DeleteUploadsTask extends Task {
 			if (file_exists($selectedItem)) {
 				$this->addItem(['filepath' => $selectedItem]);
 			} else {
-				Logger::info("DeleteUploadTasks::prepare - Skipping $selectedItem - does not exist.");
+				Logger::info("Skipping $selectedItem - does not exist.", [], __METHOD__, __FUNCTION__);
 			}
 		}
 
@@ -151,16 +152,16 @@ class DeleteUploadsTask extends Task {
 		foreach($folders as $folder) {
 			$filecount = count(scandir($folder));
 			if ($filecount <= 2) {
-				Logger::info("Removing directory $folder");
+				Logger::info("Removing directory $folder", [], __METHOD__, __LINE__);
 				@rmdir($folder);
 			} else if (($filecount == 3) && file_exists(trailingslashit($folder).'.DS_STORE')) {
-				Logger::info("Removing .DS_STORE");
+				Logger::info("Removing .DS_STORE", [], __METHOD__, __LINE__);
 				unlink(trailingslashit($folder).'.DS_STORE');
 
-				Logger::info("Removing directory $folder");
+				Logger::info("Removing directory $folder", [], __METHOD__, __LINE__);
 				@rmdir($folder);
 			} else {
-				Logger::info("NOT Removing directory $folder");
+				Logger::info("NOT Removing directory $folder", [], __METHOD__, __LINE__);
 			}
 		}
 
@@ -177,7 +178,7 @@ class DeleteUploadsTask extends Task {
 	 */
 	public function performTask($item) {
 		$filepath = $item['filepath'];
-		Logger::info("Delete {$filepath}");
+		Logger::info("Delete {$filepath}", [], __METHOD__, __LINE__);
 
 		if ($filepath == -1) {
 			return $this->cleanEmptyDirectories();

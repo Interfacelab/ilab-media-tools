@@ -34,6 +34,15 @@ Not uploaded.
     {{$key}}
     @endif
 </div>
+@if(!empty($optimization))
+<div class="info-line">
+	<h3>Optimization</h3>
+	@if($optimization['totalBytes'] > 0)
+		{{sprintf('%.1f%%', ((1.0 - $optimization['optimizedBytes'] / $optimization['totalBytes'])) * 100.0)}} &mdash;
+	@endif
+	{{size_format($optimization['optimizedBytes'])}} (was {{size_format($optimization['totalBytes'])}})
+</div>
+@endif
 @if (!$isSize)
 <div class="info-line">
     <label for="s3-access-acl">Access</label>

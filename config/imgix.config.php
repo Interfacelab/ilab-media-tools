@@ -21,7 +21,7 @@ return [
 	"dependencies" => [
 		"crop",
 		"storage",
-        "!glide"
+		"!optimizer"
 	],
     "related" => ["media-upload", "crop"],
 	"helpers" => [
@@ -95,7 +95,7 @@ return [
                         "title" => "Keep WordPress Thumbnails",
                         "description" => "Because Imgix can dynamically create new sizes for existing images, having WordPress create thumbnails is potentially pointless, a probable waste of space and definitely slows down uploads.  However, if you plan to stop using Imgix, having those thumbnails on S3 or locally will save you having to regenerate thumbnails later.  <strong>IMPORTANT:</strong> Thumbnails will not be generated when you perform a direct upload because those uploads are sent directly to S3 without going through your WordPress server.",
                         "type" => "checkbox",
-                        "default" => "true"
+                        "default" => true
                     ],
 					"mcloud-imgix-render-pdf-files" => [
 						"title" => "Render PDF Files",

@@ -16,7 +16,7 @@
 
 namespace ILAB\MediaCloud\Vision\Driver\Rekognition;
 
-use ILAB\MediaCloud\Storage\StorageManager;
+use ILAB\MediaCloud\Storage\StorageToolSettings;
 use ILAB\MediaCloud\Tools\Storage\StorageTool;
 use ILAB\MediaCloud\Tools\ToolsManager;
 use ILAB\MediaCloud\Utilities\Environment;
@@ -98,11 +98,6 @@ class RekognitionDriver extends VisionDriver {
      * @return bool
      */
     public function enabled() {
-        if (!$this->config->valid()) {
-            $this->enabledError = "Configuration for Rekognition is invalid, probably from using old environment variables that are no longer supported or that have been renamed.";
-            return false;
-        }
-
         /** @var StorageTool $storageTool */
         $storageTool = ToolsManager::instance()->tools['storage'];
         if (!$storageTool || !$storageTool->enabled()) {
@@ -110,7 +105,7 @@ class RekognitionDriver extends VisionDriver {
             return false;
         }
 
-        if (StorageManager::driver() != 's3') {
+        if (StorageToolSettings::driver() != 's3') {
             $this->enabledError = "You must use AWS S3 Cloud Storage to use Rekognition.";
             return false;
         }
@@ -131,7 +126,7 @@ class RekognitionDriver extends VisionDriver {
     }
 
 	public function minimumOptionsEnabled() {
-		return ($this->config->detectLabels() || $this->config->detectFaces() || $this->config->detectExplicit() || $this->config->detectCelebrities());
+		return ($this->settings->detectLabels || $this->settings->detectFaces || $this->settings->detectExplicit || $this->settings->detectCelebrities);
 	}
 
     /**
@@ -154,24 +149,34 @@ class RekognitionDriver extends VisionDriver {
         }
 
         if (!isset($meta['s3'])) {
-            Logger::warning( "Post $postID is  missing 's3' metadata.", $meta);
+            Logger::warning( "Post $postID is  missing 's3' metadata.", $meta, __METHOD__, __LINE__);
             return $meta;
         }
 
         $s3 = $meta['s3'];
 
-        if (!isset($s3['mime-type'])) {
-            Logger::warning( "Post $postID is  missing 's3/mime-type' metadata.", $meta);
-            return $meta;
-        }
+	    if (!isset($s3['mime-type'])) {
+		    Logger::warning( "Post $postID is  missing 's3/mime-type' metadata.", $meta, __METHOD__, __LINE__);
+		    $mime = get_post_mime_type($postID);
+
+		    if (isset($meta['original_image_s3']['mime-type'])) {
+			    Logger::warning( "Applying metadata from original image.", [], __METHOD__, __LINE__);
+			    $s3['mime-type'] = $meta['original_image_s3']['mime-type'];
+		    } else if (!empty($mime)) {
+			    Logger::warning( "Applying metadata from post via get_post_mime_type.", [], __METHOD__, __LINE__);
+			    $s3['mime-type'] = $mime;
+		    } else {
+			    return $meta;
+		    }
+	    }
 
         $mime_parts = explode('/', $s3['mime-type']);
         if ((count($mime_parts)!=2) || ($mime_parts[0] != 'image') || (!in_array($mime_parts[1],['jpg','jpeg', 'png']))) {
-            Logger::warning( "Post $postID is has invalid or missing mime-type.", $meta);
+            Logger::warning( "Post $postID is has invalid or missing mime-type.", $meta, __METHOD__, __LINE__);
             return $meta;
         }
 
-        Logger::info( "Processing Image Meta: $postID", $meta);
+        Logger::info( "Processing Image Meta: $postID", $meta, __METHOD__, __LINE__);
 
 	    if($this->useCredentialProvider) {
 		    $config = [
@@ -192,7 +197,7 @@ class RekognitionDriver extends VisionDriver {
 
         $rekt = new RekognitionClient($config);
 
-        if ($this->config->detectLabels()) {
+        if ($this->settings->detectLabels) {
             try {
                 $result = $rekt->detectLabels([
                     'Attributes' => ['ALL'],
@@ -202,7 +207,7 @@ class RekognitionDriver extends VisionDriver {
                             'Name' => $s3['key']
                         ]
                     ],
-                    'MinConfidence' => $this->config->detectLabelsConfidence()
+                    'MinConfidence' => $this->settings->detectLabelsConfidence
                 ]);
 
                 $labels = $result->get('Labels');
@@ -210,24 +215,24 @@ class RekognitionDriver extends VisionDriver {
                 if (!empty($labels)) {
                     $tags = [];
                     foreach($labels as $label) {
-                        if (!in_array(strtolower($label['Name']), $this->config->ignoredTags())) {
+                        if (!in_array(strtolower($label['Name']), $this->settings->ignoredTags)) {
                             $tags[] = [
                                 'tag' => $label['Name']
                             ];
                         }
                     }
 
-                    $this->processTags($tags, $this->config->detectLabelsTax(), $postID);
+                    $this->processTags($tags, $this->settings->detectLabelsTax, $postID);
 
-                    Logger::info( 'Detect Labels', $tags);
+                    Logger::info( 'Detect Labels', $tags, __METHOD__, __LINE__);
                 }
             } catch (AwsException $ex) {
-                Logger::error( 'Detect Labels Error', [ 'exception' =>$ex->getMessage()]);
+                Logger::error( 'Detect Labels Error', [ 'exception' =>$ex->getMessage()], __METHOD__, __LINE__);
                 return $meta;
             }
         }
 
-        if ($this->config->detectExplicit()) {
+        if ($this->settings->detectExplicit) {
             try {
                 $result = $rekt->detectModerationLabels([
                     'Image' => [
@@ -243,7 +248,7 @@ class RekognitionDriver extends VisionDriver {
                 if (!empty($labels)) {
                     $tags = [];
                     foreach($labels as $label) {
-                        if (!in_array(strtolower($label['Name']), $this->config->ignoredTags())) {
+                        if (!in_array(strtolower($label['Name']), $this->settings->ignoredTags)) {
                             $tag = [
                                 'tag' => $label['Name']
                             ];
@@ -256,17 +261,17 @@ class RekognitionDriver extends VisionDriver {
                         }
                     }
 
-                    $this->processTags($tags, $this->config->detectExplicitTax(), $postID);
+                    $this->processTags($tags, $this->settings->detectExplicitTax, $postID);
                 }
 
-                Logger::info( 'Detect Moderation Labels', $result->toArray());
+                Logger::info( 'Detect Moderation Labels', $result->toArray(), __METHOD__, __LINE__);
             } catch (AwsException $ex) {
-                Logger::error( 'Detect Moderation Error', [ 'exception' =>$ex->getMessage()]);
+                Logger::error( 'Detect Moderation Error', [ 'exception' =>$ex->getMessage()], __METHOD__, __LINE__);
                 return $meta;
             }
         }
 
-        if ($this->config->detectCelebrities()) {
+        if ($this->settings->detectCelebrities) {
             try {
                 $result = $rekt->recognizeCelebrities([
                     'Attributes' => ['ALL'],
@@ -285,7 +290,7 @@ class RekognitionDriver extends VisionDriver {
                     $tags = [];
 
                     foreach($celebs as $celeb) {
-                        $ignoreCeleb = in_array(strtolower($celeb['Name']), $this->config->ignoredTags());
+                        $ignoreCeleb = in_array(strtolower($celeb['Name']), $this->settings->ignoredTags);
 
                         $face = $celeb['Face'];
                         if (!$ignoreCeleb) {
@@ -298,7 +303,7 @@ class RekognitionDriver extends VisionDriver {
                         $allFaces[] = $face;
                     }
 
-                    $this->processTags($tags, $this->config->detectCelebritiesTax(), $postID);
+                    $this->processTags($tags, $this->settings->detectCelebritiesTax, $postID);
                 }
 
                 $otherFaces = $result->get('UnrecognizedFaces');
@@ -312,14 +317,14 @@ class RekognitionDriver extends VisionDriver {
                     $meta['faces'] = $allFaces;
                 }
 
-                Logger::info( 'Detect Celebrities', $result->toArray());
+                Logger::info( 'Detect Celebrities', $result->toArray(), __METHOD__, __LINE__);
             } catch (AwsException $ex) {
-                Logger::error( 'Detect Celebrities Error', [ 'exception' =>$ex->getMessage()]);
+                Logger::error( 'Detect Celebrities Error', [ 'exception' =>$ex->getMessage()], __METHOD__, __LINE__);
                 return $meta;
             }
         }
 
-        if ($this->config->detectFaces()) {
+        if ($this->settings->detectFaces) {
             try {
                 $result = $rekt->detectFaces([
                     'Attributes' => ['ALL'],
@@ -336,9 +341,9 @@ class RekognitionDriver extends VisionDriver {
                     $meta['faces'] = $faces;
                 }
 
-                Logger::info( 'Detect Faces', $result->toArray());
+                Logger::info( 'Detect Faces', $result->toArray(), __METHOD__, __LINE__);
             } catch (AwsException $ex) {
-                Logger::error( 'Detect Faces Error', [ 'exception' =>$ex->getMessage()]);
+                Logger::error( 'Detect Faces Error', [ 'exception' =>$ex->getMessage()], __METHOD__, __LINE__);
                 return $meta;
             }
         }

@@ -98,8 +98,6 @@ final class StoragePostMap {
 				$path = ltrim(str_replace($bucketName,'', $path),'/');
 			}
 
-			$path = apply_filters('media-cloud/glide/clean-path', $path);
-
 			$query = $wpdb->prepare("select ID from {$wpdb->posts} where post_type='attachment' and guid like %s order by ID desc limit 1", '%'.$path);
 			$postId = $wpdb->get_var($query);
 		}
@@ -116,7 +114,7 @@ final class StoragePostMap {
 			return static::$cache[$url];
 		}
 
-		if (!empty(StorageGlobals::cacheLookups())) {
+		if (!empty(StorageToolSettings::instance()->cacheLookups)) {
 			global $wpdb;
 
 			$tableName = $wpdb->base_prefix.'mcloud_post_map';
@@ -142,6 +140,7 @@ final class StoragePostMap {
 		}
 
 		$postId = static::uncachedAttachmentIdFromURL($url, $bucketName);
+
 		return $postId;
 	}
 	//endregion

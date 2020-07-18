@@ -31,15 +31,15 @@ return [
 		    "plugin" => "robin-image-optimizer/robin-image-optimizer.php",
 		    "description" => "The image optimization process is a black box with no available way for Media Cloud to hook into it.  So while it will optimize your images, Media Cloud will be unaware that any optimizations occurred and will not transfer the result to cloud storage."
 	    ],
-	    "TranslatePress - Multilingual" => [
-		    "plugin" => "translatepress-multilingual/index.php",
-		    "description" => "There is a library conflict with TranslatePress that may prevent Media Cloud's background tasks from running.  We are working on a compatibility fix for the next release of Media Cloud."
-	    ],
     ],
     "badPlugins" => [
 	    "OptiMole" => [
 		    "plugin" => "optimole-wp/optimole-wp.php",
 		    "description" => "Optimole uploads and hosts your images on their servers and is fundamentally incompatible with Media Cloud."
+	    ],
+	    "Stop Generating Unnecessary Thumbnails" => [
+		    "plugin" => "image-sizes/image-sizes.php",
+		    "description" => "A useless plugin that can cause media uploads to fail, with or without Media Cloud.  Not exactly sure how it has so many stars."
 	    ],
     ],
 	"CLI" => [
@@ -71,6 +71,15 @@ return [
 			'config' => '/storage/do.config.php',
 			'help' => [
 				[ 'title' => 'Setup Wizard', 'wizard' => 'do' ],
+				[ 'title' => 'Read Documentation', 'url' => 'https://support.mediacloud.press/articles/documentation/cloud-storage/setting-up-digitalocean-spaces' ],
+			]
+		],
+		'dreamhost' => [
+			'name' => 'DreamHost Cloud Storage',
+			'class' => "\\ILAB\\MediaCloud\\Storage\\Driver\\S3\\DreamHostStorage",
+			'config' => '/storage/dreamhost.config.php',
+			'help' => [
+				[ 'title' => 'Setup Wizard', 'wizard' => 'dreamhost' ],
 				[ 'title' => 'Read Documentation', 'url' => 'https://support.mediacloud.press/articles/documentation/cloud-storage/setting-up-digitalocean-spaces' ],
 			]
 		],
@@ -138,110 +147,134 @@ return [
 			],
 			"ilab-media-cloud-upload-handling" => [
 				"title" => "Upload Handling",
-                "dynamic" => true,
+				"dynamic" => true,
 				"doc_link" => 'https://support.mediacloud.press/articles/documentation/cloud-storage/upload-handling-settings',
 				"description" => "The following options control how the storage tool handles uploads.",
-                "options" => [
-	                "mcloud-storage-prefix" => [
-		                "title" => "Upload Path",
-		                "display-order" => 10,
-		                "description" => "This will set the upload path to store uploads both locally and on cloud storage.  Leave blank to use the WordPress default of <code>Month/Day</code>.  For dynamically created paths, you can use the following variables: <code>@{date:format}</code>, <code>@{site-name}</code>, <code>@{site-host}</code>, <code>@{site-id}</code>, <code>@{versioning}</code>, <code>@{user-name}</code>, <code>@{unique-id}</code>, <code>@{unique-path}</code>, <code>@{type}</code>.  For the date token, format is any format string that you can use with php's <a href='http://php.net/manual/en/function.date.php' target='_blank'>date()</a> function.  WordPress's default upload path would look like: <code>@{date:Y/m}</code>.",
-		                "type" => "upload-path"
-	                ],
-	                "mcloud-storage-subsite-prefixes" => [
-		                "title" => "Subsite Upload Paths",
-		                "display-order" => 11,
-		                "description" => "This allows you to override the default upload path for individual subsites in your multisite network.  If left blank, that subsite will use your default upload path.  As with the <strong>Upload Path</strong> setting, you can use the following variables: <code>@{date:format}</code>, <code>@{site-name}</code>, <code>@{site-host}</code>, <code>@{site-id}</code>, <code>@{versioning}</code>, <code>@{user-name}</code>, <code>@{unique-id}</code>, <code>@{unique-path}</code>, <code>@{type}</code>.",
-		                "type" => "subsite-upload-paths",
-		                "multisite" => true,
-	                ],
-	                "mcloud-storage-upload-images" => [
-		                "title" => "Upload Images",
-		                "description" => "Upload image files to cloud storage.",
-		                "display-order" => 12,
-		                "type" => "checkbox",
-		                "default" => true
-	                ],
-	                "mcloud-storage-upload-videos" => [
-		                "title" => "Upload Video Files",
-		                "description" => "Upload video files to cloud storage.",
-		                "display-order" => 13,
-		                "type" => "checkbox",
-		                "default" => true
-	                ],
-	                "mcloud-storage-upload-audio" => [
-		                "title" => "Upload Audio Files",
-		                "description" => "Upload audio files to cloud storage.",
-		                "display-order" => 14,
-		                "type" => "checkbox",
-		                "default" => true
-	                ],
-	                "mcloud-storage-upload-documents" => [
-		                "title" => "Upload Documents",
-		                "description" => "Upload non-image files such as Word documents, PDF files, zip files, etc.",
-		                "display-order" => 15,
-		                "type" => "checkbox",
-		                "default" => true
-	                ],
-                    "mcloud-storage-ignored-mime-types" => [
-                        "title" => "Ignored MIME Types",
-                        "description" => "List of MIME types to ignore.  Any files with matching MIME types will not be uploaded.  You can also use wildcards.  For example <code>image/*</code> would disable uploading for any image.",
-                        "display-order" => 16,
-                        "type" => "text-area"
-                    ],
-                    "mcloud-storage-delete-uploads" => [
-                        "title" => "Delete Uploaded Files",
-                        "description" => "Deletes uploaded files from the WordPress server after they've been uploaded.",
-                        "display-order" => 30,
-                        "type" => "checkbox"
-                    ],
-	                "mcloud-storage-queue-deletes" => [
-		                "title" => "Queue Deletes",
-		                "description" => "When this option is enabled, uploads won't be deleted right away, they will be queued for deletion two to five minutes later.  This allows other plugins the ability to process any uploads before they are deleted from your WordPress server.  If <strong>Delete From Storage</strong> is disabled, this setting is ignored.",
-		                "display-order" => 31,
-		                "type" => "checkbox",
-		                "default" => false
-	                ],
-	                "mcloud-storage-delete-from-server" => [
-		                "title" => "Delete From Storage",
-		                "description" => "When you delete from the media library, turning this on will also delete the file from cloud storage.",
-		                "display-order" => 32,
-		                "type" => "checkbox"
-	                ],
-	                "mcloud-storage-enable-big-size-threshold" => [
-		                "title" => "Enable Big Size Threshold",
-		                "description" => "WordPress 5.3 introduced a new feature that automatically resizes large image uploads to be 'web-ready'.  It essentially replaces your uploaded master image with a version scaled down to 2560x2560.  Use this toggle to enable or disable this feature.",
-		                "display-order" => 40,
-		                "wp_version" => ['>=', "5.3"],
-		                "type" => "checkbox",
-		                "default" => true,
-	                ],
-	                "mcloud-storage-big-size-threshold" => [
-		                "title" => "Big Size Threshold",
-		                "description" => "WordPress 5.3 introduced a new feature that automatically resizes large image uploads to be 'web-ready'.  Use this setting to control the threshold that triggers the resize.",
-		                "display-order" => 41,
-		                "wp_version" => ['>=', "5.3"],
-		                "type" => "number",
-		                "min" => 1024,
-		                "max" => 100000,
-		                "default" => 2560,
-	                ],
-	                "mcloud-storage-big-size-upload-original" => [
-		                "title" => "Upload Original",
-		                "description" => "WordPress 5.3 introduced a new feature that automatically resizes large image uploads to be 'web-ready'.  Use this setting to upload the unscaled original image to cloud storage.  If this is disabled and you have <strong>Delete Uploads</strong> enabled, the original file will not be deleted.",
-		                "display-order" => 42,
-		                "wp_version" => ['>=', "5.3"],
-		                "type" => "checkbox",
-		                "default" => true,
-	                ],
-	                "mcloud-storage-skip-import-other-plugin" => [
-		                "title" => "Skip Importing From Other Plugins",
-		                "description" => "Skip importing from other plugins like WP Offload Media, WP-Stateless and other cloud storage plugins.",
-		                "display-order" => 50,
-		                "type" => "checkbox",
-		                "default" => false,
-	                ],
-                ]
+				"options" => [
+					"mcloud-storage-prefix" => [
+						"title" => "Upload Path",
+						"display-order" => 10,
+						"description" => "This will set the upload path to store uploads both locally and on cloud storage.  Leave blank to use the WordPress default of <code>Month/Day</code>.  For dynamically created paths, you can use the following variables: <code>@{date:format}</code>, <code>@{site-name}</code>, <code>@{site-host}</code>, <code>@{site-id}</code>, <code>@{versioning}</code>, <code>@{user-name}</code>, <code>@{unique-id}</code>, <code>@{unique-path}</code>, <code>@{type}</code>.  For the date token, format is any format string that you can use with php's <a href='http://php.net/manual/en/function.date.php' target='_blank'>date()</a> function.  WordPress's default upload path would look like: <code>@{date:Y/m}</code>.",
+						"type" => "upload-path"
+					],
+					"mcloud-storage-subsite-prefixes" => [
+						"title" => "Sub-site Upload Paths",
+						"display-order" => 11,
+						"description" => "This allows you to override the default upload path for individual sub-sites in your multisite network.  If left blank, that sub-site will use your default upload path.  As with the <strong>Upload Path</strong> setting, you can use the following variables: <code>@{date:format}</code>, <code>@{site-name}</code>, <code>@{site-host}</code>, <code>@{site-id}</code>, <code>@{versioning}</code>, <code>@{user-name}</code>, <code>@{unique-id}</code>, <code>@{unique-path}</code>, <code>@{type}</code>.",
+						"type" => "subsite-upload-paths",
+						"multisite" => true,
+					],
+					"mcloud-storage-keep-subsite-path" => [
+						"title" => "Keep Sub-site Path",
+						"description" => "Using a custom prefix will remove the subsite's upload path, for example <code>https://yoursites.com/site/2/2020/07/yourfile.jpg</code> will become <code>https://yoursites.com/2020/07/yourfile.jpg</code> when using a custom prefix.  Turning this option retains the <code>site/2/</code> part of the path.  Note that this only impacts sub-sites that aren't the main site.",
+						"display-order" => 12,
+						"type" => "checkbox",
+						"default" => false,
+						"multisite" => true,
+					],
+					"mcloud-storage-upload-images" => [
+						"title" => "Upload Images",
+						"description" => "Upload image files to cloud storage.",
+						"display-order" => 13,
+						"type" => "checkbox",
+						"default" => true
+					],
+					"mcloud-storage-upload-videos" => [
+						"title" => "Upload Video Files",
+						"description" => "Upload video files to cloud storage.",
+						"display-order" => 14,
+						"type" => "checkbox",
+						"default" => true
+					],
+					"mcloud-storage-upload-audio" => [
+						"title" => "Upload Audio Files",
+						"description" => "Upload audio files to cloud storage.",
+						"display-order" => 15,
+						"type" => "checkbox",
+						"default" => true
+					],
+					"mcloud-storage-upload-documents" => [
+						"title" => "Upload Documents",
+						"description" => "Upload non-image files such as Word documents, PDF files, zip files, etc.",
+						"display-order" => 16,
+						"type" => "checkbox",
+						"default" => true
+					],
+					"mcloud-storage-ignored-mime-types" => [
+						"title" => "Ignored MIME Types",
+						"description" => "List of MIME types to ignore.  Any files with matching MIME types will not be uploaded.  You can also use wildcards.  For example <code>image/*</code> would disable uploading for any image.",
+						"display-order" => 17,
+						"type" => "text-area"
+					],
+
+					"mcloud-storage-overwrite-existing" => [
+						"title" => "Overwrite Existing Files",
+						"description" => "When disabled, Media Cloud will check to see if a file of the same name exists on cloud storage.  If it does, Media Cloud will prepend a unique identifier to the file being uploaded so the existing one is not overwritten.  When this is enabled, Media Cloud will overwrite the existing file on cloud storage, if it exists, but you will then have two items in your media library that point to the same file which is likely not what you want.",
+						"display-order" => 29,
+						"type" => "checkbox",
+						"default" => false
+					],
+					"mcloud-storage-delete-uploads" => [
+						"title" => "Delete Uploaded Files",
+						"description" => "Deletes uploaded files from the WordPress server after they've been uploaded.",
+						"display-order" => 30,
+						"type" => "checkbox"
+					],
+					"mcloud-storage-queue-deletes" => [
+						"title" => "Queue Deletes",
+						"description" => "When this option is enabled, uploads won't be deleted right away, they will be queued for deletion two to five minutes later.  This allows other plugins the ability to process any uploads before they are deleted from your WordPress server.  If <strong>Delete From Storage</strong> is disabled, this setting is ignored.",
+						"display-order" => 31,
+						"type" => "checkbox",
+						"default" => false
+					],
+					"mcloud-storage-delete-from-server" => [
+						"title" => "Delete From Storage",
+						"description" => "When you delete from the media library, turning this on will also delete the file from cloud storage.",
+						"display-order" => 32,
+						"type" => "checkbox"
+					],
+					"mcloud-storage-skip-import-other-plugin" => [
+						"title" => "Skip Importing From Other Plugins",
+						"description" => "Skip importing from other plugins like WP Offload Media, WP-Stateless and other cloud storage plugins.",
+						"display-order" => 50,
+						"type" => "checkbox",
+						"default" => false,
+					],
+				]
+			],
+			"ilab-media-cloud-image-upload-handling" => [
+				"title" => "Image Upload Handling",
+				"dynamic" => true,
+				"doc_link" => 'https://support.mediacloud.press/articles/documentation/cloud-storage/upload-handling-settings',
+				"description" => "The following options control how the storage tool handles image uploads.",
+				"options" => [
+					"mcloud-storage-enable-big-size-threshold" => [
+						"title" => "Enable Big Size Threshold",
+						"description" => "WordPress 5.3 introduced a new feature that automatically resizes large image uploads to be 'web-ready'.  It essentially replaces your uploaded master image with a version scaled down to 2560x2560.  Use this toggle to enable or disable this feature.",
+						"display-order" => 40,
+						"wp_version" => ['>=', "5.3"],
+						"type" => "checkbox",
+						"default" => true,
+					],
+					"mcloud-storage-big-size-threshold" => [
+						"title" => "Big Size Threshold",
+						"description" => "WordPress 5.3 introduced a new feature that automatically resizes large image uploads to be 'web-ready'.  Use this setting to control the threshold that triggers the resize.",
+						"display-order" => 41,
+						"wp_version" => ['>=', "5.3"],
+						"type" => "number",
+						"min" => 1024,
+						"max" => 100000,
+						"default" => 2560,
+					],
+					"mcloud-storage-big-size-upload-original" => [
+						"title" => "Upload Original",
+						"description" => "WordPress 5.3 introduced a new feature that automatically resizes large image uploads to be 'web-ready'.  Use this setting to upload the unscaled original image to cloud storage.  If this is disabled and you have <strong>Delete Uploads</strong> enabled, the original file will not be deleted.",
+						"display-order" => 42,
+						"wp_version" => ['>=', "5.3"],
+						"type" => "checkbox",
+						"default" => true,
+					],
+				]
 			],
 			"ilab-media-cloud-signed-urls" => [
 				"title" => "Secure URL Settings",

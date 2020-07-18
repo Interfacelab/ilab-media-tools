@@ -81,24 +81,53 @@ return [
                 "description" => "Sets the Expire metadata for uploads.  This is the number of minutes from the date of upload.",
                 "type" => "text-field",
             ],
-	        "mcloud-storage-big-size-original-privacy" => [
-		        "title" => "Original Image Privacy ACL",
-		        "description" => "This will set the privacy for the original image upload.",
-		        "display-order" => 43,
-		        "type" => "select",
-		        "default" => 'authenticated-read',
-		        "options" => [
-			        "public-read" => "Public",
-			        "authenticated-read" => "Private"
-		        ],
-	        ],
         ]
     ],
+	"ilab-media-cloud-image-upload-handling" => [
+		"title" => "Image Upload Handling",
+		"dynamic" => true,
+		"doc_link" => 'https://support.mediacloud.press/articles/documentation/cloud-storage/upload-handling-settings',
+		"description" => "The following options control how the storage tool handles image uploads.",
+		"options" => [
+			"mcloud-storage-big-size-original-privacy" => [
+				"title" => "Original Image Privacy ACL",
+				"description" => "This will set the privacy for the original image upload.",
+				"display-order" => 43,
+				"type" => "select",
+				"default" => 'authenticated-read',
+				"options" => [
+					"public-read" => "Public",
+					"authenticated-read" => "Private"
+				],
+			],
+		]
+	],
 	"ilab-media-cloud-signed-urls" => [
 		"title" => "Secure URL Settings",
 		"description" => "These settings control how pre-signed URLs work.",
 		"dynamic" => true,
 		"options" => [
-		]
+			"mcloud-storage-use-presigned-urls" => [
+				"title" => "Use Pre-Signed URLs",
+				"description" => "Set to true to generate signed URLs that will expire within a specified time period.  You should use this if you've set the default ACL to private.",
+				"display-order" => 1,
+				"type" => "checkbox",
+				"default" => false,
+			],
+			"mcloud-storage-presigned-expiration" => [
+				"title" => "Pre-Signed URL Expiration",
+				"description" => "The number of minutes the signed URL is valid for.",
+				"display-order" => 2,
+				"type" => "number",
+				"default" => 10,
+			],
+			"mcloud-storage-use-presigned-urls-advanced" => [
+				"title" => "Advanced Pre-Signed URL Settings",
+				"description" => "",
+				"display-order" => 3,
+				"type" => "advanced-presigned",
+				"plan" => "pro"
+			],
+		],
 	],
 ];

@@ -66,7 +66,7 @@ final class ToolsManager
     //region Constructor
     public function __construct()
     {
-        MigrationsManager::instance()->migrate();
+        //        MigrationsManager::instance()->migrate();
         $this->tools = [];
         $hasRun = get_option( 'mcloud-has-run', false );
         
@@ -232,7 +232,7 @@ final class ToolsManager
             );
         }
         
-        if ( !empty(constant( 'MCLOUD_IS_BETA' )) ) {
+        if ( defined( 'MCLOUD_IS_BETA' ) && !empty(constant( 'MCLOUD_IS_BETA' )) ) {
             $message = View::render_view( 'beta.beta-notes', [] );
             NoticeManager::instance()->displayAdminNotice(
                 'info',
@@ -250,7 +250,8 @@ final class ToolsManager
         foreach ( $this->tools as $key => $tool ) {
             $tool->setup();
         }
-        MigrationsManager::instance()->displayMigrationErrors();
+        do_action( 'mediacloud/tasks/register' );
+        //        MigrationsManager::instance()->displayMigrationErrors();
     }
     
     //endregion
@@ -297,6 +298,7 @@ final class ToolsManager
             // Register Tools
             ToolsManager::registerTool( "storage", include ILAB_CONFIG_DIR . '/storage.config.php' );
             ToolsManager::registerTool( "imgix", include ILAB_CONFIG_DIR . '/imgix.config.php' );
+            ToolsManager::registerTool( "video-encoding", include ILAB_CONFIG_DIR . '/video-encoding.config.php' );
             ToolsManager::registerTool( "vision", include ILAB_CONFIG_DIR . '/vision.config.php' );
             ToolsManager::registerTool( "crop", include ILAB_CONFIG_DIR . '/crop.config.php' );
             ToolsManager::registerTool( "debugging", include ILAB_CONFIG_DIR . '/debugging.config.php' );
@@ -307,11 +309,6 @@ final class ToolsManager
                 ToolsManager::registerTool( "opt-in", include ILAB_CONFIG_DIR . '/opt-in.config.php' );
             }
             do_action( 'media-cloud/tools/register-tools' );
-            if ( LicensingManager::ScreenSharingEnabled() ) {
-                add_action( 'admin_footer', function () {
-                    echo  View::render_view( 'support.screen-sharing', [] ) ;
-                } );
-            }
         }
         
         // Make sure the NoticeManager is initialized
@@ -475,14 +472,7 @@ final class ToolsManager
                     }
                     $tool = $this->tools[$pinnedTool];
                     $displayedSettings[] = $pinnedTool;
-                    
-                    if ( $this->tools[$pinnedTool]->envEnabled() && $tool->hasSettings() ) {
-                        $pinnedSlug = 'media-cloud-settings-' . $pinnedTool;
-                    } else {
-                        $pinnedSlug = 'media-cloud-settings-pinned-' . $pinnedTool;
-                        //.'&pinned=true';
-                    }
-                    
+                    $pinnedSlug = 'media-cloud-settings-pinned-' . $pinnedTool;
                     add_submenu_page(
                         'media-cloud',
                         $tool->toolInfo['name'] . ' Settings',
@@ -562,13 +552,6 @@ final class ToolsManager
             'Documentation',
             'manage_options',
             'https://support.mediacloud.press/'
-        );
-        add_submenu_page(
-            'media-cloud',
-            'Plugin Support',
-            'Forums',
-            'manage_options',
-            'https://forums.mediacloud.press/'
         );
         if ( media_cloud_licensing()->is_plan( 'pro' ) ) {
             add_submenu_page(
@@ -703,6 +686,7 @@ final class ToolsManager
      * Determines if a tool is enabled or not
      *
      * @param $toolName
+     *
      * @return bool
      */
     public function toolEnabled( $toolName )
@@ -717,6 +701,7 @@ final class ToolsManager
      * Determines if a tool is enabled or not via environment settings
      *
      * @param $toolName
+     *
      * @return bool
      */
     public function toolEnvEnabled( $toolName )
@@ -839,6 +824,8 @@ final class ToolsManager
                     'help'        => $help,
                     'description' => arrayPath( $selectedTool->toolInfo, "settings/groups/{$section['id']}/description", null ),
                     'hide-save'   => arrayPath( $selectedTool->toolInfo, "settings/groups/{$section['id']}/hide-save", false ),
+                    'custom'      => arrayPath( $selectedTool->toolInfo, "settings/groups/{$section['id']}/custom", false ),
+                    'callback'    => arrayPath( $selectedTool->toolInfo, "settings/groups/{$section['id']}/callback", false ),
                 ];
             }
             echo  View::render_view( 'base/settings', [

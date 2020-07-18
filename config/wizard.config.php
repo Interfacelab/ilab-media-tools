@@ -26,6 +26,7 @@ $builder
 				->option('s3', 'Amazon S3', 'wizard.cloud-storage.providers.s3.description', 'wizard-icon-s3.svg', 'cloud-storage-s3', 'select-s3')
 				->option('google', 'Google Cloud Storage', 'wizard.cloud-storage.providers.google.description', 'wizard-icon-google.svg', 'cloud-storage-google')
 				->option('do', 'DigitalOcean Spaces', 'wizard.cloud-storage.providers.do.description', 'wizard-icon-do.svg', 'cloud-storage-do')
+				->option('dreamhost', 'DreamHost Cloud Storage', 'wizard.cloud-storage.providers.dreamhost.description', 'wizard-icon-dreamhost.svg', 'cloud-storage-dreamhost')
 				->option('wasabi', 'Wasabi', 'wizard.cloud-storage.providers.wasabi.description', 'wizard-icon-wasabi.png', 'cloud-storage-wasabi')
 				->option('backblaze', 'Backblaze', 'wizard.cloud-storage.providers.backblaze.description', 'wizard-icon-backblaze.svg', 'cloud-storage-backblaze')
 				->option('minio', 'Minio', 'wizard.cloud-storage.providers.minio.description', 'wizard-icon-minio.png', 'cloud-storage-minio')
@@ -40,6 +41,7 @@ S3Storage::configureWizard($builder);
 \ILAB\MediaCloud\Tools\Imgix\ImgixTool::configureWizard($builder);
 \ILAB\MediaCloud\Storage\Driver\S3\OtherS3Storage::configureWizard($builder);
 \ILAB\MediaCloud\Storage\Driver\S3\DigitalOceanStorage::configureWizard($builder);
+\ILAB\MediaCloud\Storage\Driver\S3\DreamHostStorage::configureWizard($builder);
 \ILAB\MediaCloud\Storage\Driver\S3\WasabiStorage::configureWizard($builder);
 \ILAB\MediaCloud\Storage\Driver\S3\MinioStorage::configureWizard($builder);
 \ILAB\MediaCloud\Storage\Driver\Backblaze\BackblazeStorage::configureWizard($builder);

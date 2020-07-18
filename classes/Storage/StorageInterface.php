@@ -17,8 +17,6 @@
 namespace ILAB\MediaCloud\Storage;
 
 use ILAB\MediaCloud\Utilities\Logging\ErrorCollector;
-use ILAB\MediaCloud\Wizard\WizardBuilder;
-use League\Flysystem\AdapterInterface;
 
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
@@ -32,6 +30,12 @@ interface StorageInterface {
 	 * @return bool
 	 */
 	public function supportsDirectUploads();
+
+	/**
+	 * Determines if the StorageInterface supports wildcard direct uploads
+	 * @return bool
+	 */
+	public function supportsWildcardDirectUploads();
 
 	/**
 	 * The identifier for the storage interface, eg 's3', 'do', etc.
@@ -283,14 +287,15 @@ interface StorageInterface {
 	 */
 	public function ls($path = '', $delimiter = '/');
 
-    /**
-     * @return AdapterInterface
-     */
-	public function adapter();
-
 	/**
 	 * Determines if the storage provider supports browsing
 	 * @return bool
 	 */
 	public function supportsBrowser();
+
+	/**
+	 * Returns the necessary information for optimization service to deliver optimized directly to cloud storage
+	 * @return array
+	 */
+	public function prepareOptimizationInfo();
 }

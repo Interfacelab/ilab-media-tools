@@ -20,13 +20,10 @@ use FasterImage\FasterImage;
 use ILAB\MediaCloud\Storage\FileInfo;
 use ILAB\MediaCloud\Storage\InvalidStorageSettingsException;
 use ILAB\MediaCloud\Storage\StorageException;
-use ILAB\MediaCloud\Storage\StorageManager;
-use ILAB\MediaCloud\Storage\StorageGlobals;
+use ILAB\MediaCloud\Storage\StorageToolSettings;
 use function ILAB\MediaCloud\Utilities\anyNull;
 use function ILAB\MediaCloud\Utilities\arrayPath;
 use ILAB\MediaCloud\Utilities\Environment;
-use ILAB\MediaCloud\Wizard\ConfiguresWizard;
-use ILAB\MediaCloud\Wizard\StorageWizardTrait;
 use ILAB\MediaCloud\Wizard\WizardBuilder;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
@@ -184,7 +181,7 @@ class OtherS3Storage extends S3Storage {
 		$builder->select('Complete', 'Basic setup is now complete!  Configure advanced settings or setup imgix.')
 			->group('wizard.cloud-storage.providers.other-s3.success', 'select-buttons')
 				->option('configure-imgix', 'Set Up imgix', null, null, 'imgix')
-				->option('advanced-settings', 'Advanced Settings', null, null, null, null, 'admin:admin.php?page=media-cloud-settings-storage')
+				->option('advanced-settings', 'Advanced Settings', null, null, null, null, 'admin:admin.php?page=media-cloud-settings&tab=storage')
 			->endGroup()
 		->endStep();
 
@@ -232,7 +229,7 @@ class OtherS3Storage extends S3Storage {
 		$oldEndpoint = Environment::ReplaceOption($endpointName, $endpoint);
 		$oldPathStyleEndpoint = Environment::ReplaceOption($pathStyleEndpointName, $pathStyleEndpoint);
 
-		StorageManager::resetStorageInstance();
+		StorageToolSettings::resetStorageInstance();
 
 		try {
 			$storage = new static();
@@ -250,7 +247,7 @@ class OtherS3Storage extends S3Storage {
 			Environment::UpdateOption($endpointName, $oldEndpoint);
 			Environment::UpdateOption($pathStyleEndpointName, $oldPathStyleEndpoint);
 
-			StorageManager::resetStorageInstance();
+			StorageToolSettings::resetStorageInstance();
 
 			$message = "There was a problem with your settings.  Please double check entries for potential mistakes.";
 
@@ -262,4 +259,11 @@ class OtherS3Storage extends S3Storage {
 
 	//endregion
 
+
+	//region Optimization
+	public function prepareOptimizationInfo() {
+		return [
+		];
+	}
+	//endregion
 }

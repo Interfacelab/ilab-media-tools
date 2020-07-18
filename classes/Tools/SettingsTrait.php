@@ -119,13 +119,13 @@ trait SettingsTrait {
      * @param null $placeholder
      * @param null $conditions
      */
-    protected function registerTextFieldSetting($option_name, $title, $settings_slug, $description=null, $placeholder=null, $conditions=null) {
+    protected function registerTextFieldSetting($option_name, $title, $settings_slug, $description=null, $placeholder=null, $conditions=null, $default=null) {
         add_settings_field($option_name,
             $title,
             [$this,'renderTextFieldSetting'],
             $this->options_page,
             $settings_slug,
-            ['option'=>$option_name, 'description'=>$description, 'placeholder' => $placeholder, 'conditions' => $conditions]);
+            ['option'=>$option_name, 'description'=>$description, 'placeholder' => $placeholder, 'conditions' => $conditions, 'default' => $default]);
     }
 
     /**
@@ -133,8 +133,13 @@ trait SettingsTrait {
      * @param $args
      */
     public function renderTextFieldSetting($args) {
+    	$value = Environment::Option($args['option']);
+    	if (empty($value) && !empty($args['default'])) {
+    		$value = $args['default'];
+	    }
+
         echo View::render_view('base/fields/text-field.php',[
-            'value' => Environment::Option($args['option']),
+            'value' => $value,
             'name' => $args['option'],
             'placeholder' => $args['placeholder'],
             'conditions' => $args['conditions'],
@@ -289,7 +294,7 @@ trait SettingsTrait {
             [$this,$renderCallback],
             $this->options_page,
             $settings_slug,
-            ['option'=>$option_name,'description'=>$description, 'conditions' => $conditions]);
+            ['custom' => true, 'option'=>$option_name,'description'=>$description, 'conditions' => $conditions]);
     }
 
     /**
@@ -352,8 +357,13 @@ trait SettingsTrait {
      * @param $args
      */
     public function renderNumberFieldSetting($args) {
+    	$val = Environment::Option($args['option'], null, null);
+    	if (empty($val)) {
+    		$val =  $args['default'];
+	    }
+
         echo View::render_view('base/fields/number.php',[
-            'value' => Environment::Option($args['option'], null, $args['default']),
+            'value' => $val,
             'name' => $args['option'],
             'min' => $args['min'],
             'max' => $args['max'],
@@ -589,4 +599,35 @@ trait SettingsTrait {
             'description' => (isset($args['description'])) ? $args['description'] : false
         ]);
     }
+
+	public function registerWebhookSetting($option_name, $title, $settings_slug, $editable = true, $description = null, $conditions = null,  $default = null) {
+		add_settings_field($option_name,
+			$title,
+			[$this,'renderWebhookSetting'],
+			$this->options_page,
+			$settings_slug,
+			[
+				'option'=> $option_name,
+				'editable' => $editable,
+				'description' => $description,
+				'conditions' => $conditions,
+				'default' => $default
+			]
+		);
+	}
+
+	public function renderWebhookSetting($args) {
+		$value = Environment::Option($args['option']);
+		if (empty($value) && !empty($args['default'])) {
+			$value = home_url($args['default']);
+		}
+
+		echo View::render_view('base.fields.webhook',[
+			'value' => $value,
+			'name' => $args['option'],
+			'editable' => $args['editable'],
+			'conditions' => $args['conditions'],
+			'description' => (isset($args['description'])) ? $args['description'] : false
+		]);
+	}
 }

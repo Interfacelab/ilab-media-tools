@@ -13,7 +13,7 @@
 
 namespace ILAB\MediaCloud\Tools\Storage\Tasks;
 
-use ILAB\MediaCloud\Storage\StorageGlobals;
+use ILAB\MediaCloud\Storage\StorageToolSettings;
 use ILAB\MediaCloud\Tasks\AttachmentTask;
 use ILAB\MediaCloud\Tools\Storage\StorageTool;
 use ILAB\MediaCloud\Tools\ToolsManager;
@@ -179,16 +179,16 @@ class CleanUploadsTask extends AttachmentTask {
 		foreach($folders as $folder) {
 			$filecount = count(scandir($folder));
 			if ($filecount <= 2) {
-				Logger::info("Removing directory $folder");
+				Logger::info("Removing directory $folder", [], __METHOD__, __LINE__);
 				@rmdir($folder);
 			} else if (($filecount == 3) && file_exists(trailingslashit($folder).'.DS_STORE')) {
-				Logger::info("Removing .DS_STORE");
+				Logger::info("Removing .DS_STORE", [], __METHOD__, __LINE__);
 				unlink(trailingslashit($folder).'.DS_STORE');
 
-				Logger::info("Removing directory $folder");
+				Logger::info("Removing directory $folder", [], __METHOD__, __LINE__);
 				@rmdir($folder);
 			} else {
-				Logger::info("NOT Removing directory $folder");
+				Logger::info("NOT Removing directory $folder", [], __METHOD__, __LINE__);
 			}
 		}
 
@@ -207,7 +207,7 @@ class CleanUploadsTask extends AttachmentTask {
 		$post_id = $item['id'];
 
 		if ($post_id == -1) {
-			Logger::info("Cleaning empty directories.");
+			Logger::info("Cleaning empty directories.", [], __METHOD__, __LINE__);
 			return $this->cleanEmptyDirectories();
 		}
 
@@ -215,7 +215,7 @@ class CleanUploadsTask extends AttachmentTask {
 			return true;
 		}
 
-		Logger::info("Processing $post_id");
+		Logger::info("Processing $post_id", [], __METHOD__, __LINE__);
 
 		$this->updateCurrentPost($post_id);
 
@@ -243,12 +243,12 @@ class CleanUploadsTask extends AttachmentTask {
 
 		foreach($filesToDelete as $file) {
 			if (file_exists($file)) {
-				Logger::info("Deleting $file");
+				Logger::info("Deleting $file", [], __METHOD__, __LINE__);
 				@unlink($file);
 			}
 		}
 
-		Logger::info("Finished processing $post_id");
+		Logger::info("Finished processing $post_id", [], __METHOD__, __LINE__);
 
 		return true;
 	}

@@ -15,7 +15,7 @@ if (!defined('ABSPATH')) { header('Location: /'); die; }
 
 return [
     "id" => "vision",
-    "name" => "Vision",
+    "name" => "Computer Vision",
 	"description" => "Uses Amazon's Rekognition AI or Google's Cloud Vision service to automatically tag and categorize your uploaded images.",
 	"class" => "ILAB\\MediaCloud\\Tools\\Vision\\VisionTool",
 	"env" => "ILAB_VISION_ENABLED",
@@ -75,17 +75,45 @@ return [
 						"type" => "checkbox",
 						"default" => false
 					],
+					"mcloud-vision-save-tags-to-alt" => [
+						"title" => "Save Taxonomy to Alt Text",
+						"description" => "Saves any detected taxonomy to the alt text of the attachment.",
+						"display-order" => 10,
+						"type" => "checkbox",
+						"default" => false
+					],
+					"mcloud-vision-save-tags-to-caption" => [
+						"title" => "Save Taxonomy to Caption",
+						"description" => "Saves any detected taxonomy to the caption of the attachment.",
+						"display-order" => 11,
+						"type" => "checkbox",
+						"default" => false
+					],
+					"mcloud-vision-save-tags-to-description" => [
+						"title" => "Save Taxonomy to Description",
+						"description" => "Saves any detected taxonomy to the description of the attachment.",
+						"display-order" => 12,
+						"type" => "checkbox",
+						"default" => false
+					],
+					"mcloud-vision-tax-prefix" => [
+						"title" => "Taxonomy Prefix Text",
+						"description" => "When saving the detected labels to the alt text, caption and/or description, this text will be prefixed to it.",
+						"type" => "text-field",
+						"placeholder" => "Image may contain: ",
+						"display-order" => 13,
+					],
 					"mcloud-vision-always-background" => [
 						"title" => "Always Process in Background",
 						"description" => "Controls if Vision tasks are processed during an upload or queued to a background task to be processed at a later time (usually within a few minutes).",
-						"display-order" => 9,
+						"display-order" => 14,
 						"type" => "checkbox",
 						"default" => false
 					],
 					"mcloud-vision-force-term-count" => [
 						"title" => "Force Term Count",
 						"description" => "By default, WordPress will not include an attachment in a term or category's count if it is not attached to anything.  Enabling this will force WordPress to include it in the term count.",
-						"display-order" => 10,
+						"display-order" => 15,
 						"type" => "checkbox",
 						"default" => false
 					],

@@ -62,6 +62,12 @@ abstract class Model {
 	 */
 	protected $jsonProperties = [];
 
+	/**
+	 * Map of column name to property names
+	 * @var array
+	 */
+	protected $columnMap = [];
+
 	//endregion
 
 	//region Static Methods
@@ -99,20 +105,26 @@ abstract class Model {
 
 			$modelProps = array_keys($this->modelProperties);
 			foreach($modelProps as $prop) {
-				if (property_exists($data, $prop)) {
+				$propName = $prop;
+
+				if (isset($this->columnMap[$prop])) {
+					$propName = $this->columnMap[$prop];
+				}
+
+				if (property_exists($data, $propName)) {
 					if (in_array($prop, $this->serializedProperties)) {
-						$this->{$prop} = maybe_unserialize($data->{$prop});
+						$val = $data->{$propName};
+						$this->{$prop} = maybe_unserialize($val);
 					} else if (in_array($prop, $this->jsonProperties)) {
-						if (!empty($data->{$prop})) {
-							$this->{$prop} = json_decode($data->{$prop}, true);
+						if (!empty($data->{$propName})) {
+							$this->{$prop} = json_decode($data->{$propName}, true);
 						}
 					} else {
-						$this->{$prop} = $data->{$prop};
+						$this->{$prop} = $data->{$propName};
 					}
 				}
 			}
 		}
-
 	}
 
 	//endregion
@@ -191,19 +203,25 @@ abstract class Model {
 		$formats = [];
 
 		foreach($this->modelProperties as $prop => $format) {
+			$colName = $prop;
+
+			if (isset($this->columnMap[$prop])) {
+				$colName = $this->columnMap[$prop];
+			}
+
 			if (in_array($prop, $this->serializedProperties)) {
-				$data[$prop] = maybe_serialize($this->{$prop});
+				$data[$colName] = maybe_serialize($this->{$prop});
 				$formats[] = '%s';
 			} else if (in_array($prop, $this->jsonProperties)) {
 				if (!empty($this->{$prop})) {
-					$data[$prop] = json_encode($this->{$prop}, JSON_PRETTY_PRINT);
+					$data[$colName] = json_encode($this->{$prop}, JSON_PRETTY_PRINT);
 				} else {
-					$data[$prop] = null;
+					$data[$colName] = null;
 				}
 
 				$formats[] = '%s';
 			} else {
-				$data[$prop] = $this->{$prop};
+				$data[$colName] = $this->{$prop};
 				$formats[] = $format;
 			}
 		}
@@ -214,12 +232,18 @@ abstract class Model {
 				$this->id = $wpdb->insert_id;
 				$this->modelState = self::MODEL_LIVE;
 				return true;
+			} else {
+				$lastError = $wpdb->last_error;
+				error_log($lastError);
 			}
 		} else {
 			$result = $wpdb->update(static::table(), $data, ['id' => $this->id], $formats);
 			if (!empty($result)) {
 				$this->modelState = self::MODEL_LIVE;
 				return true;
+			} else {
+				$error = $wpdb->last_error;
+				$dafuk = 'what';
 			}
 		}
 
@@ -230,7 +254,6 @@ abstract class Model {
 	 * Called before the model deletes itself
 	 */
 	protected function willDelete() {
-
 	}
 
 	/**
@@ -263,7 +286,7 @@ abstract class Model {
 	/**
 	 * Returns a task with the given ID
 	 *
-	 * @param $id
+	 * @param int $id
 	 *
 	 * @return Model|null
 	 * @throws \Exception

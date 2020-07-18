@@ -169,7 +169,7 @@ class ProcessVisionTask extends AttachmentTask {
 		$this->updateCurrentPost($post_id);
 
 
-		Logger::info("Processing $post_id");
+		Logger::info("Processing $post_id", [], __METHOD__, __LINE__);
 
 		/** @var VisionTool $visionTool */
 		$visionTool = ToolsManager::instance()->tools['vision'];
@@ -177,7 +177,7 @@ class ProcessVisionTask extends AttachmentTask {
 		$data = $visionTool->processImageMeta($data, $post_id);
 		update_post_meta($post_id, '_wp_attachment_metadata', $data);
 
-		Logger::info("Finished processing $post_id");
+		Logger::info("Finished processing $post_id", [], __METHOD__, __LINE__);
 
 		return true;
 	}

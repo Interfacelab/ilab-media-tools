@@ -22,7 +22,6 @@ final class Tracker {
 	const TRACKED_TOOLS = [
 		'storage',
 		'imgix',
-		'glide',
 		'media-upload',
 		'vision',
 		'assets',

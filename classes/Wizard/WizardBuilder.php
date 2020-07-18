@@ -181,7 +181,11 @@ final class WizardBuilder {
 		}
 
 		if (!empty($link) && (strpos($link, 'admin:') === 0)) {
-			$link = admin_url(str_replace('admin:', '', $link));
+			if (media_cloud_licensing()->is_network_active()) {
+				$link = network_admin_url(str_replace('admin:', '', $link));
+			} else {
+				$link = admin_url(str_replace('admin:', '', $link));
+			}
 		}
 
 		$this->currentGroup['options'][$identifier] = [
@@ -272,6 +276,7 @@ final class WizardBuilder {
 	public function test($title, $description, $handler) {
 		$this->currentStep['tests'][] = [
 			'title' => $title,
+			'wizard_ajax' => true,
 			'description' => $description,
 			'handler' => $handler
 		];

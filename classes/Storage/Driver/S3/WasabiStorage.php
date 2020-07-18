@@ -147,14 +147,16 @@ class WasabiStorage extends OtherS3Storage {
 				$optionsData[] = ['Expires' => $expires];
 			}
 
+
+
 			$putCommand = $this->client->getCommand('PutObject',$optionsData);
 			$request = $this->client->createPresignedRequest($putCommand, '+20 minutes');
 			$signedUrl = (string)$request->getUri();
 
 			return new OtherS3UploadInfo($key,$signedUrl,$acl);
 		}
-		catch(AwsException $ex) {
-			Logger::error('S3 Generate File Upload URL Error', ['exception' => $ex->getMessage()]);
+		catch(\Exception $ex) {
+			Logger::error('S3 Generate File Upload URL Error', ['exception' => $ex->getMessage()], __METHOD__, __LINE__);
 			throw new StorageException($ex->getMessage(), $ex->getCode(), $ex);
 		}
 	}
@@ -203,7 +205,7 @@ class WasabiStorage extends OtherS3Storage {
 		$builder->select('Complete', 'Basic setup is now complete!  Configure advanced settings or setup imgix.')
 			->group('wizard.cloud-storage.providers.wasabi.success', 'select-buttons')
 				->option('configure-imgix', 'Set Up imgix', null, null, 'imgix')
-				->option('advanced-settings', 'Advanced Settings', null, null, null, null, 'admin:admin.php?page=media-cloud-settings-storage')
+				->option('advanced-settings', 'Advanced Settings', null, null, null, null, 'admin:admin.php?page=media-cloud-settings&tab=storage')
 			->endGroup()
 		->endStep();
 

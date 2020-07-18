@@ -16,21 +16,17 @@
 
 namespace ILAB\MediaCloud\Vision;
 
-use ILAB\MediaCloud\Utilities\Environment;
-
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
 abstract class VisionDriver {
-    /** @var null|VisionConfig  */
-    protected $config = null;
+    /** @var null|VisionToolSettings  */
+    protected $settings = null;
 
     /** @var bool  */
     protected $forceTermCount = false;
 
     public function __construct() {
-        $this->config = new VisionConfig();
-
-        $this->forceTermCount = Environment::Option('mcloud-vision-force-term-count', null, false);
+        $this->settings = new VisionToolSettings();
     }
 
 	/**
@@ -52,17 +48,11 @@ abstract class VisionDriver {
     abstract public function enabledError();
 
     /**
-     * Configuration for the driver
-     * @return VisionConfig|null
-     */
-    public function config() {
-        return $this->config;
-    }
-
-    /**
      * Processes the image through the driver's vision API
+     *
      * @param $postID
      * @param $meta
+     *
      * @return array
      */
     abstract public function processImage($postID, $meta);
@@ -79,8 +69,10 @@ abstract class VisionDriver {
             return;
         }
 
+        $tagsList = [];
         $tagsToAdd = [];
         foreach($tags as $tag) {
+
             $term = false;
             if (term_exists($tag['tag'], $tax)) {
                 $term = get_term_by('name', $tag['tag'], $tax);
@@ -108,12 +100,13 @@ abstract class VisionDriver {
             }
 
             if ($term) {
+	            $tagsList[] = $term->name;
                 $tagsToAdd[] = $term->term_id;
             }
         }
 
         if (!empty($tagsToAdd)) {
-        	if ($this->forceTermCount) {
+        	if ($this->settings->forceTermCount) {
 		        global $wp_taxonomies;
 		        if (isset($wp_taxonomies[$tax])) {
 			        $wp_taxonomies[$tax]->update_count_callback = '_update_generic_term_count';
@@ -121,6 +114,28 @@ abstract class VisionDriver {
 	        }
 
             wp_set_post_terms($postID, $tagsToAdd, $tax, true);
+        }
+
+        $tagsList = implode(', ', $tagsList);
+        if (!empty($tagsList)) {
+        	$tagsText = rtrim($this->settings->saveTagsPrefix).' '.$tagsList;
+	        if (!empty($this->settings->saveTagsToAlt)) {
+		        update_post_meta($postID, '_wp_attachment_image_alt', $tagsText);
+	        }
+
+	        if (!empty($this->settings->saveTagsToCaption) || !empty($this->settings->saveTagsToDescription)) {
+	        	$postData = ['ID' => $postID];
+
+	        	if ($this->settings->saveTagsToCaption) {
+	        		$postData['post_excerpt'] = $tagsText;
+		        }
+
+		        if ($this->settings->saveTagsToDescription) {
+			        $postData['post_content'] = $tagsText;
+		        }
+
+		        wp_update_post($postData);
+	        }
         }
     }
 }

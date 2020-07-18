@@ -13,6 +13,8 @@
 
 namespace ILAB\MediaCloud\Tasks;
 
+use ILAB\MediaCloud\Utilities\Logging\Logger;
+
 /**
  * Interface for creating the required tables
  */
@@ -31,6 +33,9 @@ final class TaskDatabase {
 
 		// TaskSchedule
 		static::installScheduleTable();
+
+		// TaskSchedule
+		static::installTokenTable();
 	}
 
 
@@ -143,5 +148,66 @@ final class TaskDatabase {
 		}
 	}
 
+	protected static function installTokenTable() {
+		$currentVersion = get_site_option('mcloud_task_token_db_version');
+		if (!empty($currentVersion) && version_compare(self::DB_VERSION, $currentVersion, '<=')) {
+			return;
+		}
+
+		global $wpdb;
+
+		$tableName = $wpdb->base_prefix.'mcloud_task_token';
+		$charset = $wpdb->get_charset_collate();
+
+		$sql = "CREATE TABLE {$tableName} (
+	id BIGINT AUTO_INCREMENT,
+	token VARCHAR(256) NOT NULL,
+	value VARCHAR(256) NOT NULL,
+	time bigint NOT NULL,
+	PRIMARY KEY  (id)
+) {$charset};";
+
+		require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+		dbDelta($sql);
+		$exists = ($wpdb->get_var("SHOW TABLES LIKE '$tableName'") == $tableName);
+		if ($exists) {
+			update_site_option('mcloud_task_token_db_version', self::DB_VERSION);
+		}
+	}
+
+	//endregion
+
+	//region Tokens
+
+	public static function setToken($token, $tokenVal) {
+		global $wpdb;
+		$tableName = $wpdb->base_prefix.'mcloud_task_token';
+
+		$wpdb->insert($tableName, ['token' => $token, 'value' => $tokenVal, 'time' => time()]);
+	}
+
+	public static function verifyToken($token, $tokenVal) {
+		global $wpdb;
+		$tableName = $wpdb->base_prefix.'mcloud_task_token';
+
+		$val = $wpdb->get_var($wpdb->prepare("select value from {$tableName} where token = %s", $token));
+		return ($tokenVal == $val);
+	}
+
+	public static function deleteToken($token) {
+		Logger::info("Deleting token $token", [], __METHOD__, __LINE__);
+
+		global $wpdb;
+		$tableName = $wpdb->base_prefix.'mcloud_task_token';
+		$wpdb->delete($tableName, ['token' => $token]);
+
+		static::deleteOldTokens();
+	}
+
+	public static function deleteOldTokens() {
+		global $wpdb;
+		$tableName = $wpdb->base_prefix.'mcloud_task_token';
+		$wpdb->query($wpdb->prepare("delete from {$tableName} where time <= %d", time() - (60 * 60 * 24)));
+	}
 	//endregion
 }

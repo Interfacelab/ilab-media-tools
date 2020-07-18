@@ -16,7 +16,7 @@
 
 namespace ILAB\MediaCloud\Tools;
 
-use ILAB\MediaCloud\Storage\StorageGlobals;
+use ILAB\MediaCloud\Storage\StorageToolSettings;
 use ILAB\MediaCloud\Utilities\Environment;
 use ILAB\MediaCloud\Utilities\NoticeManager;
 use function ILAB\MediaCloud\Utilities\arrayPath;
@@ -31,7 +31,7 @@ if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
  * Base class for media tools
  */
 abstract class Tool {
-    use SettingsTrait;
+	use SettingsTrait;
 
     //region Variables
 
@@ -482,7 +482,10 @@ abstract class Tool {
 
                         switch($optionInfo['type']) {
 	                        case 'text-field':
-		                        $this->registerTextFieldSetting($option,$optionInfo['title'],$group,$description,$placeholder,$conditions);
+		                        $this->registerTextFieldSetting($option,$optionInfo['title'],$group, $description, $placeholder, $conditions, isset($optionInfo['default']) ? $optionInfo['default'] : null);
+		                        break;
+	                        case 'webhook':
+	                            $this->registerWebhookSetting($option, $optionInfo['title'], $group, !empty($optionInfo['editable']), $description, $conditions, isset($optionInfo['default']) ? $optionInfo['default'] : null);
 		                        break;
 	                        case 'upload-path':
 		                        $this->registerUploadPathFieldSetting($option,$optionInfo['title'],$group,$description,$placeholder,$conditions);

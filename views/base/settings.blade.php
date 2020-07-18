@@ -143,9 +143,15 @@
                     @if(!empty($section['description']))
                     <div class="section-description">{!! $section['description'] !!}</div>
                     @endif
+                    @if(!empty($section['custom']))
+                    <div class="custom-setting">
+                        <?php call_user_func($section['callback']) ?>
+                    </div>
+                    @else
                     <table class="form-table">
                         <?php do_settings_fields( $page, $section['id'] ) ?>
                     </table>
+                    @endif
                     @if (!empty($section['help']) && !empty($section['help']['data']) && (\ILAB\MediaCloud\Utilities\arrayPath($section['help'], 'target', 'footer') == 'footer'))
                         <div class="ilab-section-doc-links">
                             @include('base.fields.help', $section['help'])
@@ -179,9 +185,6 @@
         @include('base/upgrade')
         @endplan
     </div>
-
-
-    @include('support.beacon')
 </div>
 <script>
     (function($){

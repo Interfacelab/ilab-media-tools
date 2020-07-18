@@ -19,7 +19,7 @@ namespace ILAB\MediaCloud\Tools\Storage\CLI;
 use  GuzzleHttp\Client ;
 use  GuzzleHttp\Exception\ClientException ;
 use  ILAB\MediaCloud\CLI\Command ;
-use  ILAB\MediaCloud\Storage\StorageGlobals ;
+use  ILAB\MediaCloud\Storage\StorageToolSettings ;
 use  ILAB\MediaCloud\Tools\Browser\Tasks\ImportFromStorageTask ;
 use  ILAB\MediaCloud\Tools\Integrations\PlugIns\Elementor\Tasks\UpdateElementorTask ;
 use  ILAB\MediaCloud\Tools\Integrations\PlugIns\NextGenGallery\Tasks\MigrateNextGenTask ;
@@ -72,7 +72,7 @@ class StorageCommands extends Command
      * : Skips images that have already been migrated to storage.
      *
      * [--skip-thumbnails]
-     * : Skips uploading thumbnails.  Requires Imgix or Dynamic Images.
+     * : Skips uploading thumbnails.  Requires Imgix.
      *
      * [--order-by=<string>]
      * : The field to sort the items to be imported by. Valid values are 'date', 'title' and 'filename'.
@@ -94,6 +94,9 @@ class StorageCommands extends Command
      *   - asc
      *   - desc
      * ---
+     *
+     * [--delete-migrated]
+     * : Deletes migrated media from your local WordPress server.  Note: You must have Delete Uploads enabled in Cloud Storage for this setting to have any effect.  If you have Delete Uploads disabled, turning this on will have zero effect.
      *
      * @when after_wp_load
      *
@@ -430,18 +433,25 @@ class StorageCommands extends Command
         foreach ( $q->posts as $post ) {
             
             if ( strpos( $post->guid, $host ) === 0 ) {
-                self::Info( "[{$currentIndex} of {$postCount}] Skipping ({$post->ID}) {$post->post_title} ... ", true );
+                self::Info( "[{$currentIndex} of {$postCount}] Skipping ({$post->ID}) {$post->post_title} ({$post->guid}) ... ", true );
                 $currentIndex++;
                 continue;
             }
             
-            self::Info( "[{$currentIndex} of {$postCount}] Processing ({$post->ID}) {$post->post_title} ... ", false );
+            
+            if ( filter_var( $post->guid, FILTER_VALIDATE_URL ) === false ) {
+                self::Info( "[{$currentIndex} of {$postCount}] Skipping invalid URL ({$post->ID}) {$post->post_title} ({$post->guid}) ... ", true );
+                $currentIndex++;
+                continue;
+            }
+            
+            self::Info( "[{$currentIndex} of {$postCount}] Processing ({$post->ID}) {$post->post_title} ({$post->guid}) ... ", false );
             $currentIndex++;
             try {
                 $res = $guzzle->request( 'HEAD', $post->guid, [
                     'allow_redirects' => true,
                 ] );
-            } catch ( ClientException $ex ) {
+            } catch ( \Exception $ex ) {
                 self::Info( "Error " . $ex->getMessage() . " skipping.", true );
                 continue;
             }
@@ -477,7 +487,7 @@ class StorageCommands extends Command
                             $res = $guzzle->request( 'HEAD', $sizeUrl, [
                                 'allow_redirects' => true,
                             ] );
-                        } catch ( ClientException $ex ) {
+                        } catch ( \Exception $ex ) {
                             continue;
                         }
                         

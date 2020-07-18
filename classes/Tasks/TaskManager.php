@@ -20,6 +20,9 @@ use ILAB\MediaCloud\Utilities\Logging\Logger;
  * Manages background tasks
  */
 final class TaskManager {
+	/** @var TaskSettings  */
+	private $settings = null;
+
 	/**
 	 * Task class registry
 	 * @var string[]
@@ -44,6 +47,8 @@ final class TaskManager {
 	 * TaskManager constructor.
 	 */
 	private function __construct() {
+		$this->settings = TaskSettings::instance();
+
 		TaskDatabase::init();
 
 		static::registerTask(TestTask::class);
@@ -161,14 +166,14 @@ final class TaskManager {
 	}
 
 	public function actionRunTask() {
-		Logger::info("Run Task Ajax");
+		Logger::info("Run Task Ajax", [], __METHOD__, __LINE__);
 		$this->closeClientConnection();
 
 		check_ajax_referer('mcloud_run_task', 'nonce');
 
 		$taskId = arrayPath($_REQUEST, 'taskId', null);
 		if (empty($taskId)) {
-			Logger::info("Task is not defined.  Dying.");
+			Logger::info("Task is not defined.  Dying.", [], __METHOD__, __LINE__);
 			wp_die();
 		}
 
@@ -176,13 +181,13 @@ final class TaskManager {
 		if (!empty($token)) {
 			$tokenVal = arrayPath($_REQUEST, 'tokenVal', null);
 			if (!empty($tokenVal)) {
-				Logger::info("Sending ACK");
+				Logger::info("Sending ACK", [], __METHOD__, __LINE__);
 
-				update_site_option($token, $tokenVal);
+				TaskDatabase::setToken($token, $tokenVal);
 			}
 		}
 
-		Logger::info("Running task {$taskId}");
+		Logger::info("Running task {$taskId}", [], __METHOD__, __LINE__);
 		$this->runTask($taskId);
 	}
 
@@ -252,9 +257,9 @@ final class TaskManager {
 	 * Checks the status of a specific task
 	 */
 	public function actionStartTask() {
-		Logger::info("Starting Task ... ");
+		Logger::info("Starting Task ... ", [], __METHOD__, __LINE__);
 		check_ajax_referer('mcloud_start_task', 'nonce');
-		Logger::info("Nonce verified.");
+		Logger::info("Nonce verified.", [], __METHOD__, __LINE__);
 
 		$taskId = arrayPath($_REQUEST, 'taskId', null);
 		if (empty($taskId)) {
@@ -268,6 +273,8 @@ final class TaskManager {
 		$options = arrayPath($_REQUEST, 'options', []);
 
 		$taskClass = static::$registeredTasks[$taskId];
+		$taskClass::markConfirmed();
+
 		/** @var Task $task */
 		$task = new $taskClass();
 		$result = $task->prepare($options);
@@ -283,9 +290,9 @@ final class TaskManager {
 	 * Checks the status of a specific task
 	 */
 	public function actionCancelTask() {
-		Logger::info("Cancelling Task ... ");
+		Logger::info("Cancelling Task ... ", [], __METHOD__, __LINE__);
 		check_ajax_referer('mcloud_cancel_task', 'nonce');
-		Logger::info("Nonce verified.");
+		Logger::info("Nonce verified.", [], __METHOD__, __LINE__);
 
 		$taskId = arrayPath($_REQUEST, 'taskId', null);
 		if (empty($taskId)) {
@@ -294,11 +301,11 @@ final class TaskManager {
 
 		$task = Task::instance($taskId);
 		if (empty($task)) {
-			Logger::info("No running task with task id $taskId");
+			Logger::info("No running task with task id $taskId", [], __METHOD__, __LINE__);
 			wp_send_json(['status' => 'error', 'message', 'Unknown task.']);
 		}
 
-		Logger::info("Cancelling task {$taskId} ...");
+		Logger::info("Cancelling task {$taskId} ...", [], __METHOD__, __LINE__);
 		$task->cancel();
 
 		if (!empty($task->cli)) {
@@ -314,13 +321,13 @@ final class TaskManager {
 	 * Cancels all running tasks
 	 */
 	public function actionCancelAllTasks() {
-		Logger::info("Cancelling All Tasks ... ");
+		Logger::info("Cancelling All Tasks ... ", [], __METHOD__, __LINE__);
 		check_ajax_referer('mcloud_cancel_all_tasks', 'nonce');
-		Logger::info("Nonce verified.");
+		Logger::info("Nonce verified.", [], __METHOD__, __LINE__);
 
 		$tasks = static::runningTasks();
 		foreach($tasks as $task) {
-			Logger::info("Cancelling task {$task->id()} ...");
+			Logger::info("Cancelling task {$task->id()} ...", [], __METHOD__, __LINE__);
 			$task->cancel();
 
 			if (!empty($task->cli)) {
@@ -335,9 +342,9 @@ final class TaskManager {
 
 
 	public function actionClearTaskHistory() {
-		Logger::info("Clearing Task History ... ");
+		Logger::info("Clearing Task History ... ", [], __METHOD__, __LINE__);
 		check_ajax_referer('mcloud_clear_task_history', 'nonce');
-		Logger::info("Nonce verified.");
+		Logger::info("Nonce verified.", [], __METHOD__, __LINE__);
 
 		global $wpdb;
 		$query = "delete from {$wpdb->base_prefix}mcloud_task where state >= 100";
@@ -508,7 +515,7 @@ final class TaskManager {
 	 * @throws \Exception
 	 */
 	public function queueTask($task) {
-		Logger::info("Queueing task ...");
+		Logger::info("Queueing task ...", [], __METHOD__, __LINE__);
 		$task->wait();
 		TaskRunner::dispatch($task);
 	}
@@ -522,7 +529,7 @@ final class TaskManager {
 	 */
 	public function runTask($taskOrId) {
 		if (count($this->runningTasks) == 0) {
-			Logger::info("No running tasks.");
+			Logger::info("No running tasks.", [], __METHOD__, __LINE__);
 			return;
 		}
 
@@ -540,38 +547,45 @@ final class TaskManager {
 		}
 
 		if (empty($task)) {
-			Logger::info("No task with with id '{$taskOrId}'.");
+			Logger::info("No task with with id '{$taskOrId}'.", [], __METHOD__, __LINE__);
 			return;
 		}
 
+		if ($this->settings->taskLimit > 0) {
+			if (!Task::canRunTask($task->id(), $this->settings->taskLimit)) {
+				Logger::info("Too many tasks running currently to run ".$task->id()." limit is ".$this->settings->taskLimit, [], __METHOD__, __LINE__);
+				return;
+			}
+		}
+
 		if ($task->state === Task::STATE_PREPARING) {
-			Logger::info("Task is preparing, exiting.");
+			Logger::info("Task is preparing, exiting.", [], __METHOD__, __LINE__);
 			return;
 		}
 
 		if ($task->locked()) {
-			Logger::info("Task already running, exiting.");
+			Logger::info("Task already running, exiting.", [], __METHOD__, __LINE__);
 			return;
 		}
 
 		if ($task->state >= Task::STATE_COMPLETE) {
-			Logger::info("Task is already completed, exiting.");
+			Logger::info("Task is already completed, exiting.", [], __METHOD__, __LINE__);
 			return;
 		}
 
-		Logger::info("Running task.");
+		Logger::info("Running task.", [], __METHOD__, __LINE__);
 		$result = $task->run();
-		Logger::info("Result: $result");
+		Logger::info("Result: $result", [], __METHOD__, __LINE__);
 		$complete = false;
 		if (intval($result) >= Task::TASK_COMPLETE) {
-			Logger::info("Result: $result >= ".Task::TASK_COMPLETE."?");
+			Logger::info("Result: $result >= ".Task::TASK_COMPLETE."?", [], __METHOD__, __LINE__);
 			$task->cleanup();
-			Logger::info("Task complete.");
+			Logger::info("Task complete.", [], __METHOD__, __LINE__);
 			$complete = true;
 		}
 
 		if (empty($complete)) {
-			Logger::info("Dispatching again.");
+			Logger::info("Dispatching again.", [], __METHOD__, __LINE__);
 			TaskRunner::dispatch($task);
 		}
 	}

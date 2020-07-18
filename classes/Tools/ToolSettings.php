@@ -62,6 +62,8 @@ abstract class ToolSettings {
 	//endregion
 
 
+	//region Properties
+
 	/**
 	 * @param $name
 	 *
@@ -83,7 +85,7 @@ abstract class ToolSettings {
 		}
 
 		$this->settings[$name] = $val = Environment::Option($setting, $envSetting, $default);
-			return $val;
+		return $val;
 	}
 
 	/**
@@ -111,4 +113,15 @@ abstract class ToolSettings {
 
 		return true;
 	}
+
+	/**
+	 * @param string $name
+	 */
+	public function resetProperty($name) {
+		if (isset($this->settings[$name])) {
+			unset($this->settings[$name]);
+		}
+	}
+
+	//endregion
 }

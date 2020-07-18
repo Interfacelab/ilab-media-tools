@@ -67,9 +67,6 @@
             </div>
         </div>
     </div>
-
-
-    @include('support.beacon')
 @endsection
 
 <script>

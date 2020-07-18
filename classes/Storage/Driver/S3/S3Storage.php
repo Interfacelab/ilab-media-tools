@@ -17,13 +17,11 @@
 namespace ILAB\MediaCloud\Storage\Driver\S3;
 
 use FasterImage\FasterImage;
-use ILAB\MediaCloud\Storage\Driver\GoogleCloud\GoogleStorageSettings;
 use ILAB\MediaCloud\Storage\FileInfo;
 use ILAB\MediaCloud\Storage\InvalidStorageSettingsException;
 use ILAB\MediaCloud\Storage\StorageException;
 use ILAB\MediaCloud\Storage\StorageFile;
-use ILAB\MediaCloud\Storage\StorageGlobals;
-use ILAB\MediaCloud\Storage\StorageManager;
+use ILAB\MediaCloud\Storage\StorageToolSettings;
 use function ILAB\MediaCloud\Utilities\anyNull;
 use function ILAB\MediaCloud\Utilities\arrayPath;
 use ILAB\MediaCloud\Utilities\Environment;
@@ -40,8 +38,6 @@ use ILABAmazon\Exception\CredentialsException;
 use ILABAmazon\S3\PostObjectV4;
 use ILABAmazon\S3\S3Client;
 use ILABAmazon\S3\S3MultiRegionClient;
-use ILAB_League\Flysystem\AwsS3v3\AwsS3Adapter;
-use League\Flysystem\AdapterInterface;
 
 if(!defined('ABSPATH')) {
 	header('Location: /');
@@ -54,9 +50,6 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 	//region Properties
 	/** @var S3StorageSettings|null  */
 	protected $settings = null;
-
-	/** @var null|AdapterInterface */
-	protected $adapter = null;
 
 	/*** @var S3Client|S3MultiRegionClient|null */
 	protected $client = null;
@@ -149,7 +142,11 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
     }
 
     public function supportsDirectUploads() {
-		return (StorageManager::driver() === 's3');
+		return (StorageToolSettings::driver() === 's3');
+	}
+
+	public function supportsWildcardDirectUploads() {
+		return in_array(StorageToolSettings::driver(), ['s3', 'do']);
 	}
 
 	public static function settingsErrorOptionName() {
@@ -196,12 +193,12 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 						}
 					}
 
-					Logger::error("Error insuring bucket exists.", ['exception' => $ex->getMessage()]);
+					Logger::error("Error insuring bucket exists.", ['exception' => $ex->getMessage()], __METHOD__, __LINE__);
 				}
 
 				if (empty($valid) && empty($connectError)) {
 					try {
-						Logger::info("Bucket does not exist, trying to list buckets.");
+						Logger::info("Bucket does not exist, trying to list buckets.", [], __METHOD__, __LINE__);
 
 						$result = $client->listBuckets();
 						$buckets = $result->get('Buckets');
@@ -219,7 +216,7 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
                                 $errorCollector->addError("Bucket {$this->settings->bucket} does not exist.");
                             }
 
-                            Logger::info("Bucket does not exist.");
+                            Logger::info("Bucket does not exist.", [], __METHOD__, __LINE__);
                         }
 					} catch(AwsException $ex) {
                         if ($errorCollector) {
@@ -235,7 +232,7 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 	                        }
                         }
 
-                        Logger::error("Error insuring bucket exists.", ['exception' => $ex->getMessage()]);
+                        Logger::error("Error insuring bucket exists.", ['exception' => $ex->getMessage()], __METHOD__, __LINE__);
 					}
 				}
 			}
@@ -321,7 +318,7 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 			$region = $s3->determineBucketRegion($this->settings->bucket);
 		}
 		catch(AwsException $ex) {
-			Logger::error("AWS Error fetching region", ['exception' => $ex->getMessage()]);
+			Logger::error("AWS Error fetching region", ['exception' => $ex->getMessage()], __METHOD__, __LINE__);
 		}
 
 		return $region;
@@ -359,7 +356,7 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 			}
 		}
 
-		if($this->settings->useTransferAcceleration && (StorageManager::driver() === 's3')) {
+		if($this->settings->useTransferAcceleration && (StorageToolSettings::driver() === 's3')) {
 			$config['use_accelerate_endpoint'] = true;
 		}
 
@@ -388,7 +385,7 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
                         $errorCollector->addError('Could not determine region.');
                     }
 
-					Logger::info("Could not get region from server.");
+					Logger::info("Could not get region from server.", [], __METHOD__, __LINE__);
 
 					return null;
 				}
@@ -431,7 +428,7 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 			}
 		}
 
-		if($this->settings->useTransferAcceleration && (StorageManager::driver() === 's3')) {
+		if($this->settings->useTransferAcceleration && (StorageToolSettings::driver() === 's3')) {
 			$config['use_accelerate_endpoint'] = true;
 		}
 
@@ -456,7 +453,7 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 
 		$s3 = $this->getS3Client(false, $errorCollector);
 		if(!$s3) {
-			Logger::info('Could not create regular client, creating multi-region client instead.');
+			Logger::info('Could not create regular client, creating multi-region client instead.', [], __METHOD__, __LINE__);
 
             if ($errorCollector) {
                 $errorCollector->addError("Could not create regular client, creating multi-region client instead.");
@@ -496,7 +493,7 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 
 			return $result;
 		} catch (\Exception $ex) {
-			Logger::error("Error changing ACL for '$key' to '$acl'.  Exception: ".$ex->getMessage());
+			Logger::error("Error changing ACL for '$key' to '$acl'.  Exception: ".$ex->getMessage(), [], __METHOD__, __LINE__);
 			return false;
 		}
 	}
@@ -542,7 +539,7 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 			$this->client->copyObject($copyOptions);
 		}
 		catch(AwsException $ex) {
-			Logger::error('S3 Error Copying Object', ['exception' => $ex->getMessage(), 'options' => $copyOptions]);
+			Logger::error('S3 Error Copying Object', ['exception' => $ex->getMessage(), 'options' => $copyOptions], __METHOD__, __LINE__);
 			throw new StorageException($ex->getMessage(), $ex->getCode(), $ex);
 		}
 	}
@@ -582,9 +579,9 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 		try {
 			$file = fopen($fileName, 'r');
 
-			Logger::startTiming("Start Upload", ['file' => $key]);
+			Logger::startTiming("Start Upload", ['file' => $key], __METHOD__, __LINE__);
 			$result = $this->client->upload($this->settings->bucket, $key, $file, $acl, $options);
-			Logger::endTiming("End Upload", ['file' => $key]);
+			Logger::endTiming("End Upload", ['file' => $key], __METHOD__, __LINE__);
 
 			fclose($file);
 
@@ -598,7 +595,7 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 				'key' => $key,
 				'privacy' => $acl,
 				'options' => $options
-			]);
+			], __METHOD__, __LINE__);
 
 			throw new StorageException($ex->getMessage(), $ex->getCode(), $ex);
 		}
@@ -610,16 +607,16 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 		}
 
 		try {
-			Logger::startTiming("Deleting '$key'");
+			Logger::startTiming("Deleting '$key'", [], __METHOD__, __LINE__);
 			$this->client->deleteObject(['Bucket' => $this->settings->bucket, 'Key' => $key]);
-			Logger::endTiming("Deleted '$key'");
+			Logger::endTiming("Deleted '$key'", [], __METHOD__, __LINE__);
 		}
 		catch(AwsException $ex) {
 			Logger::error('S3 Delete File Error', [
 				'exception' => $ex->getMessage(),
 				'Bucket' => $this->settings->bucket,
 				'Key' => $key
-			]);
+			], __METHOD__, __LINE__);
 		}
 	}
 
@@ -629,16 +626,16 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 		}
 
 		try {
-			Logger::startTiming("Deleting directory '$key'");
+			Logger::startTiming("Deleting directory '$key'", [], __METHOD__, __LINE__);
 			$this->client->deleteMatchingObjects($this->settings->bucket, $key);
-			Logger::endTiming("Deleted directory '$key'");
+			Logger::endTiming("Deleted directory '$key'", [], __METHOD__, __LINE__);
 		}
 		catch(AwsException $ex) {
 			Logger::error('S3 Delete File Error', [
 				'exception' => $ex->getMessage(),
 				'Bucket' => $this->settings->bucket,
 				'Key' => $key
-			]);
+			], __METHOD__, __LINE__);
 		}
 	}
 
@@ -651,7 +648,7 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 		try {
 			$key = rtrim($key, '/').'/';
 
-			Logger::startTiming("Creating folder '$key'");
+			Logger::startTiming("Creating folder '$key'", [], __METHOD__, __LINE__);
 			$this->client->putObject([
 				'Bucket' => $this->settings->bucket,
 				'Key' => $key,
@@ -659,7 +656,7 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 				'ACL' => 'public-read',
 				'ContentLength' => 0
 			]);
-			Logger::endTiming("Created folder '$key'");
+			Logger::endTiming("Created folder '$key'", [], __METHOD__, __LINE__);
 
 			return true;
 		}
@@ -668,7 +665,7 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 				'exception' => $ex->getMessage(),
 				'Bucket' => $this->settings->bucket,
 				'Key' => $key
-			]);
+			], __METHOD__, __LINE__);
 		}
 
 		return false;
@@ -699,7 +696,7 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 				$result = $result[$presignedUrl];
 				$size = $result['size'];
 			} catch (\Exception $ex) {
-				Logger::error("Error getting file size info for: ".$ex->getMessage());
+				Logger::error("Error getting file size info for: ".$ex->getMessage(), [], __METHOD__, __LINE__);
 			}
 		}
 
@@ -807,7 +804,7 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 	}
 
 	public function presignedUrl($key, $expiration = 0) {
-		if ((StorageManager::driver() === 's3') && ($this->settings->validSignedCDNSettings())) {
+		if ((StorageToolSettings::driver() === 's3') && ($this->settings->validSignedCDNSettings())) {
 			if (empty($expiration)) {
 				$expiration = $this->settings->presignedURLExpiration;
 			}
@@ -865,16 +862,20 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 
 	/**
 	 * Returns the options data for generating the policy for uploads
+	 *
 	 * @param $acl
 	 * @param $key
 	 *
 	 * @return array
 	 */
 	protected function getOptionsData($acl, $key) {
+		$keyparts = explode('.', $key);
+
 		return [
 			['bucket' => $this->settings->bucket],
 			['acl' => $acl],
-			['key' => $key],
+//			['key' => $key],
+			['starts-with', '$key', $keyparts[0]],
 			['starts-with', '$Content-Type', '']
 		];
 	}
@@ -896,7 +897,7 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 			return new S3UploadInfo($key, $postObject, $acl, $cacheControl, $expires);
 		}
 		catch(AwsException $ex) {
-			Logger::error('S3 Generate File Upload URL Error', ['exception' => $ex->getMessage()]);
+			Logger::error('S3 Generate File Upload URL Error', ['exception' => $ex->getMessage()], __METHOD__, __LINE__);
 			throw new StorageException($ex->getMessage(), $ex->getCode(), $ex);
 		}
 	}
@@ -905,17 +906,6 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 		wp_enqueue_script('ilab-media-direct-upload-s3', ILAB_PUB_JS_URL.'/ilab-media-direct-upload-s3.js', [], MEDIA_CLOUD_VERSION, true);
 	}
 	//endregion
-
-    //region Filesystem
-    public function adapter() {
-	    if (!empty($this->adapter)) {
-	        return $this->adapter;
-        }
-
-	    $this->adapter = new AwsS3Adapter($this->client, $this->settings->bucket);
-	    return $this->adapter;
-    }
-    //endregion
 
 	//region Wizard
 
@@ -954,7 +944,7 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 		$builder->select('Complete', 'Basic setup is now complete!  Configure advanced settings or setup imgix.')
 			->group('wizard.cloud-storage.providers.s3.success', 'select-buttons')
 				->option('configure-imgix', 'Set Up imgix', null, null, 'imgix')
-				->option('advanced-settings', 'Advanced Settings', null, null, null, null, 'admin:admin.php?page=media-cloud-settings-storage')
+				->option('advanced-settings', 'Advanced Settings', null, null, null, null, 'admin:admin.php?page=media-cloud-settings&tab=storage')
 			->endGroup()
 		->endStep();
 
@@ -1043,7 +1033,7 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 		$oldPathStyleEndpoint = Environment::ReplaceOption($pathStyleEndpointName, $pathStyleEndpoint);
 		$oldUseTransferAcceleration = Environment::ReplaceOption($useTransferAccelerationName, $useTransferAcceleration);
 
-		StorageManager::resetStorageInstance();
+		StorageToolSettings::resetStorageInstance();
 
 		try {
 			$storage = new static();
@@ -1062,7 +1052,7 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 			Environment::UpdateOption($pathStyleEndpointName, $oldPathStyleEndpoint);
 			Environment::UpdateOption($useTransferAccelerationName, $oldUseTransferAcceleration);
 
-			StorageManager::resetStorageInstance();
+			StorageToolSettings::resetStorageInstance();
 
 			$message = "There was a problem with your settings.  Please double check entries for potential mistakes.";
 
@@ -1072,8 +1062,16 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 		}
 
 	}
+	//endregion
 
-
-
+	//region Optimization
+	public function prepareOptimizationInfo() {
+		return [
+			'key' => $this->settings->key,
+			'secret' => $this->settings->secret,
+			'bucket' => $this->bucket(),
+			'region' => $this->region()
+		];
+	}
 	//endregion
 }

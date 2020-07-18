@@ -26,20 +26,15 @@ use ILAB\MediaCloud\Storage\StorageConstants;
 use ILAB\MediaCloud\Storage\StorageException;
 use ILAB\MediaCloud\Storage\StorageFile;
 use ILAB\MediaCloud\Storage\StorageInterface;
-use ILAB\MediaCloud\Storage\StorageGlobals;
 use function ILAB\MediaCloud\Utilities\anyNull;
 use function ILAB\MediaCloud\Utilities\arrayPath;
 use ILAB\MediaCloud\Utilities\Environment;
 use ILAB\MediaCloud\Utilities\Logging\ErrorCollector;
 use ILAB\MediaCloud\Utilities\Logging\Logger;
 use ILAB\MediaCloud\Utilities\NoticeManager;
-use ILAB\MediaCloud\Utilities\Tracker;
-use function ILAB\MediaCloud\Utilities\vomit;
 use ILAB\MediaCloud\Wizard\ConfiguresWizard;
 use ILAB\MediaCloud\Wizard\StorageWizardTrait;
 use ILAB\MediaCloud\Wizard\WizardBuilder;
-use League\Flysystem\AdapterInterface;
-use Superbalist\Flysystem\GoogleStorage\GoogleStorageAdapter;
 
 if(!defined('ABSPATH')) {
 	header('Location: /');
@@ -63,9 +58,6 @@ class GoogleStorage implements StorageInterface, ConfiguresWizard {
 
 	/*** @var StorageClient */
 	private $client = null;
-
-    /** @var null|AdapterInterface */
-    protected $adapter = null;
 
 	//endregion
 
@@ -177,6 +169,10 @@ class GoogleStorage implements StorageInterface, ConfiguresWizard {
 		return true;
 	}
 
+	public function supportsWildcardDirectUploads() {
+		return false;
+	}
+
 	public function supportsBrowser() {
 		return true;
 	}
@@ -204,14 +200,14 @@ class GoogleStorage implements StorageInterface, ConfiguresWizard {
                             $errorCollector->addError("Bucket {$this->settings->bucket} does not exist.");
                         }
 
-						Logger::info("Bucket does not exist.");
+						Logger::info("Bucket does not exist.", [], __METHOD__, __LINE__);
 					}
                 } catch (\Exception $ex) {
                     if ($errorCollector) {
                         $errorCollector->addError("Error insuring that {$this->settings->bucket} exists.  Message: ".$ex->getMessage());
                     }
 
-                    Logger::error("Google Storage Error", ['exception' => $ex->getMessage()]);
+                    Logger::error("Google Storage Error", ['exception' => $ex->getMessage()], __METHOD__, __LINE__);
 				}
 			}
 
@@ -286,7 +282,7 @@ class GoogleStorage implements StorageInterface, ConfiguresWizard {
                 $errorCollector->addError("Google configuration is incorrect or missing.");
             }
 
-			Logger::info('Could not create Google storage client.');
+			Logger::info('Could not create Google storage client.', [], __METHOD__, __LINE__);
 		}
 
 		return $client;
@@ -377,7 +373,7 @@ class GoogleStorage implements StorageInterface, ConfiguresWizard {
 		}
 
 		try {
-			Logger::startTiming("Start Upload", ['file' => $key]);
+			Logger::startTiming("Start Upload", ['file' => $key], __METHOD__, __LINE__);
 
 			$data = [
 				'name' => $key,
@@ -390,9 +386,9 @@ class GoogleStorage implements StorageInterface, ConfiguresWizard {
 
 			$object = $bucket->upload(fopen($fileName, 'r'), $data);
 
-			Logger::endTiming("End Upload", ['file' => $key]);
+			Logger::endTiming("End Upload", ['file' => $key], __METHOD__, __LINE__);
 		} catch (\Exception $ex) {
-			Logger::error("Error uploading $fileName ...",['exception' => $ex->getMessage()]);
+			Logger::error("Error uploading $fileName ...",['exception' => $ex->getMessage()], __METHOD__, __LINE__);
 
 			StorageException::ThrowFromOther($ex);
 		}
@@ -460,7 +456,7 @@ class GoogleStorage implements StorageInterface, ConfiguresWizard {
 		$bucket = $this->client->bucket($this->settings->bucket);
 
 		try {
-			Logger::startTiming("Start Create Directory", ['file' => $key]);
+			Logger::startTiming("Start Create Directory", ['file' => $key], __METHOD__, __LINE__);
 
 			$data = [
 				'name' => $key
@@ -472,11 +468,11 @@ class GoogleStorage implements StorageInterface, ConfiguresWizard {
 
 			$bucket->upload(null, $data);
 
-			Logger::endTiming("End Create Directory", ['file' => $key]);
+			Logger::endTiming("End Create Directory", ['file' => $key], __METHOD__, __LINE__);
 
 			return true;
 		} catch (\Exception $ex) {
-			Logger::error("Error creating directory $key ...",['exception' => $ex->getMessage()]);
+			Logger::error("Error creating directory $key ...",['exception' => $ex->getMessage()], __METHOD__, __LINE__);
 
 			StorageException::ThrowFromOther($ex);
 		}
@@ -501,7 +497,7 @@ class GoogleStorage implements StorageInterface, ConfiguresWizard {
 						'exception' => $ex->getMessage(),
 						'Bucket' => $this->settings->bucket,
 						'Key' => $file->key()
-					]);
+					], __METHOD__, __LINE__);
 				}
 			}
 		}
@@ -516,7 +512,7 @@ class GoogleStorage implements StorageInterface, ConfiguresWizard {
 						'exception' => $ex->getMessage(),
 						'Bucket' => $this->settings->bucket,
 						'Key' => $file->key()
-					]);
+					], __METHOD__, __LINE__);
 				}
 			}
 		}
@@ -528,7 +524,7 @@ class GoogleStorage implements StorageInterface, ConfiguresWizard {
 				'exception' => $ex->getMessage(),
 				'Bucket' => $this->settings->bucket,
 				'Key' => $key
-			]);
+			], __METHOD__, __LINE__);
 		}
 	}
 
@@ -652,18 +648,6 @@ class GoogleStorage implements StorageInterface, ConfiguresWizard {
 	}
 	//endregion
 
-
-    //region Filesystem
-    public function adapter() {
-        if (!empty($this->adapter)) {
-            return $this->adapter;
-        }
-
-        $this->adapter = new GoogleStorageAdapter($this->client, $this->client->bucket($this->settings->bucket));
-        return $this->adapter;
-    }
-    //endregion
-
 	//region Wizard
 
 	/**
@@ -698,7 +682,7 @@ class GoogleStorage implements StorageInterface, ConfiguresWizard {
 		$builder->select('Complete', 'Basic setup is now complete!  Configure advanced settings or setup imgix.')
 			->group('wizard.cloud-storage.providers.google.success', 'select-buttons')
 				->option('configure-imgix', 'Set Up imgix', null, null, 'imgix')
-				->option('advanced-settings', 'Advanced Settings', null, null, null, null, 'admin:admin.php?page=media-cloud-settings-storage')
+				->option('advanced-settings', 'Advanced Settings', null, null, null, null, 'admin:admin.php?page=media-cloud-settings&tab=storage')
 			->endGroup()
 		->endStep();
 
@@ -760,6 +744,13 @@ class GoogleStorage implements StorageInterface, ConfiguresWizard {
 		}
 	}
 
+	//endregion
+
+	//region Optimization
+	public function prepareOptimizationInfo() {
+		return [
+		];
+	}
 	//endregion
 
 }

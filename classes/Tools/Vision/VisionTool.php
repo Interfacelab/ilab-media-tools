@@ -16,6 +16,7 @@ use  ILAB\MediaCloud\Tasks\TaskManager ;
 use  ILAB\MediaCloud\Tasks\TaskSchedule ;
 use  ILAB\MediaCloud\Tools\Tool ;
 use  ILAB\MediaCloud\Tools\Vision\Tasks\ProcessVisionTask ;
+use  ILAB\MediaCloud\Vision\VisionToolSettings ;
 use function  ILAB\MediaCloud\Utilities\arrayPath ;
 use  ILAB\MediaCloud\Utilities\Environment ;
 use  ILAB\MediaCloud\Utilities\Logging\Logger ;
@@ -36,6 +37,8 @@ if ( !defined( 'ABSPATH' ) ) {
 class VisionTool extends Tool
 {
     //region Class Variables
+    /** @var VisionToolSettings  */
+    private  $settings = null ;
     /** @var VisionDriver|null  */
     private  $driver = null ;
     /** @var bool Controls if vision processing for uploads is performed as a background task. */
@@ -44,6 +47,7 @@ class VisionTool extends Tool
     //region Constructor
     public function __construct( $toolName, $toolInfo, $toolManager )
     {
+        $this->settings = VisionToolSettings::instance();
         if ( !empty($toolInfo['visionDrivers']) ) {
             foreach ( $toolInfo['visionDrivers'] as $key => $data ) {
                 if ( empty($data['name']) || empty($data['class']) || empty($data['config']) ) {
@@ -72,7 +76,7 @@ class VisionTool extends Tool
         parent::__construct( $toolName, $toolInfo, $toolManager );
         $this->driver = VisionManager::visionInstance();
         add_filter( 'media-cloud/vision/detect-faces', function ( $enabled ) {
-            return $this->enabled() && ($this->driver->config()->detectFaces() || $this->driver->config()->detectCelebrities());
+            return $this->enabled() && ($this->settings->detectFaces || $this->settings->detectCelebrities);
         } );
         $this->alwaysBackground = Environment::Option( 'mcloud-vision-always-background', null, false );
     }
@@ -87,6 +91,7 @@ class VisionTool extends Tool
         $this->testForUselessPlugins();
         
         if ( $this->enabled() ) {
+            $this->settings->associateTax();
             TaskManager::registerTask( ProcessVisionTask::class );
             
             if ( VisionManager::driver() == 'rekognition' ) {
@@ -170,12 +175,27 @@ class VisionTool extends Tool
         $task = TaskSchedule::nextScheduledTaskOfType( ProcessVisionTask::identifier() );
         
         if ( !empty($task) ) {
-            Logger::info( "ADDING TO EXISTING VISION TASK" );
+            Logger::info(
+                "ADDING TO EXISTING VISION TASK",
+                [],
+                __METHOD__,
+                __LINE__
+            );
             $task->selection = array_merge( $task->selection, [ $postId ] );
-            Logger::info( "SELECTION LENGTH: " . count( $task->selection ) );
+            Logger::info(
+                "SELECTION LENGTH: " . count( $task->selection ),
+                [],
+                __METHOD__,
+                __LINE__
+            );
             $task->save();
         } else {
-            Logger::info( "CREATING VISION TASK" );
+            Logger::info(
+                "CREATING VISION TASK",
+                [],
+                __METHOD__,
+                __LINE__
+            );
             ProcessVisionTask::scheduleIn( 2, [], [ $postId ] );
         }
     

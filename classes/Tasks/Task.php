@@ -14,6 +14,7 @@
 namespace ILAB\MediaCloud\Tasks;
 
 use ILAB\MediaCloud\Model\Model;
+use ILAB\MediaCloud\Utilities\Environment;
 use ILAB\MediaCloud\Utilities\Misc\Carbon\Carbon;
 use function ILAB\MediaCloud\Utilities\gen_uuid;
 use ILAB\MediaCloud\Utilities\Logging\Logger;
@@ -338,6 +339,30 @@ abstract class Task extends Model implements \JsonSerializable {
 	}
 
 	/**
+	 * The name of the option to check to display a warning confirmation message.  Return null to not display a warning message.
+	 * @return string|null
+	 */
+	public static function warnOption() {
+		return null;
+	}
+
+	/**
+	 * The answer the user must type to allow the action to start
+	 * @return string|null
+	 */
+	public static function warnConfirmationAnswer() {
+		return null;
+	}
+
+	/**
+	 * The text of the warning confirmation
+	 * @return string|null
+	 */
+	public static function warnConfirmationText() {
+		return null;
+	}
+
+	/**
 	 * The identifier for analytics
 	 * @return string
 	 */
@@ -422,11 +447,12 @@ abstract class Task extends Model implements \JsonSerializable {
 	 * Runs the task.
 	 *
 	 * @return bool
+	 *
 	 * @throws \Exception
 	 */
 	public function run() {
 		if ($this->locked()) {
-			Logger::info("Already running ...");
+			Logger::info("Already running ...", [], __METHOD__, __LINE__);
 			return self::TASK_ALREADY_RUNNING;
 		}
 
@@ -448,12 +474,12 @@ abstract class Task extends Model implements \JsonSerializable {
 
 		}
 
-		Logger::info("Grabbing first chunk.");
+		Logger::info("Grabbing first chunk.", [], __METHOD__, __LINE__);
 
 		/** @var TaskData $chunk */
 		$chunk = $this->nextChunk();
 		if (empty($chunk)) {
-			Logger::info("Chunk is empty!");
+			Logger::info("Chunk is empty!", [], __METHOD__, __LINE__);
 
 			$this->state = self::STATE_COMPLETE;
 			$this->updateTiming();
@@ -484,7 +510,7 @@ abstract class Task extends Model implements \JsonSerializable {
 			if ($this->isCancelled()) {
 				$this->info("Task was cancelled.  Exiting.", true);
 
-				Logger::info("Task was cancelled.  Exiting.");
+				Logger::info("Task was cancelled.  Exiting.", [], __METHOD__, __LINE__);
 				$this->state = self::STATE_CANCELLED;
 
 				$this->updateTiming();
@@ -600,7 +626,7 @@ abstract class Task extends Model implements \JsonSerializable {
 			}
 		}
 
-		Logger::info("Unlocking ...");
+		Logger::info("Unlocking ...", [], __METHOD__, __LINE__);
 		$this->didFinish();
 		$this->unlock();
 
@@ -655,7 +681,7 @@ abstract class Task extends Model implements \JsonSerializable {
 		$maxTime = apply_filters('media-cloud/batch/max-time', $maxTime);
 
 		if (time() > $this->taskStartTime + $maxTime) {
-			Logger::info("Time is up!");
+			Logger::info("Time is up!", [], __METHOD__, __LINE__);
 
 			return false;
 		}
@@ -668,7 +694,7 @@ abstract class Task extends Model implements \JsonSerializable {
 				$limit -= $this->memoryPer;
 			}
 			if ($memory >= $limit) {
-				Logger::info("Out of memory!");
+				Logger::info("Out of memory! $memory >= $limit", [], __METHOD__, __LINE__);
 
 				return false;
 			}
@@ -682,7 +708,7 @@ abstract class Task extends Model implements \JsonSerializable {
 
 	public function nextChunk() {
 		if (count($this->data) == 0) {
-			Logger::info("Data is empty!");
+			Logger::info("Data is empty!", [], __METHOD__, __LINE__);
 			return false;
 		}
 
@@ -690,22 +716,22 @@ abstract class Task extends Model implements \JsonSerializable {
 		/** @var TaskData $data */
 		$data = $this->data[0];
 		if ($data->complete()) {
-			Logger::info("Data is complete!");
+			Logger::info("Data is complete!", [], __METHOD__, __LINE__);
 
 			$data->delete();
 			array_shift($this->data);
 
 			$this->totalDataCount--;
-			Logger::info("Data chunks remaining: ".$this->totalDataCount);
+			Logger::info("Data chunks remaining: ".$this->totalDataCount, [], __METHOD__, __LINE__);
 
 			if (count($this->data) === 0) {
 				gc_collect_cycles();
 				$this->data = TaskData::dataForTask($this, 10);
-				Logger::info("Loaded ".count($this->data)." additional chunks.");
+				Logger::info("Loaded ".count($this->data)." additional chunks.", [], __METHOD__, __LINE__);
 			}
 
 
-			Logger::info("Returning next chunk!");
+			Logger::info("Returning next chunk!", [], __METHOD__, __LINE__);
 
 			return $this->nextChunk();
 		}
@@ -803,7 +829,7 @@ abstract class Task extends Model implements \JsonSerializable {
 
 		$maxTime = apply_filters('media-cloud/batch/lock-expiration', $maxTime);
 
-		Logger::info("Locking for $maxTime seconds.");
+		Logger::info("Locking for $maxTime seconds.", [], __METHOD__, __LINE__);
 
 		global $wpdb;
 		$wpdb->update(static::table(), ['locked' => time() + $maxTime], ['id' => $this->id], ['%f']);
@@ -833,7 +859,7 @@ abstract class Task extends Model implements \JsonSerializable {
 	 */
 	public function locked() {
 		if (($this->id == null) || ($this->modelState == self::MODEL_DELETED)) {
-			Logger::info("Missing ID or model is deleted.");
+			Logger::info("Missing ID or model is deleted.", [], __METHOD__, __LINE__);
 			return true;
 		}
 
@@ -842,12 +868,12 @@ abstract class Task extends Model implements \JsonSerializable {
 		$query = $wpdb->prepare("select locked from {$table} where id = %d", [$this->id]);
 		$locked = $wpdb->get_var($query);
 		if (empty($locked)) {
-			Logger::info("Lock is empty.");
+			Logger::info("Lock is empty.", [], __METHOD__, __LINE__);
 			return false;
 		}
 
 		$left = $locked - time();
-		Logger::info("Lock ($locked) expires in $left seconds.");
+		Logger::info("Lock ($locked) expires in $left seconds.", [], __METHOD__, __LINE__);
 
 		return (time() < $locked);
 	}
@@ -926,7 +952,7 @@ abstract class Task extends Model implements \JsonSerializable {
 			$this->totalDataCount++;
 
 			$memory = memory_get_usage(true);
-			Logger::info("Added {$this->totalDataCount} data chunks, memory: $memory.");
+			Logger::info("Added {$this->totalDataCount} data chunks, memory: $memory.", [], __METHOD__, __LINE__);
 			$this->currentData = new TaskData($this, null);
 		}
 
@@ -934,6 +960,24 @@ abstract class Task extends Model implements \JsonSerializable {
 		$this->totalItems++;
 	}
 
+	//endregion
+
+	//region Warning
+	public static function requireConfirmation() {
+		if (empty(static::warnOption())) {
+			return false;
+		}
+
+		return empty(Environment::Option(static::warnOption(), null, false));
+	}
+
+	public static function markConfirmed() {
+		if (empty(static::warnOption())) {
+			return;
+		}
+
+		Environment::UpdateOption(static::warnOption(), true);
+	}
 	//endregion
 
 	//region JSON
@@ -1094,6 +1138,21 @@ abstract class Task extends Model implements \JsonSerializable {
 		}
 
 		return $results;
+	}
+
+	/**
+	 * The number of running tasks
+	 *
+	 * @return int
+	 * @throws \Exception
+	 */
+	public static function canRunTask($taskId, $maxTasks) {
+		global $wpdb;
+
+		$table = static::table();
+		$state = self::STATE_RUNNING;
+		$count = $wpdb->get_var("select count(id) from {$table} where state = {$state} and id <> {$taskId}");
+		return ($count < $maxTasks);
 	}
 
 	//endregion

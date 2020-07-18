@@ -48,6 +48,16 @@ return [
 						"max" => 10000,
                         "default" => 1000
 					],
+					"mcloud-debug-remote-url" => [
+						"title" => "Log Target Host",
+						"description" => "The remote log target to send logs to, this will be supplied by Media Cloud support.",
+						"type" => "text-field",
+					],
+					"mcloud-debug-remote-url-port" => [
+						"title" => "Log Target Port",
+						"description" => "The port number for the remote log target to send logs to, this will be supplied by Media Cloud support.",
+						"type" => "text-field",
+					],
 				]
 			]
 		]

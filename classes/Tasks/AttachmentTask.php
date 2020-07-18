@@ -13,7 +13,7 @@
 
 namespace ILAB\MediaCloud\Tasks;
 
-use ILAB\MediaCloud\Storage\StorageGlobals;
+use ILAB\MediaCloud\Storage\StorageToolSettings;
 use ILAB\MediaCloud\Utilities\Logging\Logger;
 
 abstract class AttachmentTask extends Task {
@@ -53,6 +53,7 @@ abstract class AttachmentTask extends Task {
 	 * Add any additional \WP_Query post arguments to the query
 	 *
 	 * @param $args
+	 * @param array $args
 	 *
 	 * @return array
 	 */
@@ -67,7 +68,7 @@ abstract class AttachmentTask extends Task {
 	 * @return array|bool
 	 */
 	public function prepare($options = [], $selectedItems = []) {
-		Logger::info("Preparing attachment task");
+		Logger::info("Preparing attachment task", [], __METHOD__, __LINE__);
 
 		if (!empty($options['selected-items'])) {
 			$selectedItems = explode(',', $options['selected-items']);
@@ -110,7 +111,7 @@ abstract class AttachmentTask extends Task {
 				$args['nopaging'] = true;
 			}
 
-			$args['post_mime_type'] = StorageGlobals::allowedMimeTypes();
+			$args['post_mime_type'] = StorageToolSettings::allowedMimeTypes();
 
 			$args = $this->filterPostArgs($args);
 
@@ -127,7 +128,7 @@ abstract class AttachmentTask extends Task {
 
 		$this->state = Task::STATE_WAITING;
 
-		Logger::info("Added {$this->totalItems} to the task.");
+		Logger::info("Added {$this->totalItems} to the task.", [], __METHOD__, __LINE__);
 		return ($this->totalItems > 0);
 	}
 

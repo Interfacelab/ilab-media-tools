@@ -1,12 +1,12 @@
 === Media Cloud for Amazon S3, Imgix, Google Cloud Storage, DigitalOcean Spaces and more ===
 Contributors: mediacloud, interfacelab, freemius
 Tags: offload, amazon, s3, imgix, uploads, google cloud storage, digital ocean spaces, wasabi, minio, media, cdn, rekognition, cloudfront, images, crop, image editing, image editor, media library, offload, offload s3, filepicker, smush, ewww, imagify, shortpixel
-Requires at least: 4.4
-Tested up to: 5.3
+Requires at least: 4.9
+Tested up to: 5.4
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 3.3.20
-Requires PHP: 5.6.4
+Stable tag: 4.0.2
+Requires PHP: 7.1
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
 
@@ -16,16 +16,19 @@ https://www.youtube.com/watch?v=3tB3rKkwAJY
 
 Media cloud is a revolutionary plug-in for WordPress that will supercharge the performance of your website and radically transform the way that you work with media in WordPress.
 
-Media Cloud works by moving your images, media and other files from your WordPress server to online cloud storage such as Amazon S3, Google Cloud Storage, DigitalOcean Spaces and many others.  You can then serve that media through a CDN like Amazon Cloud front, Cloudflare, Fastly and others.
+Media Cloud works by moving your images, media and other files from your WordPress server to online cloud storage such as Amazon S3, Google Cloud Storage, DigitalOcean Spaces, DreamHost Object Storage and many others.  You can then serve that media through a CDN like Amazon Cloud front, Cloudflare, Fastly and others.
 
 Beyond cloud storage, Media Cloud also has deep integration with Imgix, the leading real-time image manipulation and optimization CDN.  Media Cloud is the first plugin for WordPress to bring the full benefit of what Imgix offers - simplifying your development efforts, reducing your site’s page load times and opening up creative options that simply haven’t existed until now.
 
 Media Cloud also provides advanced image editing tools that provide improved cropping options, effects, filters, watermarking and more.
 
-**NOTE**: This plugin requires PHP 5.6x or higher (PHP 7.x preferred)
+**NOTE**: This plugin requires PHP 7.1 or higher
 
-= Upload to S3, Minio, Google Cloud Storage, Wasabi and Digital Ocean Spaces =
+= Upload to S3, Minio, Google Cloud Storage, Wasabi, Digital Ocean Spaces, DreamHost Object Storage and others =
 Automatically copy media uploads to the cloud and serve them directly from your cloud storage provider, CloudFront or any other CDN.
+
+= Video Encoding with Mux =
+Upload videos and encode them nearly instantly to adaptive bitrate HLS that plays back smoothly and beautifully on any device regardless of bandwidth.  Requires an account with [Mux](https://mux.com).
 
 = Integrate with Imgix =
 [Imgix](https://imgix.com) will radically change the way that you build your WordPress sites and themes.  This plugin is the best integration available for WordPress.  Upload your images to S3 with our S3 tool and then host the media with Imgix, providing you with real-time image processing and automatic format delivery.  Forget ImageMagick, Imgix is light years ahead in quality and speed.
@@ -33,7 +36,7 @@ Automatically copy media uploads to the cloud and serve them directly from your 
 = Native support for Google Cloud Storage =
 Now supports using Google Cloud Storage for uploads without having to use Google's S3 compatible interop mode.
 
-= Automatically Tag and Categorize with Amazon Rekognition =
+= Automatically Tag, Categorize and Caption with Amazon Rekognition =
 Use Amazon's latest AI tools to tag and categorize your images when uploading to Amazon S3.  With Rekognition, you can automatically detect objects, scenes, and faces in images.
 
 = Advanced Image Editing =
@@ -57,15 +60,16 @@ Compatible with Short Pixel, EWWW, Smush and Imagify image optimization plugins!
 
 = Premium Upgrade with Improved Support Options and More Features =
 
+* Built-in image optimization using leading image optimization services like ShortPixel, TinyPNG, Imagify and Kraken.io.  No more third party plugins needed because it's built into Media Cloud's process.
+* Advanced security for encoded videos and a feature rich video player
 * Easily import your existing media library with the push of a button
 * WP-CLI support: Import your media library to the cloud, regenerate thumbnails and process your library with Amazon Rekognition using WP-CLI commands.
 * Direct uploads integrated directly into WordPress's media library
 * Cloud storage browser that allows you to import media to your media library from the cloud
-* Dynamic Images provides Imgix-like dynamic image generation directly in the plugin, no external service needed.
 * WPML, WooCommerce and Easy Digital Downloads integration
 * Blubrry Pod Casting, Ultimate Membership integrations
 * Push/pull your CSS and JS assets to the cloud and serve them from a CDN
-* Use Google Cloud Vision as a vision provider
+* Use Google Cloud Vision as a computer vision provider
 * Image size manager
 * Network level multisite support
 * and more!
@@ -74,15 +78,11 @@ Compatible with Short Pixel, EWWW, Smush and Imagify image optimization plugins!
 
 == Frequently Asked Questions ==
 
-= Upgrading from 3.x from 2.x =
+= How does this compare to WP Offload Media? =
 
-If you are using environment variables, please refer to [this documentation](https://mediacloud.press/documentation/advanced/environment-variables) for new environment variable names as many have been deprecated.
+WP Offload Media provides a very small subset of everything Media Cloud provides.
 
-Additionally a number of hooks and actions have been deprecated, please refer to [the documentation](https://mediacloud.press/documentation/advanced/hooks) for more information.
-
-= How does this compare to WP Offload S3? =
-
-This essentially does everything that WP Offload S3 does but it does a whole lot more.  This plugin is an essential part of our own development stack when creating WordPress solutions for clients and it was born out of frustration with a other "offload" plugins.
+This plugin is an essential part of our own development stack when creating WordPress solutions for our clients and as client needs grow around media, and dealing with media in WordPress, Media Cloud gains new features and improvements.
 
 = Why should I use Imgix? =
 
@@ -90,9 +90,6 @@ One of the headaches of managing a WordPress site is dealing with server disk sp
 
 Imgix is a content delivery network with a twist.  In addition to distributing your media, it also allows you to edit them, in real-time. and deliver the edited version through their CDN without altering the original.  Want to add a new image size to your theme?  You can do this with Imgix without having to use a plugin to recut all of your existing media to this new size.  Imgix optimizes format delivery and a bunch of other things.  It's seriously the greatest thing to happen to WordPress and web development in the history of ever.
 
-= Are you a paid shill for Imgix? =
-
-No, I'm just one very enthusiastic customer.
 
 == Screenshots ==
 
@@ -107,6 +104,43 @@ No, I'm just one very enthusiastic customer.
 
 
 == Changelog ==
+
+= 4.0.2 =
+
+* IMPORTANT: This plugin now requires PHP 7.1 or better
+* IMPORTANT: The Dynamic Images feature has been removed.  For all four of you that were using it, you will want to migrate to Imgix before updating.
+* NEW: Video encoding! via mux.com video encoding service turns your WordPress site into your own private Vimeo.  Encodes uploaded videos into adaptive bitrate videos that play smoothly no matter the bandwidth.
+* NEW: Gutenberg and Elementor blocks to play videos encoded by Media Cloud.
+* NEW: (PREMIUM) Image optimization is now built-in, no third party plugins needed.  Support for ShortPixel, TinyPNG, Kraken.io and Imagify.  Requires an account with any one of those services.
+* NEW: (PREMIUM) You can now direct upload images WITHOUT having to use Imgix.  Does not work with Backblaze.
+* NEW: Added DreamHost Cloud Storage as a cloud storage option
+* Database usage reduced by 40%
+* Background tasks are now limited to two concurrent running tasks.  You can adjust this setting in Media Cloud > Settings > Batch Processing.  Previously any number of tasks could run at once which could cause your site to slow down.
+* When saving posts or pages with Elementor, and using the Assets feature of Media Cloud, the asset build number will automatically be updated
+* Images processed with computer vision can apply the generated keywords to captions and alt.text
+* Fix for non-image uploads sometimes failing
+* Fix for PDF uploads
+* Fix for uploads on multisite with custom prefixes.
+* Fix for wizard when activating network.
+* Improved compatibility with front-end uploads
+* Tasks that make significant changes to your site now prompt you to remind you to backup your database first
+* + 48 other fixes and performance improvements
+
+
+= 3.3.23 =
+
+* Fix for stateless media import
+
+= 3.3.22 =
+
+* Fix for background tasks
+* Fix for WooCommerce integration
+* Important: After upgrading, go Media Cloud -> Settings -> Batch Processing.  Scroll to the bottom and click on *Clear Background Tokens*.
+
+= 3.3.21 =
+
+* Fix for missing metadata on Direct Uploads
+* Fix for WooCommerce integration
 
 = 3.3.20 =
 

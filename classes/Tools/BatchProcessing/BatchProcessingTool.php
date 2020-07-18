@@ -13,12 +13,14 @@
 
 namespace ILAB\MediaCloud\Tools\BatchProcessing;
 
-use ILAB\MediaCloud\Storage\StorageGlobals;
+use ILAB\MediaCloud\Storage\StorageToolSettings;
+use ILAB\MediaCloud\Tasks\TaskDatabase;
 use ILAB\MediaCloud\Tools\Storage\StorageTool;
 use ILAB\MediaCloud\Tools\Tool;
 use ILAB\MediaCloud\Tools\ToolsManager;
 use ILAB\MediaCloud\Utilities\Environment;
 use ILAB\MediaCloud\Utilities\Logging\Logger;
+use function ILAB\MediaCloud\Utilities\json_response;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
@@ -41,6 +43,21 @@ class BatchProcessingTool extends Tool {
 
 	public function alwaysEnabled() {
 		return true;
+	}
+
+	//endregion
+
+
+
+	//region Actions
+
+	public function clearBackgroundTokens() {
+		global $wpdb;
+		$wpdb->query("delete from {$wpdb->options} where option_name like '%mcloud_token_%'");
+
+		TaskDatabase::deleteOldTokens();
+
+		json_response(['status' => 'ok', 'message' => 'Tokens cleared.']);
 	}
 
 	//endregion

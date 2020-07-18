@@ -82,19 +82,27 @@ return [
                 "display-order" => 21,
                 "type" => "text-field",
             ],
-	        "mcloud-storage-big-size-original-privacy" => [
-		        "title" => "Original Image Privacy ACL",
-		        "description" => "This will set the privacy for the original image upload.",
-		        "display-order" => 43,
-		        "type" => "select",
-		        "default" => 'authenticated-read',
-		        "options" => [
-			        "public-read" => "Public",
-			        "authenticated-read" => "Private"
-		        ],
-	        ],
         ]
     ],
+	"ilab-media-cloud-image-upload-handling" => [
+		"title" => "Image Upload Handling",
+		"dynamic" => true,
+		"doc_link" => 'https://support.mediacloud.press/articles/documentation/cloud-storage/upload-handling-settings',
+		"description" => "The following options control how the storage tool handles image uploads.",
+		"options" => [
+			"mcloud-storage-big-size-original-privacy" => [
+				"title" => "Original Image Privacy ACL",
+				"description" => "This will set the privacy for the original image upload.",
+				"display-order" => 43,
+				"type" => "select",
+				"default" => 'authenticated-read',
+				"options" => [
+					"public-read" => "Public",
+					"authenticated-read" => "Private"
+				],
+			],
+		]
+	],
 	"ilab-media-cloud-signed-urls" => [
 		"title" => "Secure URL Settings",
 		"description" => "These settings control how pre-signed URLs work.",

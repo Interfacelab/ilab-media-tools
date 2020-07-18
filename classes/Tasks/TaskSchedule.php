@@ -282,7 +282,9 @@ class TaskSchedule extends Model implements \JsonSerializable {
 
 	/**
 	 * Runs the task if it's time to run it.
+	 *
 	 * @return bool
+	 *
 	 * @throws \Exception
 	 */
 	public function runIfNeeded() {
@@ -297,6 +299,7 @@ class TaskSchedule extends Model implements \JsonSerializable {
 	 * Runs the task now, regardless of schedule
 	 *
 	 * @return bool
+	 *
 	 * @throws \Exception
 	 */
 	public function runNow() {

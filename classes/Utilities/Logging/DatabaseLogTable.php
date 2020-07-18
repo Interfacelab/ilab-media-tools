@@ -35,7 +35,6 @@ class DatabaseLogTable extends \WP_List_Table {
     public function get_columns() {
         return [
             'date' => 'Date',
-            'channel' => 'Channel',
             'level' => 'Level',
             'message' => 'Message',
             'context' => 'Context'
@@ -52,7 +51,6 @@ class DatabaseLogTable extends \WP_List_Table {
     }
 
     public function process_bulk_action() {
-        vomit($this->current_action());
     }
 
     public function prepare_items() {
@@ -72,10 +70,6 @@ class DatabaseLogTable extends \WP_List_Table {
 
     public function column_date($item) {
         return '<span style="white-space:nowrap">'.date('n/j/Y g:i a',strtotime($item['date'])).'</span>';
-    }
-
-    public function column_channel($item) {
-        return $item['channel'];
     }
 
     public function column_level($item) {

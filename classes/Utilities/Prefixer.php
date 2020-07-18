@@ -105,7 +105,7 @@ final class Prefixer {
 		$object_version = apply_filters('as3cf_get_object_version_string', $object_version);
 		$this->currentVersion = $object_version;
 
-		Logger::info("Prefixer::updateVersion - Set new version: {$this->currentVersion}");
+		Logger::info("Set new version: {$this->currentVersion}", [], __METHOD__, __LINE__);
 	}
 
 	/**
@@ -116,9 +116,9 @@ final class Prefixer {
 			$this->currentVersion = $this->previousVersion;
 			$this->previousVersion = null;
 
-			Logger::info("Prefixer::restoreVersion - Restored version: {$this->currentVersion}");
+			Logger::info("Restored version: {$this->currentVersion}", [], __METHOD__, __LINE__);
 		} else {
-			Logger::info("Prefixer::restoreVersion - No previous version to restore");
+			Logger::info("No previous version to restore", [], __METHOD__, __LINE__);
 		}
 	}
 
@@ -159,7 +159,7 @@ final class Prefixer {
 
 		$prefix = trim($prefix, '/').'/';
 
-		Logger::info("Prefixer::parsePrefix - Generated prefix: {$prefix}");
+		Logger::info("Generated prefix: {$prefix}", [], __METHOD__, __LINE__);
 
 		return $prefix;
 	}
@@ -167,7 +167,7 @@ final class Prefixer {
 	/**
 	 * Generates a prefix string from a prefix format string.
 	 *
-	 * @param string $prefixFormat
+	 * @param string|null $prefixFormat
 	 * @param int|null $id
 	 *
 	 * @return string
@@ -189,6 +189,9 @@ final class Prefixer {
 		self::instance()->restoreVersion();
 	}
 
+	/**
+	 * @param false|null|string $type
+	 */
 	public static function setType($type) {
 		if ($type != null) {
 			$typeParts = explode('/', $type);

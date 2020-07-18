@@ -62,7 +62,7 @@ class NoticeManager {
 			return;
 		}
 
-		if (!$this->isAdminNoticeActive($dismissibleIdentifier)) {
+		if (!empty($dismissibleIdentifier) && !$this->isAdminNoticeActive($dismissibleIdentifier)) {
 			return;
 		}
 

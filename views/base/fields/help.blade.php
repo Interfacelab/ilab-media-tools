@@ -6,6 +6,8 @@
             <a href="{{$helpLink['video_url']}}" target="_blank" class="{{$classes}} {{\ILAB\MediaCloud\Utilities\arrayPath($helpLink, 'class', '')}} mediabox">{{$helpLink['title']}}</a>
             @elseif(isset($helpLink['wizard']))
             <a href="{{admin_url('admin.php?page=media-cloud-wizard&wizard='.$helpLink['wizard'])}}" class="{{$classes}} {{\ILAB\MediaCloud\Utilities\arrayPath($helpLink, 'class', '')}}">{{$helpLink['title']}}</a>
+            @elseif(isset($helpLink['external_url']))
+            <a href="{{$helpLink['external_url']}}" target="_blank" class="{{$classes}} {{\ILAB\MediaCloud\Utilities\arrayPath($helpLink, 'class', '')}}">{{$helpLink['title']}}</a>
             @else
             <a href="{{$helpLink['url']}}" target="_blank" class="{{$classes}} {{\ILAB\MediaCloud\Utilities\arrayPath($helpLink, 'class', '')}}" @if(!empty($helpLink['url'])) data-article-sidebar="{{$helpLink['url']}}" @endif>{{$helpLink['title']}}</a>
             @endif

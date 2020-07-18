@@ -143,7 +143,7 @@ class DebuggingTool extends Tool {
 	    $probeData['Globals']['DISABLE_WP_CRON'] = defined('DISABLE_WP_CRON') ? constant('DISABLE_WP_CRON') : null;
 
 	    $probeData['Uploads'] = wp_get_upload_dir();
-
+	    
 	    $probeData['Media Cloud Settings'] = [];
 	    global $wpdb;
 	    $settingsResults = $wpdb->get_results("select * from {$wpdb->options} where option_name like 'mcloud%'", ARRAY_A);

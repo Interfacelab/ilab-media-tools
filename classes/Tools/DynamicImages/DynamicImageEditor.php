@@ -212,7 +212,7 @@ class DynamicImageEditor extends \WP_Image_Editor
                 }
 
                 $this->resize($size_data['width'], $size_data['height'], $size_data['crop']);
-                $resized = $this->getMetadata();
+                $resized = $this->getMetadata(null);
                 $metadata[$size] = $resized;
 
                 $this->size = $orig_size;
@@ -229,11 +229,17 @@ class DynamicImageEditor extends \WP_Image_Editor
         return $this->update_size($dst_w,$dst_h);
     }
 
-    protected function getMetadata(){
+    protected function getMetadata($filename) {
         $mime=($this->isGif) ? 'image/gif' : 'image/jpeg';
+
+        if ($filename != null) {
+	        list( $filename, $extension, $mime_type ) = $this->get_output_format( $filename, $mime );
+        }
+
 
         /** This filter is documented in wp-includes/class-wp-image-editor-gd.php */
         $result = array(
+	        'path'      => $filename,
             'file'      => wp_basename( $this->file ),
             'width'     => $this->size['width'],
             'height'    => $this->size['height'],
@@ -251,7 +257,7 @@ class DynamicImageEditor extends \WP_Image_Editor
         } else if (wp_doing_ajax() && isset($_POST['action']) && ($_POST['action'] != 'ilab_perform_crop')) {
 	        return $this->storageEditor->save($destfilename,$mime_type);
         } else {
-            return $this->getMetadata();
+            return $this->getMetadata($destfilename);
         }
     }
 }

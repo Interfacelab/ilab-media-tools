@@ -55,6 +55,19 @@ final class Environment {
 	}
 
 	/**
+	 * Enables network mode
+	 *
+	 * @param $enabled
+	 */
+	public static function UpdateNetworkMode($enabled) {
+		global $media_cloud_licensing;
+		if ($media_cloud_licensing->is_plan('pro')) {
+			static::$networkMode = $enabled;
+			update_site_option('mcloud-network-mode', $enabled);
+		}
+	}
+
+	/**
 	 * Fetches an option from WordPress or the environment.
 	 *
 	 * @param string|null $optionName

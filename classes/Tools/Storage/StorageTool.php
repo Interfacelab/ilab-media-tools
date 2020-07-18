@@ -17,12 +17,14 @@ use  ILAB\MediaCloud\Storage\FileInfo ;
 use  ILAB\MediaCloud\Storage\StorageConstants ;
 use  ILAB\MediaCloud\Storage\StorageException ;
 use  ILAB\MediaCloud\Storage\StorageInterface ;
-use  ILAB\MediaCloud\Storage\StorageManager ;
-use  ILAB\MediaCloud\Storage\StorageGlobals ;
+use  ILAB\MediaCloud\Storage\StorageToolMigrations ;
+use  ILAB\MediaCloud\Storage\StorageToolSettings ;
 use  ILAB\MediaCloud\Storage\StoragePostMap ;
 use  ILAB\MediaCloud\Tasks\TaskManager ;
 use  ILAB\MediaCloud\Tasks\TaskRunner ;
 use  ILAB\MediaCloud\Tasks\TaskSchedule ;
+use  ILAB\MediaCloud\Tools\Optimizer\OptimizerConsts ;
+use  ILAB\MediaCloud\Tools\Optimizer\OptimizerTool ;
 use  ILAB\MediaCloud\Tools\Storage\Tasks\CleanUploadsTask ;
 use  ILAB\MediaCloud\Tools\Storage\Tasks\DeleteUploadsTask ;
 use  ILAB\MediaCloud\Tools\Storage\Tasks\MigrateFromOtherTask ;
@@ -30,6 +32,7 @@ use  ILAB\MediaCloud\Tools\Storage\Tasks\MigrateTask ;
 use  ILAB\MediaCloud\Tools\Storage\Tasks\RegenerateThumbnailTask ;
 use  ILAB\MediaCloud\Tools\Storage\Tasks\UnlinkTask ;
 use  ILAB\MediaCloud\Tools\Tool ;
+use  ILAB\MediaCloud\Tools\ToolsManager ;
 use  ILAB\MediaCloud\Utilities\Environment ;
 use  ILAB\MediaCloud\Utilities\Logging\Logger ;
 use  ILAB\MediaCloud\Utilities\NoticeManager ;
@@ -38,6 +41,7 @@ use function  ILAB\MediaCloud\Utilities\typeFromMeta ;
 use  ILAB\MediaCloud\Utilities\View ;
 use  Smalot\PdfParser\Parser ;
 use function  ILAB\MediaCloud\Utilities\arrayPath ;
+use function  ILAB\MediaCloud\Utilities\gen_uuid ;
 
 if ( !defined( 'ABSPATH' ) ) {
     header( 'Location: /' );
@@ -52,16 +56,16 @@ if ( !defined( 'ABSPATH' ) ) {
 class StorageTool extends Tool
 {
     //region Properties/Class Variables
+    /** @var StorageToolSettings  */
+    private  $settings = null ;
     /** @var array */
     private  $uploadedDocs = array() ;
+    /** @var array */
+    private  $renamedDocs = array() ;
     /** @var array */
     private  $pdfInfo = array() ;
     /** @var bool */
     private  $skipUpdate = false ;
-    /** @var bool */
-    private  $displayBadges = true ;
-    /** @var bool */
-    private  $mediaListIntegration = true ;
     /** @var StorageInterface|null */
     private  $client = null ;
     /** @var bool Flag if we are currently processing an optimized image */
@@ -80,15 +84,13 @@ class StorageTool extends Tool
     protected  $allSizes = null ;
     private  $disableSrcSet = false ;
     private  $replaceSrcSet = false ;
-    private  $disableBigImageSize = false ;
-    private  $uploadOriginal = true ;
-    private  $skipOtherImport = false ;
     /** @var array Already processed post IDs */
     private  $processed = array() ;
     //endregion
     //region Constructor
     public function __construct( $toolName, $toolInfo, $toolManager )
     {
+        $this->settings = StorageToolSettings::instance();
         if ( !empty($toolInfo['storageDrivers']) ) {
             foreach ( $toolInfo['storageDrivers'] as $key => $data ) {
                 if ( empty($data['name']) || empty($data['class']) || empty($data['config']) ) {
@@ -99,7 +101,7 @@ class StorageTool extends Tool
                     throw new \Exception( "Missing driver config file '{$configFile}'. " );
                 }
                 $config = (include $configFile);
-                StorageManager::registerDriver(
+                StorageToolSettings::registerDriver(
                     $key,
                     $data['name'],
                     $data['class'],
@@ -110,14 +112,12 @@ class StorageTool extends Tool
         }
         do_action( 'media-cloud/storage/register-drivers' );
         $driverConfigs = [];
-        foreach ( StorageManager::drivers() as $key => $driver ) {
+        foreach ( StorageToolSettings::drivers() as $key => $driver ) {
             $driverConfigs[$key] = $driver['config'];
         }
         $toolInfo = $this->mergeSettings( $toolInfo, $driverConfigs );
         parent::__construct( $toolName, $toolInfo, $toolManager );
-        $this->displayBadges = Environment::Option( 'mcloud-storage-display-badge', null, true );
-        $this->mediaListIntegration = Environment::Option( 'mcloud-storage-display-media-list', null, true );
-        $this->client = StorageManager::storageInstance();
+        $this->client = StorageToolSettings::storageInstance();
         if ( $this->haveSettingsChanged() ) {
             $this->settingsChanged();
         }
@@ -127,8 +127,6 @@ class StorageTool extends Tool
         if ( !function_exists( 'wp_generate_attachment_metadata' ) ) {
             require_once ABSPATH . 'wp-admin/includes/image.php';
         }
-        $this->disableBigImageSize = empty(Environment::Option( 'mcloud-storage-enable-big-size-threshold', null, true ));
-        $this->uploadOriginal = !empty(Environment::Option( 'mcloud-storage-big-size-upload-original', null, true ));
         
         if ( is_admin() ) {
             if ( media_cloud_licensing()->is_plan( 'pro' ) ) {
@@ -149,7 +147,7 @@ class StorageTool extends Tool
                 } );
             }
             
-            if ( $this->disableBigImageSize ) {
+            if ( empty($this->settings->enableBigImageSize) ) {
                 add_filter( 'big_image_size_threshold', '__return_false' );
             } else {
                 $threshold = (int) Environment::Option( 'mcloud-storage-big-size-threshold', null, 2560 );
@@ -163,9 +161,9 @@ class StorageTool extends Tool
             $this->prepareMigrateFromOtherPlugin();
         }
         
-        $canDelete = apply_filters( 'media-cloud/storage/delete_uploads', true );
+        $canDelete = !empty(apply_filters( 'media-cloud/storage/delete_uploads', true ));
         
-        if ( !empty($canDelete) && StorageGlobals::deleteOnUpload() ) {
+        if ( !empty($canDelete) && StorageToolSettings::deleteOnUpload() ) {
             
             if ( !isset( $_POST['action'] ) || isset( $_POST['action'] ) && !in_array( $_POST['action'], [ 'mcloud_task_heartbeat', 'mcloud_all_task_statuses', 'heartbeat' ] ) ) {
                 add_filter( 'wp_die_ajax_handler', [ $this, 'hookDieHandler' ], PHP_INT_MAX );
@@ -254,7 +252,7 @@ class StorageTool extends Tool
     {
         $provider = Environment::Option( 'mcloud-storage-provider', 'ILAB_CLOUD_STORAGE_PROVIDER', null );
         if ( empty($provider) ) {
-            StorageGlobals::migrateFromOtherPlugin();
+            StorageToolMigrations::migrateFromOtherPlugin();
         }
     }
     
@@ -264,10 +262,9 @@ class StorageTool extends Tool
         TaskManager::registerTask( UnlinkTask::class );
         
         if ( $this->enabled() ) {
-            $this->skipOtherImport = Environment::Option( 'mcloud-storage-skip-import-other-plugin', null, false );
             if ( is_admin() ) {
                 
-                if ( empty(get_option( 'uploads_use_yearmonth_folders' )) && empty(StorageGlobals::prefixFormat()) ) {
+                if ( empty(get_option( 'uploads_use_yearmonth_folders' )) && empty(StorageToolSettings::prefixFormat()) ) {
                     $mediaUrl = ilab_admin_url( 'options-media.php' );
                     $settingsUrl = ilab_admin_url( 'admin.php?page=media-cloud-settings-storage#upload-handling' );
                     NoticeManager::instance()->displayAdminNotice(
@@ -354,6 +351,12 @@ class StorageTool extends Tool
             // but I don't remember why we had that requirement.
             
             if ( version_compare( $wp_version, '5.3', '>=' ) ) {
+                add_filter(
+                    'wp_generate_attachment_metadata',
+                    [ $this, 'handleGenerateAttachmentMetadata' ],
+                    1000,
+                    3
+                );
                 add_filter(
                     'wp_update_attachment_metadata',
                     [ $this, 'handleUpdateAttachmentMetadataFor53' ],
@@ -588,7 +591,7 @@ class StorageTool extends Tool
     
     private function testPrivacy( $type )
     {
-        if ( StorageGlobals::privacy( $type ) === 'authenticated-read' && !$this->client->usesSignedURLs( $type ) ) {
+        if ( StorageToolSettings::privacy( $type ) === 'authenticated-read' && !$this->client->usesSignedURLs( $type ) ) {
             return false;
         }
         return true;
@@ -607,29 +610,77 @@ class StorageTool extends Tool
     }
     
     //endregion
+    public function handleGenerateAttachmentMetadata( $meta, $id, $mode )
+    {
+        Logger::info(
+            "Generate attachment metadata for {$id} for mode {$mode}",
+            [],
+            __METHOD__,
+            __LINE__
+        );
+        if ( !in_array( $id, $this->processed ) ) {
+            $this->processed[] = $id;
+        }
+        return $meta;
+    }
+    
     //region WordPress Upload/Attachment Hooks & Filters
     public function handleUpdateAttachmentMetadataFor53( $data, $id )
     {
+        Logger::info(
+            "Update attachment metadata {$id}",
+            [],
+            __METHOD__,
+            __LINE__
+        );
         // Uploads are handled by a different method for non-images
+        
         if ( !wp_attachment_is_image( $id ) ) {
+            Logger::info(
+                "Attachment is not an image {$id}",
+                [],
+                __METHOD__,
+                __LINE__
+            );
             return $data;
         }
+        
         // This means sizes haven't been generated yet.
+        
         if ( empty($data['sizes']) ) {
+            Logger::info(
+                "Attachment is missing sizes {$id}",
+                [],
+                __METHOD__,
+                __LINE__
+            );
             return $data;
         }
+        
         // In 5.3 `wp_update_attachment_metadata` is called a few times, but we only want to handle the last time its called
         // to prevent uploading stuff twice.
         
         if ( !in_array( $id, $this->processed ) ) {
+            Logger::info(
+                "Attachment hasn't been processed yet.",
+                [],
+                __METHOD__,
+                __LINE__
+            );
             $this->processed[] = $id;
             return $data;
         }
         
+        Logger::info(
+            "Processing attachment metadata.",
+            [],
+            __METHOD__,
+            __LINE__
+        );
         // Now the goods
         $data = $this->handleUpdateAttachmentMetadata( $data, $id );
         
-        if ( $this->uploadOriginal && isset( $data['original_image'] ) ) {
+        if ( $this->settings->uploadOriginal && isset( $data['original_image'] ) ) {
             $s3Data = $this->uploadOriginalImage( $data, $id, $this->preserveFilePaths );
             if ( !empty($s3Data) ) {
                 $data['original_image_s3'] = $s3Data;
@@ -662,7 +713,12 @@ class StorageTool extends Tool
      *
      * @return array
      */
-    public function uploadOriginalImage( $data, $id, $preserveFilePaths = 'replace' )
+    public function uploadOriginalImage(
+        $data,
+        $id,
+        $preserveFilePaths = 'replace',
+        $existingPrefix = null
+    )
     {
         $path_base = pathinfo( $data['file'] )['dirname'];
         if ( $path_base === '.' ) {
@@ -692,7 +748,12 @@ class StorageTool extends Tool
         Prefixer::setType( $mime );
         
         if ( $this->client && $this->client->enabled() ) {
-            Logger::info( "\tProcessing main file {$newData['file']}" );
+            Logger::info(
+                "\tProcessing main file {$newData['file']}",
+                [],
+                __METHOD__,
+                __LINE__
+            );
             Prefixer::previousVersion();
             $privacy = Environment::Option( 'mcloud-storage-big-size-original-privacy', null, 'authenticated-read' );
             $doUpload = apply_filters( 'media-cloud/storage/upload-master', true );
@@ -703,7 +764,9 @@ class StorageTool extends Tool
                 $id,
                 $preserveFilePaths,
                 $doUpload,
-                $privacy
+                $privacy,
+                $existingPrefix,
+                'original'
             );
         }
         
@@ -726,7 +789,8 @@ class StorageTool extends Tool
         $data,
         $id,
         $preserveFilePaths = 'replace',
-        $skipThumbnails = false
+        $skipThumbnails = false,
+        $existingPrefix = null
     )
     {
         if ( $this->skipUpdate ) {
@@ -735,6 +799,8 @@ class StorageTool extends Tool
         if ( !$data ) {
             return $data;
         }
+        global  $media_cloud_licensing ;
+        $existingPrefix = ( empty($existingPrefix) ? gen_uuid( 8 ) : $existingPrefix );
         $originalData = $data;
         $imgixEnabled = apply_filters( 'media-cloud/imgix/enabled', false );
         $mime = ( isset( $data['ilab-mime'] ) ? $data['ilab-mime'] : null );
@@ -755,16 +821,20 @@ class StorageTool extends Tool
                 $s3Info = get_post_meta( $id, 'ilab_s3_info', true );
                 
                 if ( $s3Info ) {
-                    $pdfInfo = $this->pdfInfo[$s3Info['file']];
-                    $data['width'] = $pdfInfo['width'];
-                    $data['height'] = $pdfInfo['height'];
                     $data['file'] = $s3Info['s3']['key'];
                     $data['s3'] = $s3Info['s3'];
                     
-                    if ( $renderPDF ) {
-                        $data['sizes']['full']['file'] = $s3Info['s3']['key'];
-                        $data['sizes']['full']['width'] = $data['width'];
-                        $data['sizes']['full']['height'] = $data['height'];
+                    if ( isset( $this->pdfInfo[$s3Info['file']] ) ) {
+                        $pdfInfo = $this->pdfInfo[$s3Info['file']];
+                        $data['width'] = $pdfInfo['width'];
+                        $data['height'] = $pdfInfo['height'];
+                        
+                        if ( $renderPDF ) {
+                            $data['sizes']['full']['file'] = $s3Info['s3']['key'];
+                            $data['sizes']['full']['width'] = $data['width'];
+                            $data['sizes']['full']['height'] = $data['height'];
+                        }
+                    
                     }
                 
                 }
@@ -800,7 +870,7 @@ class StorageTool extends Tool
             $mime = wp_get_image_mime( $upload_path . DIRECTORY_SEPARATOR . $data['file'] );
         }
         $ignoreMimeTypes = apply_filters( 'media-cloud/storage/ignore-mime-types', true );
-        if ( $mime && $ignoreMimeTypes && StorageGlobals::mimeTypeIsIgnored( $mime ) ) {
+        if ( $mime && $ignoreMimeTypes && StorageToolSettings::mimeTypeIsIgnored( $mime ) ) {
             return $originalData;
         }
         Prefixer::setType( $mime );
@@ -809,7 +879,12 @@ class StorageTool extends Tool
             $ignoreExistingS3 = apply_filters( 'media-cloud/storage/ignore-existing-s3-data', false, $id );
             
             if ( $ignoreExistingS3 || !isset( $data['s3'] ) ) {
-                Logger::info( "\tProcessing main file {$data['file']}" );
+                Logger::info(
+                    "\tProcessing main file {$data['file']}",
+                    [],
+                    __METHOD__,
+                    __LINE__
+                );
                 $doUpload = apply_filters( 'media-cloud/storage/upload-master', true );
                 $data = $this->processFile(
                     $upload_path,
@@ -817,7 +892,10 @@ class StorageTool extends Tool
                     $data,
                     $id,
                     $preserveFilePaths,
-                    $doUpload
+                    $doUpload,
+                    null,
+                    $existingPrefix,
+                    'full'
                 );
                 
                 if ( $skipThumbnails && isset( $data['sizes'] ) ) {
@@ -842,13 +920,22 @@ class StorageTool extends Tool
                                 unset( $size['prefix'] );
                                 $data['sizes'][$key]['s3'] = $data['s3'];
                             } else {
-                                Logger::info( "\tProcessing thumbnail {$size['file']}" );
+                                Logger::info(
+                                    "\tProcessing thumbnail {$size['file']}",
+                                    [],
+                                    __METHOD__,
+                                    __LINE__
+                                );
                                 $sizeData = $this->processFile(
                                     $upload_path,
                                     $file,
                                     $size,
                                     $id,
-                                    $preserveFilePaths
+                                    $preserveFilePaths,
+                                    true,
+                                    null,
+                                    $existingPrefix,
+                                    $key
                                 );
                                 if ( $ignoreExistingS3 || !isset( $sizeData['s3'] ) ) {
                                     foreach ( $data['sizes'] as $lookKey => $lookData ) {
@@ -912,7 +999,7 @@ class StorageTool extends Tool
      */
     public function deleteAttachment( $id )
     {
-        if ( !StorageGlobals::deleteFromStorage() ) {
+        if ( !StorageToolSettings::deleteFromStorage() ) {
             return $id;
         }
         $data = wp_get_attachment_metadata( $id );
@@ -961,7 +1048,12 @@ class StorageTool extends Tool
                         }
                         
                         if ( in_array( $file, $deletedFiles ) ) {
-                            Logger::info( "File '{$file}' has already been deleted." );
+                            Logger::info(
+                                "File '{$file}' has already been deleted.",
+                                [],
+                                __METHOD__,
+                                __LINE__
+                            );
                             continue;
                         }
                         
@@ -989,14 +1081,34 @@ class StorageTool extends Tool
         if ( !empty($job_manager_upload) && !empty($job_manager_uploading_file) ) {
             return $uploads;
         }
-        if ( empty(StorageGlobals::prefixFormat()) ) {
+        
+        if ( empty(StorageToolSettings::prefixFormat()) ) {
+            
+            if ( is_multisite() && !is_main_site() ) {
+                
+                if ( defined( 'UPLOADS' ) ) {
+                    $root = trailingslashit( ABSPATH ) . constant( 'UPLOADS' );
+                    $rootUrl = rtrim( home_url( '/' . constant( 'UPLOADS' ) ), '/' );
+                } else {
+                    $root = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . 'uploads';
+                    $rootUrl = rtrim( content_url(), '/' ) . '/uploads';
+                }
+                
+                $sitePrefix = rtrim( str_replace( $root, '', $uploads['basedir'] ), DIRECTORY_SEPARATOR );
+                $uploads['siteprefix'] = $sitePrefix;
+                $uploads['subdir'] = $sitePrefix . $uploads['subdir'];
+                $uploads['basedir'] = $root;
+                $uploads['baseurl'] = $rootUrl;
+            }
+            
             return $uploads;
         }
+        
         $lastType = Prefixer::currentType();
         if ( !empty($type) ) {
             Prefixer::setType( $type );
         }
-        $prefix = trim( StorageGlobals::prefix( null ), '/' );
+        $prefix = trim( StorageToolSettings::prefix( null ), '/' );
         if ( !empty($type) ) {
             Prefixer::setType( $lastType );
         }
@@ -1011,8 +1123,13 @@ class StorageTool extends Tool
                 $rootUrl = rtrim( content_url(), '/' ) . '/uploads';
             }
             
-            $sitePrefix = ltrim( str_replace( $root, '', $uploads['basedir'] ), DIRECTORY_SEPARATOR );
-            $prefix = $sitePrefix . '/' . $prefix;
+            
+            if ( !empty($this->settings->keepSubsitePath) ) {
+                $sitePrefix = ltrim( str_replace( $root, '', $uploads['basedir'] ), DIRECTORY_SEPARATOR );
+                $prefix = $sitePrefix . '/' . $prefix;
+                $uploads['siteprefix'] = $sitePrefix;
+            }
+            
             $uploads['subdir'] = '/' . $prefix;
             $uploads['path'] = $root . '/' . $prefix;
             $uploads['url'] = $rootUrl . '/' . $prefix;
@@ -1072,7 +1189,7 @@ class StorageTool extends Tool
             return $upload;
         }
         $ignoreMimeTypes = apply_filters( 'media-cloud/storage/ignore-mime-types', true );
-        if ( isset( $upload['type'] ) && $ignoreMimeTypes && StorageGlobals::mimeTypeIsIgnored( $upload['type'] ) ) {
+        if ( isset( $upload['type'] ) && $ignoreMimeTypes && StorageToolSettings::mimeTypeIsIgnored( $upload['type'] ) ) {
             return $upload;
         }
         if ( $this->fileIsDisplayableImage( $upload['file'] ) ) {
@@ -1092,7 +1209,7 @@ class StorageTool extends Tool
             $upload_path = $upload_info['basedir'];
             $file = trim( str_replace( $upload_path, '', $pi['dirname'] ), '/' ) . '/' . $pi['basename'];
             
-            if ( $upload['type'] == 'application/pdf' && file_exists( $upload_path . '/' . $file ) ) {
+            if ( $upload['type'] == 'application/pdf' && file_exists( $upload_path . '/' . $file ) && function_exists( 'gzuncompress' ) ) {
                 set_error_handler( function (
                     $errno,
                     $errstr,
@@ -1120,9 +1237,14 @@ class StorageTool extends Tool
                     }
                 
                 } catch ( \Exception $ex ) {
-                    Logger::error( 'PDF Parsing Error', [
+                    Logger::error(
+                        'PDF Parsing Error',
+                        [
                         'exception' => $ex->getMessage(),
-                    ] );
+                    ],
+                        __METHOD__,
+                        __LINE__
+                    );
                 }
                 restore_error_handler();
             }
@@ -1131,8 +1253,8 @@ class StorageTool extends Tool
             $upload = $this->processFile( $upload_path, $file, $upload );
             if ( isset( $upload['s3'] ) ) {
                 
-                if ( StorageGlobals::docCdn() ) {
-                    $upload['url'] = trim( StorageGlobals::docCdn(), '/' ) . '/' . $file;
+                if ( StorageToolSettings::docCdn() ) {
+                    $upload['url'] = trim( StorageToolSettings::docCdn(), '/' ) . '/' . $file;
                 } else {
                     if ( isset( $upload['s3']['url'] ) ) {
                         $upload['url'] = $upload['s3']['url'];
@@ -1140,6 +1262,12 @@ class StorageTool extends Tool
                 }
             
             }
+            Logger::info(
+                "Adding {$file} to uploadedDocs",
+                [],
+                __METHOD__,
+                __LINE__
+            );
             $this->uploadedDocs[$file] = $upload;
             Prefixer::setType( null );
             Prefixer::nextVersion();
@@ -1174,9 +1302,9 @@ class StorageTool extends Tool
                     $new_url = $this->getAttachmentURLFromMeta( $meta );
                 } else {
                     
-                    if ( !$meta && StorageGlobals::docCdn() ) {
+                    if ( !$meta && StorageToolSettings::docCdn() ) {
                         $post = \WP_Post::get_instance( $attachment_id );
-                        if ( $post && strpos( $post->guid, StorageGlobals::docCdn() ) === 0 ) {
+                        if ( $post && strpos( $post->guid, StorageToolSettings::docCdn() ) === 0 ) {
                             $new_url = $post->guid;
                         }
                     }
@@ -1268,23 +1396,37 @@ class StorageTool extends Tool
     public function addAttachment( $post_id )
     {
         $file = get_post_meta( $post_id, '_wp_attached_file', true );
-        if ( !isset( $this->uploadedDocs[$file] ) ) {
-            $file = '/' . $file;
+        $fileKey = $file;
+        if ( isset( $this->renamedDocs[$fileKey] ) ) {
+            $fileKey = $this->renamedDocs[$file];
+        }
+        if ( !isset( $this->uploadedDocs[$fileKey] ) ) {
+            $fileKey = '/' . $fileKey;
         }
         
-        if ( isset( $this->uploadedDocs[$file] ) ) {
-            add_post_meta( $post_id, 'ilab_s3_info', $this->uploadedDocs[$file] );
+        if ( isset( $this->uploadedDocs[$fileKey] ) ) {
+            add_post_meta( $post_id, 'ilab_s3_info', $this->uploadedDocs[$fileKey] );
             do_action(
                 'media-cloud/storage/uploaded-attachment',
                 $post_id,
                 $file,
-                $this->uploadedDocs[$file]
+                $this->uploadedDocs[$fileKey]
             );
         } else {
-            Logger::info( "addAttachment - Missing '{$file}' key on uploadeDocs." );
+            Logger::info(
+                "addAttachment - Missing '{$fileKey}' key on uploadeDocs.",
+                [],
+                __METHOD__,
+                __LINE__
+            );
             $keys = array_keys( $this->uploadedDocs );
             $keyList = implode( ' , ', $keys );
-            Logger::info( 'addAttachment - Have keys: ' . $keyList );
+            Logger::info(
+                'addAttachment - Have keys: ' . $keyList,
+                [],
+                __METHOD__,
+                __LINE__
+            );
         }
     
     }
@@ -1325,7 +1467,7 @@ class StorageTool extends Tool
         
         if ( isset( $_POST['s3-access-acl'] ) || isset( $_POST['s3-cache-control'] ) || isset( $_POST['s3-expires'] ) ) {
             $mime = get_post_mime_type( $id );
-            $acl = ( isset( $meta['s3']['privacy'] ) ? $meta['s3']['privacy'] : StorageGlobals::privacy( $mime ) );
+            $acl = ( isset( $meta['s3']['privacy'] ) ? $meta['s3']['privacy'] : StorageToolSettings::privacy( $mime ) );
             $acl = ( isset( $_POST['s3-access-acl'] ) ? $_POST['s3-access-acl'] : $acl );
             $meta['s3']['privacy'] = $acl;
             $cacheControl = false;
@@ -1385,9 +1527,14 @@ class StorageTool extends Tool
                 }
             
             } catch ( StorageException $ex ) {
-                Logger::error( 'Error Copying Object', [
+                Logger::error(
+                    'Error Copying Object',
+                    [
                     'exception' => $ex->getMessage(),
-                ] );
+                ],
+                    __METHOD__,
+                    __LINE__
+                );
             }
         }
         
@@ -1510,7 +1657,7 @@ class StorageTool extends Tool
                 }
             }
             if ( !isset( $response['s3']['privacy'] ) ) {
-                $response['s3']['privacy'] = StorageGlobals::privacy( $attachment->post_mime_type );
+                $response['s3']['privacy'] = StorageToolSettings::privacy( $attachment->post_mime_type );
             }
         }
         
@@ -1521,6 +1668,13 @@ class StorageTool extends Tool
             $response['filesizeHumanReadable'] = size_format( $bytes );
         }
         
+        $compressionStats = get_post_meta( $attachment->ID, '_mcloud_optimize_stats', true );
+        if ( !empty($compressionStats) ) {
+            $response['compressionStats'] = [
+                'total'      => ( $compressionStats['totalBytes'] == 0 ? '0%' : sprintf( '%.1f%%', $compressionStats['savedBytes'] / $compressionStats['totalBytes'] * 100.0 ) ),
+                'totalFiles' => count( $compressionStats['sizes'] ),
+            ];
+        }
         return $response;
     }
     
@@ -1585,7 +1739,7 @@ class StorageTool extends Tool
                 $new_url = $this->getAttachmentURLFromMeta( $s3Info );
             }
             
-            if ( empty($new_url) && empty($this->skipOtherImport) ) {
+            if ( empty($new_url) && empty($this->settings->skipOtherImport) ) {
                 $offloadS3Info = $this->loadOffloadMetadata( $post_id );
                 
                 if ( !empty($offloadS3Info) ) {
@@ -1600,9 +1754,9 @@ class StorageTool extends Tool
             }
             
             
-            if ( !$meta && StorageGlobals::docCdn() ) {
+            if ( !$meta && StorageToolSettings::docCdn() ) {
                 $post = \WP_Post::get_instance( $post_id );
-                if ( $post && strpos( $post->guid, StorageGlobals::docCdn() ) === 0 ) {
+                if ( $post && strpos( $post->guid, StorageToolSettings::docCdn() ) === 0 ) {
                     $new_url = $post->guid;
                 }
             }
@@ -1644,13 +1798,13 @@ class StorageTool extends Tool
             }
             
             
-            if ( StorageManager::driver() === 's3' && !empty(StorageGlobals::signedCDN()) ) {
+            if ( StorageToolSettings::driver() === 's3' && !empty(StorageToolSettings::signedCDN()) ) {
                 return $url;
             } else {
                 
-                if ( !empty(StorageGlobals::cdn()) ) {
-                    $cdnScheme = parse_url( StorageGlobals::cdn(), PHP_URL_SCHEME );
-                    $cdnHost = parse_url( StorageGlobals::cdn(), PHP_URL_HOST );
+                if ( !empty(StorageToolSettings::cdn()) ) {
+                    $cdnScheme = parse_url( StorageToolSettings::cdn(), PHP_URL_SCHEME );
+                    $cdnHost = parse_url( StorageToolSettings::cdn(), PHP_URL_HOST );
                     $urlScheme = parse_url( $url, PHP_URL_SCHEME );
                     $urlHost = parse_url( $url, PHP_URL_HOST );
                     return str_replace( "{$urlScheme}://{$urlHost}", "{$cdnScheme}://{$cdnHost}", $url );
@@ -1662,13 +1816,13 @@ class StorageTool extends Tool
         
         } else {
             
-            if ( StorageGlobals::cdn() ) {
-                return StorageGlobals::cdn() . '/' . $meta['s3']['key'];
+            if ( StorageToolSettings::cdn() ) {
+                return StorageToolSettings::cdn() . '/' . $meta['s3']['key'];
             } else {
                 
                 if ( isset( $meta['s3']['url'] ) ) {
                     
-                    if ( isset( $meta['file'] ) && StorageGlobals::docCdn() ) {
+                    if ( isset( $meta['file'] ) && StorageToolSettings::docCdn() ) {
                         $ext = strtolower( pathinfo( $meta['file'], PATHINFO_EXTENSION ) );
                         $image_exts = array(
                             'jpg',
@@ -1678,7 +1832,7 @@ class StorageTool extends Tool
                             'png'
                         );
                         if ( !in_array( $ext, $image_exts ) ) {
-                            return trim( StorageGlobals::docCdn(), '/' ) . '/' . $meta['s3']['key'];
+                            return trim( StorageToolSettings::docCdn(), '/' ) . '/' . $meta['s3']['key'];
                         }
                     }
                     
@@ -1696,66 +1850,16 @@ class StorageTool extends Tool
             try {
                 return $this->client->url( $meta['s3']['key'] );
             } catch ( \Exception $ex ) {
-                Logger::error( "Error trying to generate url for {$meta['s3']['key']}.  Message:" . $ex->getMessage() );
+                Logger::error(
+                    "Error trying to generate url for {$meta['s3']['key']}.  Message:" . $ex->getMessage(),
+                    [],
+                    __METHOD__,
+                    __LINE__
+                );
                 return null;
             }
         }
     
-    }
-    
-    /**
-     * Generates a URL from a WP-Stateless Import
-     *
-     * @param $bucket
-     * @param $key
-     *
-     * @return string|null
-     * @throws StorageException
-     */
-    private function getStatelessURL( $bucket, $key )
-    {
-        if ( 'google' === StorageManager::driver() && $bucket === $this->client->bucket() ) {
-            return $this->client->url( $key );
-        }
-        return "https://storage.googleapis.com/{$bucket}/{$key}";
-    }
-    
-    /**
-     * Generates a URL from Offload import
-     *
-     * @param $provider
-     * @param $region
-     * @param $bucket
-     * @param $key
-     *
-     * @return string|null
-     * @throws StorageException
-     */
-    private function getOffloadS3URL(
-        $provider,
-        $region,
-        $bucket,
-        $key
-    )
-    {
-        if ( $provider === StorageManager::driver() && $bucket === $this->client->bucket() ) {
-            return $this->client->url( $key );
-        }
-        
-        if ( $provider === 's3' ) {
-            if ( empty($region) ) {
-                return "https://s3.amazonaws.com/{$bucket}/{$key}";
-            }
-            return "https://s3-{$region}.amazonaws.com/{$bucket}/{$key}";
-        }
-        
-        if ( $provider === 'do' ) {
-            return "https://{$region}.digitaloceanspaces.com/{$bucket}/{$key}";
-        }
-        if ( $provider === 'google' ) {
-            return "https://storage.googleapis.com/{$bucket}/{$key}";
-        }
-        return null;
     }
     
     /**
@@ -2650,8 +2754,12 @@ class StorageTool extends Tool
      * @param null $id
      * @param string $preserveFilePath
      * @param bool $uploadFile
+     * @param null $forcedAcl
+     * @param null $existingPrefix
+     * @param null $currentSize
      *
-     * @return mixed
+     * @return array
+     * @throws \Exception
      */
     public function processFile(
         $upload_path,
@@ -2660,12 +2768,19 @@ class StorageTool extends Tool
         $id = null,
         $preserveFilePath = 'replace',
         $uploadFile = true,
-        $forcedAcl = null
+        $forcedAcl = null,
+        $existingPrefix = null,
+        $currentSize = null
     )
     {
         
         if ( !file_exists( $upload_path . '/' . $filename ) ) {
-            Logger::error( "\tFile {$filename} is missing." );
+            Logger::error(
+                "\tFile {$filename} is missing.",
+                [],
+                __METHOD__,
+                __LINE__
+            );
             return $data;
         }
         
@@ -2678,8 +2793,9 @@ class StorageTool extends Tool
             $this->deleteFile( $key );
         }
         
+        global  $media_cloud_licensing ;
         $shouldUseCustomPrefix = apply_filters( 'media-cloud/storage/should-use-custom-prefix', true );
-        $shouldUseCustomPrefix = !empty(StorageGlobals::prefixFormat()) && $shouldUseCustomPrefix;
+        $shouldUseCustomPrefix = !empty(StorageToolSettings::prefixFormat()) && $shouldUseCustomPrefix;
         
         if ( $preserveFilePath == 'replace' ) {
             
@@ -2694,7 +2810,7 @@ class StorageTool extends Tool
                 }
             
             } else {
-                $prefix = trailingslashit( StorageGlobals::prefix( $id ) );
+                $prefix = trailingslashit( StorageToolSettings::prefix( $id ) );
             }
         
         } else {
@@ -2718,26 +2834,39 @@ class StorageTool extends Tool
                         $prefix = trailingslashit( str_replace( $bn, '', $filename ) );
                     }
                     
-                    $prefix = trailingslashit( StorageGlobals::prefix( $id ) ) . $prefix;
+                    $prefix = trailingslashit( StorageToolSettings::prefix( $id ) ) . $prefix;
                 }
             
             }
         
         }
         
+        
+        if ( is_multisite() && !is_main_site() ) {
+            $subsiteUploadDir = wp_get_upload_dir();
+            if ( !empty($this->settings->keepSubsitePath) && isset( $subsiteUploadDir['siteprefix'] ) ) {
+                $prefix = trailingslashit( ltrim( $subsiteUploadDir['siteprefix'] ) ) . $prefix;
+            }
+        }
+        
         if ( $prefix === '/' ) {
             $prefix = '';
         }
         $prefix = apply_filters( 'media-cloud/storage/custom-prefix', $prefix, $preserveFilePath );
-        Logger::info( "({$preserveFilePath}) Prefix => {$prefix} " );
+        Logger::info(
+            "({$preserveFilePath}) Prefix => {$prefix} ",
+            [],
+            __METHOD__,
+            __LINE__
+        );
         $parts = explode( '/', $filename );
         $bucketFilename = array_pop( $parts );
         try {
             $url = null;
             // File may already exist on cloud storage, but we'll check that it does first
+            $fileExists = $this->client->exists( $prefix . $bucketFilename );
             
             if ( !$uploadFile ) {
-                $fileExists = $this->client->exists( $prefix . $bucketFilename );
                 
                 if ( !$fileExists ) {
                     $uploadFile = true;
@@ -2745,13 +2874,26 @@ class StorageTool extends Tool
                     $url = $this->client->url( $prefix . $bucketFilename );
                 }
             
+            } else {
+                if ( empty($this->settings->overwriteExisting) ) {
+                    
+                    if ( $fileExists ) {
+                        $oldBucketFilename = $bucketFilename;
+                        $existingPrefix = ( empty($existingPrefix) ? gen_uuid( 8 ) : $existingPrefix );
+                        $bucketFilename = $existingPrefix . '-' . $bucketFilename;
+                        $this->renamedDocs[$prefix . $bucketFilename] = $prefix . $oldBucketFilename;
+                    }
+                
+                }
             }
             
             $uploadType = typeFromMeta( $data );
-            $privacy = StorageGlobals::privacy( $uploadType );
+            $privacy = StorageToolSettings::privacy( $uploadType );
             if ( !empty($forcedAcl) ) {
                 $privacy = $forcedAcl;
             }
+            $providerClass = get_class( $this->client );
+            $providerId = $providerClass::identifier();
             $privacy = apply_filters(
                 'media-cloud/storage/override-privacy',
                 $privacy,
@@ -2759,19 +2901,40 @@ class StorageTool extends Tool
                 trailingslashit( $upload_path ) . $filename,
                 $data
             );
+            $didOptimize = false;
             
             if ( $uploadFile || empty($url) ) {
-                Logger::info( "\tUploading {$filename} to S3." );
-                $url = $this->client->upload(
-                    $prefix . $bucketFilename,
-                    $upload_path . '/' . $filename,
-                    $privacy,
-                    StorageGlobals::cacheControl(),
-                    StorageGlobals::expires()
-                );
-                Logger::info( "\tFinished uploading {$filename} to S3." );
+                $skipUpload = false;
+                
+                if ( !$skipUpload ) {
+                    Logger::info(
+                        "\tUploading {$filename} to S3.",
+                        [],
+                        __METHOD__,
+                        __LINE__
+                    );
+                    $url = $this->client->upload(
+                        $prefix . $bucketFilename,
+                        $upload_path . '/' . $filename,
+                        $privacy,
+                        StorageToolSettings::cacheControl(),
+                        StorageToolSettings::expires()
+                    );
+                    Logger::info(
+                        "\tFinished uploading {$filename} to S3.",
+                        [],
+                        __METHOD__,
+                        __LINE__
+                    );
+                }
+            
             } else {
-                Logger::info( "\tSkipping upload of {$filename} to S3.  Already exists." );
+                Logger::info(
+                    "\tSkipping upload of {$filename} to S3.  Already exists.",
+                    [],
+                    __METHOD__,
+                    __LINE__
+                );
             }
             
             $additionalPaths = apply_filters(
@@ -2792,39 +2955,41 @@ class StorageTool extends Tool
                         $prefix . $webpBasename,
                         $webpPath,
                         $privacy,
-                        StorageGlobals::cacheControl(),
-                        StorageGlobals::expires(),
+                        StorageToolSettings::cacheControl(),
+                        StorageToolSettings::expires(),
                         'image/webp'
                     );
                     $canDelete = apply_filters( 'media-cloud/storage/delete_uploads', true );
-                    if ( !empty($canDelete) && StorageGlobals::deleteOnUpload() ) {
+                    
+                    if ( !empty($canDelete) && StorageToolSettings::deleteOnUpload() ) {
                         $this->deleteCache[] = $webpPath;
+                        //                        unlink($webpPath);
                     }
+                
                 }
             
             }
             
             $options = [];
             $params = [];
-            if ( !empty(StorageGlobals::cacheControl()) ) {
-                $params['CacheControl'] = StorageGlobals::cacheControl();
+            if ( !empty(StorageToolSettings::cacheControl()) ) {
+                $params['CacheControl'] = StorageToolSettings::cacheControl();
             }
-            if ( !empty(StorageGlobals::expires()) ) {
-                $params['Expires'] = StorageGlobals::expires();
+            if ( !empty(StorageToolSettings::expires()) ) {
+                $params['Expires'] = StorageToolSettings::expires();
             }
             if ( !empty($params) ) {
                 $options['params'] = $params;
             }
-            $providerClass = get_class( $this->client );
-            $providerId = $providerClass::identifier();
             $data['s3'] = [
-                'url'      => $url,
-                'bucket'   => $this->client->bucket(),
-                'privacy'  => $privacy,
-                'key'      => $prefix . $bucketFilename,
-                'provider' => $providerId,
-                'v'        => MEDIA_CLOUD_INFO_VERSION,
-                'options'  => $options,
+                'url'       => $url,
+                'bucket'    => $this->client->bucket(),
+                'privacy'   => $privacy,
+                'key'       => $prefix . $bucketFilename,
+                'provider'  => $providerId,
+                'v'         => MEDIA_CLOUD_INFO_VERSION,
+                'optimized' => $didOptimize,
+                'options'   => $options,
             ];
             
             if ( file_exists( $upload_path . '/' . $filename ) ) {
@@ -2835,12 +3000,17 @@ class StorageTool extends Tool
             }
         
         } catch ( StorageException $ex ) {
-            Logger::error( 'Upload Error', [
+            Logger::error(
+                'Upload Error',
+                [
                 'exception'      => $ex->getMessage(),
                 'prefix'         => $prefix,
                 'bucketFilename' => $bucketFilename,
                 'privacy'        => $privacy,
-            ] );
+            ],
+                __METHOD__,
+                __LINE__
+            );
         }
         
         if ( isset( $data['type'] ) && $data['type'] == 'application/pdf' ) {
@@ -2849,16 +3019,20 @@ class StorageTool extends Tool
                 unset( $data['sizes'] );
             }
             
-            if ( isset( $this->pdfInfo[$data['file']] ) && isset( $data['s3'] ) ) {
-                $pdfInfo = $this->pdfInfo[$data['file']];
-                $data['width'] = $pdfInfo['width'];
-                $data['height'] = $pdfInfo['height'];
+            if ( isset( $data['s3'] ) ) {
                 $data['file'] = $data['s3']['key'];
                 
-                if ( $renderPDF ) {
-                    $data['sizes']['full']['file'] = $data['s3']['key'];
-                    $data['sizes']['full']['width'] = $data['width'];
-                    $data['sizes']['full']['height'] = $data['height'];
+                if ( isset( $this->pdfInfo[$data['file']] ) ) {
+                    $pdfInfo = $this->pdfInfo[$data['file']];
+                    $data['width'] = $pdfInfo['width'];
+                    $data['height'] = $pdfInfo['height'];
+                    
+                    if ( $renderPDF ) {
+                        $data['sizes']['full']['file'] = $data['s3']['key'];
+                        $data['sizes']['full']['width'] = $data['width'];
+                        $data['sizes']['full']['height'] = $data['height'];
+                    }
+                
                 }
             
             }
@@ -2866,11 +3040,21 @@ class StorageTool extends Tool
         }
         
         $canDelete = apply_filters( 'media-cloud/storage/delete_uploads', true );
-        if ( !empty($canDelete) && StorageGlobals::deleteOnUpload() ) {
+        if ( !empty($canDelete) ) {
+            if ( $uploadType == 'image' && !empty(ToolsManager::instance()->toolEnabled( 'optimizer' )) ) {
+                $canDelete = false;
+            }
+        }
+        if ( !empty($canDelete) && StorageToolSettings::deleteOnUpload() ) {
             
             if ( file_exists( $upload_path . '/' . $filename ) ) {
                 $fileToDelete = $upload_path . '/' . $filename;
-                Logger::info( "StorageTool::processFile - Adding {$fileToDelete} to delete cache." );
+                Logger::info(
+                    "StorageTool::processFile - Adding {$fileToDelete} to delete cache.",
+                    [],
+                    __METHOD__,
+                    __LINE__
+                );
                 $this->deleteCache[] = $fileToDelete;
                 //unlink($fileToDelete);
             }
@@ -2889,14 +3073,17 @@ class StorageTool extends Tool
     {
         
         if ( count( $this->deleteCache ) > 0 ) {
-            Logger::info( "Cleaning uploads ..." );
+            Logger::info(
+                "Cleaning uploads ...",
+                [],
+                __METHOD__,
+                __LINE__
+            );
             
-            if ( StorageGlobals::queuedDeletes() ) {
-                Logger::info( "Queueing deletes ..." );
+            if ( StorageToolSettings::queuedDeletes() ) {
                 $task = TaskSchedule::nextScheduledTaskOfType( DeleteUploadsTask::identifier() );
                 
                 if ( !empty($task) ) {
-                    Logger::info( "StorageTool::cleanUploads - Adding delete cache to delete task." );
                     $task->selection = array_merge( $task->selection, $this->deleteCache );
                     $task->save();
                 } else {
@@ -2905,10 +3092,14 @@ class StorageTool extends Tool
             
             } else {
                 foreach ( $this->deleteCache as $file ) {
-                    Logger::info( "StorageTool::cleanUploads - Deleting {$file}." );
                     @unlink( $file );
                     if ( file_exists( $file ) ) {
-                        Logger::info( "StorageTool::cleanUploads - Unable to delete {$file} - maybe permissions issue?" );
+                        Logger::info(
+                            "StorageTool::cleanUploads - Unable to delete {$file} - maybe permissions issue?",
+                            [],
+                            __METHOD__,
+                            __LINE__
+                        );
                     }
                 }
             }
@@ -2939,15 +3130,25 @@ class StorageTool extends Tool
         try {
             
             if ( $this->client && $this->client->enabled() ) {
-                Logger::info( "StorageTool::deleteFile - Delete {$file} from storage." );
+                Logger::info(
+                    "StorageTool::deleteFile - Delete {$file} from storage.",
+                    [],
+                    __METHOD__,
+                    __LINE__
+                );
                 $this->client->delete( $file );
             }
         
         } catch ( StorageException $ex ) {
-            Logger::error( "StorageTool::deleteFile - Error deleting file '{$file}'.", [
+            Logger::error(
+                "StorageTool::deleteFile - Error deleting file '{$file}'.",
+                [
                 'exception' => $ex->getMessage(),
                 'Key'       => $file,
-            ] );
+            ],
+                __METHOD__,
+                __LINE__
+            );
         }
     }
     
@@ -2971,6 +3172,25 @@ class StorageTool extends Tool
     {
         add_action( 'wp_enqueue_media', function () {
             add_action( 'admin_footer', function () {
+                $appendedTemplate = <<<TEMPLATE
+<# if ( data.compressionStats) { #>
+    <div><strong>Average Optimization:</strong> {{data.compressionStats.total}} ({{data.compressionStats.totalFiles}} files)</div>
+<# } #>
+<# if ( data.s3 ) { #>
+    <div><strong>Bucket:</strong> {{data.s3.bucket}}</div>
+    <div><strong>Path:</strong> {{data.s3.key}}</div>
+    <div><strong>Access:</strong> {{data.s3.privacy}}</div>
+    <# if ( data.s3.options && data.s3.options.params ) { #>
+        <# if (data.s3.options.params.CacheControl) { #>
+        <div><strong>S3 Cache-Control:</strong> {{data.s3.options.params.CacheControl}}</div>
+        <# } #>
+        <# if (data.s3.options.params.Expires) { #>
+        <div><strong>S3 Expires:</strong> {{data.s3.options.params.Expires}}</div>
+        <# } #>
+    <# } #>
+    <div><a href="{{data.s3.url}}" target="_blank">Original Storage URL</a></div>
+<# } #>
+TEMPLATE;
                 ?>
                 <script>
                     jQuery(document).ready(function () {
@@ -2978,7 +3198,9 @@ class StorageTool extends Tool
                         if (attachTemplate) {
                             var txt = attachTemplate.text();
                             var idx = txt.indexOf('<div class="compat-meta">');
-                            txt = txt.slice(0, idx) + '<# if ( data.s3 ) { #><div><strong>Bucket:</strong> {{data.s3.bucket}}</div><div><strong>Path:</strong> {{data.s3.key}}</div><div><strong>Access:</strong> {{data.s3.privacy}}</div><# if ( data.s3.options && data.s3.options.params ) { #><# if (data.s3.options.params.CacheControl) { #><div><strong>S3 Cache-Control:</strong> {{data.s3.options.params.CacheControl}}</div><# } #><# if (data.s3.options.params.Expires) { #><div><strong>S3 Expires:</strong> {{data.s3.options.params.Expires}}</div><# } #><# } #><div><a href="{{data.s3.url}}" target="_blank">Original Storage URL</a></div><# } #>' + txt.slice(idx);
+                            txt = txt.slice(0, idx) + '<?php 
+                echo  str_replace( "\n", "", $appendedTemplate ) ;
+                ?>' + txt.slice(idx);
                             attachTemplate.text(txt);
                         }
                     });
@@ -3000,7 +3222,7 @@ class StorageTool extends Tool
      */
     private function hookMediaList()
     {
-        if ( !$this->mediaListIntegration ) {
+        if ( !$this->settings->mediaListIntegration ) {
             return;
         }
         add_action( 'admin_init', function () {
@@ -3245,7 +3467,7 @@ class StorageTool extends Tool
      */
     private function hookMediaGrid()
     {
-        if ( !$this->displayBadges ) {
+        if ( !$this->settings->displayBadges ) {
             return;
         }
         add_action( 'wp_ajax_ilab_regenerate_thumbnails_manual', [ $this, 'handleRegenerateFile' ] );
@@ -3430,7 +3652,7 @@ class StorageTool extends Tool
         $enabled = $this->enabled() && arrayPath( $meta, 's3/provider', false ) == $providerId;
         $clientClass = get_class( $this->client );
         $uploadDriverId = arrayPath( $meta, 's3/provider', $clientClass::identifier() );
-        $uploadDriver = StorageManager::driverClass( $uploadDriverId );
+        $uploadDriver = StorageToolSettings::driverClass( $uploadDriverId );
         $bucket = arrayPath( $meta, 's3/bucket', null );
         $key = arrayPath( $meta, 's3/key', null );
         $privacy = arrayPath( $meta, 's3/privacy', 'public-read' );
@@ -3451,6 +3673,7 @@ class StorageTool extends Tool
             'cacheControl' => $cacheControl,
             'expires'      => $expires,
             'url'          => $url,
+            'optimization' => false,
             'publicUrl'    => $publicUrl,
             'driverName'   => $uploadDriver::name(),
             'bucketLink'   => $uploadDriver::bucketLink( $bucket ),
@@ -3470,7 +3693,7 @@ class StorageTool extends Tool
         if ( $uploadDriverId == 'aws' ) {
             $uploadDriverId = 's3';
         }
-        $uploadDriver = StorageManager::driverClass( $uploadDriverId );
+        $uploadDriver = StorageToolSettings::driverClass( $uploadDriverId );
         $bucket = arrayPath( $meta, 's3/bucket', null );
         $key = arrayPath( $meta, 's3/key', null );
         $privacy = arrayPath( $meta, 's3/privacy', 'public-read' );
@@ -3479,6 +3702,7 @@ class StorageTool extends Tool
         $url = arrayPath( $meta, 's3/url', null );
         $publicUrl = wp_get_attachment_url( $postId );
         //$this->getAttachmentURLFromMeta($meta);
+        $optimInfo = get_post_meta( $postId, '_mcloud_optimize_stats', true );
         $sizes = [];
         if ( $meta['sizes'] ) {
             foreach ( $meta['sizes'] as $sizeKey => $size ) {
@@ -3501,6 +3725,13 @@ class StorageTool extends Tool
                 $sizeData['isSize'] = 1;
                 $sizeData['pathLink'] = $this->client->pathLink( $sizeData['bucket'], $sizeData['key'] );
                 $sizeData['imgixEnabled'] = $imgixEnabled;
+                
+                if ( isset( $optimInfo['sizes'][$sizeKey] ) ) {
+                    $sizeData['optimization'] = $optimInfo['sizes'][$sizeKey];
+                } else {
+                    $sizeData['optimization'] = false;
+                }
+                
                 $result = wp_get_attachment_image_src( $postId, $sizeKey );
                 
                 if ( $result && is_array( $result ) && count( $result ) > 0 ) {
@@ -3539,6 +3770,7 @@ class StorageTool extends Tool
             'bucketLink'   => $uploadDriver::bucketLink( $bucket ),
             'pathLink'     => $this->client->pathLink( $bucket, $key ),
             'imgixEnabled' => $imgixEnabled,
+            'optimization' => ( isset( $optimInfo['sizes']['full'] ) ? $optimInfo['sizes']['full'] : false ),
             'sizes'        => $sizes,
             'missingSizes' => $missingSizes,
         ];
@@ -3602,9 +3834,19 @@ class StorageTool extends Tool
             if ( function_exists( '_load_image_to_edit_path' ) ) {
                 $fullsizepath = _load_image_to_edit_path( $postId );
             } else {
-                Logger::warning( "The function '_load_image_to_edit_path' does not exist, using internal implementation." );
+                Logger::warning(
+                    "The function '_load_image_to_edit_path' does not exist, using internal implementation.",
+                    [],
+                    __METHOD__,
+                    __LINE__
+                );
                 $fullsizepath = $this->loadImageToEditPath( $postId );
-                Logger::warning( "{$postId} => {$fullsizepath}" );
+                Logger::warning(
+                    "{$postId} => {$fullsizepath}",
+                    [],
+                    __METHOD__,
+                    __LINE__
+                );
             }
         
         }
@@ -3616,9 +3858,19 @@ class StorageTool extends Tool
                 $file = array_pop( $pathParts );
                 $uploadDirInfo = wp_upload_dir();
                 $filepath = $uploadDirInfo['path'] . '/' . $file;
-                Logger::startTiming( "Downloading fullsize '{$fullsizepath}' to '{$filepath}'" );
+                Logger::startTiming(
+                    "Downloading fullsize '{$fullsizepath}' to '{$filepath}'",
+                    [],
+                    __METHOD__,
+                    __LINE__
+                );
                 file_put_contents( $filepath, ilab_file_get_contents( $fullsizepath ) );
-                Logger::endTiming( "Finished downloading fullsize '{$fullsizepath}' to '{$filepath}'" );
+                Logger::endTiming(
+                    "Finished downloading fullsize '{$fullsizepath}' to '{$filepath}'",
+                    [],
+                    __METHOD__,
+                    __LINE__
+                );
                 if ( !file_exists( $filepath ) ) {
                     return "File '{$fullsizepath}' could not be downloaded.";
                 }
@@ -3630,13 +3882,23 @@ class StorageTool extends Tool
         }
         $shouldPreserve = $this->preserveFilePaths;
         $this->preserveFilePaths = 'preserve';
-        Logger::startTiming( 'Regenerating metadata ...', [
+        Logger::startTiming(
+            'Regenerating metadata ...',
+            [
             'id' => $postId,
-        ] );
+        ],
+            __METHOD__,
+            __LINE__
+        );
         $metadata = wp_generate_attachment_metadata( $postId, $fullsizepath );
-        Logger::endTiming( 'Regenerating metadata ...', [
+        Logger::endTiming(
+            'Regenerating metadata ...',
+            [
             'id' => $postId,
-        ] );
+        ],
+            __METHOD__,
+            __LINE__
+        );
         wp_update_attachment_metadata( $postId, $metadata );
         $this->preserveFilePaths = $shouldPreserve;
         return true;
@@ -3665,6 +3927,7 @@ class StorageTool extends Tool
         $skipThumbnails = ( empty($options['skip-thumbnails']) ? false : true );
         $pathmode = ( empty($options['path-handling']) ? 'preserve' : $options['path-handling'] );
         $data = wp_get_attachment_metadata( $postId );
+        $existingPrefix = gen_uuid( 8 );
         
         if ( empty($data) ) {
             $isDocument = true;
@@ -3752,10 +4015,15 @@ class StorageTool extends Tool
                         }
                     
                     } catch ( \Exception $ex ) {
-                        Logger::error( 'PDF Exception.', [
+                        Logger::error(
+                            'PDF Exception.',
+                            [
                             'postId'    => $postId,
                             'exception' => $ex->getMessage(),
-                        ] );
+                        ],
+                            __METHOD__,
+                            __LINE__
+                        );
                     }
                     restore_error_handler();
                 }
@@ -3779,11 +4047,17 @@ class StorageTool extends Tool
             $data,
             $postId,
             $pathmode,
-            $skipThumbnails
+            $skipThumbnails,
+            $existingPrefix
         );
         
         if ( isset( $data['original_image'] ) ) {
-            $s3Data = $this->uploadOriginalImage( $data, $postId, $pathmode );
+            $s3Data = $this->uploadOriginalImage(
+                $data,
+                $postId,
+                $pathmode,
+                $existingPrefix
+            );
             if ( !empty($s3Data) ) {
                 $data['original_image_s3'] = $s3Data;
             }
@@ -3805,25 +4079,30 @@ class StorageTool extends Tool
      *
      * @param string $filename
      *
-     * @return array|null
+     * @return \ILAB\MediaCloud\Storage\UploadInfo|null
      */
     public function uploadUrlForFile( $filename )
     {
-        $prefix = StorageGlobals::prefix( null );
+        $prefix = StorageToolSettings::prefix( null );
         $parts = explode( '/', $filename );
         $bucketFilename = array_pop( $parts );
         if ( $this->client && $this->client->enabled() ) {
             try {
                 return $this->client->uploadUrl(
                     $prefix . $bucketFilename,
-                    StorageGlobals::privacy(),
-                    StorageGlobals::cacheControl(),
-                    StorageGlobals::expires()
+                    StorageToolSettings::privacy(),
+                    StorageToolSettings::cacheControl(),
+                    StorageToolSettings::expires()
                 );
             } catch ( StorageException $ex ) {
-                Logger::error( 'Generate File Upload URL Error', [
+                Logger::error(
+                    'Generate File Upload URL Error',
+                    [
                     'exception' => $ex->getMessage(),
-                ] );
+                ],
+                    __METHOD__,
+                    __LINE__
+                );
             }
         }
         return null;
@@ -3846,7 +4125,7 @@ class StorageTool extends Tool
         if ( !is_array( $fileInfo->size() ) ) {
             return null;
         }
-        $this->client->insureACL( $fileInfo->key(), StorageGlobals::privacy( $fileInfo->mimeType() ) );
+        $this->client->insureACL( $fileInfo->key(), StorageToolSettings::privacy( $fileInfo->mimeType() ) );
         $fileParts = explode( '/', $fileInfo->key() );
         $filename = array_pop( $fileParts );
         $url = $this->client->url( $fileInfo->key() );
@@ -3854,18 +4133,18 @@ class StorageTool extends Tool
             'url'       => $url,
             'mime-type' => $fileInfo->mimeType(),
             'bucket'    => $this->client->bucket(),
-            'privacy'   => StorageGlobals::privacy( $fileInfo->mimeType() ),
+            'privacy'   => StorageToolSettings::privacy( $fileInfo->mimeType() ),
             'key'       => $fileInfo->key(),
             'v'         => MEDIA_CLOUD_INFO_VERSION,
             'options'   => [
             'params' => [],
         ],
         ];
-        if ( !empty(StorageGlobals::cacheControl()) ) {
-            $s3Info['options']['params']['CacheControl'] = StorageGlobals::cacheControl();
+        if ( !empty(StorageToolSettings::cacheControl()) ) {
+            $s3Info['options']['params']['CacheControl'] = StorageToolSettings::cacheControl();
         }
-        if ( !empty(StorageGlobals::expires()) ) {
-            $s3Info['options']['params']['Expires'] = StorageGlobals::expires();
+        if ( !empty(StorageToolSettings::expires()) ) {
+            $s3Info['options']['params']['Expires'] = StorageToolSettings::expires();
         }
         $meta = [
             'width'      => $fileInfo->size()[0],
@@ -3983,7 +4262,8 @@ class StorageTool extends Tool
      * @param FileInfo $fileInfo
      * @param string[] $thumbs
      *
-     * @return array|bool
+     * @return array|bool|null
+     *
      * @throws StorageException
      */
     public function importExistingAttachmentFromStorage(
@@ -4009,18 +4289,18 @@ class StorageTool extends Tool
             'url'       => $url,
             'mime-type' => $fileInfo->mimeType(),
             'bucket'    => $this->client->bucket(),
-            'privacy'   => StorageGlobals::privacy( $fileInfo->mimeType() ),
+            'privacy'   => StorageToolSettings::privacy( $fileInfo->mimeType() ),
             'key'       => $fileInfo->key(),
             'v'         => MEDIA_CLOUD_INFO_VERSION,
             'options'   => [
             'params' => [],
         ],
         ];
-        if ( !empty(StorageGlobals::cacheControl()) ) {
-            $s3Info['options']['params']['CacheControl'] = StorageGlobals::cacheControl();
+        if ( !empty(StorageToolSettings::cacheControl()) ) {
+            $s3Info['options']['params']['CacheControl'] = StorageToolSettings::cacheControl();
         }
-        if ( !empty(StorageGlobals::expires()) ) {
-            $s3Info['options']['params']['Expires'] = StorageGlobals::expires();
+        if ( !empty(StorageToolSettings::expires()) ) {
+            $s3Info['options']['params']['Expires'] = StorageToolSettings::expires();
         }
         $meta = wp_get_attachment_metadata( $postId, true );
         $meta['s3'] = $s3Info;
@@ -4064,18 +4344,18 @@ class StorageTool extends Tool
             'url'       => $url,
             'mime-type' => $fileInfo->mimeType(),
             'bucket'    => $this->client->bucket(),
-            'privacy'   => StorageGlobals::privacy( $fileInfo->mimeType() ),
+            'privacy'   => StorageToolSettings::privacy( $fileInfo->mimeType() ),
             'key'       => $fileInfo->key(),
             'v'         => MEDIA_CLOUD_INFO_VERSION,
             'options'   => [
             'params' => [],
         ],
         ];
-        if ( !empty(StorageGlobals::cacheControl()) ) {
-            $s3Info['options']['params']['CacheControl'] = StorageGlobals::cacheControl();
+        if ( !empty(StorageToolSettings::cacheControl()) ) {
+            $s3Info['options']['params']['CacheControl'] = StorageToolSettings::cacheControl();
         }
-        if ( !empty(StorageGlobals::expires()) ) {
-            $s3Info['options']['params']['Expires'] = StorageGlobals::expires();
+        if ( !empty(StorageToolSettings::expires()) ) {
+            $s3Info['options']['params']['Expires'] = StorageToolSettings::expires();
         }
         $meta = wp_get_attachment_metadata( $postId, true );
         $meta['s3'] = $s3Info;
@@ -4142,7 +4422,7 @@ class StorageTool extends Tool
                 'url'       => $url,
                 'mime-type' => $originalFileInfo->mimeType(),
                 'bucket'    => $this->client->bucket(),
-                'privacy'   => StorageGlobals::privacy( $originalFileInfo->mimeType() ),
+                'privacy'   => StorageToolSettings::privacy( $originalFileInfo->mimeType() ),
                 'key'       => $originalFileInfo->key(),
                 'v'         => MEDIA_CLOUD_INFO_VERSION,
                 'options'   => [
@@ -4182,26 +4462,29 @@ class StorageTool extends Tool
         if ( $fileInfo->mimeType() && strpos( $fileInfo->mimeType(), 'image/' ) === 0 ) {
             return $this->importImageAttachmentFromStorage( $fileInfo, $thumbs );
         }
-        $this->client->insureACL( $fileInfo->key(), StorageGlobals::privacy( $fileInfo->mimeType() ) );
+        $this->client->insureACL( $fileInfo->key(), StorageToolSettings::privacy( $fileInfo->mimeType() ) );
         $fileParts = explode( '/', $fileInfo->key() );
         $filename = array_pop( $fileParts );
         $url = $this->client->url( $fileInfo->key() );
+        $providerClass = get_class( $this->client );
+        $providerId = $providerClass::identifier();
         $s3Info = [
             'url'       => $url,
+            'provider'  => $providerId,
             'mime-type' => $fileInfo->mimeType(),
             'bucket'    => $this->client->bucket(),
-            'privacy'   => StorageGlobals::privacy( $fileInfo->mimeType() ),
+            'privacy'   => StorageToolSettings::privacy( $fileInfo->mimeType() ),
             'key'       => $fileInfo->key(),
             'v'         => MEDIA_CLOUD_INFO_VERSION,
             'options'   => [
             'params' => [],
         ],
         ];
-        if ( !empty(StorageGlobals::cacheControl()) ) {
-            $s3Info['options']['params']['CacheControl'] = StorageGlobals::cacheControl();
+        if ( !empty(StorageToolSettings::cacheControl()) ) {
+            $s3Info['options']['params']['CacheControl'] = StorageToolSettings::cacheControl();
         }
-        if ( !empty(StorageGlobals::expires()) ) {
-            $s3Info['options']['params']['Expires'] = StorageGlobals::expires();
+        if ( !empty(StorageToolSettings::expires()) ) {
+            $s3Info['options']['params']['Expires'] = StorageToolSettings::expires();
         }
         $meta = [
             'file'     => $fileInfo->key(),
@@ -4345,7 +4628,12 @@ class StorageTool extends Tool
     public function handleImageOptimizer( $postId )
     {
         $this->processingOptimized = true;
-        Logger::info( 'Handle Image Optimizer: ' . $postId );
+        Logger::info(
+            'Handle Image Optimizer: ' . $postId,
+            [],
+            __METHOD__,
+            __LINE__
+        );
         add_filter(
             'media-cloud/storage/ignore-existing-s3-data',
             function ( $shouldIgnore, $attachmentId ) use( $postId ) {
@@ -4414,7 +4702,7 @@ Optimizer;
     public function providerOptions()
     {
         $providers = [];
-        foreach ( StorageManager::drivers() as $id => $driver ) {
+        foreach ( StorageToolSettings::drivers() as $id => $driver ) {
             $providers[$id] = $driver['name'];
         }
         return $providers;
@@ -4423,7 +4711,7 @@ Optimizer;
     public function providerHelp()
     {
         $help = [];
-        foreach ( StorageManager::drivers() as $id => $driver ) {
+        foreach ( StorageToolSettings::drivers() as $id => $driver ) {
             $helpData = arrayPath( $driver, 'help', null );
             if ( !empty($helpData) ) {
                 $help[$id] = $helpData;
@@ -4440,8 +4728,18 @@ Optimizer;
         $base = trailingslashit( $dir['basedir'] );
         $destFile = $base . $key;
         $desturl = trailingslashit( $dir['baseurl'] ) . $key;
-        Logger::info( "DIRECT URL " . $desturl );
-        Logger::info( "DIRECT BASE " . $dir['baseurl'] );
+        Logger::info(
+            "DIRECT URL " . $desturl,
+            [],
+            __METHOD__,
+            __LINE__
+        );
+        Logger::info(
+            "DIRECT BASE " . $dir['baseurl'],
+            [],
+            __METHOD__,
+            __LINE__
+        );
         $postId = $this->findPostId( null, $key );
         $destDir = pathinfo( $destFile, PATHINFO_DIRNAME );
         if ( !file_exists( $destDir ) ) {
@@ -4551,7 +4849,7 @@ Optimizer;
             $meta['sizes'] = [];
             $s3Info = [
                 'bucket'  => $this->client->bucket(),
-                'privacy' => StorageGlobals::privacy( $mimeType ),
+                'privacy' => StorageToolSettings::privacy( $mimeType ),
                 'v'       => MEDIA_CLOUD_INFO_VERSION,
                 'options' => [
                 'params' => [],
@@ -4684,7 +4982,12 @@ Optimizer;
             }
         
         } catch ( \Exception $ex ) {
-            Logger::error( $ex->getMessage() );
+            Logger::error(
+                $ex->getMessage(),
+                [],
+                __METHOD__,
+                __LINE__
+            );
             $success = false;
         }
         $this->preserveFilePaths = $oldPreserve;
@@ -4767,6 +5070,62 @@ MIGRATED;
     }
     
     /**
+     * Generates a URL from a WP-Stateless Import
+     *
+     * @param $bucket
+     * @param $key
+     *
+     * @return string|null
+     * @throws StorageException
+     */
+    private function getStatelessURL( $bucket, $key )
+    {
+        if ( 'google' === StorageToolSettings::driver() && $bucket === $this->client->bucket() ) {
+            return $this->client->url( $key );
+        }
+        return "https://storage.googleapis.com/{$bucket}/{$key}";
+    }
+    
+    /**
+     * Generates a URL from Offload import
+     *
+     * @param $provider
+     * @param $region
+     * @param $bucket
+     * @param $key
+     *
+     * @return string|null
+     *
+     * @throws StorageException
+     */
+    private function getOffloadS3URL(
+        string $provider,
+        $region,
+        $bucket,
+        $key
+    )
+    {
+        if ( $provider === StorageToolSettings::driver() && $bucket === $this->client->bucket() ) {
+            return $this->client->url( $key );
+        }
+        
+        if ( $provider === 's3' ) {
+            if ( empty($region) ) {
+                return "https://s3.amazonaws.com/{$bucket}/{$key}";
+            }
+            return "https://s3-{$region}.amazonaws.com/{$bucket}/{$key}";
+        }
+        
+        if ( $provider === 'do' ) {
+            return "https://{$region}.digitaloceanspaces.com/{$bucket}/{$key}";
+        }
+        if ( $provider === 'google' ) {
+            return "https://storage.googleapis.com/{$bucket}/{$key}";
+        }
+        return null;
+    }
+    
+    /**
      * Imports metadata from WP-Stateless
      *
      * @param $post_id
@@ -4794,6 +5153,7 @@ MIGRATED;
             'provider'  => $provider,
             'bucket'    => $bucket,
             'privacy'   => 'public-read',
+            'key'       => $key,
             'v'         => MEDIA_CLOUD_INFO_VERSION,
             'mime-type' => $mime,
         ];

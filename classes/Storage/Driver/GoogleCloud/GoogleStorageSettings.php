@@ -72,7 +72,7 @@ class GoogleStorageSettings extends ToolSettings {
 				if (file_exists($credFile)) {
 					$this->_credentials = json_decode(file_get_contents($credFile), true);
 				} else {
-					Logger::error("Credentials file '$credFile' could not be found.");
+					Logger::error("Credentials file '$credFile' could not be found.", [], __METHOD__, __LINE__);
 				}
 			}
 
@@ -90,11 +90,10 @@ class GoogleStorageSettings extends ToolSettings {
 	}
 
 	public function __isset($name) {
-		if ($name === 'credentials') {
+		if (in_array($name, ['credentials'])) {
 			return true;
 		}
 
 		return parent::__isset($name);
 	}
-
 }

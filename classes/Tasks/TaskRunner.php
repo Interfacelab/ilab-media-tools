@@ -24,30 +24,35 @@ use ILAB\MediaCloud\Utilities\Logging\Logger;
 final class TaskRunner {
 	//region Fields
 
+	/** @var TaskSettings */
+	private $settings = null;
+
 	/**
 	 * Current instance
 	 * @var TaskRunner|null
 	 */
 	private static $instance = null;
 
-	private $verifySSL = 'default';
-	private $connectTimeout = 0.01;
-	private $timeout = 0.01;
-	private $skipDNS = false;
-	private $skipDNSHost = null;
-	private $httpClientName = null;
+//	private $verifySSL = 'default';
+//	private $connectTimeout = 0.01;
+//	private $timeout = 0.01;
+//	private $skipDNS = false;
+//	private $skipDNSHost = null;
+//	private $httpClientName = null;
 
 	//endregion
 
 	//region Constructor
 
 	private function __construct() {
-		$this->verifySSL = Environment::Option('mcloud-tasks-verify-ssl', null, 'no');
-		$this->connectTimeout = Environment::Option('mcloud-tasks-connect-timeout', null, 0.01);
-		$this->timeout = Environment::Option('mcloud-tasks-timeout', null, 0.01);
-		$this->skipDNS = Environment::Option('mcloud-tasks-skip-dns', null, false);
-		$this->skipDNSHost = Environment::Option('mcloud-tasks-skip-dns-host', null, 'ip');
-		$this->httpClientName = Environment::Option('mcloud-tasks-http-client', null, 'wordpress');
+		$this->settings = TaskSettings::instance();
+		
+//		$this->settings->verifySSL = Environment::Option('mcloud-tasks-verify-ssl', null, 'no');
+//		$this->settings->connectTimeout = Environment::Option('mcloud-tasks-connect-timeout', null, 0.01);
+//		$this->settings->timeout = Environment::Option('mcloud-tasks-timeout', null, 0.01);
+//		$this->settings->skipDNS = Environment::Option('mcloud-tasks-skip-dns', null, false);
+//		$this->settings->skipDNSHost = Environment::Option('mcloud-tasks-skip-dns-host', null, 'ip');
+//		$this->settings->httpClientName = Environment::Option('mcloud-tasks-http-client', null, 'wordpress');
 
 		if (is_admin()) {
 			add_action('wp_ajax_task_runner_test', [$this, 'testTaskRunner']);
@@ -83,10 +88,10 @@ final class TaskRunner {
 	 * @return bool|\Exception|\Psr\Http\Message\ResponseInterface
 	 */
 	protected function postRequestGuzzle($url, $args, $timeoutOverride = false) {
-		if ($this->skipDNS) {
+		if ($this->settings->skipDNS) {
 			$ip = null;
 
-			if ($this->skipDNSHost == 'ip') {
+			if ($this->settings->skipDNSHost == 'ip') {
 				$ip = getHostByName(getHostName());
 				if (empty($ip)) {
 					$ip = $_SERVER['SERVER_ADDR'];
@@ -115,10 +120,10 @@ final class TaskRunner {
 			$cookies = CookieJar::fromArray($args['cookies'], $_SERVER['HTTP_HOST']);
 		}
 
-		if ($this->verifySSL == 'default') {
+		if ($this->settings->verifySSL == 'default') {
 			$verifySSL = apply_filters( 'https_local_ssl_verify', false);
 		} else {
-			$verifySSL = ($this->verifySSL == 'yes');
+			$verifySSL = ($this->settings->verifySSL == 'yes');
 		}
 
 		$rawUrl = esc_url_raw( $url );
@@ -145,29 +150,29 @@ final class TaskRunner {
 			$options['timeout'] = $timeoutOverride;
 			$options['connect_timeout'] = $timeoutOverride;
 		} else {
-			$options['timeout'] = max(0.01, $this->timeout);
-			$options['connect_timeout'] =  max(0.01, $this->connectTimeout);;
+			$options['timeout'] = max(0.01, $this->settings->timeout);
+			$options['connect_timeout'] =  max(0.01, $this->settings->connectTimeout);;
 		}
 
 		$client = new Client();
 		try {
 			if (empty($options['synchronous'])) {
-				Logger::info("Async call to $rawUrl");
+				Logger::info("Async call to $rawUrl", [], __METHOD__, __LINE__);
 				$options['synchronous'] = true;
 				$client->postSync($rawUrl, $options);
-				Logger::info("Async call to $rawUrl complete.");
+				Logger::info("Async call to $rawUrl complete.", [], __METHOD__, __LINE__);
 				return true;
 			} else {
-				Logger::info("Synchronous call to $rawUrl");
+				Logger::info("Synchronous call to $rawUrl", [], __METHOD__, __LINE__);
 				$result = $client->post($rawUrl, $options);
-				Logger::info("Synchronous call to $rawUrl complete.");
+				Logger::info("Synchronous call to $rawUrl complete.", [], __METHOD__, __LINE__);
 				return $result;
 			}
 		} catch (\Exception $ex) {
 			if (!empty($args['blocking'])) {
 				return $ex;
 			} else {
-				Logger::info("Async exception: ".$ex->getMessage());
+				Logger::info("Async exception: ".$ex->getMessage(), [], __METHOD__, __LINE__);
 			}
 		}
 
@@ -175,10 +180,10 @@ final class TaskRunner {
 	}
 
 	protected function postRequestWordPress($url, $args, $timeoutOverride = false) {
-		if ($this->skipDNS) {
+		if ($this->settings->skipDNS) {
 			$ip = null;
 
-			if ($this->skipDNSHost == 'ip') {
+			if ($this->settings->skipDNSHost == 'ip') {
 				$ip = getHostByName(getHostName());
 				if (empty($ip)) {
 					$ip = $_SERVER['SERVER_ADDR'];
@@ -203,10 +208,10 @@ final class TaskRunner {
 			}
 		}
 
-		if ($this->verifySSL == 'default') {
+		if ($this->settings->verifySSL == 'default') {
 			$verifySSL = apply_filters( 'https_local_ssl_verify', false);
 		} else {
-			$verifySSL = ($this->verifySSL == 'yes');
+			$verifySSL = ($this->settings->verifySSL == 'yes');
 		}
 
 		$rawUrl = esc_url_raw( $url );
@@ -216,7 +221,7 @@ final class TaskRunner {
 		if ($timeoutOverride !== false) {
 			$args['timeout'] = $timeoutOverride;
 		} else {
-			$args['timeout'] = max(0.01, $this->timeout);
+			$args['timeout'] = max(0.01, $this->settings->timeout);
 		}
 
 		$result = wp_remote_post($rawUrl, $args);
@@ -259,20 +264,20 @@ final class TaskRunner {
 
 		$url = add_query_arg($queryArgs, $url);
 
-		Logger::info("Dispatching to {$url}.");
+		Logger::info("Dispatching to {$url}.", [], __METHOD__, __LINE__);
 
 		$loops = 0;
 		while(true) {
 			$loops++;
 			if ($loops > 1) {
-				Logger::info("Loop #{$loops}!");
+				Logger::info("Loop #{$loops}!", [], __METHOD__, __LINE__);
 			}
 
 			if ($loops == 2) {
 				break;
 			}
 
-			if (static::instance()->httpClientName == 'guzzle') {
+			if (static::instance()->settings->httpClientName == 'guzzle') {
 				static::instance()->postRequestGuzzle($url, [
 					'blocking' => false,
 					'cookies' => $_COOKIE
@@ -286,12 +291,18 @@ final class TaskRunner {
 
 			sleep(3);
 
-			$val = Environment::WordPressOption($token);
-			if ($val == $tokenVal) {
-				Logger::info("ACK acknowledge!");
-				delete_site_option($token);
+			if (TaskDatabase::verifyToken($token, $tokenVal)) {
+				Logger::info("ACK acknowledge!", [], __METHOD__, __LINE__);
+				TaskDatabase::deleteToken($token);
 				break;
 			}
+
+//			$val = Environment::WordPressOption($token);
+//			if ($val == $tokenVal) {
+//				Logger::info("ACK acknowledge!", [], __METHOD__, __LINE__);
+//				delete_site_option($token);
+//				break;
+//			}
 		}
 	}
 
@@ -322,16 +333,16 @@ final class TaskRunner {
 		while ($loops < 10) {
 			$testVal = Environment::WordPressOption('mcloud_connection_test');
 			if ($testVal === 'test_value') {
-				Logger::info("Connectivity test value fetched for '$which'.");
+				Logger::info("Connectivity test value fetched for '$which'.", [], __METHOD__, __LINE__);
 				return true;
 			}
 
-			Logger::info("Connectivity test value not found for '$which'.  Try #{$loops} ... trying again in 2 seconds.");
+			Logger::info("Connectivity test value not found for '$which'.  Try #{$loops} ... trying again in 2 seconds.", [], __METHOD__, __LINE__);
 			sleep(2);
 			$loops++;
 		}
 
-		Logger::info("Unable to get test value for '$which'.");
+		Logger::info("Unable to get test value for '$which'.", [], __METHOD__, __LINE__);
 
 		return false;
 	}
@@ -361,40 +372,40 @@ final class TaskRunner {
 
 		$errors = [];
 
-		Logger::info("Testing connectivity using first '$first'");
+		Logger::info("Testing connectivity using first '$first'", [], __METHOD__, __LINE__);
 		$result = static::postTestRequest($first, $url);
 		if ($result instanceof \Exception) {
-			Logger::info("Connectivity error using first '$first' => ".$result->getMessage());
+			Logger::info("Connectivity error using first '$first' => ".$result->getMessage(), [], __METHOD__, __LINE__);
 			if (!in_array($result->getMessage(), $errors)) {
 				$errors[] = $result->getMessage();
 			}
 		} else if (empty($result)) {
-			Logger::info("Connectivity error using first '$first' => Could not dispatch background task.");
+			Logger::info("Connectivity error using first '$first' => Could not dispatch background task.", [], __METHOD__, __LINE__);
 			$message = 'Unable to dispatch background task.';
 			if (!in_array($message, $errors)) {
 				$errors[] = $message;
 			}
 		} else {
-			Logger::info("Testing connectivity first success");
+			Logger::info("Testing connectivity first success", [], __METHOD__, __LINE__);
 			delete_site_option('mcloud_connection_test');
 			return true;
 		}
 
 		if (!empty($errors)) {
-			Logger::info("Testing Connectivity using second '$second'");
+			Logger::info("Testing Connectivity using second '$second'", [], __METHOD__, __LINE__);
 			$result = static::postTestRequest($second, $url);
 			if ($result instanceof \Exception) {
-				Logger::info("Connectivity error using second '$second' => ".$result->getMessage());
+				Logger::info("Connectivity error using second '$second' => ".$result->getMessage(), [], __METHOD__, __LINE__);
 				if (!in_array($result->getMessage(), $errors)) {
 					$errors[] = $result->getMessage();
 				}
 			} else if (empty($result)) {
-				Logger::info("Connectivity error using second '$second' => Could not dispatch background task.");
+				Logger::info("Connectivity error using second '$second' => Could not dispatch background task.", [], __METHOD__, __LINE__);
 				if (!in_array($message, $errors)) {
 					$errors[] = $message;
 				}
 			} else {
-				Logger::info("Testing connectivity second success");
+				Logger::info("Testing connectivity second success", [], __METHOD__, __LINE__);
 				delete_site_option('mcloud_connection_test');
 				Environment::UpdateOption('mcloud-tasks-http-client', $second);
 				return true;
@@ -410,7 +421,7 @@ final class TaskRunner {
 	 * @return bool|string[]
 	 */
 	public static function testConnectivity() {
-		if (static::instance()->httpClientName === 'guzzle') {
+		if (static::instance()->settings->httpClientName === 'guzzle') {
 			return static::doTestConnectivity('guzzle', 'wordpress');
 		}
 
@@ -421,10 +432,10 @@ final class TaskRunner {
 	 * Ajax test endpoint
 	 */
 	public function testTaskRunner() {
-		Logger::info("Test Task Runner");
+		Logger::info("Test Task Runner", [], __METHOD__, __LINE__);
 		check_ajax_referer('task_runner_test', 'nonce');
 
-		Logger::info("Updating test option.");
+		Logger::info("Updating test option.", [], __METHOD__, __LINE__);
 		Environment::UpdateOption('mcloud_connection_test', 'test_value');
 	}
 

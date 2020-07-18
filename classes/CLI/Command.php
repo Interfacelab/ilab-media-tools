@@ -62,7 +62,6 @@ abstract class Command extends \WP_CLI_Command {
 		$task->dumpExisting();
 		$task->loadNextData();
 
-
 		Command::Out("", true);
 		Command::Info("Found %W{$task->totalItems}%n items.", true);
 

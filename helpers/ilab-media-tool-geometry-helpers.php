@@ -12,8 +12,7 @@
 
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
-function sizeToFitSize($innerWidth, $innerHeight, $outerWidth, $outerHeight)
-{
+function sizeToFitSize($innerWidth, $innerHeight, $outerWidth, $outerHeight)  {
 	if ($innerWidth <= 0 || $innerHeight <= 0) {
 		return [$outerWidth, $outerHeight];
 	}
@@ -28,6 +27,7 @@ function sizeToFitSize($innerWidth, $innerHeight, $outerWidth, $outerHeight)
 		}
 
 		$ratio = $outerHeight / $innerHeight;
+
 		return [round($innerWidth * $ratio), $outerHeight];
 	}
 
@@ -37,32 +37,43 @@ function sizeToFitSize($innerWidth, $innerHeight, $outerWidth, $outerHeight)
 		}
 
 		$ratio = $outerWidth / $innerWidth;
+
 		return [$outerWidth, round($innerHeight * $ratio)];
 	}
-
-	$ratioW = $outerWidth / $innerWidth;
-	$ratioH = $outerHeight / $innerHeight;
-
-	if ($ratioW < $ratioH)
-		return [$outerWidth, round($innerHeight * $ratioW)];
-	else
-		return [round($innerWidth * $ratioH),$outerHeight];
-
-	return [$outerWidth, $outerHeight];
-}
-
-function sizeToFillSize($innerWidth, $innerHeight, $outerWidth, $outerHeight, $preserveHeight=true)
-{
-    if ($innerWidth <= 0 || $innerHeight <= 0)
-        return [$outerWidth, $outerHeight];
 
     $ratioW = $outerWidth / $innerWidth;
     $ratioH = $outerHeight / $innerHeight;
 
-    if (($ratioW > $ratioH) && ($preserveHeight))
+    if ($ratioW < $ratioH) {
         return [$outerWidth, round($innerHeight * $ratioW)];
-    else
-        return [round($innerWidth * $ratioH),$outerHeight];
+    } else {
+        return [round($innerWidth * $ratioH), $outerHeight];
+    }
+}
 
-    return [$outerWidth, $outerHeight];
+function sizeToFillSize($innerWidth, $innerHeight, $outerWidth, $outerHeight, $preserveHeight=true) {
+    if ($innerWidth <= 0 || $innerHeight <= 0) {
+        return [$outerWidth, $outerHeight];
+    }
+
+    $ratioW = $outerWidth / $innerWidth;
+    $ratioH = $outerHeight / $innerHeight;
+
+    if (($ratioW > $ratioH) && ($preserveHeight)) {
+        return [$outerWidth, round($innerHeight * $ratioW)];
+    } else {
+        return [round($innerWidth * $ratioH),$outerHeight];
+    }
+}
+
+function __gcd($a, $b) {
+	return ($a % $b) ? __gcd($b, $a % $b) : $b;
+}
+
+function generateAspectRatio($width, $height) {
+	$g = __gcd($width, $height);
+	return [
+		$width/$g,
+		$height/$g
+	];
 }

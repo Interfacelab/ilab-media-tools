@@ -13,6 +13,8 @@
 namespace ILAB\MediaCloud\Utilities {
 	// As this file is automatically included if loaded through autoloader
 	// do a check and avoid the direct access guard in that case.
+	use ILAB\MediaCloud\Utilities\Logging\Logger;
+
 	if (!defined('ABSPATH') && empty($GLOBALS['__composer_autoload_files'])) { header('Location: /'); die; }
 
 	/**
@@ -42,10 +44,8 @@ namespace ILAB\MediaCloud\Utilities {
 		die;
 	}
 
-	function gen_uuid($len = 8)
-	{
-
-		$hex = md5("yourSaltHere" . uniqid("", true));
+	function gen_uuid($len = 8, $salt = "yourSaltHere") {
+		$hex = md5($salt . uniqid("", true));
 
 		$pack = pack('H*', $hex);
 		$tmp = base64_encode($pack);
@@ -98,6 +98,24 @@ namespace ILAB\MediaCloud\Utilities {
 		}
 
 		return $defaultValue;
+	}
+
+
+	function htmlAttributes($attributes) {
+		if (empty($attributes)) {
+			return '';
+		}
+
+		$flattened = [];
+		foreach($attributes as $key => $value) {
+			if (strpos($value, "'") !== false) {
+				$flattened[] = 'data-'.$key.'="'.$value.'"';
+			} else {
+				$flattened[] = "data-$key='$value'";
+			}
+		}
+
+		return implode(' ', $flattened);
 	}
 
 
@@ -186,6 +204,37 @@ namespace ILAB\MediaCloud\Utilities {
 	}
 
 	/**
+	 * Insures all items are not empty
+	 * @param array $set
+	 *
+	 * @return bool
+	 */
+	function anyEmpty(...$set) {
+		foreach($set as $item) {
+			if(empty($item)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Determines if an array is a keyed array
+	 *
+	 * @param array $arr
+	 *
+	 * @return bool
+	 */
+	function isKeyedArray($arr) {
+		if (!is_array($arr) || empty($arr)) {
+			return false;
+		}
+
+		return (array_keys($arr) !== range(0, count($arr) - 1));
+	}
+
+	/**
 	 * Determines if a postIdExists
 	 *
 	 * @param $postId
@@ -205,10 +254,16 @@ namespace ILAB\MediaCloud\Utilities {
 
 		if (function_exists('ini_get')) {
 			$memory_limit = ini_get('memory_limit');
+		} else {
+			Logger::info("ini_get disabled is disabled, unable to determine real memory limit", [], __FUNCTION__, __LINE__);
 		}
 
 		if (empty($memory_limit) || ($memory_limit == -1)) {
 			$memory_limit = $default;
+		}
+
+		if (is_numeric($memory_limit)) {
+			return $memory_limit;
 		}
 
 		preg_match('/^\s*([0-9.]+)\s*([KMGTPE])B?\s*$/i', $memory_limit, $matches);
