@@ -64,7 +64,7 @@ class StorageToolSettings extends ToolSettings {
 	//region Static Class Variables
 
 	/** @var string[] */
-	private static $alternateFormatTypes = ['image/pdf', 'application/pdf', 'image/psd', 'application/vnd.adobe.illustrator'];
+	private static $alternativeFormatTypes = ['image/pdf', 'application/pdf', 'image/psd', 'application/vnd.adobe.illustrator'];
 
 	/** @var array  */
 	private static $registry = [];
