@@ -579,6 +579,11 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 		try {
 			$file = fopen($fileName, 'r');
 
+			if (empty($file)) {
+				Logger::warning("Unable to open file for upload: $fileName", [], __METHOD__, __LINE__);
+				throw new StorageException("File to upload does not exist: $fileName");
+			}
+
 			Logger::startTiming("Start Upload", ['file' => $key], __METHOD__, __LINE__);
 			$result = $this->client->upload($this->settings->bucket, $key, $file, $acl, $options);
 			Logger::endTiming("End Upload", ['file' => $key], __METHOD__, __LINE__);

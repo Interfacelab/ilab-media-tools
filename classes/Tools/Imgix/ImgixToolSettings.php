@@ -29,6 +29,7 @@ use ILAB\MediaCloud\Utilities\Environment;
  * @property bool useHTTPS
  * @property bool enabledAlternativeFormats
  * @property bool renderPDF
+ * @property bool renderSVG
  * @property bool detectFaces
  * @property bool generateThumbnails
  */
@@ -48,6 +49,7 @@ class ImgixToolSettings extends DynamicImagesToolSettings {
 		'detectFaces' => ['mcloud-imgix-detect-faces', null, false],
 		'generateThumbnails' => ['mcloud-imgix-generate-thumbnails', null, true],
 		'imageQuality' => ['mcloud-imgix-default-quality', null, null],
+		'renderSVG' => ['mcloud-imgix-render-svg-files', null, false],
 	];
 
 	public function __construct() {

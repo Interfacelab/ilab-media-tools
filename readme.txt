@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 5.5
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.0.3
+Stable tag: 4.0.5
 Requires PHP: 7.1
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -104,6 +104,15 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 
 == Changelog ==
+
+= 4.0.5 =
+
+* Fix a bug with Imgix and SVGs where SVGs are being rendered as progressive JPEGs.
+* Added new option to Imgix to control SVG rendering.  When this new option is enabled, any image size other than 'full' will be rendered as a PNG.  When turned off, the SVG is delivered as is with no conversion.
+
+= 4.0.4 =
+
+* Fix for Ultimate Member uploads
 
 = 4.0.3 =
 

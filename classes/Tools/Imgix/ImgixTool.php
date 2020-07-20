@@ -144,6 +144,8 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
 				$format = 'gif';
 			} else if(($mimetype == 'image/png') && !$this->settings->autoFormat) {
 				$format = 'png';
+			} else if(($mimetype == 'image/svg+xml') && !$this->settings->autoFormat) {
+				$format = null;
 			} else if(!$this->settings->autoFormat) {
 				$format = 'pjpg';
 			}
@@ -251,6 +253,10 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
 		}
 
 		if(!isset($meta['s3'])) {
+			return [];
+		}
+
+		if (isset($meta['s3']['mime-type']) && ($meta['s3']['mime-type'] == 'image/svg+xml') && (!$this->settings->renderSVG)) {
 			return [];
 		}
 
@@ -367,9 +373,13 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
 
 		$mimetype = get_post_mime_type($id);
 
-        if (!$this->settings->renderPDF && ($mimetype == 'application/pdf')) {
-            return false;
-        }
+		if (!$this->settings->renderPDF && ($mimetype == 'image/svg+xml')) {
+			return false;
+		}
+
+		if (!$this->settings->renderSVG && ($mimetype == 'application/pdf')) {
+			return false;
+		}
 
 		$meta = wp_get_attachment_metadata($id);
 		if(!$meta || empty($meta)) {

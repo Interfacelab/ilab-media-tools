@@ -25,6 +25,8 @@ final class Tracker {
 		'media-upload',
 		'vision',
 		'assets',
+		'video-encoding',
+		'optimizer',
 		'crop'
 	];
 
