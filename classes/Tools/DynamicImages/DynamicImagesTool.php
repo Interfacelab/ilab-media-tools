@@ -143,6 +143,12 @@ abstract class DynamicImagesTool extends Tool {
 
                 return $editors;
             });
+        } else {
+	        add_filter('wp_image_editors', function($editors) {
+		        array_unshift($editors, '\ILAB\MediaCloud\Tools\Storage\StorageImageEditor');
+
+		        return $editors;
+	        }, PHP_INT_MAX);
         }
 
 	    add_filter('wp_get_attachment_metadata', function($metadata, $attachmentId) {

@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 5.5
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.0.5
+Stable tag: 4.0.6
 Requires PHP: 7.1
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -104,6 +104,13 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 
 == Changelog ==
+
+= 4.0.6 =
+
+* Fix for Blubrry integration.
+* Fix for duplicated Imgix uploads when Keep WordPress Thumbnails is enabled.
+* Fix for small images not uploading, or not uploading when no image sizes are defined.
+* Fix for duplicated Imgix uploads when the image being uploaded has been resized because of WordPress's dumb big image size threshold "feature".
 
 = 4.0.5 =
 

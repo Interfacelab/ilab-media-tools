@@ -86,6 +86,8 @@ class StorageTool extends Tool
     private  $replaceSrcSet = false ;
     /** @var array Already processed post IDs */
     private  $processed = array() ;
+    private  $generated = array() ;
+    private  $updateCallCount = 0 ;
     //endregion
     //region Constructor
     public function __construct( $toolName, $toolInfo, $toolManager )
@@ -618,8 +620,15 @@ class StorageTool extends Tool
             __METHOD__,
             __LINE__
         );
+        
         if ( !in_array( $id, $this->processed ) ) {
             $this->processed[] = $id;
+        } else {
+            $this->generated[] = $id;
+        }
+        
+        if ( $this->updateCallCount == 1 ) {
+            $this->generated[] = $id;
         }
         return $meta;
     }
@@ -627,6 +636,7 @@ class StorageTool extends Tool
     //region WordPress Upload/Attachment Hooks & Filters
     public function handleUpdateAttachmentMetadataFor53( $data, $id )
     {
+        $this->updateCallCount++;
         Logger::info(
             "Update attachment metadata {$id}",
             [],
@@ -647,7 +657,7 @@ class StorageTool extends Tool
         
         // This means sizes haven't been generated yet.
         
-        if ( empty($data['sizes']) ) {
+        if ( !in_array( $id, $this->generated ) && empty($data['sizes']) ) {
             Logger::info(
                 "Attachment is missing sizes {$id}",
                 [],
@@ -671,6 +681,7 @@ class StorageTool extends Tool
             return $data;
         }
         
+        $this->updateCallCount = 0;
         Logger::info(
             "Processing attachment metadata.",
             [],
@@ -914,8 +925,9 @@ class StorageTool extends Tool
                             }
                             
                             $file = ltrim( $path_base . '/' . $size['file'], '/' );
+                            $sizedFileName = pathinfo( $file, PATHINFO_FILENAME ) . '-scaled.' . pathinfo( $file, PATHINFO_EXTENSION );
                             
-                            if ( $file == $data['file'] ) {
+                            if ( $file == $data['file'] || $sizedFileName == $data['file'] ) {
                                 $size['file'] = $oldSizeFile;
                                 unset( $size['prefix'] );
                                 $data['sizes'][$key]['s3'] = $data['s3'];
