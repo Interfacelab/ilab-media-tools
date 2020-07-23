@@ -670,7 +670,7 @@ class StorageTool extends Tool
         // In 5.3 `wp_update_attachment_metadata` is called a few times, but we only want to handle the last time its called
         // to prevent uploading stuff twice.
         
-        if ( !in_array( $id, $this->processed ) ) {
+        if ( !in_array( $id, $this->processed ) && arrayPath( $_REQUEST, 'action' ) != 'image-editor' ) {
             Logger::info(
                 "Attachment hasn't been processed yet.",
                 [],
