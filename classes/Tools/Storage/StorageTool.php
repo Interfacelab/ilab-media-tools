@@ -131,8 +131,11 @@ class StorageTool extends Tool
         }
         
         if ( is_admin() ) {
+            
             if ( media_cloud_licensing()->is_plan( 'pro' ) ) {
-                add_filter( 'whitelist_options', function ( $options ) {
+                global  $wp_version ;
+                $whitelistFilter = ( version_compare( $wp_version, '5.5', '>=' ) ? 'allowed_options' : 'whitelist_options' );
+                add_filter( $whitelistFilter, function ( $options ) {
                     $options['ilab-media-s3'][] = 'mcloud-storage-privacy-images';
                     $options['ilab-media-s3'][] = 'mcloud-storage-privacy-video';
                     $options['ilab-media-s3'][] = 'mcloud-storage-privacy-audio';
@@ -148,6 +151,7 @@ class StorageTool extends Tool
                     return $options;
                 } );
             }
+            
             
             if ( empty($this->settings->enableBigImageSize) ) {
                 add_filter( 'big_image_size_threshold', '__return_false' );
@@ -547,6 +551,66 @@ class StorageTool extends Tool
                 PHP_INT_MAX,
                 5
             );
+            
+            if ( ToolsManager::instance()->toolEnabled( 'debugging' ) ) {
+                add_filter(
+                    'load_image_to_edit_filesystempath',
+                    function ( $filepath, $attachment_id, $size ) {
+                    Logger::info(
+                        "load_image_to_edit_filesystempath {$filepath} {$attachment_id}",
+                        [],
+                        __METHOD__,
+                        __LINE__
+                    );
+                    return $filepath;
+                },
+                    1,
+                    3
+                );
+                add_filter(
+                    'load_image_to_edit_attachmenturl',
+                    function ( $filepath, $attachment_id, $size ) {
+                    Logger::info(
+                        "load_image_to_edit_attachmenturl {$filepath} {$attachment_id}",
+                        [],
+                        __METHOD__,
+                        __LINE__
+                    );
+                    return $filepath;
+                },
+                    1,
+                    3
+                );
+                add_filter(
+                    'load_image_to_edit_path',
+                    function ( $filepath, $attachment_id, $size ) {
+                    Logger::info(
+                        "load_image_to_edit_path {$filepath} {$attachment_id}",
+                        [],
+                        __METHOD__,
+                        __LINE__
+                    );
+                    return $filepath;
+                },
+                    1,
+                    3
+                );
+                add_filter(
+                    'image_editor_save_pre',
+                    function ( $image, $attachment_id ) {
+                    Logger::info(
+                        "image_editor_save_pre {$attachment_id}",
+                        [],
+                        __METHOD__,
+                        __LINE__
+                    );
+                    return $image;
+                },
+                    1,
+                    2
+                );
+            }
+            
             $this->hookupUI();
         } else {
             
@@ -670,7 +734,7 @@ class StorageTool extends Tool
         // In 5.3 `wp_update_attachment_metadata` is called a few times, but we only want to handle the last time its called
         // to prevent uploading stuff twice.
         
-        if ( !in_array( $id, $this->processed ) && arrayPath( $_REQUEST, 'action' ) != 'image-editor' ) {
+        if ( empty($this->processingOptimized) && !in_array( $id, $this->processed ) && arrayPath( $_REQUEST, 'action' ) != 'image-editor' ) {
             Logger::info(
                 "Attachment hasn't been processed yet.",
                 [],

@@ -104,7 +104,7 @@ abstract class AttachmentTask extends Task {
 
 			if (isset($options['limit'])) {
 				$args['posts_per_page'] = $options['limit'];
-				if (isset($assoc_args['offset'])) {
+				if (isset($options['offset'])) {
 					$args['offset'] = $options['offset'];
 				}
 			} else {

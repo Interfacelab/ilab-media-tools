@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 5.5
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.0.7
+Stable tag: 4.0.11
 Requires PHP: 7.1
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -105,8 +105,32 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 == Changelog ==
 
-= 4.0.7 =
+= 4.0.11 =
 
+* Fix for deprecated `whitelist_options` filter in WP 5.5.
+* Fix for uploads not occuring when using EWWW image optimizer and other image optimizers.
+* Media Cloud will now warn you if your cloud storage isn't configured for CORS when performing direct uploads
+* Fix for ACL error with Wasabi
+* Added warning about Autoptimize compatibility
+* You can now track Media Cloud development on its public trello board: https://trello.com/b/O0iNw6GL/media-cloud-development
+
+= 4.0.10 =
+
+* Fix for attachment tasks when running from the command line (thanks @yanmorinokamca)
+
+= 4.0.9 =
+
+* Direct uploads are now much faster
+* Fix for "Add New" page for uploading media when direct uploads are enabled
+* Fix for front-end direct uploads
+* New setting in Direct Uploads that controls if thumbnails are generated in the browser when direct uploads for images are enabled.
+* Improved compatibility with Dokan multivendor plugin for WooCommerce
+* Fix for memory error when direct uploading extremely large images without Imgix.
+
+
+= 4.0.8 =
+
+* Fix for BuddyPress compatibility
 * Fix for WordPress's crappy image editor not saving edited images to cloud storage.
 * Fix for Blubrry integration.
 * Fix for duplicated Imgix uploads when Keep WordPress Thumbnails is enabled.

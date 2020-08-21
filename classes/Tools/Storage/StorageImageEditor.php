@@ -14,6 +14,7 @@
 namespace ILAB\MediaCloud\Tools\Storage;
 
 use ILAB\MediaCloud\Tools\ToolsManager;
+use ILAB\MediaCloud\Utilities\Logging\Logger;
 use WP_Error;
 
 if (!defined('ABSPATH')) { header('Location: /'); die; }
@@ -34,6 +35,8 @@ class StorageImageEditor extends \WP_Image_Editor {
 
     public function __construct($file) {
         parent::__construct($file);
+
+        Logger::info("Creating StorageImageEditor for $file", [], __METHOD__, __LINE__);
 
         $this->imageEditor = (\WP_Image_Editor_Imagick::test()) ? new \WP_Image_Editor_Imagick($file) : new \WP_Image_Editor_GD($file);
 
@@ -237,6 +240,7 @@ class StorageImageEditor extends \WP_Image_Editor {
      * @return bool|WP_Error True on success, WP_Error object or false on failure.
      */
     public function stream($mime_type = null) {
+	    Logger::info("stream $mime_type", [], __METHOD__, __LINE__);
         return $this->imageEditor->stream($mime_type);
     }
 

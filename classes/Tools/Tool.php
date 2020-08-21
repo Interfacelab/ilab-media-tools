@@ -139,10 +139,20 @@ abstract class Tool {
         if (isset($this->toolInfo['badPlugins'])) {
             $installedBad = [];
             foreach($this->toolInfo['badPlugins'] as $name => $plugin) {
-                if (is_plugin_active($plugin['plugin'])) {
-                    $this->badPluginsInstalled = true;
-                    $installedBad[$name] = $plugin;
-                }
+	            $isInstalled = false;
+
+	            if (!empty($plugin['plugin'])) {
+		            $isInstalled = is_plugin_active($plugin['plugin']);
+	            } else if (!empty($plugin['class'])) {
+		            $isInstalled = class_exists($plugin['class']);
+	            } else if (!empty($plugin['function'])) {
+		            $isInstalled = function_exists($plugin['function']);
+	            }
+
+	            if (!empty($isInstalled)) {
+		            $this->badPluginsInstalled = true;
+		            $installedBad[$name] = $plugin;
+	            }
             }
 
             if (count($installedBad) > 0) {
@@ -172,10 +182,20 @@ abstract class Tool {
             $installedBadNames = [];
 
             foreach($this->toolInfo['incompatiblePlugins'] as $name => $plugin) {
-                if (is_plugin_active($plugin['plugin'])) {
-                    $installedBad[$name] = $plugin;
-                    $installedBadNames[] = sanitize_title($name);
+                $isInstalled = false;
+
+                if (!empty($plugin['plugin'])) {
+                    $isInstalled = is_plugin_active($plugin['plugin']);
+                } else if (!empty($plugin['class'])) {
+	                $isInstalled = class_exists($plugin['class']);
+                } else if (!empty($plugin['function'])) {
+	                $isInstalled = function_exists($plugin['function']);
                 }
+
+	            if (!empty($isInstalled)) {
+		            $installedBad[$name] = $plugin;
+		            $installedBadNames[] = sanitize_title($name);
+	            }
             }
 
             if (count($installedBad) > 0) {
@@ -205,7 +225,7 @@ abstract class Tool {
         <ul style="padding: 15px; background-color: #EAEAEA;">
             <?php foreach($installedBad as $name => $plugin) : ?>
                 <li style="margin-bottom: 10px;">
-                    <div style="display:flex; align-items: center; font-weight:bold; margin-bottom: 10px;"><?php echo $name ?> <a style="margin-left: 15px;" class="button button-small" href="<?php echo $this->generateDeactivateLink($name, $plugin['plugin'])?>">Deactivate</a></div>
+                    <div style="display:flex; align-items: center; font-weight:bold; margin-bottom: 10px;"><?php echo $name ?> <?php if(isset($plugin['plugin'])):?><a style="margin-left: 15px;" class="button button-small" href="<?php echo $this->generateDeactivateLink($name, $plugin['plugin'])?>">Deactivate</a><?php endif; ?></div>
                     <cite><?php echo $plugin['description'] ?></cite>
                 </li>
             <?php endforeach; ?>

@@ -23,6 +23,10 @@ return [
     "dynamic-config-option" => "mcloud-storage-provider",
     "compatibleImageOptimizers" => include 'image-optimizers.config.php',
     "incompatiblePlugins" => [
+	    "Autoptimize" => [
+		    "function" => "autoptimize",
+		    "description" => "Media Cloud generally works well with Autoptimize, however after updating Media Cloud settings you may need to delete autoptimize's cache for those settings to work."
+	    ],
 	    "Photo Gallery" => [
 		    "plugin" => "photo-gallery/photo-gallery.php",
 		    "description" => "If someone were to ask me for a statement about this photo gallery plug-in, the only thing I could say that would be remotely positive is that it doesn't work with Media Cloud.  We'll just leave it at that."

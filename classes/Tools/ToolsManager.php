@@ -740,7 +740,9 @@ final class ToolsManager
         $page_slug = $_POST['option_page'];
         check_admin_referer( $page_slug . '-options' );
         global  $new_whitelist_options ;
-        $new_whitelist_options = apply_filters( 'whitelist_options', $new_whitelist_options );
+        global  $wp_version ;
+        $whitelistFilter = ( version_compare( $wp_version, '5.5', '>=' ) ? 'allowed_options' : 'whitelist_options' );
+        $new_whitelist_options = apply_filters( $whitelistFilter, $new_whitelist_options );
         $options = $new_whitelist_options[$page_slug];
         foreach ( $options as $option ) {
             
