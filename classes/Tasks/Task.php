@@ -11,15 +11,15 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Tasks;
+namespace MediaCloud\Plugin\Tasks;
 
-use ILAB\MediaCloud\Model\Model;
-use ILAB\MediaCloud\Utilities\Environment;
-use ILAB\MediaCloud\Utilities\Misc\Carbon\Carbon;
-use function ILAB\MediaCloud\Utilities\gen_uuid;
-use ILAB\MediaCloud\Utilities\Logging\Logger;
-use function ILAB\MediaCloud\Utilities\phpMemoryLimit;
-use ILAB\MediaCloud\Utilities\Tracker;
+use MediaCloud\Plugin\Model\Model;
+use MediaCloud\Plugin\Utilities\Environment;
+use MediaCloud\Plugin\Utilities\Logging\Logger;
+use MediaCloud\Plugin\Utilities\Tracker;
+use MediaCloud\Vendor\Carbon\Carbon;
+use function MediaCloud\Plugin\Utilities\gen_uuid;
+use function MediaCloud\Plugin\Utilities\phpMemoryLimit;
 
 
 /**

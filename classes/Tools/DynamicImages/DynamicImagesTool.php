@@ -11,20 +11,18 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Tools\DynamicImages;
+namespace MediaCloud\Plugin\Tools\DynamicImages;
 
-use ILAB\MediaCloud\Tools\Storage\StorageTool;
-use ILAB\MediaCloud\Tools\Tool;
-use ILAB\MediaCloud\Tools\ToolsManager;
-use function ILAB\MediaCloud\Utilities\arrayPath;
-use ILAB\MediaCloud\Utilities\Environment;
-use ILAB\MediaCloud\Utilities\NoticeManager;
-use ILAB\MediaCloud\Utilities\Tracker;
-use ILAB\MediaCloud\Utilities\View;
-use function ILAB\MediaCloud\Utilities\gen_uuid;
-use function ILAB\MediaCloud\Utilities\json_response;
-use function ILAB\MediaCloud\Utilities\parse_req;
-use function ILAB\MediaCloud\Utilities\vomit;
+use MediaCloud\Plugin\Tools\Storage\StorageTool;
+use MediaCloud\Plugin\Tools\Tool;
+use MediaCloud\Plugin\Tools\ToolsManager;
+use MediaCloud\Plugin\Utilities\NoticeManager;
+use MediaCloud\Plugin\Utilities\Tracker;
+use MediaCloud\Plugin\Utilities\View;
+use function MediaCloud\Plugin\Utilities\arrayPath;
+use function MediaCloud\Plugin\Utilities\gen_uuid;
+use function MediaCloud\Plugin\Utilities\json_response;
+use function MediaCloud\Plugin\Utilities\parse_req;
 
 abstract class DynamicImagesTool extends Tool {
     /** @var DynamicImagesToolSettings  */
@@ -139,13 +137,13 @@ abstract class DynamicImagesTool extends Tool {
 
         if (empty($this->settings->keepThumbnails)) {
             add_filter('wp_image_editors', function($editors) {
-                array_unshift($editors, '\ILAB\MediaCloud\Tools\DynamicImages\DynamicImageEditor');
+                array_unshift($editors, '\MediaCloud\Plugin\Tools\DynamicImages\DynamicImageEditor');
 
                 return $editors;
             });
         } else {
 	        add_filter('wp_image_editors', function($editors) {
-		        array_unshift($editors, '\ILAB\MediaCloud\Tools\Storage\StorageImageEditor');
+		        array_unshift($editors, '\MediaCloud\Plugin\Tools\Storage\StorageImageEditor');
 
 		        return $editors;
 	        }, PHP_INT_MAX);

@@ -16,7 +16,7 @@ return [
     "id" => "crop",
     "name" => "Crop Tool",
 	"description" => "Provides an advanced and easy to use image crop tool that works with or without cloud storage.",
-	"class" => "ILAB\\MediaCloud\\Tools\\Crop\\CropTool",
+	"class" => "MediaCloud\\Plugin\\Tools\\Crop\\CropTool",
 	"dependencies" => [],
 	"env" => "ILAB_MEDIA_CROP_ENABLED",
 	"settings" => [

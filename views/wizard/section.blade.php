@@ -1,4 +1,4 @@
-<?php /** @var \ILAB\MediaCloud\Wizard\Config\Section $section  */?>
+<?php /** @var \MediaCloud\Plugin\Wizard\Config\Section $section  */?>
 <?php /** @var bool $initial  */?>
 <div data-id="{{$section->id()}}" class="wizard-section {{$initial ? 'current' : ''}} {{$section->sectionClass()}}" data-initial="{{$initial ? 'true' : 'false'}}" data-display-steps="{{$section->displaySteps() ? 'true' : 'false'}}" tabindex="-1">
     @foreach($section->steps() as $step)

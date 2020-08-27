@@ -1,14 +1,14 @@
 <?php
 
 
-namespace ILAB\MediaCloud\Tools\DynamicImages;
+namespace MediaCloud\Plugin\Tools\DynamicImages;
 
 
-use ILAB\MediaCloud\Tools\ToolSettings;
+use MediaCloud\Plugin\Tools\ToolSettings;
 
 /**
  * Class DynamicImagesToolSettings
- * @package ILAB\MediaCloud\Tools\DynamicImages
+ * @package MediaCloud\Plugin\Tools\DynamicImages
  *
  * @property bool $keepThumbnails
  */

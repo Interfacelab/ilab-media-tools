@@ -1,0 +1,38 @@
+{
+    "name": "mcloud-illuminate/view",
+    "description": "The Illuminate View package.",
+    "license": "MIT",
+    "homepage": "https://laravel.com",
+    "support": {
+        "issues": "https://github.com/laravel/framework/issues",
+        "source": "https://github.com/laravel/framework"
+    },
+    "authors": [
+        {
+            "name": "Taylor Otwell",
+            "email": "taylor@laravel.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.0",
+        "mcloud-illuminate/container": "v5.5.44",
+        "mcloud-illuminate/contracts": "v5.5.44",
+        "mcloud-illuminate/events": "v5.5.44",
+        "mcloud-illuminate/filesystem": "v5.5.44",
+        "mcloud-illuminate/support": "v5.5.44",
+        "mcloud-symfony/debug": "v3.4.43"
+    },
+    "autoload": {
+        "psr-4": {
+            "MediaCloud\\Vendor\\Illuminate\\View\\": ""
+        }
+    },
+    "extra": {
+        "branch-alias": []
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "version": "v5.5.44"
+}

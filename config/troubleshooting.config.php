@@ -16,7 +16,7 @@ return [
     "id" => "troubleshooting",
     "name" => "System Compatibility",
 	"description" => "Enables troubleshooter to double check that your settings work.",
-	"class" => "ILAB\\MediaCloud\\Tools\\Debugging\\System\\SystemCompatibilityTool",
+	"class" => "MediaCloud\\Plugin\\Tools\\Debugging\\System\\SystemCompatibilityTool",
 	"exclude" => true,
 	"dependencies" => [],
 	"env" => "ILAB_MEDIA_TROUBLESHOOTING_ENABLED",  // this is always enabled btw

@@ -16,7 +16,7 @@ return [
     "id" => "imgix",
     "name" => "Imgix",
 	"description" => "Serve your media through <a target='_blank' href='https://imgix.com'>Imgix</a>, a real-time dynamic image processing service and CDN.",
-	"class" => "ILAB\\MediaCloud\\Tools\\Imgix\\ImgixTool",
+	"class" => "MediaCloud\\Plugin\\Tools\\Imgix\\ImgixTool",
 	"env" => "ILAB_MEDIA_IMGIX_ENABLED",
 	"dependencies" => [
 		"crop",

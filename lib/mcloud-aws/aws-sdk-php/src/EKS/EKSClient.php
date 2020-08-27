@@ -1,0 +1,51 @@
+<?php
+
+namespace MediaCloud\Vendor\Aws\EKS;
+use MediaCloud\Vendor\Aws\AwsClient;
+
+/**
+ * This client is used to interact with the **Amazon Elastic Container Service for Kubernetes** service.
+ * @method \MediaCloud\Vendor\Aws\Result createCluster(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise createClusterAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result createFargateProfile(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise createFargateProfileAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result createNodegroup(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise createNodegroupAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result deleteCluster(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteClusterAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result deleteFargateProfile(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteFargateProfileAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result deleteNodegroup(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteNodegroupAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result describeCluster(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise describeClusterAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result describeFargateProfile(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise describeFargateProfileAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result describeNodegroup(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise describeNodegroupAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result describeUpdate(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise describeUpdateAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listClusters(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listClustersAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listFargateProfiles(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listFargateProfilesAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listNodegroups(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listNodegroupsAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listTagsForResource(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listTagsForResourceAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listUpdates(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listUpdatesAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result tagResource(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise tagResourceAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result untagResource(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise untagResourceAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result updateClusterConfig(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise updateClusterConfigAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result updateClusterVersion(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise updateClusterVersionAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result updateNodegroupConfig(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise updateNodegroupConfigAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result updateNodegroupVersion(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise updateNodegroupVersionAsync(array $args = [])
+ */
+class EKSClient extends AwsClient {}

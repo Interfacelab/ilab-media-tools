@@ -17,16 +17,16 @@ return [
     "id" => "vision",
     "name" => "Computer Vision",
 	"description" => "Uses Amazon's Rekognition AI or Google's Cloud Vision service to automatically tag and categorize your uploaded images.",
-	"class" => "ILAB\\MediaCloud\\Tools\\Vision\\VisionTool",
+	"class" => "MediaCloud\\Plugin\\Tools\\Vision\\VisionTool",
 	"env" => "ILAB_VISION_ENABLED",
     "dynamic-config-option" => "mcloud-vision-provider",
 	"CLI" => [
-		"\\ILAB\\MediaCloud\\Tools\\Vision\\CLI\\VisionCLICommands"
+		"\\MediaCloud\\Plugin\\Tools\\Vision\\CLI\\VisionCLICommands"
 	],
 	"visionDrivers" => [
 		'rekognition' => [
 			'name' => 'Amazon Rekognition',
-			'class' => "\\ILAB\\MediaCloud\\Vision\\Driver\\Rekognition\\RekognitionDriver",
+			'class' => "\\MediaCloud\\Plugin\\Tools\\Vision\\Driver\\Rekognition\\RekognitionDriver",
 			'config' => '/vision/rekognition.config.php',
 			'help' => [
 				[ 'title' => 'Read Documentation', 'url' => 'https://help.mediacloud.press/article/59-setting-up-amazon-rekognition', 'beacon_id' => '59' ],
@@ -100,7 +100,6 @@ return [
 						"title" => "Taxonomy Prefix Text",
 						"description" => "When saving the detected labels to the alt text, caption and/or description, this text will be prefixed to it.",
 						"type" => "text-field",
-						"placeholder" => "Image may contain: ",
 						"display-order" => 13,
 					],
 					"mcloud-vision-always-background" => [

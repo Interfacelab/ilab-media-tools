@@ -1,0 +1,34 @@
+{
+    "name": "mcloud-duncan3dc/object-intruder",
+    "type": "library",
+    "description": "A small library to access private/protected properties/methods of objects",
+    "keywords": [
+        "reflection",
+        "private",
+        "protected",
+        "public"
+    ],
+    "homepage": "https://github.com/duncan3dc/object-intruder",
+    "license": "Apache-2.0",
+    "authors": [
+        {
+            "name": "Craig Duncan",
+            "email": "git@duncanc.co.uk",
+            "homepage": "https://github.com/duncan3dc",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^5.6|^7.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^5.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "MediaCloud\\Vendor\\duncan3dc\\ObjectIntruder\\": "src/",
+            "MediaCloud\\Vendor\\duncan3dc\\ObjectIntruderTests\\": "tests/"
+        }
+    },
+    "version": "0.3.0"
+}

@@ -30,7 +30,7 @@
         @endif
         <div class="ilab-settings-section ilab-settings-features">
             <table class="form-table">
-                <?php /** @var $tool \ILAB\MediaCloud\Tools\Tool */ ?>
+                <?php /** @var $tool \MediaCloud\Plugin\Tools\Tool */ ?>
                 @foreach($tools as $key => $tool)
                     @if(!empty($tool->toolInfo['exclude']))
                         @continue

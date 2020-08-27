@@ -16,7 +16,7 @@ return [
     "id" => "debugging",
     "name" => "Debugging",
 	"description" => "Enables logging for the plugin to track down issues.",
-	"class" => "ILAB\\MediaCloud\\Tools\\Debugging\\DebuggingTool",
+	"class" => "MediaCloud\\Plugin\\Tools\\Debugging\\DebuggingTool",
 	"dependencies" => [],
 	"env" => "ILAB_MEDIA_DEBUGGING_ENABLED",
 	"settings" => [

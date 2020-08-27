@@ -1,0 +1,43 @@
+{
+    "name": "mcloud-muxinc/mux-php",
+    "description": "Official Mux API wrapper for PHP projects, supporting both Mux Data and Mux Video. Not familiar with Mux? Check out https://mux.com/ for more information.",
+    "keywords": [
+        "php",
+        "sdk",
+        "rest",
+        "api",
+        "video",
+        "streaming"
+    ],
+    "homepage": "https://mux.com",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Mux SDK team",
+            "homepage": "https://mux.com",
+            "email": "sdks@mux.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.1",
+        "ext-curl": "*",
+        "ext-json": "*",
+        "ext-mbstring": "*",
+        "mcloud-guzzlehttp/guzzle": "6.5.5"
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "~2.6",
+        "friendsofphp/php-cs-fixer": "~2.12"
+    },
+    "autoload": {
+        "psr-4": {
+            "MediaCloud\\Vendor\\MuxPhp\\": "MuxPhp/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "MuxPhp\\": "test/"
+        }
+    },
+    "version": "0.4.0"
+}

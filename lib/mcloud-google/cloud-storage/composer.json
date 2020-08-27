@@ -1,0 +1,41 @@
+{
+    "name": "mcloud-google/cloud-storage",
+    "description": "Cloud Storage Client for PHP",
+    "license": "Apache-2.0",
+    "minimum-stability": "stable",
+    "require": {
+        "mcloud-google/cloud-core": "v1.38.0",
+        "mcloud-google/crc32": "v0.1.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^4.8|^5.0",
+        "squizlabs/php_codesniffer": "2.*",
+        "phpdocumentor/reflection": "^3.0",
+        "erusev/parsedown": "^1.6",
+        "phpseclib/phpseclib": "^2",
+        "google/cloud-pubsub": "^1.0"
+    },
+    "suggest": {
+        "phpseclib/phpseclib": "May be used in place of OpenSSL for creating signed Cloud Storage URLs. Please require version ^2.",
+        "google/cloud-pubsub": "May be used to register a topic to receive bucket notifications."
+    },
+    "extra": {
+        "component": {
+            "id": "cloud-storage",
+            "target": "googleapis/google-cloud-php-storage.git",
+            "path": "Storage",
+            "entry": "src/StorageClient.php"
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "MediaCloud\\Vendor\\Google\\Cloud\\Storage\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Google\\Cloud\\Storage\\Tests\\": "tests"
+        }
+    },
+    "version": "v1.22.0"
+}

@@ -11,9 +11,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Utilities;
+namespace MediaCloud\Plugin\Utilities;
 
-use ILAB\MediaCloud\Utilities\Logging\Logger;
+use MediaCloud\Plugin\Utilities\Logging\Logger;
 
 final class Performance {
 	private static $perfMarkers = [];

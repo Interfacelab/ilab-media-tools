@@ -1,0 +1,53 @@
+<?php
+
+namespace MediaCloud\Vendor\Aws\MediaConnect;
+use MediaCloud\Vendor\Aws\AwsClient;
+
+/**
+ * This client is used to interact with the **AWS MediaConnect** service.
+ * @method \MediaCloud\Vendor\Aws\Result addFlowOutputs(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise addFlowOutputsAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result addFlowSources(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise addFlowSourcesAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result addFlowVpcInterfaces(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise addFlowVpcInterfacesAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result createFlow(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise createFlowAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result deleteFlow(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteFlowAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result describeFlow(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise describeFlowAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result grantFlowEntitlements(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise grantFlowEntitlementsAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listEntitlements(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listEntitlementsAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listFlows(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listFlowsAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listTagsForResource(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listTagsForResourceAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result removeFlowOutput(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise removeFlowOutputAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result removeFlowSource(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise removeFlowSourceAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result removeFlowVpcInterface(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise removeFlowVpcInterfaceAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result revokeFlowEntitlement(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise revokeFlowEntitlementAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result startFlow(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise startFlowAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result stopFlow(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise stopFlowAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result tagResource(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise tagResourceAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result untagResource(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise untagResourceAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result updateFlow(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise updateFlowAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result updateFlowEntitlement(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise updateFlowEntitlementAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result updateFlowOutput(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise updateFlowOutputAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result updateFlowSource(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise updateFlowSourceAsync(array $args = [])
+ */
+class MediaConnectClient extends AwsClient {}

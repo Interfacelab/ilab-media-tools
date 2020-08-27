@@ -11,14 +11,14 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Tools\Imgix;
+namespace MediaCloud\Plugin\Tools\Imgix;
 
-use ILAB\MediaCloud\Tools\DynamicImages\DynamicImagesToolSettings;
-use ILAB\MediaCloud\Utilities\Environment;
+use MediaCloud\Plugin\Tools\DynamicImages\DynamicImagesToolSettings;
+use MediaCloud\Plugin\Utilities\Environment;
 
 /**
  * Class ImgixToolSettings
- * @package ILAB\MediaCloud\Tools\Imgix
+ * @package MediaCloud\Plugin\Tools\Imgix
  *
  * @property string[] imgixDomains
  * @property bool autoFormat

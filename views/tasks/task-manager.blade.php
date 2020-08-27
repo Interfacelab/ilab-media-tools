@@ -1,4 +1,4 @@
-<?php /** @var \ILAB\MediaCloud\Tasks\TaskManager $manager */?>
+<?php /** @var \MediaCloud\Plugin\Tasks\TaskManager $manager */?>
 @extends('../templates/sub-page')
 
 @section('main')
@@ -8,7 +8,7 @@
         <div class="available-tasks">
             <h2>Available Tasks</h2>
             <div class="buttons">
-                @foreach(\ILAB\MediaCloud\Tasks\TaskManager::registeredTasks() as $id => $taskClass)
+                @foreach(\MediaCloud\Plugin\Tasks\TaskManager::registeredTasks() as $id => $taskClass)
                     @continue(!$taskClass::runFromTaskManager())
                     <button type="button" class="button button-primary button-small button-start-task" data-task-id="{{$id}}" data-has-options="{{!empty($taskClass::taskOptions())}}" data-nonce="{{wp_create_nonce('mcloud_start_task')}}">{{$taskClass::title()}}</button>
                 @endforeach
@@ -102,10 +102,10 @@
         {!! json_encode(array_values($manager->runningTasks()), JSON_PRETTY_PRINT) !!}
     </script>
     <script type="application/json" id="task-manager-past-tasks">
-        {!! json_encode(\ILAB\MediaCloud\Tasks\Task::completeTasks(), JSON_PRETTY_PRINT) !!}
+        {!! json_encode(\MediaCloud\Plugin\Tasks\Task::completeTasks(), JSON_PRETTY_PRINT) !!}
     </script>
     <script type="application/json" id="task-manager-scheduled-tasks">
-        {!! json_encode(\ILAB\MediaCloud\Tasks\TaskSchedule::scheduledTasks(), JSON_PRETTY_PRINT) !!}
+        {!! json_encode(\MediaCloud\Plugin\Tasks\TaskSchedule::scheduledTasks(), JSON_PRETTY_PRINT) !!}
     </script>
 
     <script type="text/html" id="tmpl-running-task-template">
@@ -163,7 +163,7 @@
         </tr>
     </script>
 
-    @foreach(\ILAB\MediaCloud\Tasks\TaskManager::registeredTasks() as $identifier => $taskClass)
+    @foreach(\MediaCloud\Plugin\Tasks\TaskManager::registeredTasks() as $identifier => $taskClass)
         @continue(empty($taskClass::taskOptions()))
     <script type="text/html" id="tmpl-{{$identifier}}-modal" data-options-for="{{$identifier}}">
         <div class="task-options-modal">

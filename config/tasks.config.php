@@ -16,11 +16,11 @@ return [
 	"id" => "tasks",
 	"name" => "Task Manager",
 	"description" => "Tool for managing background tasks.",
-	"class" => "ILAB\\MediaCloud\\Tools\\Tasks\\TasksTool",
+	"class" => "MediaCloud\\Plugin\\Tools\\Tasks\\TasksTool",
 	"exclude" => true,
 	"dependencies" => [],
 	"CLI" => [
-		"\\ILAB\\MediaCloud\\Tools\\Tasks\\CLI\\TasksCommands"
+		"\\MediaCloud\\Plugin\\Tools\\Tasks\\CLI\\TasksCommands"
 	],
 	"env" => "ILAB_MEDIA_TASKS_ENABLED",  // this is always enabled btw
 ];

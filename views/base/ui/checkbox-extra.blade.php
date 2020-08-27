@@ -1,5 +1,5 @@
 <div class="ic-Super-toggle--on-off">
-    <input type="checkbox" id="{{$name}}" name='{{$name}}' class="ic-Super-toggle__input {{$class}}" {{(($value) ? 'checked' : '')}} {{(!$enabled) ? 'disabled' : ''}} {!! \ILAB\MediaCloud\Utilities\htmlAttributes($dataAttributes) !!}>
+    <input type="checkbox" id="{{$name}}" name='{{$name}}' class="ic-Super-toggle__input {{$class}}" {{(($value) ? 'checked' : '')}} {{(!$enabled) ? 'disabled' : ''}} {!! \MediaCloud\Plugin\Utilities\htmlAttributes($dataAttributes) !!}>
     <label class="ic-Super-toggle__label" for="{{$name}}">
         <div class="ic-Super-toggle__screenreader">{{$description}}</div>
         <div class="ic-Super-toggle__disabled-msg" data-checked="On" data-unchecked="Off" aria-hidden="true"></div>

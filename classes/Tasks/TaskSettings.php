@@ -11,10 +11,10 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Tasks;
+namespace MediaCloud\Plugin\Tasks;
 
 
-use ILAB\MediaCloud\Tools\ToolSettings;
+use MediaCloud\Plugin\Tools\ToolSettings;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 

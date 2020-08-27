@@ -1,0 +1,49 @@
+{
+    "name" : "ilab/ilab-media-tools",
+    "description": "Tools for cropping, uploading to S3, serving through Imgix",
+    "type": "wordpress-plugin",
+    "license": "LGPL-3.0-or-later",
+    "keywords": ["s3","imgix","cropping", "wordpress"],
+    "repositories": [
+    ],
+    "authors": [
+        {
+            "name": "Jon Gilkison",
+            "email": "jon@interfacelab.com"
+        }
+    ],
+    "config": {
+        "platform": {
+            "php": "7.1"
+        }
+    },
+    "require" : {
+        "php": ">=7.1",
+        "duncan3dc/blade": ">=3.3",
+	    "duncan3dc/object-intruder": "*",
+        "fasterimage/fasterimage": ">=1.1",
+        "google/cloud-storage": ">=1.21",
+        "google/cloud-vision": ">=0.19.0",
+        "guzzlehttp/guzzle": ">=6.3.3",
+        "ilab/b2-sdk-php": ">=1.4",
+        "aws/aws-sdk-php": ">=3.0",
+        "imgix/imgix-php": ">=1.0",
+        "mikey179/vfsstream": "*",
+        "monolog/monolog": ">=1.23",
+        "psr/http-message-implementation": "*",
+        "ralouphie/mimey": ">=2.1",
+        "smalot/pdfparser": ">=0.13.2",
+        "trntv/probe": ">=1.0",
+        "zumba/amplitude-php": ">=1.0",
+        "paragonie/easyrsa": ">=0.5.2",
+        "kraken-io/kraken-php": ">=1.6",
+        "shortpixel/shortpixel-php": ">=1.6",
+        "wp-media/imagify-php": ">=1.1",
+        "tinify/tinify": ">=1.5",
+        "firebase/php-jwt": ">=5.2",
+        "muxinc/mux-php": ">=0.4.0",
+        "ivopetkov/html5-dom-document-php": ">=2.2",
+        "dragonmantank/cron-expression": ">=2.3",
+        "lorisleiva/cron-translator": ">=0.1.0"
+    }
+}

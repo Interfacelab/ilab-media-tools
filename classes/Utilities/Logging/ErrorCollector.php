@@ -11,13 +11,13 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Utilities\Logging;
+namespace MediaCloud\Plugin\Utilities\Logging;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
 /**
  * Simple class for collecting errors
- * @package ILAB\MediaCloud\Utilities\Logging
+ * @package MediaCloud\Plugin\Utilities\Logging
  */
 class ErrorCollector {
     private $errors = [];

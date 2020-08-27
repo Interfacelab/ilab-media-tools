@@ -11,15 +11,15 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Utilities;
+namespace MediaCloud\Plugin\Utilities;
 
-use ILAB\MediaCloud\Utilities\Logging\Logger;
+use MediaCloud\Plugin\Utilities\Logging\Logger;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
 /**
  * Class Prefixer
- * @package ILAB\MediaCloud\Utilities
+ * @package MediaCloud\Plugin\Utilities
  */
 final class Prefixer {
 	//region Class Variables

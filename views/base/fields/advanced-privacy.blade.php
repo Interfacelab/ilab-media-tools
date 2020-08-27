@@ -1,11 +1,11 @@
 <?php
-$imageValue = \ILAB\MediaCloud\Utilities\Environment::Option('mcloud-storage-privacy-images', null, 'inherit');
-$audioValue = \ILAB\MediaCloud\Utilities\Environment::Option('mcloud-storage-privacy-audio', null, 'inherit');
-$videoValue = \ILAB\MediaCloud\Utilities\Environment::Option('mcloud-storage-privacy-video', null, 'inherit');
-$docValue = \ILAB\MediaCloud\Utilities\Environment::Option('mcloud-storage-privacy-docs', null, 'inherit');
+$imageValue = \MediaCloud\Plugin\Utilities\Environment::Option('mcloud-storage-privacy-images', null, 'inherit');
+$audioValue = \MediaCloud\Plugin\Utilities\Environment::Option('mcloud-storage-privacy-audio', null, 'inherit');
+$videoValue = \MediaCloud\Plugin\Utilities\Environment::Option('mcloud-storage-privacy-video', null, 'inherit');
+$docValue = \MediaCloud\Plugin\Utilities\Environment::Option('mcloud-storage-privacy-docs', null, 'inherit');
 ?>
 
-<div class="privacy-container">
+<div class="privacy-container" id="setting-{{$name}}" {{(($conditions) ? 'data-conditions="true"' : '')}}>
     <div>
         <div class="privacy-label">Image Privacy</div>
         <div>

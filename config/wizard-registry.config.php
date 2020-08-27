@@ -13,12 +13,12 @@
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
 return [
-	's3' => \ILAB\MediaCloud\Storage\Driver\S3\S3Storage::class,
-	'imgix' => \ILAB\MediaCloud\Tools\Imgix\ImgixTool::class,
-	'google' => \ILAB\MediaCloud\Storage\Driver\GoogleCloud\GoogleStorage::class,
-	'other-s3' => \ILAB\MediaCloud\Storage\Driver\S3\OtherS3Storage::class,
-	'do' => \ILAB\MediaCloud\Storage\Driver\S3\DigitalOceanStorage::class,
-	'wasabi' => \ILAB\MediaCloud\Storage\Driver\S3\WasabiStorage::class,
-	'minio' => \ILAB\MediaCloud\Storage\Driver\S3\MinioStorage::class,
-	'backblaze' => \ILAB\MediaCloud\Storage\Driver\Backblaze\BackblazeStorage::class,
+	's3' => \MediaCloud\Plugin\Tools\Storage\Driver\S3\S3Storage::class,
+	'imgix' => \MediaCloud\Plugin\Tools\Imgix\ImgixTool::class,
+	'google' => \MediaCloud\Plugin\Tools\Storage\Driver\GoogleCloud\GoogleStorage::class,
+	'other-s3' => \MediaCloud\Plugin\Tools\Storage\Driver\S3\OtherS3Storage::class,
+	'do' => \MediaCloud\Plugin\Tools\Storage\Driver\S3\DigitalOceanStorage::class,
+	'wasabi' => \MediaCloud\Plugin\Tools\Storage\Driver\S3\WasabiStorage::class,
+	'minio' => \MediaCloud\Plugin\Tools\Storage\Driver\S3\MinioStorage::class,
+	'backblaze-s3' => \MediaCloud\Plugin\Tools\Storage\Driver\S3\BackblazeS3Storage::class,
 ];

@@ -11,9 +11,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Utilities\Logging;
+namespace MediaCloud\Plugin\Utilities\Logging;
 
-use Monolog\Handler\AbstractProcessingHandler;
+use MediaCloud\Vendor\Monolog\Handler\AbstractProcessingHandler;
 
 class DatabaseLoggerHandler extends AbstractProcessingHandler {
     /** @var DatabaseLogger|null Database logger */

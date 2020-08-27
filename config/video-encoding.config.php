@@ -16,9 +16,8 @@ return [
     "id" => "video-encoding",
     "name" => "Video Encoding",
 	"description" => "Video encoding, hosting and live streaming via <a href='https://mux.com/' target='_blank'>Mux</a>.",
-	"class" => "ILAB\\MediaCloud\\Tools\\Mux\\MuxTool",
+	"class" => "MediaCloud\\Plugin\\Tools\\Video\\Driver\\Mux\\MuxTool",
 	"dependencies" => [
-		"storage"
 	],
 	"env" => "MCLOUD_MUX_ENABLED",
 	"settings" => [

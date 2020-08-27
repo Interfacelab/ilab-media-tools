@@ -1,0 +1,34 @@
+{
+    "name": "mcloud-willwashburn/stream",
+    "description": "model a sequence of data elements made available over time ",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Will Washburn",
+            "email": "will.washburn@gmail.com"
+        }
+    ],
+    "keywords": [
+        "stream",
+        "peek",
+        "read",
+        "streamable"
+    ],
+    "github": "https://github.com/willwashburn/stream",
+    "homepage": "https://github.com/willwashburn/stream",
+    "license": "MIT",
+    "require": {
+        "php": ">=5.4.0"
+    },
+    "require-dev": {
+        "mockery/mockery": "~0.9",
+        "phpunit/phpunit": "~4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "MediaCloud\\Vendor\\WillWashburn\\": "src/"
+        }
+    },
+    "minimum-stability": "stable",
+    "version": "v1.0.0"
+}

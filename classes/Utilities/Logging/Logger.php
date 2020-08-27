@@ -11,14 +11,14 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Utilities\Logging;
+namespace MediaCloud\Plugin\Utilities\Logging;
 
-use ILAB\MediaCloud\CLI\Command;
-use ILAB\MediaCloud\Utilities\Environment;
-use Monolog\Formatter\LineFormatter;
-use Monolog\Handler\ErrorLogHandler;
-use Monolog\Handler\SyslogUdpHandler;
-use Monolog\Logger as MonologLogger;
+use MediaCloud\Plugin\CLI\Command;
+use MediaCloud\Plugin\Utilities\Environment;
+use MediaCloud\Vendor\Monolog\Formatter\LineFormatter;
+use MediaCloud\Vendor\Monolog\Handler\ErrorLogHandler;
+use MediaCloud\Vendor\Monolog\Handler\SyslogUdpHandler;
+use MediaCloud\Vendor\Monolog\Logger as MonologLogger;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 

@@ -11,9 +11,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Tools\DynamicImages;
+namespace MediaCloud\Plugin\Tools\DynamicImages;
 
-use ILAB\MediaCloud\Tools\Storage\StorageImageEditor;
+use MediaCloud\Plugin\Tools\Storage\StorageImageEditor;
 use WP_Error;
 
 if (!defined('ABSPATH')) { header('Location: /'); die; }

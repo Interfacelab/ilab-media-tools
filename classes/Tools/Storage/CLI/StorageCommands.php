@@ -14,23 +14,22 @@
 // WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
-namespace ILAB\MediaCloud\Tools\Storage\CLI;
+namespace MediaCloud\Plugin\Tools\Storage\CLI;
 
-use  GuzzleHttp\Client ;
-use  GuzzleHttp\Exception\ClientException ;
-use  ILAB\MediaCloud\CLI\Command ;
-use  ILAB\MediaCloud\Storage\StorageToolSettings ;
-use  ILAB\MediaCloud\Tools\Browser\Tasks\ImportFromStorageTask ;
-use  ILAB\MediaCloud\Tools\Integrations\PlugIns\Elementor\Tasks\UpdateElementorTask ;
-use  ILAB\MediaCloud\Tools\Integrations\PlugIns\NextGenGallery\Tasks\MigrateNextGenTask ;
-use  ILAB\MediaCloud\Tools\Storage\StorageTool ;
-use  ILAB\MediaCloud\Tools\Storage\Tasks\MigrateFromOtherTask ;
-use  ILAB\MediaCloud\Tools\Storage\Tasks\MigrateTask ;
-use  ILAB\MediaCloud\Tools\Storage\Tasks\RegenerateThumbnailTask ;
-use  ILAB\MediaCloud\Tools\Storage\Tasks\UnlinkTask ;
-use  ILAB\MediaCloud\Tools\ToolsManager ;
-use function  ILAB\MediaCloud\Utilities\arrayPath ;
-use  ILAB\MediaCloud\Utilities\Logging\Logger ;
+use  MediaCloud\Plugin\CLI\Command ;
+use  MediaCloud\Plugin\Tools\Storage\StorageToolSettings ;
+use  MediaCloud\Plugin\Tools\Browser\Tasks\ImportFromStorageTask ;
+use  MediaCloud\Plugin\Tools\Integrations\PlugIns\Elementor\Tasks\UpdateElementorTask ;
+use  MediaCloud\Plugin\Tools\Integrations\PlugIns\NextGenGallery\Tasks\MigrateNextGenTask ;
+use  MediaCloud\Plugin\Tools\Storage\StorageTool ;
+use  MediaCloud\Plugin\Tools\Storage\Tasks\MigrateFromOtherTask ;
+use  MediaCloud\Plugin\Tools\Storage\Tasks\MigrateTask ;
+use  MediaCloud\Plugin\Tools\Storage\Tasks\RegenerateThumbnailTask ;
+use  MediaCloud\Plugin\Tools\Storage\Tasks\UnlinkTask ;
+use  MediaCloud\Plugin\Tools\ToolsManager ;
+use  MediaCloud\Plugin\Utilities\Logging\Logger ;
+use  MediaCloud\Vendor\GuzzleHttp\Client ;
+use function  MediaCloud\Plugin\Utilities\arrayPath ;
 
 if ( !defined( 'ABSPATH' ) ) {
     header( 'Location: /' );
@@ -39,7 +38,7 @@ if ( !defined( 'ABSPATH' ) ) {
 
 /**
  * Import to Cloud Storage, rebuild thumbnails, etc.
- * @package ILAB\MediaCloud\CLI\Storage
+ * @package MediaCloud\Plugin\CLI\Storage
  */
 class StorageCommands extends Command
 {

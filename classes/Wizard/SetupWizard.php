@@ -14,10 +14,10 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Wizard;
+namespace MediaCloud\Plugin\Wizard;
 
-use ILAB\MediaCloud\Utilities\View;
-use ILAB\MediaCloud\Wizard\Config\Config;
+use MediaCloud\Plugin\Utilities\View;
+use MediaCloud\Plugin\Wizard\Config\Config;
 
 class SetupWizard {
 	/** @var Config[]|null  */

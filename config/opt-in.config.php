@@ -16,7 +16,7 @@ return [
 	"id" => "opt-in",
 	"name" => "Opt-In Settings",
 	"description" => "Manage opt-in settings.",
-	"class" => "ILAB\\MediaCloud\\Tools\\Permissions\\OptInTool",
+	"class" => "MediaCloud\\Plugin\\Tools\\Permissions\\OptInTool",
 	"exclude" => true,
 	"dependencies" => [],
 	"env" => "ILAB_MEDIA_PERMISSIONS_ENABLED",  // this is always enabled btw

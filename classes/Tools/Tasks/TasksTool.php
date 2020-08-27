@@ -11,26 +11,17 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Tools\Tasks;
+namespace MediaCloud\Plugin\Tools\Tasks;
 
-use GuzzleHttp\Client;
-use ILAB\MediaCloud\Storage\StorageFile;
-use ILAB\MediaCloud\Tasks\Task;
-use ILAB\MediaCloud\Tasks\TaskManager;
-use ILAB\MediaCloud\Tasks\TaskSettings;
-use ILAB\MediaCloud\Tools\Browser\Batch\ImportFromStorageBatchProcess;
-use ILAB\MediaCloud\Tools\Browser\Tasks\ImportFromStorageTask;
-use ILAB\MediaCloud\Tools\Storage\StorageTool;
-use ILAB\MediaCloud\Tools\Tool;
-use ILAB\MediaCloud\Tools\ToolsManager;
-use function ILAB\MediaCloud\Utilities\arrayPath;
-use ILAB\MediaCloud\Utilities\Environment;
-use ILAB\MediaCloud\Utilities\Logging\Logger;
-use ILAB\MediaCloud\Utilities\Tracker;
-use ILAB\MediaCloud\Utilities\View;
-use function ILAB\MediaCloud\Utilities\json_response;
-use function ILAB\MediaCloud\Utilities\vomit;
-use Illuminate\Support\Facades\Storage;
+use MediaCloud\Plugin\Tasks\Task;
+use MediaCloud\Plugin\Tasks\TaskManager;
+use MediaCloud\Plugin\Tasks\TaskSettings;
+use MediaCloud\Plugin\Tools\Browser\Batch\ImportFromStorageBatchProcess;
+use MediaCloud\Plugin\Tools\Tool;
+use MediaCloud\Plugin\Tools\ToolsManager;
+use MediaCloud\Plugin\Utilities\Environment;
+use MediaCloud\Plugin\Utilities\View;
+use function MediaCloud\Plugin\Utilities\arrayPath;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 

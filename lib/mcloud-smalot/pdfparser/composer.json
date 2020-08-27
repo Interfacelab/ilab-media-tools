@@ -1,0 +1,47 @@
+{
+    "name": "mcloud-smalot/pdfparser",
+    "description": "Pdf parser library. Can read and extract information from pdf file.",
+    "keywords": [
+        "PDF",
+        "text",
+        "parser",
+        "parse",
+        "extract"
+    ],
+    "type": "library",
+    "license": "LGPL-3.0",
+    "authors": [
+        {
+            "name": "Sebastien MALOT",
+            "email": "sebastien@malot.fr"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/smalot/pdfparser/issues"
+    },
+    "homepage": "http://www.pdfparser.org",
+    "require": {
+        "php": ">=5.6",
+        "ext-mbstring": "*",
+        "ext-zlib": "*"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^2.16.3",
+        "symfony/phpunit-bridge": "^4.2.3"
+    },
+    "autoload": {
+        "psr-0": {
+            "MediaCloud\\Vendor\\Smalot\\PdfParser\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Test\\Smalot\\PdfParser\\": "test/",
+            "Tests\\Smalot\\PdfParser\\": "tests/"
+        }
+    },
+    "config": {
+        "process-timeout": 1200
+    },
+    "version": "0.16.1"
+}

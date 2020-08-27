@@ -14,7 +14,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Wizard;
+namespace MediaCloud\Plugin\Wizard;
 
 final class WizardBuilder {
 	private $data = [

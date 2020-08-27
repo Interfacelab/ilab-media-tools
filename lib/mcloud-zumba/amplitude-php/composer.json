@@ -1,0 +1,38 @@
+{
+    "name": "mcloud-zumba/amplitude-php",
+    "description": "PHP SDK for Amplitude",
+    "keywords": [
+        "amplitude",
+        "sdk",
+        "analytics",
+        "tracking"
+    ],
+    "homepage": "https://github.com/zumba/amplitude-php",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Zumba Fitness, LLC",
+            "homepage": "https://tech.zumba.com"
+        },
+        {
+            "name": "Jonathan Foote",
+            "email": "jonathan.foote@zumba.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=5.4",
+        "mcloud-psr/log": "1.1.3"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "4.8.*",
+        "squizlabs/php_codesniffer": "2.6.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "MediaCloud\\Vendor\\Zumba\\Amplitude\\": "./src/",
+            "MediaCloud\\Vendor\\Zumba\\Amplitude\\Test\\": "./test/"
+        }
+    },
+    "version": "1.0.0"
+}

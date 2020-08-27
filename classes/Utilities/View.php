@@ -10,9 +10,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Utilities;
+namespace MediaCloud\Plugin\Utilities;
 
-use duncan3dc\Laravel\BladeInstance;
+use MediaCloud\Vendor\duncan3dc\Laravel\BladeInstance;
 
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
@@ -27,9 +27,9 @@ final class View {
     private static function getTempDir() {
         $temp = Environment::Option(null, ['MCLOUD_VIEW_CACHE', 'ILAB_MEDIA_CLOUD_VIEW_CACHE'], null);
         if (!empty($temp)) {
-            return trailingslashit($temp).'mcloud-views';
+            return trailingslashit($temp).'mcloud-view-cache';
         } else {
-	        $result = trailingslashit(WP_CONTENT_DIR).'mcloud-views';
+	        $result = trailingslashit(WP_CONTENT_DIR).'mcloud-view-cache';
         }
 
         if (!file_exists($result)) {
@@ -38,7 +38,7 @@ final class View {
 
 
         if (!file_exists($result)) {
-        	$result = '/tmp/mcloud-views';
+        	$result = '/tmp/mcloud-view-cache';
 	        @mkdir($result, 0777,true);
         }
 
@@ -56,11 +56,11 @@ final class View {
             }
 
 	        static::$bladeInstance->directive('inline', function($expression) {
-		        return '<?php \ILAB\MediaCloud\Utilities\View::InlineImage('.$expression.'); ?>';
+		        return '<?php \MediaCloud\Plugin\Utilities\View::InlineImage('.$expression.'); ?>';
 	        });
 
 	        static::$bladeInstance->directive('network', function($expression) {
-		        return '<?php if (is_multisite() && \ILAB\MediaCloud\Utilities\Environment::NetworkMode()): ?>';
+		        return '<?php if (is_multisite() && \MediaCloud\Plugin\Utilities\Environment::NetworkMode()): ?>';
 	        });
 
 	        static::$bladeInstance->directive('endnetwork', function($expression) {
@@ -68,15 +68,15 @@ final class View {
 	        });
 
 	        static::$bladeInstance->directive('inline', function($expression) {
-		        return '<?php \ILAB\MediaCloud\Utilities\View::InlineImage('.$expression.'); ?>';
+		        return '<?php \MediaCloud\Plugin\Utilities\View::InlineImage('.$expression.'); ?>';
 	        });
 
 	        static::$bladeInstance->directive('plan', function($expression) {
-	        	return "<?php if (\\ILAB\\MediaCloud\\Utilities\\LicensingManager::ActivePlan($expression)): ?>";
+	        	return "<?php if (\\MediaCloud\\Plugin\\Utilities\\LicensingManager::ActivePlan($expression)): ?>";
 	        });
 
 	        static::$bladeInstance->directive('elseplan', function($expression) {
-		        return "<?php elseif (\\ILAB\\MediaCloud\\Utilities\\LicensingManager::ActivePlan($expression)): ?>";
+		        return "<?php elseif (\\MediaCloud\\Plugin\\Utilities\\LicensingManager::ActivePlan($expression)): ?>";
 	        });
 
 	        static::$bladeInstance->directive('endplan', function($expression) {
@@ -84,7 +84,7 @@ final class View {
 	        });
 
 	        static::$bladeInstance->directive('track', function($expression) {
-		        return "<?php if (\\ILAB\\MediaCloud\\Utilities\\LicensingManager::OptedIn($expression)): ?>";
+		        return "<?php if (\\MediaCloud\\Plugin\\Utilities\\LicensingManager::OptedIn($expression)): ?>";
 	        });
 
 	        static::$bladeInstance->directive('elsetrack', function($expression) {

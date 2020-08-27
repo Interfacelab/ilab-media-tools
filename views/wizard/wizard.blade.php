@@ -1,4 +1,4 @@
-<?php /** @var \ILAB\MediaCloud\Wizard\Config\Config $config  */?>
+<?php /** @var \MediaCloud\Plugin\Wizard\Config\Config $config  */?>
 <div class="wizard-container wizard-invisible">
     <div class="wizard-modal @if(!$config->initialSectionHasSteps())no-steps @endif" data-initial-section="{{$config->initialSectionName()}}" data-admin-exit="{{admin_url('admin.php?page=media-cloud')}}" data-admin-template="{{admin_url('admin.php?page=media-cloud-wizard&wizard=')}}">
         <div class="steps-background"></div>

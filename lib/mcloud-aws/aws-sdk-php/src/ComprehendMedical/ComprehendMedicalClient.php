@@ -1,0 +1,51 @@
+<?php
+
+namespace MediaCloud\Vendor\Aws\ComprehendMedical;
+use MediaCloud\Vendor\Aws\AwsClient;
+
+/**
+ * This client is used to interact with the **AWS Comprehend Medical** service.
+ * @method \MediaCloud\Vendor\Aws\Result describeEntitiesDetectionV2Job(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise describeEntitiesDetectionV2JobAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result describeICD10CMInferenceJob(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise describeICD10CMInferenceJobAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result describePHIDetectionJob(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise describePHIDetectionJobAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result describeRxNormInferenceJob(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise describeRxNormInferenceJobAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result detectEntities(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise detectEntitiesAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result detectEntitiesV2(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise detectEntitiesV2Async(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result detectPHI(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise detectPHIAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result inferICD10CM(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise inferICD10CMAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result inferRxNorm(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise inferRxNormAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listEntitiesDetectionV2Jobs(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listEntitiesDetectionV2JobsAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listICD10CMInferenceJobs(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listICD10CMInferenceJobsAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listPHIDetectionJobs(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listPHIDetectionJobsAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listRxNormInferenceJobs(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listRxNormInferenceJobsAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result startEntitiesDetectionV2Job(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise startEntitiesDetectionV2JobAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result startICD10CMInferenceJob(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise startICD10CMInferenceJobAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result startPHIDetectionJob(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise startPHIDetectionJobAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result startRxNormInferenceJob(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise startRxNormInferenceJobAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result stopEntitiesDetectionV2Job(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise stopEntitiesDetectionV2JobAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result stopICD10CMInferenceJob(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise stopICD10CMInferenceJobAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result stopPHIDetectionJob(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise stopPHIDetectionJobAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result stopRxNormInferenceJob(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise stopRxNormInferenceJobAsync(array $args = [])
+ */
+class ComprehendMedicalClient extends AwsClient {}

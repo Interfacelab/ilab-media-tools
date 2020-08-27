@@ -1,0 +1,42 @@
+{
+    "name": "mcloud-google/cloud-vision",
+    "description": "Cloud Vision Client for PHP",
+    "license": "Apache-2.0",
+    "minimum-stability": "stable",
+    "require": {
+        "mcloud-google/cloud-core": "v1.38.0",
+        "mcloud-google/gax": "1.3.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^4.8|^5.0",
+        "squizlabs/php_codesniffer": "2.*",
+        "phpdocumentor/reflection": "^3.0",
+        "erusev/parsedown": "^1.6",
+        "google/cloud-storage": "^1.12"
+    },
+    "suggest": {
+        "ext-grpc": "The gRPC extension enables use of the performant gRPC transport",
+        "ext-protobuf": "Provides a significant increase in throughput over the pure PHP protobuf implementation. See https://cloud.google.com/php/grpc for installation instructions.",
+        "google/cloud-storage": "Annotate images stored in Google Cloud Storage"
+    },
+    "extra": {
+        "component": {
+            "id": "cloud-vision",
+            "target": "googleapis/google-cloud-php-vision.git",
+            "path": "Vision",
+            "entry": "src/VisionClient.php"
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "MediaCloud\\Vendor\\Google\\Cloud\\Vision\\": "src",
+            "MediaCloud\\Vendor\\GPBMetadata\\Google\\Cloud\\Vision\\": "metadata"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Google\\Cloud\\Vision\\Tests\\": "tests"
+        }
+    },
+    "version": "v1.1.1"
+}

@@ -1,0 +1,37 @@
+PHP 5.4
+    
+    CLASSES/INTERFACES
+    ==================
+    CallbackFilterIterator
+    RecursiveCallbackFilterIterator
+    
+    SessionHandler
+    Transliterator
+    Spoofchecker
+
+PHP 5.5
+
+    FUNCTIONS
+    =========
+    curl_escape()
+    curl_unescape()
+    pg_escape_literal()
+    pg_escape_identifier()
+    
+    CLASSES/INTERFACES
+    ==================
+    DateTimeImmutable
+    DateTimeInterface
+    IntlCalendar
+    IntlGregorianCalendar
+    IntlTimeZone
+    IntlBreakIterator
+    IntlRuleBasedBreakIterator
+    IntlCodePointBreakIterator 
+
+PHP 5.6
+
+    gmp_root()
+    gmp_rootrem()
+    ldap_escape()
+    ldap_modify_batch()

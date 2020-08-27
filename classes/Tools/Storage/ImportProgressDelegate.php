@@ -11,7 +11,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Tools\Storage;
+namespace MediaCloud\Plugin\Tools\Storage;
 
 if(!defined('ABSPATH')) {
 	header('Location: /');

@@ -10,19 +10,20 @@
 // WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
-namespace ILAB\MediaCloud\Tools\Vision;
+namespace MediaCloud\Plugin\Tools\Vision;
 
-use  ILAB\MediaCloud\Tasks\TaskManager ;
-use  ILAB\MediaCloud\Tasks\TaskSchedule ;
-use  ILAB\MediaCloud\Tools\Tool ;
-use  ILAB\MediaCloud\Tools\Vision\Tasks\ProcessVisionTask ;
-use  ILAB\MediaCloud\Vision\VisionToolSettings ;
-use function  ILAB\MediaCloud\Utilities\arrayPath ;
-use  ILAB\MediaCloud\Utilities\Environment ;
-use  ILAB\MediaCloud\Utilities\Logging\Logger ;
-use  ILAB\MediaCloud\Utilities\NoticeManager ;
-use  ILAB\MediaCloud\Vision\VisionDriver ;
-use  ILAB\MediaCloud\Vision\VisionManager ;
+use  MediaCloud\Plugin\Tasks\TaskManager ;
+use  MediaCloud\Plugin\Tasks\TaskSchedule ;
+use  MediaCloud\Plugin\Tools\Tool ;
+use  MediaCloud\Plugin\Tools\ToolsManager ;
+use  MediaCloud\Plugin\Tools\Vision\Tasks\ProcessVisionTask ;
+use  MediaCloud\Plugin\Utilities\Environment ;
+use  MediaCloud\Plugin\Utilities\Logging\Logger ;
+use  MediaCloud\Plugin\Utilities\NoticeManager ;
+use  MediaCloud\Plugin\Tools\Vision\VisionDriver ;
+use  MediaCloud\Plugin\Tools\Vision\VisionManager ;
+use  MediaCloud\Plugin\Tools\Vision\VisionToolSettings ;
+use function  MediaCloud\Plugin\Utilities\arrayPath ;
 
 if ( !defined( 'ABSPATH' ) ) {
     header( 'Location: /' );
@@ -172,18 +173,21 @@ class VisionTool extends Tool
     
     private function addToBackgroundTask( $postId )
     {
+        if ( empty(apply_filters( 'media-cloud/vision/allow-background-processing', true )) ) {
+            return;
+        }
         $task = TaskSchedule::nextScheduledTaskOfType( ProcessVisionTask::identifier() );
         
         if ( !empty($task) ) {
             Logger::info(
-                "ADDING TO EXISTING VISION TASK",
+                "Adding to existing vision task",
                 [],
                 __METHOD__,
                 __LINE__
             );
             $task->selection = array_merge( $task->selection, [ $postId ] );
             Logger::info(
-                "SELECTION LENGTH: " . count( $task->selection ),
+                "Selection length: " . count( $task->selection ),
                 [],
                 __METHOD__,
                 __LINE__
@@ -191,7 +195,7 @@ class VisionTool extends Tool
             $task->save();
         } else {
             Logger::info(
-                "CREATING VISION TASK",
+                "Creating vision task",
                 [],
                 __METHOD__,
                 __LINE__
@@ -203,9 +207,11 @@ class VisionTool extends Tool
     
     private function settingsChanged()
     {
-        if ( !$this->driver->enabled() ) {
-            if ( !empty($this->driver->enabledError()) ) {
-                NoticeManager::instance()->displayAdminNotice( 'error', $this->driver->enabledError() );
+        if ( ToolsManager::instance()->toolEnvEnabled( 'vision' ) ) {
+            if ( !$this->driver->enabled() ) {
+                if ( !empty($this->driver->enabledError()) ) {
+                    NoticeManager::instance()->displayAdminNotice( 'error', $this->driver->enabledError() );
+                }
             }
         }
     }

@@ -11,7 +11,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Model;
+namespace MediaCloud\Plugin\Model;
 
 /**
  * Represents a database model

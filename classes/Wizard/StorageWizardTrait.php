@@ -14,12 +14,12 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Wizard;
+namespace MediaCloud\Plugin\Wizard;
 
-use ILAB\MediaCloud\Storage\StorageToolSettings;
-use ILAB\MediaCloud\Utilities\Environment;
-use ILAB\MediaCloud\Utilities\Logging\ErrorCollector;
-use ILAB\MediaCloud\Utilities\Tracker;
+use MediaCloud\Plugin\Tools\Storage\StorageToolSettings;
+use MediaCloud\Plugin\Utilities\Environment;
+use MediaCloud\Plugin\Utilities\Logging\ErrorCollector;
+use MediaCloud\Plugin\Utilities\Tracker;
 
 trait StorageWizardTrait {
 	/**

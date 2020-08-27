@@ -11,13 +11,13 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Utilities;
+namespace MediaCloud\Plugin\Utilities;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
 /**
  * Class NoticeManager
- * @package ILAB\MediaCloud\Utilities
+ * @package MediaCloud\Plugin\Utilities
  */
 class NoticeManager {
 	/** @var NoticeManager  */

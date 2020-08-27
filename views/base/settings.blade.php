@@ -133,7 +133,7 @@
                                 Help
                             </a>
                         @endif
-                        @if (!empty($section['help']) && !empty($section['help']['data']) && (\ILAB\MediaCloud\Utilities\arrayPath($section['help'], 'target', 'footer') == 'header'))
+                        @if (!empty($section['help']) && !empty($section['help']['data']) && (\MediaCloud\Plugin\Utilities\arrayPath($section['help'], 'target', 'footer') == 'header'))
                             <div class="ilab-section-title-doc-links">
                                 @include('base.fields.help', $section['help'])
                             </div>
@@ -152,7 +152,7 @@
                         <?php do_settings_fields( $page, $section['id'] ) ?>
                     </table>
                     @endif
-                    @if (!empty($section['help']) && !empty($section['help']['data']) && (\ILAB\MediaCloud\Utilities\arrayPath($section['help'], 'target', 'footer') == 'footer'))
+                    @if (!empty($section['help']) && !empty($section['help']['data']) && (\MediaCloud\Plugin\Utilities\arrayPath($section['help'], 'target', 'footer') == 'footer'))
                         <div class="ilab-section-doc-links">
                             @include('base.fields.help', $section['help'])
                         </div>

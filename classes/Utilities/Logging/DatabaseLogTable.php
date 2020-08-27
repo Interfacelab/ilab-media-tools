@@ -12,7 +12,7 @@
 // **********************************************************************
 
 
-namespace ILAB\MediaCloud\Utilities\Logging;
+namespace MediaCloud\Plugin\Utilities\Logging;
 
 class DatabaseLogTable extends \WP_List_Table {
     /** @var null|DatabaseLogger Logger  */

@@ -12,35 +12,18 @@
       "email": "jon@interfacelab.com"
     }
   ],
+  "config": {
+    "platform": {
+      "php": "7.1"
+    }
+  },
   "require" : {
-    "php": ">=5.6",
-    "duncan3dc/blade": ">3.3",
-    "fasterimage/fasterimage": "^1.1",
-    "google/cloud-storage": "^1.21",
-    "google/cloud-vision": "^0.19.0",
-    "guzzlehttp/guzzle": "6.3.3",
-    "ilab/b2-sdk-php": "^1.4",
-    "ilab/ilab-aws-media-cloud-sdk": "^0.3.3",
-    "imgix/imgix-php": "^1.0",
-    "mikey179/vfsstream": "*",
-    "monolog/monolog": "^1.23",
-    "psr/http-message-implementation": "*",
-    "ralouphie/mimey": "^2.1",
-    "smalot/pdfparser": "^0.13.2",
-    "trntv/probe": "^1.0",
-    "zumba/amplitude-php": "^1.0",
-    "paragonie/easyrsa": "^0.5.2",
-    "kraken-io/kraken-php": "^1.6",
-    "shortpixel/shortpixel-php": "^1.6",
-    "wp-media/imagify-php": "^1.1",
-    "tinify/tinify": "^1.5",
-    "firebase/php-jwt": "^5.2",
-    "muxinc/mux-php": "^0.4.0",
-    "ivopetkov/html5-dom-document-php": "^2.2"
+    "php": ">=7.1",
+    "yuloh/bccomp-polyfill": "dev-master"
   },
   "autoload": {
     "psr-4": {
-      "ILAB\\MediaCloud\\": "classes"
+      "MediaCloud\\Plugin\\": "classes"
     },
     "files": [
       "classes/Utilities/Helpers.php"

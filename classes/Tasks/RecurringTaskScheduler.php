@@ -11,9 +11,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Tasks;
+namespace MediaCloud\Plugin\Tasks;
 
-use Cron\CronExpression;
+use MediaCloud\Vendor\Cron\CronExpression;
 
 /**
  * @method self everyMinute()      Run task every minute.

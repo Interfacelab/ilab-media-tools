@@ -10,38 +10,38 @@
 // WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
-namespace ILAB\MediaCloud\Tools\Storage;
+namespace MediaCloud\Plugin\Tools\Storage;
 
-use  GuzzleHttp\Client ;
-use  ILAB\MediaCloud\Storage\FileInfo ;
-use  ILAB\MediaCloud\Storage\StorageConstants ;
-use  ILAB\MediaCloud\Storage\StorageException ;
-use  ILAB\MediaCloud\Storage\StorageInterface ;
-use  ILAB\MediaCloud\Storage\StorageToolMigrations ;
-use  ILAB\MediaCloud\Storage\StorageToolSettings ;
-use  ILAB\MediaCloud\Storage\StoragePostMap ;
-use  ILAB\MediaCloud\Tasks\TaskManager ;
-use  ILAB\MediaCloud\Tasks\TaskRunner ;
-use  ILAB\MediaCloud\Tasks\TaskSchedule ;
-use  ILAB\MediaCloud\Tools\Optimizer\OptimizerConsts ;
-use  ILAB\MediaCloud\Tools\Optimizer\OptimizerTool ;
-use  ILAB\MediaCloud\Tools\Storage\Tasks\CleanUploadsTask ;
-use  ILAB\MediaCloud\Tools\Storage\Tasks\DeleteUploadsTask ;
-use  ILAB\MediaCloud\Tools\Storage\Tasks\MigrateFromOtherTask ;
-use  ILAB\MediaCloud\Tools\Storage\Tasks\MigrateTask ;
-use  ILAB\MediaCloud\Tools\Storage\Tasks\RegenerateThumbnailTask ;
-use  ILAB\MediaCloud\Tools\Storage\Tasks\UnlinkTask ;
-use  ILAB\MediaCloud\Tools\Tool ;
-use  ILAB\MediaCloud\Tools\ToolsManager ;
-use  ILAB\MediaCloud\Utilities\Environment ;
-use  ILAB\MediaCloud\Utilities\Logging\Logger ;
-use  ILAB\MediaCloud\Utilities\NoticeManager ;
-use  ILAB\MediaCloud\Utilities\Prefixer ;
-use function  ILAB\MediaCloud\Utilities\typeFromMeta ;
-use  ILAB\MediaCloud\Utilities\View ;
-use  Smalot\PdfParser\Parser ;
-use function  ILAB\MediaCloud\Utilities\arrayPath ;
-use function  ILAB\MediaCloud\Utilities\gen_uuid ;
+use  MediaCloud\Plugin\Tools\Storage\FileInfo ;
+use  MediaCloud\Plugin\Tools\Storage\StorageConstants ;
+use  MediaCloud\Plugin\Tools\Storage\StorageException ;
+use  MediaCloud\Plugin\Tools\Storage\StorageInterface ;
+use  MediaCloud\Plugin\Tools\Storage\StoragePostMap ;
+use  MediaCloud\Plugin\Tools\Storage\StorageToolMigrations ;
+use  MediaCloud\Plugin\Tools\Storage\StorageToolSettings ;
+use  MediaCloud\Plugin\Tasks\TaskManager ;
+use  MediaCloud\Plugin\Tasks\TaskRunner ;
+use  MediaCloud\Plugin\Tasks\TaskSchedule ;
+use  MediaCloud\Plugin\Tools\Optimizer\OptimizerConsts ;
+use  MediaCloud\Plugin\Tools\Optimizer\OptimizerTool ;
+use  MediaCloud\Plugin\Tools\Storage\Tasks\CleanUploadsTask ;
+use  MediaCloud\Plugin\Tools\Storage\Tasks\DeleteUploadsTask ;
+use  MediaCloud\Plugin\Tools\Storage\Tasks\MigrateFromOtherTask ;
+use  MediaCloud\Plugin\Tools\Storage\Tasks\MigrateTask ;
+use  MediaCloud\Plugin\Tools\Storage\Tasks\RegenerateThumbnailTask ;
+use  MediaCloud\Plugin\Tools\Storage\Tasks\UnlinkTask ;
+use  MediaCloud\Plugin\Tools\Tool ;
+use  MediaCloud\Plugin\Tools\ToolsManager ;
+use  MediaCloud\Plugin\Utilities\Environment ;
+use  MediaCloud\Plugin\Utilities\Logging\Logger ;
+use  MediaCloud\Plugin\Utilities\NoticeManager ;
+use  MediaCloud\Plugin\Utilities\Prefixer ;
+use  MediaCloud\Plugin\Utilities\View ;
+use  MediaCloud\Vendor\GuzzleHttp\Client ;
+use  MediaCloud\Vendor\Smalot\PdfParser\Parser ;
+use function  MediaCloud\Plugin\Utilities\arrayPath ;
+use function  MediaCloud\Plugin\Utilities\gen_uuid ;
+use function  MediaCloud\Plugin\Utilities\typeFromMeta ;
 
 if ( !defined( 'ABSPATH' ) ) {
     header( 'Location: /' );
@@ -494,7 +494,7 @@ class StorageTool extends Tool
             $imgixEnabled = apply_filters( 'media-cloud/imgix/enabled', false );
             if ( !$imgixEnabled ) {
                 add_filter( 'wp_image_editors', function ( $editors ) {
-                    array_unshift( $editors, '\\ILAB\\MediaCloud\\Tools\\Storage\\StorageImageEditor' );
+                    array_unshift( $editors, '\\MediaCloud\\Plugin\\Tools\\Storage\\StorageImageEditor' );
                     return $editors;
                 }, PHP_INT_MAX );
             }
@@ -3894,7 +3894,7 @@ TEMPLATE;
     public function regenerateFile( $postId )
     {
         add_filter( 'wp_image_editors', function ( $editors ) {
-            array_unshift( $editors, '\\ILAB\\MediaCloud\\Tools\\Storage\\StorageImageEditor' );
+            array_unshift( $editors, '\\MediaCloud\\Plugin\\Tools\\Storage\\StorageImageEditor' );
             return $editors;
         } );
         @set_time_limit( 120 );
@@ -4155,7 +4155,7 @@ TEMPLATE;
      *
      * @param string $filename
      *
-     * @return \ILAB\MediaCloud\Storage\UploadInfo|null
+     * @return \MediaCloud\Plugin\Tools\Storage\UploadInfo|null
      */
     public function uploadUrlForFile( $filename )
     {

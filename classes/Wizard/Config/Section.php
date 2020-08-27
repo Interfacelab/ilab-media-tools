@@ -14,13 +14,13 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Wizard\Config;
+namespace MediaCloud\Plugin\Wizard\Config;
 
-use function ILAB\MediaCloud\Utilities\arrayPath;
+use function MediaCloud\Plugin\Utilities\arrayPath;
 
 /**
  * Class Config
- * @package ILAB\MediaCloud\Wizard\Config
+ * @package MediaCloud\Plugin\Wizard\Config
  *
  */
 class Section {

@@ -14,15 +14,15 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Utilities\Blade;
+namespace MediaCloud\Plugin\Utilities\Blade;
 
-use duncan3dc\Laravel\BladeInstance;
-use Illuminate\View\Compilers\BladeCompiler;
-use Illuminate\View\FileViewFinder;
+use MediaCloud\Vendor\duncan3dc\Laravel\BladeInstance;
+use MediaCloud\Vendor\Illuminate\View\Compilers\BladeCompiler;
+use MediaCloud\Vendor\Illuminate\View\FileViewFinder;
 
 /**
  * Class BladeWrapper
- * @package ILAB\MediaCloud\Utilities\Blade
+ * @package MediaCloud\Plugin\Utilities\Blade
  *
  * @property-read FileViewFinder $viewFinder
  * @property-read BladeCompiler $compiler

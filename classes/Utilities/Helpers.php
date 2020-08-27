@@ -10,10 +10,10 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Utilities {
+namespace MediaCloud\Plugin\Utilities {
 	// As this file is automatically included if loaded through autoloader
 	// do a check and avoid the direct access guard in that case.
-	use ILAB\MediaCloud\Utilities\Logging\Logger;
+	use MediaCloud\Plugin\Utilities\Logging\Logger;
 
 	if (!defined('ABSPATH') && empty($GLOBALS['__composer_autoload_files'])) { header('Location: /'); die; }
 

@@ -11,18 +11,18 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Tools\Debugging;
+namespace MediaCloud\Plugin\Tools\Debugging;
 
-use ILAB\MediaCloud\Tools\Tool;
-use ILAB\MediaCloud\Tools\ToolsManager;
-use ILAB\MediaCloud\Utilities\Logging\DatabaseLogger;
-use ILAB\MediaCloud\Utilities\Logging\DatabaseLogTable;
-use ILAB\MediaCloud\Utilities\Logging\Logger;
-use ILAB\MediaCloud\Utilities\NoticeManager;
-use ILAB\MediaCloud\Utilities\View;
-use ParagonIE\EasyRSA\EasyRSA;
-use ParagonIE\EasyRSA\PublicKey;
-use Probe\ProviderFactory;
+use MediaCloud\Plugin\Tools\Tool;
+use MediaCloud\Plugin\Tools\ToolsManager;
+use MediaCloud\Plugin\Utilities\Logging\DatabaseLogger;
+use MediaCloud\Plugin\Utilities\Logging\DatabaseLogTable;
+use MediaCloud\Plugin\Utilities\Logging\Logger;
+use MediaCloud\Plugin\Utilities\NoticeManager;
+use MediaCloud\Plugin\Utilities\View;
+use MediaCloud\Vendor\ParagonIE\EasyRSA\EasyRSA;
+use MediaCloud\Vendor\ParagonIE\EasyRSA\PublicKey;
+use MediaCloud\Vendor\Probe\ProviderFactory;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 

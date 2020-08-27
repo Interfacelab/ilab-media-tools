@@ -11,15 +11,10 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Tools\Storage\Tasks;
+namespace MediaCloud\Plugin\Tools\Storage\Tasks;
 
-use ILAB\MediaCloud\Storage\StorageToolSettings;
-use ILAB\MediaCloud\Tasks\AttachmentTask;
-use ILAB\MediaCloud\Tasks\Task;
-use ILAB\MediaCloud\Tools\Storage\StorageTool;
-use ILAB\MediaCloud\Tools\ToolsManager;
-use ILAB\MediaCloud\Utilities\Logging\Logger;
-use Symfony\Component\Finder\Iterator\RecursiveDirectoryIterator;
+use MediaCloud\Plugin\Tasks\Task;
+use MediaCloud\Plugin\Utilities\Logging\Logger;
 
 class DeleteUploadsTask extends Task {
 	//region Static Task Properties

@@ -11,10 +11,10 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Utilities;
+namespace MediaCloud\Plugin\Utilities;
 
-use ILAB\MediaCloud\Tools\ToolsManager;
-use Zumba\Amplitude\Amplitude;
+use MediaCloud\Plugin\Tools\ToolsManager;
+use MediaCloud\Vendor\Zumba\Amplitude\Amplitude;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 

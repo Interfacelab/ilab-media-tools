@@ -11,13 +11,13 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Tools\Vision\Tasks;
+namespace MediaCloud\Plugin\Tools\Vision\Tasks;
 
-use ILAB\MediaCloud\Tasks\AttachmentTask;
-use ILAB\MediaCloud\Tools\ToolsManager;
-use ILAB\MediaCloud\Tools\Vision\VisionTool;
-use ILAB\MediaCloud\Utilities\Logging\Logger;
-use function ILAB\MediaCloud\Utilities\postIdExists;
+use MediaCloud\Plugin\Tasks\AttachmentTask;
+use MediaCloud\Plugin\Tools\ToolsManager;
+use MediaCloud\Plugin\Tools\Vision\VisionTool;
+use MediaCloud\Plugin\Utilities\Logging\Logger;
+use function MediaCloud\Plugin\Utilities\postIdExists;
 
 class ProcessVisionTask extends AttachmentTask {
 
@@ -161,6 +161,8 @@ class ProcessVisionTask extends AttachmentTask {
 	 * @throws \Exception
 	 */
 	public function performTask($item) {
+		add_filter('media-cloud/vision/allow-background-processing', '__return_false');
+
 		$post_id = $item['id'];
 		if (!postIdExists($post_id)) {
 			return true;

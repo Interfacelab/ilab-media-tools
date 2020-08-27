@@ -14,12 +14,12 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Tools\Vision\CLI;
+namespace MediaCloud\Plugin\Tools\Vision\CLI;
 
-use ILAB\MediaCloud\CLI\Command;
-use ILAB\MediaCloud\Tools\Rekognition\VisionTool;
-use ILAB\MediaCloud\Tools\Vision\Tasks\ProcessVisionTask;
-use function ILAB\MediaCloud\Utilities\arrayPath;
+use MediaCloud\Plugin\CLI\Command;
+use MediaCloud\Plugin\Tools\Rekognition\VisionTool;
+use MediaCloud\Plugin\Tools\Vision\Tasks\ProcessVisionTask;
+use function MediaCloud\Plugin\Utilities\arrayPath;
 
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 

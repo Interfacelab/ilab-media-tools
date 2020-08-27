@@ -13,7 +13,7 @@ if (!empty($globalStats)) {
 	$savings = ($totalBytes == 0) ? 0 : ($savedBytes / $totalBytes);
 }
 
-/** @var \ILAB\MediaCloud\Tools\Optimizer\OptimizerAccountStatus $accountStatus */
+/** @var \MediaCloud\Plugin\Tools\Optimizer\OptimizerAccountStatus $accountStatus */
 if (!empty($accountStatus)) {
     $progress = ($accountStatus->quota() == 0) ? 0 : $accountStatus->used() / $accountStatus->quota();
 
@@ -24,7 +24,7 @@ if (!empty($accountStatus)) {
         $pcolor = "#D0021B";
     }
 
-	if ($accountStatus->quotaType() === \ILAB\MediaCloud\Tools\Optimizer\OptimizerConsts::QUOTA_API_CALLS) {
+	if ($accountStatus->quotaType() === \MediaCloud\Plugin\Tools\Optimizer\OptimizerConsts::QUOTA_API_CALLS) {
         $quotaLabel = sprintf('%.0f', $progress * 100).'%';
 	} else {
         $quotaLabel = size_format($accountStatus->quota() - $accountStatus->used())."<br/>Remaining";

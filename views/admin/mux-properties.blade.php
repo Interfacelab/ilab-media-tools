@@ -1,6 +1,6 @@
 <?php
 /**
- * @var \ILAB\MediaCloud\Tools\Mux\Models\MuxAsset $asset
+ * @var \MediaCloud\Plugin\Tools\Video\Driver\Mux\Models\MuxAsset $asset
  */
 ?>
 @if(empty($asset))

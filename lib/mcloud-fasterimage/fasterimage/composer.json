@@ -1,0 +1,42 @@
+{
+    "name": "mcloud-fasterimage/fasterimage",
+    "description": "FasterImage finds the size or type of a set of images given their uris by fetching as little as needed, in parallel. Originally ported by Tom Moor.",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Will Washburn",
+            "email": "will@tailwindapp.com"
+        },
+        {
+            "name": "Weston Ruter"
+        }
+    ],
+    "keywords": [
+        "fastimage",
+        "fast image",
+        "faster image",
+        "fasterimage",
+        "getimagesize",
+        "parallel",
+        "image size"
+    ],
+    "github": "https://github.com/willwashburn/fasterimage",
+    "homepage": "https://github.com/willwashburn/fasterimage",
+    "license": "MIT",
+    "require": {
+        "php": ">=5.4.0",
+        "mcloud-willwashburn/stream": "v1.0.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~6.0",
+        "php-mock/php-mock-phpunit": "^2.3",
+        "php-coveralls/php-coveralls": "^2.1"
+    },
+    "autoload": {
+        "classmap": [
+            "src"
+        ]
+    },
+    "minimum-stability": "stable",
+    "version": "v1.5.0"
+}

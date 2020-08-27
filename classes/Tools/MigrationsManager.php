@@ -10,17 +10,17 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Tools;
+namespace MediaCloud\Plugin\Tools;
 
-use ILAB\MediaCloud\Utilities\Environment;
-use ILAB\MediaCloud\Utilities\Logging\Logger;
-use ILAB\MediaCloud\Utilities\NoticeManager;
-use function ILAB\MediaCloud\Utilities\arrayPath;
+use MediaCloud\Plugin\Utilities\Environment;
+use MediaCloud\Plugin\Utilities\Logging\Logger;
+use MediaCloud\Plugin\Utilities\NoticeManager;
+use function MediaCloud\Plugin\Utilities\arrayPath;
 
 /**
  * Manages migrating options/settings between major plugin versions
  *
- * @package ILAB\MediaCloud\Tools
+ * @package MediaCloud\Plugin\Tools
  */
 final class MigrationsManager {
     /** @var MigrationsManager The current instance */

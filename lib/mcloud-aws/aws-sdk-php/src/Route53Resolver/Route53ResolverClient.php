@@ -1,0 +1,53 @@
+<?php
+
+namespace MediaCloud\Vendor\Aws\Route53Resolver;
+use MediaCloud\Vendor\Aws\AwsClient;
+
+/**
+ * This client is used to interact with the **Amazon Route 53 Resolver** service.
+ * @method \MediaCloud\Vendor\Aws\Result associateResolverEndpointIpAddress(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise associateResolverEndpointIpAddressAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result associateResolverRule(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise associateResolverRuleAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result createResolverEndpoint(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise createResolverEndpointAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result createResolverRule(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise createResolverRuleAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result deleteResolverEndpoint(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteResolverEndpointAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result deleteResolverRule(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteResolverRuleAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result disassociateResolverEndpointIpAddress(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise disassociateResolverEndpointIpAddressAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result disassociateResolverRule(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise disassociateResolverRuleAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result getResolverEndpoint(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise getResolverEndpointAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result getResolverRule(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise getResolverRuleAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result getResolverRuleAssociation(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise getResolverRuleAssociationAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result getResolverRulePolicy(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise getResolverRulePolicyAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listResolverEndpointIpAddresses(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listResolverEndpointIpAddressesAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listResolverEndpoints(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listResolverEndpointsAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listResolverRuleAssociations(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listResolverRuleAssociationsAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listResolverRules(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listResolverRulesAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listTagsForResource(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listTagsForResourceAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result putResolverRulePolicy(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise putResolverRulePolicyAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result tagResource(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise tagResourceAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result untagResource(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise untagResourceAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result updateResolverEndpoint(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise updateResolverEndpointAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result updateResolverRule(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise updateResolverRuleAsync(array $args = [])
+ */
+class Route53ResolverClient extends AwsClient {}

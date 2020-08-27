@@ -14,14 +14,14 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Tools\Tasks\CLI;
+namespace MediaCloud\Plugin\Tools\Tasks\CLI;
 
-use ILAB\MediaCloud\CLI\Command;
-use ILAB\MediaCloud\Tasks\TaskSchedule;
-use ILAB\MediaCloud\Tasks\TestTask;
-use ILAB\MediaCloud\Utilities\Misc\Carbon\Carbon;
-use function ILAB\MediaCloud\Utilities\arrayPath;
-use function ILAB\MediaCloud\Utilities\gen_uuid;
+use MediaCloud\Plugin\CLI\Command;
+use MediaCloud\Plugin\Tasks\TaskSchedule;
+use MediaCloud\Plugin\Tasks\TestTask;
+use MediaCloud\Vendor\Carbon\Carbon;
+use function MediaCloud\Plugin\Utilities\arrayPath;
+use function MediaCloud\Plugin\Utilities\gen_uuid;
 
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 

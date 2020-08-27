@@ -3,13 +3,13 @@
     <div id="doc-links-{{$id}}" class="doc-links-setting" @if(!$loop->first) style="display:none" @endif>
         @foreach($helpLinks as $helpLink)
             @if(isset($helpLink['video_url']))
-            <a href="{{$helpLink['video_url']}}" target="_blank" class="{{$classes}} {{\ILAB\MediaCloud\Utilities\arrayPath($helpLink, 'class', '')}} mediabox">{{$helpLink['title']}}</a>
+            <a href="{{$helpLink['video_url']}}" target="_blank" class="{{$classes}} {{\MediaCloud\Plugin\Utilities\arrayPath($helpLink, 'class', '')}} mediabox">{{$helpLink['title']}}</a>
             @elseif(isset($helpLink['wizard']))
-            <a href="{{admin_url('admin.php?page=media-cloud-wizard&wizard='.$helpLink['wizard'])}}" class="{{$classes}} {{\ILAB\MediaCloud\Utilities\arrayPath($helpLink, 'class', '')}}">{{$helpLink['title']}}</a>
+            <a href="{{admin_url('admin.php?page=media-cloud-wizard&wizard='.$helpLink['wizard'])}}" class="{{$classes}} {{\MediaCloud\Plugin\Utilities\arrayPath($helpLink, 'class', '')}}">{{$helpLink['title']}}</a>
             @elseif(isset($helpLink['external_url']))
-            <a href="{{$helpLink['external_url']}}" target="_blank" class="{{$classes}} {{\ILAB\MediaCloud\Utilities\arrayPath($helpLink, 'class', '')}}">{{$helpLink['title']}}</a>
+            <a href="{{$helpLink['external_url']}}" target="_blank" class="{{$classes}} {{\MediaCloud\Plugin\Utilities\arrayPath($helpLink, 'class', '')}}">{{$helpLink['title']}}</a>
             @else
-            <a href="{{$helpLink['url']}}" target="_blank" class="{{$classes}} {{\ILAB\MediaCloud\Utilities\arrayPath($helpLink, 'class', '')}}" @if(!empty($helpLink['url'])) data-article-sidebar="{{$helpLink['url']}}" @endif>{{$helpLink['title']}}</a>
+            <a href="{{$helpLink['url']}}" target="_blank" class="{{$classes}} {{\MediaCloud\Plugin\Utilities\arrayPath($helpLink, 'class', '')}}" @if(!empty($helpLink['url'])) data-article-sidebar="{{$helpLink['url']}}" @endif>{{$helpLink['title']}}</a>
             @endif
         @endforeach
     </div>

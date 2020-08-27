@@ -1,0 +1,26 @@
+{
+    "name": "mcloud-ivopetkov/html5-dom-document-php",
+    "description": "HTML5 DOMDocument PHP library (extends DOMDocument)",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ivo Petkov",
+            "email": "ivo@ivopetkov.com",
+            "homepage": "http://ivopetkov.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.0.0",
+        "ext-dom": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "6.*",
+        "ivopetkov/docs-generator": "0.2.*"
+    },
+    "autoload": {
+        "files": [
+            "autoload.php"
+        ]
+    },
+    "version": "v2.2.4"
+}

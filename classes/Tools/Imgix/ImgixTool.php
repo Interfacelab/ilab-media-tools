@@ -11,20 +11,20 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Tools\Imgix;
+namespace MediaCloud\Plugin\Tools\Imgix;
 
-use FasterImage\FasterImage;
-use ILAB\MediaCloud\Storage\StorageToolSettings;
-use ILAB\MediaCloud\Tools\DynamicImages\DynamicImagesTool;
-use ILAB\MediaCloud\Tools\Storage\StorageTool;
-use ILAB\MediaCloud\Tools\ToolsManager;
-use ILAB\MediaCloud\Utilities\Environment;
-use ILAB\MediaCloud\Utilities\Logging\Logger;
-use ILAB\MediaCloud\Utilities\Tracker;
-use ILAB\MediaCloud\Wizard\ConfiguresWizard;
-use ILAB\MediaCloud\Wizard\WizardBuilder;
-use Imgix\UrlBuilder;
-use function ILAB\MediaCloud\Utilities\arrayPath;
+use MediaCloud\Plugin\Tools\Storage\StorageToolSettings;
+use MediaCloud\Plugin\Tools\DynamicImages\DynamicImagesTool;
+use MediaCloud\Plugin\Tools\Storage\StorageTool;
+use MediaCloud\Plugin\Tools\ToolsManager;
+use MediaCloud\Plugin\Utilities\Environment;
+use MediaCloud\Plugin\Utilities\Logging\Logger;
+use MediaCloud\Plugin\Utilities\Tracker;
+use MediaCloud\Plugin\Wizard\ConfiguresWizard;
+use MediaCloud\Plugin\Wizard\WizardBuilder;
+use MediaCloud\Vendor\FasterImage\FasterImage;
+use MediaCloud\Vendor\Imgix\UrlBuilder;
+use function MediaCloud\Plugin\Utilities\arrayPath;
 
 if(!defined('ABSPATH')) {
 	header('Location: /');
@@ -260,7 +260,7 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
 			return [];
 		}
 
-		$imgix = new UrlBuilder($this->settings->imgixDomains, $this->settings->useHTTPS);
+		$imgix = new UrlBuilder($this->settings->imgixDomains[0], $this->settings->useHTTPS);
 
 		if($this->settings->signingKey) {
 			$imgix->setSignKey($this->settings->signingKey);
@@ -404,7 +404,7 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
 			}
 		}
 
-		$imgix = new UrlBuilder($this->settings->imgixDomains, $this->settings->useHTTPS);
+		$imgix = new UrlBuilder($this->settings->imgixDomains[0], $this->settings->useHTTPS);
 
 		if($this->settings->signingKey) {
 			$imgix->setSignKey($this->settings->signingKey);
@@ -681,7 +681,7 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
 	}
 
 	public function urlForStorageMedia($key, $params = []) {
-		$imgix = new UrlBuilder($this->settings->imgixDomains, $this->settings->useHTTPS);
+		$imgix = new UrlBuilder($this->settings->imgixDomains[0], $this->settings->useHTTPS);
 
 		if($this->settings->signingKey) {
 			$imgix->setSignKey($this->settings->signingKey);
@@ -809,7 +809,7 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
      * @param $url
      * @param $post_id
      * @return mixed|string
-     * @throws \ILAB\MediaCloud\Storage\StorageException
+     * @throws \MediaCloud\Plugin\Tools\Storage\StorageException
      */
 	public function getAttachmentURL($url, $post_id) {
 	    if ($this->settings->skipGifs) {
@@ -832,7 +832,7 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
      * @param $id
      * @param $size
      * @return array|bool
-     * @throws \ILAB\MediaCloud\Storage\StorageException
+     * @throws \MediaCloud\Plugin\Tools\Storage\StorageException
      */
 	public function imageDownsize($fail, $id, $size) {
         if ($this->settings->skipGifs) {
@@ -993,7 +993,7 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
     //region Testing
 
     public function urlForKey($key) {
-        $imgix = new UrlBuilder($this->settings->imgixDomains, $this->settings->useHTTPS);
+        $imgix = new UrlBuilder($this->settings->imgixDomains[0], $this->settings->useHTTPS);
 
         if($this->settings->signingKey) {
             $imgix->setSignKey($this->settings->signingKey);

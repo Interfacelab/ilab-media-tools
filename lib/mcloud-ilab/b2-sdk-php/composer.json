@@ -1,0 +1,40 @@
+{
+    "name": "mcloud-ilab/b2-sdk-php",
+    "description": "A SDK for working with B2 cloud storage.",
+    "keywords": [
+        "b2",
+        "storage",
+        "backblaze",
+        "cloud",
+        "filesystem",
+        "backup"
+    ],
+    "homepage": "https://github.com/cwhite92/b2-sdk-php",
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Chris White",
+            "email": "chris@cwhite.me",
+            "homepage": "https://cwhite.me"
+        }
+    ],
+    "require": {
+        "php": ">=5.5.0",
+        "mcloud-guzzlehttp/guzzle": "6.5.5"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "4.8.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "MediaCloud\\Vendor\\ILAB\\B2\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "ILAB\\B2\\Tests\\": "tests/"
+        }
+    },
+    "version": "1.4.1"
+}

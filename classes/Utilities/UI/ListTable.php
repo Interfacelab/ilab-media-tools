@@ -1,6 +1,6 @@
 <?php
 
-namespace ILAB\MediaCloud\Utilities\UI;
+namespace MediaCloud\Plugin\Utilities\UI;
 
 /**
  * Extends \WP_List_Table and fixes an issue when embedded in Metaboxes

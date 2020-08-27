@@ -11,11 +11,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Tasks;
+namespace MediaCloud\Plugin\Tasks;
 
-use ILAB\MediaCloud\Model\Model;
-use function ILAB\MediaCloud\Utilities\arrayPath;
-use ILAB\MediaCloud\Utilities\Logging\Logger;
+use MediaCloud\Plugin\Model\Model;
 
 /**
  * Represents the data for the task

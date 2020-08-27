@@ -11,19 +11,19 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Tools\Debugging\System;
+namespace MediaCloud\Plugin\Tools\Debugging\System;
 
-use ILAB\MediaCloud\Utilities\Misc\Carbon\CarbonInterval;
-use FasterImage\FasterImage;
-use ILAB\MediaCloud\Storage\StorageToolSettings;
-use ILAB\MediaCloud\Tasks\TaskRunner;
-use ILAB\MediaCloud\Tools\Imgix\ImgixTool;
-use ILAB\MediaCloud\Tools\Storage\StorageTool;
-use ILAB\MediaCloud\Tools\Tool;
-use ILAB\MediaCloud\Tools\ToolsManager;
-use ILAB\MediaCloud\Utilities\Logging\ErrorCollector;
-use ILAB\MediaCloud\Utilities\Tracker;
-use ILAB\MediaCloud\Utilities\View;
+use MediaCloud\Plugin\Tools\Storage\StorageToolSettings;
+use MediaCloud\Plugin\Tasks\TaskRunner;
+use MediaCloud\Plugin\Tools\Imgix\ImgixTool;
+use MediaCloud\Plugin\Tools\Storage\StorageTool;
+use MediaCloud\Plugin\Tools\Tool;
+use MediaCloud\Plugin\Tools\ToolsManager;
+use MediaCloud\Plugin\Utilities\Logging\ErrorCollector;
+use MediaCloud\Plugin\Utilities\Tracker;
+use MediaCloud\Plugin\Utilities\View;
+use MediaCloud\Vendor\Carbon\CarbonInterval;
+use MediaCloud\Vendor\FasterImage\FasterImage;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
@@ -417,7 +417,6 @@ class SystemCompatibilityTool extends Tool {
 
 		    if ($result != file_get_contents(ILAB_TOOLS_DIR.'/public/text/sample-upload.txt')) {
 			    $errors[] = "Upload <a href='$url'>sample file</a> is not publicly viewable.";
-			    $errors[] = $result;
 		    }
 	    } catch (\Exception $ex) {
 		    $errors[] = $ex->getMessage();
@@ -427,7 +426,7 @@ class SystemCompatibilityTool extends Tool {
             'success' => empty($errors),
             'title' => 'Verify Uploaded File Is Publicly Accessible',
             'success_message' => 'The uploaded file is publicly accessible.',
-            'error_message' => 'The uploaded file is not publicly accessible.  If you are using Imgix, this may not be matter if you are using S3 or Google Cloud Storage.  For Digital Ocean and others, this is a big deal.',
+            'error_message' => 'The uploaded file is not publicly accessible.  If you are using Imgix, this may not be matter if you are using S3 or Google Cloud Storage.  For Digital Ocean and others, this is a big deal.  For Backlaze S3, this is because your bucket is set to private and if that was intentional you can ignore this message.',
             'errors' => $errors
         ]);
 
@@ -442,6 +441,10 @@ class SystemCompatibilityTool extends Tool {
 		    $data = [
 			    'html' => $html,
 		    ];
+
+		    if (StorageToolSettings::driver() == 'backblaze-s3') {
+		    	$data['next'] = $this->stepInfo(self::STEP_TEST_DELETE);
+		    }
 	    }
 
         wp_send_json($data);

@@ -1,14 +1,14 @@
 <?php
 
 
-namespace ILAB\MediaCloud\Tools\Crop;
+namespace MediaCloud\Plugin\Tools\Crop;
 
 
-use ILAB\MediaCloud\Tools\ToolSettings;
+use MediaCloud\Plugin\Tools\ToolSettings;
 
 /**
  * Class CropToolSettings
- * @package ILAB\MediaCloud\Tools\Crop
+ * @package MediaCloud\Plugin\Tools\Crop
  *
  * @property bool $cropQuality
  */

@@ -1,0 +1,32 @@
+{
+    "name": "mcloud-paragonie/easyrsa",
+    "description": "Simple and secure asymmetric encryption powered by PHPSecLib",
+    "keywords": [
+        "RSA",
+        "public-key",
+        "asymmetric",
+        "cryptography"
+    ],
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "MediaCloud\\Vendor\\ParagonIE\\EasyRSA\\": "src"
+        }
+    },
+    "require": {
+        "mcloud-phpseclib/phpseclib": "2.0.28",
+        "mcloud-defuse/php-encryption": "v2.2.1",
+        "mcloud-paragonie/constant_time_encoding": "v2.3.0",
+        "mcloud-paragonie/random_compat": "v2.0.18",
+        "mcloud-sarciszewski/php-future": "0.4.2"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "4.*|5.*"
+    },
+    "suggest": {
+        "ext-libsodium": "Libsodium offers far better cryptography than RSA can ever offer. Use libsodium instead of EasyRSA.",
+        "paragonie/halite": "A simple and secure libsodium wrapper. Consider using Halite instead of EasyRSA."
+    },
+    "version": "v0.5.2"
+}

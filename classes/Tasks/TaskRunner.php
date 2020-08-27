@@ -11,12 +11,12 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Tasks;
+namespace MediaCloud\Plugin\Tasks;
 
-use GuzzleHttp\Client;
-use GuzzleHttp\Cookie\CookieJar;
-use ILAB\MediaCloud\Utilities\Environment;
-use ILAB\MediaCloud\Utilities\Logging\Logger;
+use MediaCloud\Plugin\Utilities\Environment;
+use MediaCloud\Plugin\Utilities\Logging\Logger;
+use MediaCloud\Vendor\GuzzleHttp\Client;
+use MediaCloud\Vendor\GuzzleHttp\Cookie\CookieJar;
 
 /**
  * Handles the async ajax calls to dispatch tasks in the background

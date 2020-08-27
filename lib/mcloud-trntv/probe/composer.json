@@ -1,0 +1,25 @@
+{
+    "name": "mcloud-trntv/probe",
+    "description": "System information provider",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Eugene Terentev",
+            "email": "eugene@terentev.net"
+        }
+    ],
+    "require-dev": {
+        "phpunit/phpunit": "^5.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "MediaCloud\\Vendor\\Probe\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Probe\\Tests\\": "tests/"
+        }
+    },
+    "version": "1.0.1"
+}

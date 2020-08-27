@@ -1,5 +1,5 @@
-<?php /** @var \ILAB\MediaCloud\Tasks\TaskManager $manager */?>
-<?php /** @var \ILAB\MediaCloud\Tasks\Task|null $task */?>
+<?php /** @var \MediaCloud\Plugin\Tasks\TaskManager $manager */?>
+<?php /** @var \MediaCloud\Plugin\Tasks\Task|null $task */?>
 <?php /** @var string $taskClass */?>
 <?php /** @var string $warning */?>
 @extends('../templates/sub-page')

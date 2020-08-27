@@ -16,7 +16,7 @@ return [
 	"id" => "batch-processing",
 	"name" => "Batch Processing",
 	"description" => "Manage batch processing settings.",
-	"class" => "ILAB\\MediaCloud\\Tools\\BatchProcessing\\BatchProcessingTool",
+	"class" => "MediaCloud\\Plugin\\Tools\\BatchProcessing\\BatchProcessingTool",
 	"exclude" => true,
 	"dependencies" => [],
 	"actions" => [

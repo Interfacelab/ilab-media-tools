@@ -12,14 +12,14 @@ if (!empty($hideBug)) {
     <div class="upgrade-interior">
         <h2>Upgrade to Media Cloud Premium</h2>
         <ul>
-            <li>Migrate your existing WordPress media library to {{\ILAB\MediaCloud\Storage\StorageToolSettings::currentDriverName()}}</li>
+            <li>Migrate your existing WordPress media library to {{\MediaCloud\Plugin\Tools\Storage\StorageToolSettings::currentDriverName()}}</li>
             <li>Easily manage your theme's image sizes</li>
             <li>Built-in dynamic image generation</li>
             <li>Image moderation with Google Vision</li>
             <li>Serve your CSS/JS assets from the cloud (Pro)</li>
-            <li>Upload directly to {{\ILAB\MediaCloud\Storage\StorageToolSettings::currentDriverName()}} (Pro)</li>
-            <li>Built-in {{\ILAB\MediaCloud\Storage\StorageToolSettings::currentDriverName()}} storage browser (Pro)</li>
-            <li>Import media from {{\ILAB\MediaCloud\Storage\StorageToolSettings::currentDriverName()}} (Pro)</li>
+            <li>Upload directly to {{\MediaCloud\Plugin\Tools\Storage\StorageToolSettings::currentDriverName()}} (Pro)</li>
+            <li>Built-in {{\MediaCloud\Plugin\Tools\Storage\StorageToolSettings::currentDriverName()}} storage browser (Pro)</li>
+            <li>Import media from {{\MediaCloud\Plugin\Tools\Storage\StorageToolSettings::currentDriverName()}} (Pro)</li>
             <li>WPML, WooCommerce, Easy Digital Downloads, WP Job Manager integration (Pro)</li>
             <li>plus <a href="https://mediacloud.press/comparison?utm_source=mediacloud-free&utm_medium=in-app&utm_campaign=mediacloud-free" target="_blank">more awesome features!</a></li>
         </ul>

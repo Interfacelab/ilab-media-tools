@@ -12,14 +12,14 @@
 // **********************************************************************
 
 
-namespace ILAB\MediaCloud\Utilities\Logging;
+namespace MediaCloud\Plugin\Utilities\Logging;
 
-use ILAB\MediaCloud\Utilities\Environment;
+use MediaCloud\Plugin\Utilities\Environment;
 
 /**
  * For logging to database
  *
- * @package ILAB\MediaCloud\Utilities
+ * @package MediaCloud\Plugin\Utilities
  */
 class DatabaseLogger {
     /** @var bool  */

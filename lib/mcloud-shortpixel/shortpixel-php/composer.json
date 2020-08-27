@@ -1,0 +1,42 @@
+{
+    "name": "mcloud-shortpixel/shortpixel-php",
+    "description": "ShortPixel PHP SDK. Read more at https://shortpixel.com/api-tools",
+    "keywords": [
+        "shortpixel",
+        "optimize",
+        "compress",
+        "images",
+        "api"
+    ],
+    "homepage": "https://shortpixel.com/api",
+    "license": "MIT",
+    "support": {
+        "email": "support@shortpixel.com"
+    },
+    "authors": [
+        {
+            "name": "Simon Duduica",
+            "email": "simon@shortpixel.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.0",
+        "ext-curl": "*",
+        "ext-json": "*",
+        "lib-curl": ">=7.20.0"
+    },
+    "require-dev": {
+        "symfony/yaml": "~2.0",
+        "phpunit/phpunit": "~4.0"
+    },
+    "autoload": {
+        "files": [
+            "lib/ShortPixel.php",
+            "lib/ShortPixel/Exception.php"
+        ],
+        "psr-4": {
+            "MediaCloud\\Vendor\\ShortPixel\\": "lib/ShortPixel/"
+        }
+    },
+    "version": "v1.6.4"
+}

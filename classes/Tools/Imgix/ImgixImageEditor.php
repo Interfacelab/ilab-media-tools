@@ -11,7 +11,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
 
-namespace ILAB\MediaCloud\Tools\Imgix;
+namespace MediaCloud\Plugin\Tools\Imgix;
 
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 

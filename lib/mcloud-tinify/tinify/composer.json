@@ -1,0 +1,43 @@
+{
+    "name": "mcloud-tinify/tinify",
+    "description": "PHP client for the Tinify API. Tinify compresses your images intelligently. Read more at https://tinify.com.",
+    "keywords": [
+        "tinify",
+        "tinypng",
+        "tinyjpg",
+        "compress",
+        "images",
+        "api"
+    ],
+    "homepage": "https://tinify.com/developers",
+    "license": "MIT",
+    "support": {
+        "email": "support@tinify.com"
+    },
+    "authors": [
+        {
+            "name": "Rolf Timmermans",
+            "email": "rolftimmermans@voormedia.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.0",
+        "ext-curl": "*",
+        "ext-json": "*",
+        "lib-curl": ">=7.20.0"
+    },
+    "require-dev": {
+        "symfony/yaml": "~2.0",
+        "phpunit/phpunit": "~4.0"
+    },
+    "autoload": {
+        "files": [
+            "lib/Tinify.php",
+            "lib/Tinify/Exception.php"
+        ],
+        "psr-4": {
+            "MediaCloud\\Vendor\\Tinify\\": "lib/Tinify/"
+        }
+    },
+    "version": "1.5.2"
+}
