@@ -43,8 +43,7 @@ final class MuxDatabase {
 		$tableName = $wpdb->base_prefix.'mcloud_mux_assets';
 		$charset = $wpdb->get_charset_collate();
 
-		$sql = "CREATE TABLE {$tableName} (
-	id BIGINT AUTO_INCREMENT,
+		$columns = "id BIGINT AUTO_INCREMENT,
 	muxId VARCHAR(255) NOT NULL,
 	status VARCHAR(32) NULL,
 	title VARCHAR(255) NULL,
@@ -56,11 +55,22 @@ final class MuxDatabase {
 	width int NOT NULL default 0,
 	height int NOT NULL default 0,
 	aspectRatio VARCHAR(32) NULL,
-	jsonData text NULL,
+	jsonData text NULL,";
+
+		$rowFormat = $wpdb->get_var("SELECT @@innodb_default_row_format;");
+		if (in_array(strtolower($rowFormat), ['redundant', 'compact'])) {
+			$sql = "CREATE TABLE {$tableName} (
+    {$columns}
+	PRIMARY KEY  (id)
+) {$charset};";
+		} else {
+			$sql = "CREATE TABLE {$tableName} (
+	{$columns}
 	PRIMARY KEY  (id),
 	KEY status (status(32)),
 	KEY muxId (muxId(255))
 ) {$charset};";
+		}
 
 		require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 		dbDelta($sql);
@@ -82,16 +92,26 @@ final class MuxDatabase {
 		$tableName = $wpdb->base_prefix.'mcloud_mux_playback';
 		$charset = $wpdb->get_charset_collate();
 
-		$sql = "CREATE TABLE {$tableName} (
-	id BIGINT AUTO_INCREMENT,
+		$columns = "id BIGINT AUTO_INCREMENT,
 	muxId VARCHAR(255) NOT NULL,
 	playbackId VARCHAR(255) NOT NULL,
-	policy VARCHAR(16) NOT NULL,
+	policy VARCHAR(16) NOT NULL,";
+
+		$rowFormat = $wpdb->get_var("SELECT @@innodb_default_row_format;");
+		if (in_array(strtolower($rowFormat), ['redundant', 'compact'])) {
+			$sql = "CREATE TABLE {$tableName} (
+	{$columns}
+	PRIMARY KEY  (id)
+) {$charset};";
+		} else {
+			$sql = "CREATE TABLE {$tableName} (
+	{$columns}
 	PRIMARY KEY  (id),
 	KEY playbackId (playbackId(255)),
 	KEY policy (policy(16)),
 	KEY muxId (muxId(255))
 ) {$charset};";
+		}
 
 		require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 		dbDelta($sql);
@@ -113,18 +133,28 @@ final class MuxDatabase {
 		$tableName = $wpdb->base_prefix.'mcloud_mux_renditions';
 		$charset = $wpdb->get_charset_collate();
 
-		$sql = "CREATE TABLE {$tableName} (
-	id BIGINT AUTO_INCREMENT,
+		$columns = "id BIGINT AUTO_INCREMENT,
 	muxId VARCHAR(255) NOT NULL,
 	rendition VARCHAR(16) NOT NULL,
 	width int null,
 	height int null,
 	bitrate int null,
-	filesize int null,
+	filesize int null,";
+
+		$rowFormat = $wpdb->get_var("SELECT @@innodb_default_row_format;");
+		if (in_array(strtolower($rowFormat), ['redundant', 'compact'])) {
+			$sql = "CREATE TABLE {$tableName} (
+	{$columns}
+	PRIMARY KEY  (id)
+) {$charset};";
+		} else {
+			$sql = "CREATE TABLE {$tableName} (
+	{$columns}
 	PRIMARY KEY  (id),
 	KEY rendition (rendition(16)),
 	KEY muxId (muxId(255))
 ) {$charset};";
+		}
 
 		require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 		dbDelta($sql);

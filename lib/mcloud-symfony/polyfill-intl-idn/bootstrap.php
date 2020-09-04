@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-use Symfony\Polyfill\Intl\Idn as p;
+use MediaCloud\Vendor\Symfony\Polyfill\Intl\Idn as p;
 
 if (extension_loaded('intl')) {
     return;

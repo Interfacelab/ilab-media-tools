@@ -42,7 +42,6 @@ class MuxTool extends Tool
             10,
             5
         );
-        MuxDatabase::init();
         parent::__construct( $toolName, $toolInfo, $toolManager );
         $this->initBlocks();
     }
@@ -69,6 +68,7 @@ class MuxTool extends Tool
     {
         
         if ( $this->enabled() ) {
+            MuxDatabase::init();
             $this->shortCode = new MuxShortcode();
             $this->hooks = new MuxHooks();
             

@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-use Symfony\Polyfill\Mbstring as p;
+use MediaCloud\Vendor\Symfony\Polyfill\Mbstring as p;
 
 if (!function_exists('mb_convert_encoding')) {
     function mb_convert_encoding($s, $to, $from = null) { return p\Mbstring::mb_convert_encoding($s, $to, $from); }

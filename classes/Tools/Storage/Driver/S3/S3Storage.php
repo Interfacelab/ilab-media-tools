@@ -584,7 +584,9 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 			$result = $this->client->upload($this->settings->bucket, $key, $file, $acl, $options);
 			Logger::endTiming("End Upload", ['file' => $key], __METHOD__, __LINE__);
 
-			fclose($file);
+			if (is_resource($file)) {
+				fclose($file);
+			}
 
             return $result->get('ObjectURL');
 		}

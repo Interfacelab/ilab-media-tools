@@ -1503,6 +1503,29 @@ class StorageTool extends Tool
                 __METHOD__,
                 __LINE__
             );
+            // front end upload
+            
+            if ( !isset( $GLOBALS['current_screen'] ) && !is_customize_preview() ) {
+                $uploadDir = wp_get_upload_dir();
+                $fullPath = trailingslashit( $uploadDir['basedir'] ) . $file;
+                $mimeType = get_post_mime_type( $post_id );
+                $data = $this->handleUpload( [
+                    'file' => $fullPath,
+                    'type' => $mimeType,
+                ] );
+                
+                if ( !empty($data['s3']) ) {
+                    add_post_meta( $post_id, 'ilab_s3_info', $data );
+                    do_action(
+                        'media-cloud/storage/uploaded-attachment',
+                        $post_id,
+                        $file,
+                        $data
+                    );
+                }
+            
+            }
+        
         }
     
     }

@@ -1,5 +1,8 @@
 <?php
 
-class ParseError extends Error
-{
+if (!class_exists('ParseError')) {
+	class ParseError extends Exception
+	{
+	}
 }
+

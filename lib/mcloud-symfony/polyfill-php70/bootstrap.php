@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-use Symfony\Polyfill\Php70 as p;
+use MediaCloud\Vendor\Symfony\Polyfill\Php70 as p;
 
 if (PHP_VERSION_ID >= 70000) {
     return;

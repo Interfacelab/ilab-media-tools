@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 5.5
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.1.0
+Stable tag: 4.1.1
 Requires PHP: 7.1
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -104,6 +104,16 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 
 == Changelog ==
+
+= 4.1.1 =
+
+- Fix for compatibility with Amp plugin and any other plugin using symfony polyfills.
+- Fix for edge case issue where the S3 library was closing a resource stream causing a fatal error.
+- Added hooks `media-cloud/tools/added-tools` and `media-cloud/tools/added-tools` for inserting other tools in other plugins into the media cloud menu.
+- Fix for Mux database tables failing installation on constricted MySQL systems.
+- Only check for Mux database tables if Mux is enabled.
+- Fix for front end uploads with some form plugins.
+
 
 = 4.1.0 =
 
