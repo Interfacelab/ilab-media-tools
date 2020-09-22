@@ -19,6 +19,7 @@ use MediaCloud\Plugin\Tools\ToolSettings;
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
 /**
+ * @property bool $generateReports
  * @property string $verifySSL
  * @property float $connectTimeout
  * @property float $timeout
@@ -31,6 +32,7 @@ if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
  */
 class TaskSettings extends ToolSettings {
 	protected $settingsMap = [
+		"generateReports" => ['mcloud-tasks-generate-reports', null, true],
 		"verifySSL" => ['mcloud-tasks-verify-ssl', null, 'no'],
 		"connectTimeout" => ['mcloud-tasks-connect-timeout', null, 0.01],
 		"timeout" => ['mcloud-tasks-timeout', null, 0.01],

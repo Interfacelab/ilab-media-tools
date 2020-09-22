@@ -19,6 +19,12 @@ use function MediaCloud\Plugin\Utilities\arrayPath;
 use function MediaCloud\Plugin\Utilities\postIdExists;
 
 class CleanUploadsTask extends AttachmentTask {
+	protected $reportHeaders = [
+		'Post ID',
+		'File',
+		'Status'
+	];
+
 	//region Static Task Properties
 
 	/**
@@ -177,12 +183,24 @@ class CleanUploadsTask extends AttachmentTask {
 			if ($filecount <= 2) {
 				Logger::info("Removing directory $folder", [], __METHOD__, __LINE__);
 				@rmdir($folder);
+
+				$this->reporter()->add([
+					'',
+					$folder,
+					file_exists($folder) ? 'Could not delete' : 'Deleted'
+				]);
 			} else if (($filecount == 3) && file_exists(trailingslashit($folder).'.DS_STORE')) {
 				Logger::info("Removing .DS_STORE", [], __METHOD__, __LINE__);
 				unlink(trailingslashit($folder).'.DS_STORE');
 
 				Logger::info("Removing directory $folder", [], __METHOD__, __LINE__);
 				@rmdir($folder);
+
+				$this->reporter()->add([
+					'',
+					$folder,
+					file_exists($folder) ? 'Could not delete' : 'Deleted'
+				]);
 			} else {
 				Logger::info("NOT Removing directory $folder", [], __METHOD__, __LINE__);
 			}
@@ -241,6 +259,11 @@ class CleanUploadsTask extends AttachmentTask {
 			if (file_exists($file)) {
 				Logger::info("Deleting $file", [], __METHOD__, __LINE__);
 				@unlink($file);
+				$this->reporter()->add([
+					$post_id,
+					$file,
+					file_exists($file) ? 'Could not delete' : 'Deleted'
+				]);
 			}
 		}
 

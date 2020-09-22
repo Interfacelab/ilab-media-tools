@@ -226,6 +226,19 @@ abstract class Task extends Model implements \JsonSerializable {
 	 */
 	protected $errorHandler = null;
 
+	/**
+	 * Report headers
+	 *
+	 * @var array
+	 */
+	protected $reportHeaders = [];
+
+	/**
+	 * The task's task reporter
+	 * @var null|TaskReporter
+	 */
+	private $taskReporter = null;
+
 
 	/**
 	 * Names of stat properties
@@ -409,6 +422,22 @@ abstract class Task extends Model implements \JsonSerializable {
 	}
 	//endregion
 
+	//region Reporter
+
+	/**
+	 * @return TaskReporter
+	 */
+	public function reporter() {
+		if ($this->taskReporter !== null) {
+			return $this->taskReporter;
+		}
+
+		$this->taskReporter = new TaskReporter($this, $this->reportHeaders);
+		return $this->taskReporter;
+	}
+
+	//endregion
+
 	//region Saving/Deleting
 
 	public function save() {
@@ -552,7 +581,11 @@ abstract class Task extends Model implements \JsonSerializable {
 
 				$result = $this->performTask($nextItem);
 
-				$this->info("{$this->currentFile} ... Done.", true);
+				if (is_string($result)) {
+					$this->info("{$this->currentFile} ... Error: $result.", true);
+				} else if (!is_wp_error($result)) {
+					$this->info("{$this->currentFile} ... Done.", true);
+				}
 
 				$this->lastTime = microtime(true) - $time;
 
@@ -569,37 +602,34 @@ abstract class Task extends Model implements \JsonSerializable {
 				$this->save();
 
 
-				if (empty($result) || is_wp_error($result)) {
-					$result = self::TASK_ERROR;
-
-
-					$this->endTime = time();
-					$this->updateTiming();
-
-					$this->state = self::STATE_ERROR;
-
+				if (($result !== true) || is_wp_error($result)) {
 					if (is_wp_error($result)) {
 						$this->errorMessage = $result->get_error_message();
+						$this->info("{$this->currentFile} ... Error: ".$this->errorMessage, true);
 					} else {
 						$this->errorMessage = "Unknown error.";
 					}
 
-					$this->info("{$this->currentFile} ... Error.", true);
-					$this->error($this->errorMessage);
+					if (static::stopOnError()) {
+						$this->error($this->errorMessage);
 
+						$result = self::TASK_ERROR;
 
-					$this->save();
+						$this->endTime = time();
+						$this->updateTiming();
 
+						$this->state = self::STATE_ERROR;
 
+						$this->save();
 
-					if (!empty(static::analyticsId())) {
-						Tracker::trackView(static::title(), static::analyticsId().'/error');
+						if (!empty(static::analyticsId())) {
+							Tracker::trackView(static::title(), static::analyticsId().'/error');
+						}
+
+						$this->complete();
+
+						break;
 					}
-
-
-					$this->complete();
-
-					break;
 				}
 			} catch (\Exception $ex) {
 
@@ -653,6 +683,7 @@ abstract class Task extends Model implements \JsonSerializable {
 	 * Called when the task has finished processing for a cycle
 	 */
 	public function didFinish() {
+		$this->reporter()->close();
 	}
 
 	/**

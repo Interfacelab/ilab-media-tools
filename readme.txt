@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 5.5
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.1.1
+Stable tag: 4.1.4
 Requires PHP: 7.1
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -104,6 +104,25 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 
 == Changelog ==
+
+= 4.1.4 =
+
+- Fix for Regenerate Thumbnails command, it will first attempt to download the original image, if that can't be found then
+  it will use the "scaled" image that WordPress 5.5 generates.
+- Added a new command, `wp mediacloud report report-name.csv` that iterates through all of the items in your media library and reports
+  on their cloud storage status.
+- The Migrate To Cloud, Import From Cloud, Clean Uploads and Regenerate Thumbnails tasks now generate CSV reports when
+  they run so you can see more details about what they did.  The reports are located in your
+  `WP_CONTENT/mcloud-reports` directory.
+- You can toggle task reporting on or off in the Settings -> Batch Processing settings or through the
+  `MCLOUD_TASKS_GENERATE_REPORTS` environment variable.  The default value is ON.
+- The Migrate To Cloud task has a new toggle *Generate Verification Report* which causes the task to verify that the
+  media migrated successfully.   This will generate a report in the aforementioned reports directory.
+- The `migrateToCloud` wp-cli command now accepts a `--verify` flag to force verification.
+
+= 4.1.2 =
+
+- Fix for WooCommerce integration with files that have malformed metadata
 
 = 4.1.1 =
 

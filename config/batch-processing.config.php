@@ -51,6 +51,12 @@ return [
 						"type" => "checkbox",
 						"default" => true
 					],
+					"mcloud-tasks-generate-reports" => [
+						"title" => "Generate Reports",
+						"description" => "When this is enabled, certain tasks will generate CSV reports that will tell you more details about what happened when the task was running.  You can find these reports in the <code>".WP_CONTENT_DIR."/mcloud-reports/</code> directory on your server.",
+						"type" => "checkbox",
+						"default" => true
+					],
 					"mcloud-tasks-heartbeat-frequency" => [
 						"title" => "Heartbeat Frequency",
 						"description" => "The number of seconds between heartbeats.",
