@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 5.5
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.1.5
+Stable tag: 4.1.6
 Requires PHP: 7.1
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -105,8 +105,12 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 == Changelog ==
 
-= 4.1.5 =
+= 4.1.6 =
 
+- When Debugging is enabled, a log file will be generated next to the CSV report.  This log file includes all the logging
+  that would normally be in the Debug Log, but limited to the time period the task was running.  If you are running into
+  issues with a task, make sure to turn on Debugging, re-run the task and then attach both the CSV and the log file
+  to a support ticket https://support.mediacloud.press/submit-issue/
 - The `report` command line command has been renamed to `verify`
 - You can run the Verify Library task from the WordPress admin by going to Media Cloud -> Task Manager.  In the
   **Available Tasks** click on **Verify Library**.  When it is done running, a report will be in your
@@ -117,6 +121,7 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 - Fixed a bug with direct uploads where the cloud storage provider wasn't being saved in the cloud metadata.  If you
   run the Verify Library task, Media Cloud will fix the issue with any existing direct uploads in your library.
 - Added paging to the `syncLocal` and `verify` command line commands, ex: `wp mediacloud verify verify.csv --limit=100 --page=1`
+- Fixed Sync Local, Verify Library and Regenerate Thumbnails to work with Imgix enabled.
 
 = 4.1.4 =
 

@@ -14,6 +14,9 @@
 namespace MediaCloud\Plugin\Tasks;
 
 use MediaCloud\Plugin\Utilities\Logging\Logger;
+use MediaCloud\Vendor\Monolog\Formatter\LineFormatter;
+use MediaCloud\Vendor\Monolog\Handler\StreamHandler;
+use MediaCloud\Vendor\Monolog\Logger as MonologLogger;
 
 class TaskReporter {
 	/** @var null|Task  */
@@ -23,6 +26,7 @@ class TaskReporter {
 	private $reportCSV = null;
 	private $taskFileName = null;
 	private $alwaysGenerate = false;
+	private $loggerAdded = false;
 
 	/**
 	 * TaskReporter constructor.
@@ -44,7 +48,7 @@ class TaskReporter {
 
 	public function open() {
 		if (!$this->alwaysGenerate && empty(TaskSettings::instance()->generateReports)) {
-			return;
+			return false;
 		}
 
 		if (!empty($this->reportCSV)) {
@@ -80,6 +84,14 @@ class TaskReporter {
 				Logger::error("Report file $reportFile could not be created.", [], __METHOD__, __LINE__);
 			}
 
+			$errorLogHandler = new StreamHandler($reportFile.'.log', MonologLogger::INFO);
+			$errorLogHandler->setFormatter(new LineFormatter("%channel%.%level_name%: %message% %context% %extra%\n"));
+			if (!empty($this->taskFileName)) {
+				Logger::instance()->addTemporaryLogger($this->taskFileName, $errorLogHandler);
+			} else {
+				Logger::instance()->addTemporaryLogger($this->task::identifier(), $errorLogHandler);
+			}
+
 			return true;
 		} else {
 			Logger::error("Could not create reporter directory: $reportDir", [], __METHOD__, __LINE__);
@@ -105,5 +117,13 @@ class TaskReporter {
 
 		fclose($this->reportCSV);
 		$this->reportCSV = null;
+
+		if (!empty($this->task)) {
+			if (!empty($this->taskFileName)) {
+				Logger::instance()->removeTemporaryLogger($this->taskFileName);
+			} else {
+				Logger::instance()->removeTemporaryLogger($this->task::identifier());
+			}
+		}
 	}
 }

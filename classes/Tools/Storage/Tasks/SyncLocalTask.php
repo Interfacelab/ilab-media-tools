@@ -16,7 +16,6 @@ namespace MediaCloud\Plugin\Tools\Storage\Tasks;
 use MediaCloud\Plugin\Tasks\AttachmentTask;
 use MediaCloud\Plugin\Tools\ToolsManager;
 use MediaCloud\Plugin\Utilities\Logging\Logger;
-use function MediaCloud\Plugin\Utilities\arrayPath;
 use function MediaCloud\Plugin\Utilities\postIdExists;
 
 class SyncLocalTask extends AttachmentTask {
@@ -155,6 +154,16 @@ class SyncLocalTask extends AttachmentTask {
 	//endregion
 
 	//region Execution
+
+	public function willStart() {
+		add_filter('media-cloud/dynamic-images/skip-url-generation', '__return_true');
+		parent::willStart();
+	}
+
+	public function didFinish() {
+		remove_filter('media-cloud/dynamic-images/skip-url-generation', '__return_true');
+		parent::didFinish();
+	}
 
 
 	/**

@@ -5616,9 +5616,9 @@ MIGRATED;
         }
         
         $infoCallback( "Checking attachment url ... " );
-        $url = wp_get_attachment_url( $postId );
+        $attachmentUrl = wp_get_attachment_url( $postId );
         try {
-            $res = $client->get( $url, [
+            $res = $client->get( $attachmentUrl, [
                 'headers' => [
                 'Range' => 'bytes=0-0',
             ],
@@ -5633,11 +5633,12 @@ MIGRATED;
         
         if ( in_array( $code, [ 200, 206 ] ) ) {
             $providerWorked++;
-            $reportLine[] = $url;
+            $reportLine[] = $attachmentUrl;
         } else {
             $reportLine[] = "Missing, code: {$code}";
         }
         
+        $originalUrl = null;
         
         if ( strpos( $mimeType, 'image' ) === 0 ) {
             
@@ -5649,26 +5650,32 @@ MIGRATED;
                         $privacy = arrayPath( $meta, 'original_image_s3/privacy', 'authenticated-read' );
                         $infoCallback( "Checking original url ... " );
                         $doSign = $this->client->usesSignedURLs( $mimeType ) || $privacy === 'authenticated-read';
-                        $url = ( $doSign ? $this->client->presignedUrl( $originalKey, $this->client->signedURLExpirationForType( $mimeType ) ) : $this->client->url( $originalKey, $mimeType ) );
-                        try {
-                            $res = $client->get( $url, [
-                                'headers' => [
-                                'Range' => 'bytes=0-0',
-                            ],
-                            ] );
-                            $code = $res->getStatusCode();
-                        } catch ( RequestException $ex ) {
-                            $code = 400;
-                            if ( $ex->hasResponse() ) {
-                                $code = $ex->getResponse()->getStatusCode();
-                            }
-                        }
+                        $originalUrl = ( $doSign ? $this->client->presignedUrl( $originalKey, $this->client->signedURLExpirationForType( $mimeType ) ) : $this->client->url( $originalKey, $mimeType ) );
                         
-                        if ( in_array( $code, [ 200, 206 ] ) ) {
-                            $providerWorked++;
-                            $reportLine[] = $url;
+                        if ( $originalUrl == $attachmentUrl ) {
+                            $reportLine[] = '';
                         } else {
-                            $reportLine[] = "Missing, code: {$code}";
+                            try {
+                                $res = $client->get( $originalUrl, [
+                                    'headers' => [
+                                    'Range' => 'bytes=0-0',
+                                ],
+                                ] );
+                                $code = $res->getStatusCode();
+                            } catch ( RequestException $ex ) {
+                                $code = 400;
+                                if ( $ex->hasResponse() ) {
+                                    $code = $ex->getResponse()->getStatusCode();
+                                }
+                            }
+                            
+                            if ( in_array( $code, [ 200, 206 ] ) ) {
+                                $providerWorked++;
+                                $reportLine[] = $originalUrl;
+                            } else {
+                                $reportLine[] = "Missing, code: {$code}";
+                            }
+                        
                         }
                     
                     } catch ( \Exception $ex ) {
@@ -5704,25 +5711,31 @@ MIGRATED;
                     try {
                         $doSign = $this->client->usesSignedURLs( $mimeType ) || $privacy === 'authenticated-read';
                         $url = ( $doSign ? $this->client->presignedUrl( $sizeS3Key, $this->client->signedURLExpirationForType( $mimeType ) ) : $this->client->url( $sizeS3Key, $mimeType ) );
-                        try {
-                            $res = $client->get( $url, [
-                                'headers' => [
-                                'Range' => 'bytes=0-0',
-                            ],
-                            ] );
-                            $code = $res->getStatusCode();
-                        } catch ( RequestException $ex ) {
-                            $code = 400;
-                            if ( $ex->hasResponse() ) {
-                                $code = $ex->getResponse()->getStatusCode();
-                            }
-                        }
                         
-                        if ( in_array( $code, [ 200, 206 ] ) ) {
-                            $providerWorked++;
-                            $sizesData[$sizeKey] = $url;
+                        if ( !empty($url) && ($url == $attachmentUrl || $url == $originalUrl) ) {
+                            $reportLine[] = '';
                         } else {
-                            $sizesData[$sizeKey] = "Missing, code: {$code}";
+                            try {
+                                $res = $client->get( $url, [
+                                    'headers' => [
+                                    'Range' => 'bytes=0-0',
+                                ],
+                                ] );
+                                $code = $res->getStatusCode();
+                            } catch ( RequestException $ex ) {
+                                $code = 400;
+                                if ( $ex->hasResponse() ) {
+                                    $code = $ex->getResponse()->getStatusCode();
+                                }
+                            }
+                            
+                            if ( in_array( $code, [ 200, 206 ] ) ) {
+                                $providerWorked++;
+                                $sizesData[$sizeKey] = $url;
+                            } else {
+                                $sizesData[$sizeKey] = "Missing, code: {$code}";
+                            }
+                        
                         }
                     
                     } catch ( \Exception $ex ) {
@@ -5805,6 +5818,7 @@ MIGRATED;
         }
         
         $uploadDir = trailingslashit( wp_upload_dir()['basedir'] );
+        $attachmentUrl = null;
         $attachmentKey = arrayPath( $meta, 's3/key' );
         
         if ( empty($attachmentKey) ) {
@@ -5812,9 +5826,9 @@ MIGRATED;
             $reportLine[] = '';
         } else {
             $infoCallback( "Checking attachment url ... " );
-            $url = wp_get_attachment_url( $postId );
+            $attachmentUrl = wp_get_attachment_url( $postId );
             try {
-                $res = $client->get( $url, [
+                $res = $client->get( $attachmentUrl, [
                     'headers' => [
                     'Range' => 'bytes=0-0',
                 ],
@@ -5840,10 +5854,10 @@ MIGRATED;
                     $reportLine[] = '';
                     return;
                 } else {
-                    $client->get( $url, [
+                    $client->get( $attachmentUrl, [
                         'sink' => $localFile,
                     ] );
-                    $reportLine[] = $url;
+                    $reportLine[] = $attachmentUrl;
                     $reportLine[] = $localFile;
                 }
             
@@ -5856,6 +5870,7 @@ MIGRATED;
         
         
         if ( strpos( $mimeType, 'image' ) === 0 ) {
+            $originalUrl = null;
             
             if ( !empty(arrayPath( $meta, 'original_image' )) ) {
                 $originalKey = arrayPath( $meta, 'original_image_s3/key' );
@@ -5868,44 +5883,51 @@ MIGRATED;
                         $privacy = arrayPath( $meta, 'original_image_s3/privacy', 'authenticated-read' );
                         $infoCallback( "Checking original url ... " );
                         $doSign = $this->client->usesSignedURLs( $mimeType ) || $privacy === 'authenticated-read';
-                        $url = ( $doSign ? $this->client->presignedUrl( $originalKey, $this->client->signedURLExpirationForType( $mimeType ) ) : $this->client->url( $originalKey, $mimeType ) );
-                        try {
-                            $res = $client->get( $url, [
-                                'headers' => [
-                                'Range' => 'bytes=0-0',
-                            ],
-                            ] );
-                            $code = $res->getStatusCode();
-                        } catch ( RequestException $ex ) {
-                            $code = 400;
-                            if ( $ex->hasResponse() ) {
-                                $code = $ex->getResponse()->getStatusCode();
-                            }
-                        }
+                        $originalUrl = ( $doSign ? $this->client->presignedUrl( $originalKey, $this->client->signedURLExpirationForType( $mimeType ) ) : $this->client->url( $originalKey, $mimeType ) );
                         
-                        if ( in_array( $code, [ 200, 206 ] ) ) {
-                            $providerWorked++;
-                            $localFile = $uploadDir . $originalKey;
-                            $localFileDir = pathinfo( $localFile, PATHINFO_DIRNAME );
-                            if ( !file_exists( $localFileDir ) ) {
-                                @mkdir( $localFileDir, 0755, true );
+                        if ( $originalUrl != $attachmentUrl ) {
+                            $reportLine[] = '';
+                            $reportLine[] = '';
+                        } else {
+                            try {
+                                $res = $client->get( $originalUrl, [
+                                    'headers' => [
+                                    'Range' => 'bytes=0-0',
+                                ],
+                                ] );
+                                $code = $res->getStatusCode();
+                            } catch ( RequestException $ex ) {
+                                $code = 400;
+                                if ( $ex->hasResponse() ) {
+                                    $code = $ex->getResponse()->getStatusCode();
+                                }
                             }
                             
-                            if ( !file_exists( $localFileDir ) ) {
-                                $reportLine[] = "Could not create directory.";
-                                $reportLine[] = '';
-                                return;
+                            if ( in_array( $code, [ 200, 206 ] ) ) {
+                                $providerWorked++;
+                                $localFile = $uploadDir . $originalKey;
+                                $localFileDir = pathinfo( $localFile, PATHINFO_DIRNAME );
+                                if ( !file_exists( $localFileDir ) ) {
+                                    @mkdir( $localFileDir, 0755, true );
+                                }
+                                
+                                if ( !file_exists( $localFileDir ) ) {
+                                    $reportLine[] = "Could not create directory.";
+                                    $reportLine[] = '';
+                                    return;
+                                } else {
+                                    $client->get( $originalUrl, [
+                                        'sink' => $localFile,
+                                    ] );
+                                    $reportLine[] = $originalUrl;
+                                    $reportLine[] = $localFile;
+                                }
+                            
                             } else {
-                                $client->get( $url, [
-                                    'sink' => $localFile,
-                                ] );
-                                $reportLine[] = $url;
-                                $reportLine[] = $localFile;
+                                $reportLine[] = "Missing, code: {$code}";
+                                $reportLine[] = '';
                             }
                         
-                        } else {
-                            $reportLine[] = "Missing, code: {$code}";
-                            $reportLine[] = '';
                         }
                     
                     } catch ( \Exception $ex ) {
@@ -5943,42 +5965,49 @@ MIGRATED;
                     try {
                         $doSign = $this->client->usesSignedURLs( $mimeType ) || $privacy === 'authenticated-read';
                         $url = ( $doSign ? $this->client->presignedUrl( $sizeS3Key, $this->client->signedURLExpirationForType( $mimeType ) ) : $this->client->url( $sizeS3Key, $mimeType ) );
-                        try {
-                            $res = $client->get( $url, [
-                                'headers' => [
-                                'Range' => 'bytes=0-0',
-                            ],
-                            ] );
-                            $code = $res->getStatusCode();
-                        } catch ( RequestException $ex ) {
-                            $code = 400;
-                            if ( $ex->hasResponse() ) {
-                                $code = $ex->getResponse()->getStatusCode();
-                            }
-                        }
                         
-                        if ( in_array( $code, [ 200, 206 ] ) ) {
-                            $providerWorked++;
-                            $localFile = $uploadDir . $sizeS3Key;
-                            $localFileDir = pathinfo( $localFile, PATHINFO_DIRNAME );
-                            if ( !file_exists( $localFileDir ) ) {
-                                @mkdir( $localFileDir, 0755, true );
+                        if ( !empty($url) && ($url == $attachmentUrl || $url == $originalUrl) ) {
+                            $sizesData[$sizeKey] = '';
+                            $sizesData[$sizeKey . ' Local'] = '';
+                        } else {
+                            try {
+                                $res = $client->get( $url, [
+                                    'headers' => [
+                                    'Range' => 'bytes=0-0',
+                                ],
+                                ] );
+                                $code = $res->getStatusCode();
+                            } catch ( RequestException $ex ) {
+                                $code = 400;
+                                if ( $ex->hasResponse() ) {
+                                    $code = $ex->getResponse()->getStatusCode();
+                                }
                             }
                             
-                            if ( !file_exists( $localFileDir ) ) {
-                                $sizesData[$sizeKey] = "Could not create directory.";
-                                $sizesData[$sizeKey . ' Local'] = '';
-                                return;
+                            if ( in_array( $code, [ 200, 206 ] ) ) {
+                                $providerWorked++;
+                                $localFile = $uploadDir . $sizeS3Key;
+                                $localFileDir = pathinfo( $localFile, PATHINFO_DIRNAME );
+                                if ( !file_exists( $localFileDir ) ) {
+                                    @mkdir( $localFileDir, 0755, true );
+                                }
+                                
+                                if ( !file_exists( $localFileDir ) ) {
+                                    $sizesData[$sizeKey] = "Could not create directory.";
+                                    $sizesData[$sizeKey . ' Local'] = '';
+                                    return;
+                                } else {
+                                    $client->get( $url, [
+                                        'sink' => $localFile,
+                                    ] );
+                                    $sizesData[$sizeKey] = $url;
+                                    $sizesData[$sizeKey . ' Local'] = $localFile;
+                                }
+                            
                             } else {
-                                $client->get( $url, [
-                                    'sink' => $localFile,
-                                ] );
-                                $sizesData[$sizeKey] = $url;
-                                $sizesData[$sizeKey . ' Local'] = $localFile;
+                                $sizesData[$sizeKey] = "Missing, code: {$code}";
                             }
                         
-                        } else {
-                            $sizesData[$sizeKey] = "Missing, code: {$code}";
                         }
                     
                     } catch ( \Exception $ex ) {

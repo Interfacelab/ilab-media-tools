@@ -30,8 +30,6 @@ use  MediaCloud\Plugin\Tools\Storage\Tasks\UnlinkTask ;
 use  MediaCloud\Plugin\Tools\ToolsManager ;
 use  MediaCloud\Plugin\Utilities\Logging\Logger ;
 use  MediaCloud\Vendor\GuzzleHttp\Client ;
-use  MediaCloud\Vendor\GuzzleHttp\Exception\RequestException ;
-use  Unirest\Exception ;
 use function  MediaCloud\Plugin\Utilities\arrayPath ;
 
 if ( !defined( 'ABSPATH' ) ) {
@@ -727,6 +725,7 @@ class StorageCommands extends Command
         
         $query = new \WP_Query( $queryArgs );
         $postIds = $query->posts;
+        add_filter( 'media-cloud/dynamic-images/skip-url-generation', '__return_true' );
         foreach ( $postIds as $postId ) {
             self::Info( "Processing {$postId} ... " );
             $storageTool->verifyPost( $postId, $reporter, function ( $message, $newLine = false ) {
@@ -734,6 +733,7 @@ class StorageCommands extends Command
             } );
             self::Info( "Done.", true );
         }
+        remove_filter( 'media-cloud/dynamic-images/skip-url-generation', '__return_true' );
         $reporter->close();
     }
     
@@ -835,6 +835,7 @@ class StorageCommands extends Command
         
         $query = new \WP_Query( $queryArgs );
         $postIds = $query->posts;
+        add_filter( 'media-cloud/dynamic-images/skip-url-generation', '__return_true' );
         foreach ( $postIds as $postId ) {
             self::Info( "Processing {$postId} ... " );
             $storageTool->syncLocal( $postId, $reporter, function ( $message, $newLine = false ) {
@@ -842,6 +843,7 @@ class StorageCommands extends Command
             } );
             self::Info( "Done.", true );
         }
+        remove_filter( 'media-cloud/dynamic-images/skip-url-generation', '__return_true' );
         $reporter->close();
     }
     

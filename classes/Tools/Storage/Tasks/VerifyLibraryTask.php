@@ -149,6 +149,15 @@ class VerifyLibraryTask extends AttachmentTask {
 
 	//region Execution
 
+	public function willStart() {
+		add_filter('media-cloud/dynamic-images/skip-url-generation', '__return_true');
+		parent::willStart();
+	}
+
+	public function didFinish() {
+		remove_filter('media-cloud/dynamic-images/skip-url-generation', '__return_true');
+		parent::didFinish();
+	}
 
 	/**
 	 * Performs the actual task
