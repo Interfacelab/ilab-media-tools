@@ -382,6 +382,14 @@ abstract class Task extends Model implements \JsonSerializable {
 	public static function analyticsId() {
 		return null;
 	}
+
+	/**
+	 * Controls if this task is displayed in the menu
+	 * @return bool
+	 */
+	public static function showInMenu() {
+		return true;
+	}
 	//endregion
 
 	//region Model Related

@@ -532,6 +532,17 @@ class StorageCommands extends Command
     /**
      * Fixes S3 metadata keys.  Do not use unless directed by Media Cloud support.
      *
+     * ## OPTIONS
+     *
+     * <search>
+     * : The key prefix to search for
+     *
+     * <replace>
+     * : The replacement key prefix
+     *
+     * ## EXAMPLES
+     *
+     *     wp mediacloud fixKeys 'https://somedomain.com/uploads/' 'uploads/'
      *
      * @when after_wp_load
      *
@@ -547,7 +558,7 @@ class StorageCommands extends Command
         }
         self::Info( "Replacing {$args[0]} with {$args[1]}.\n", true );
         Command::Out( "", true );
-        Command::Warn( "%WThis command will make some changes to your database that are totally reversible.  However, it's always a good idea to backup your database first.%n" );
+        Command::Warn( "%WThis command will make some changes to your database that are not reversible.  Make sure to backup your database first.%n" );
         Command::Out( "", true );
         $result = \WP_CLI::confirm( "Are you sure you want to continue?", $assoc_args );
         self::Info( $result, true );
@@ -626,8 +637,25 @@ class StorageCommands extends Command
     }
     
     /**
-     * Generates a report about uploaded media
+     * Verifies the media library's cloud storage status
      *
+     * ## OPTIONS
+     *
+     * <filename>
+     * : The filename for the CSV report to generate
+     *
+     * [--limit=<number>]
+     * : The maximum number of items to process, default is infinity.
+     *
+     * [--offset=<number>]
+     * : The starting offset to process.  Cannot be used with page.
+     *
+     * [--page=<number>]
+     * : The starting offset to process.  Page numbers start at 1.  Cannot be used with offset.
+     *
+     * ## EXAMPLES
+     *
+     *     wp mediacloud verify verify.csv
      *
      * @when after_wp_load
      *
@@ -636,10 +664,10 @@ class StorageCommands extends Command
      *
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function report( $args, $assoc_args )
+    public function verify( $args, $assoc_args )
     {
         if ( count( $args ) == 0 ) {
-            self::Error( "Missing required argument.  Run the command: wp mediacloud report <filename.csv>" );
+            self::Error( "Missing required argument.  Run the command: wp mediacloud verify <filename.csv>" );
         }
         $allSizes = ilab_get_image_sizes();
         $sizeKeys = array_keys( $allSizes );
@@ -662,14 +690,12 @@ class StorageCommands extends Command
         ], $sizeKeys ), [ 'Notes' ] );
         $reporter = new TaskReporter( $csvFileName, $headers, true );
         $queryArgs = [
-            'post_type'      => 'attachment',
-            'post_status'    => 'inherit',
-            'posts_per_page' => 100,
-            'fields'         => 'ids',
-            'post_mime_type' => StorageToolSettings::allowedMimeTypes(),
-            'orderby'        => 'date',
-            'order'          => 'desc',
-            'meta_query'     => [
+            'post_type'   => 'attachment',
+            'post_status' => 'inherit',
+            'fields'      => 'ids',
+            'orderby'     => 'date',
+            'order'       => 'desc',
+            'meta_query'  => [
             'relation' => 'OR',
             [
             'key'     => '_wp_attachment_metadata',
@@ -683,6 +709,22 @@ class StorageCommands extends Command
         ],
         ],
         ];
+        
+        if ( isset( $assoc_args['limit'] ) ) {
+            $queryArgs['posts_per_page'] = $assoc_args['limit'];
+            
+            if ( isset( $assoc_args['page'] ) ) {
+                $queryArgs['offset'] = max( 0, ($assoc_args['page'] - 1) * $assoc_args['limit'] );
+            } else {
+                if ( isset( $assoc_args['offset'] ) ) {
+                    $queryArgs['offset'] = $assoc_args['offset'];
+                }
+            }
+        
+        } else {
+            $queryArgs['posts_per_page'] = -1;
+        }
+        
         $query = new \WP_Query( $queryArgs );
         $postIds = $query->posts;
         foreach ( $postIds as $postId ) {
@@ -692,6 +734,115 @@ class StorageCommands extends Command
             } );
             self::Info( "Done.", true );
         }
+        $reporter->close();
+    }
+    
+    /**
+     * Syncs cloud storage to the local file system
+     *
+     * ## OPTIONS
+     *
+     * <filename>
+     * : The filename for the CSV report to generate
+     *
+     * [--limit=<number>]
+     * : The maximum number of items to process, default is infinity.
+     *
+     * [--offset=<number>]
+     * : The starting offset to process.  Cannot be used with page.
+     *
+     * [--page=<number>]
+     * : The starting offset to process.  Page numbers start at 1.  Cannot be used with offset.
+     *
+     * ## EXAMPLES
+     *
+     *     wp mediacloud syncLocal sync.csv
+     *
+     * @when after_wp_load
+     *
+     * @param $args
+     * @param $assoc_args
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function syncLocal( $args, $assoc_args )
+    {
+        if ( count( $args ) == 0 ) {
+            self::Error( "Missing required argument.  Run the command: wp mediacloud syncLocal <filename.csv>" );
+        }
+        $allSizes = ilab_get_image_sizes();
+        $sizeKeys = array_keys( $allSizes );
+        $sizeKeys = array_sort( $sizeKeys );
+        $sizeKeysLocal = [];
+        foreach ( $sizeKeys as $key ) {
+            $sizeKeysLocal[] = $key;
+            $sizeKeysLocal[] = "{$key} Local";
+        }
+        /** @var StorageTool $storageTool */
+        $storageTool = ToolsManager::instance()->tools['storage'];
+        $csvFileName = $args[0];
+        if ( strpos( $csvFileName, '/' ) !== 0 ) {
+            $csvFileName = trailingslashit( getcwd() ) . $csvFileName;
+        }
+        if ( file_exists( $csvFileName ) ) {
+            unlink( $csvFileName );
+        }
+        $headers = array_merge( array_merge( [
+            'Post ID',
+            'Mime Type',
+            'S3 Metadata Status',
+            'Attachment URL',
+            'Attachment Local',
+            'Original Source Image URL',
+            'Original Source Image Local'
+        ], $sizeKeysLocal ), [ 'Notes' ] );
+        $reporter = new TaskReporter( $csvFileName, $headers, true );
+        $queryArgs = [
+            'post_type'   => 'attachment',
+            'post_status' => 'inherit',
+            'fields'      => 'ids',
+            'orderby'     => 'date',
+            'order'       => 'desc',
+            'meta_query'  => [
+            'relation' => 'OR',
+            [
+            'key'     => '_wp_attachment_metadata',
+            'value'   => '"s3"',
+            'compare' => 'LIKE',
+            'type'    => 'CHAR',
+        ],
+            [
+            'key'     => 'ilab_s3_info',
+            'compare' => 'EXISTS',
+        ],
+        ],
+        ];
+        
+        if ( isset( $assoc_args['limit'] ) ) {
+            $queryArgs['posts_per_page'] = $assoc_args['limit'];
+            
+            if ( isset( $assoc_args['page'] ) ) {
+                $queryArgs['offset'] = max( 0, ($assoc_args['page'] - 1) * $assoc_args['limit'] );
+            } else {
+                if ( isset( $assoc_args['offset'] ) ) {
+                    $queryArgs['offset'] = $assoc_args['offset'];
+                }
+            }
+        
+        } else {
+            $queryArgs['posts_per_page'] = -1;
+        }
+        
+        $query = new \WP_Query( $queryArgs );
+        $postIds = $query->posts;
+        foreach ( $postIds as $postId ) {
+            self::Info( "Processing {$postId} ... " );
+            $storageTool->syncLocal( $postId, $reporter, function ( $message, $newLine = false ) {
+                self::Info( $message, $newLine );
+            } );
+            self::Info( "Done.", true );
+        }
+        $reporter->close();
     }
     
     public static function Register()

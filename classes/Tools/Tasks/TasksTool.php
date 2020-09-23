@@ -84,7 +84,7 @@ class TasksTool extends Tool {
 			ToolsManager::instance()->insertBatchToolSeparator();
 
 			foreach(TaskManager::registeredTasks() as $identifier => $taskClass) {
-				if ($taskClass::userTask()) {
+				if ($taskClass::userTask() && $taskClass::showInMenu()) {
 					add_submenu_page($tool_menu_slug, $taskClass::title(), $taskClass::menuTitle(), 'manage_options', 'mcloud-task-'.$identifier, [$this, 'renderBatchTool']);
 				}
 			}

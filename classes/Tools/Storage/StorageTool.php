@@ -30,7 +30,9 @@ use  MediaCloud\Plugin\Tools\Storage\Tasks\DeleteUploadsTask ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\MigrateFromOtherTask ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\MigrateTask ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\RegenerateThumbnailTask ;
+use  MediaCloud\Plugin\Tools\Storage\Tasks\SyncLocalTask ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\UnlinkTask ;
+use  MediaCloud\Plugin\Tools\Storage\Tasks\VerifyLibraryTask ;
 use  MediaCloud\Plugin\Tools\Tool ;
 use  MediaCloud\Plugin\Tools\ToolsManager ;
 use  MediaCloud\Plugin\Utilities\Environment ;
@@ -287,6 +289,8 @@ class StorageTool extends Tool
             }
             TaskManager::registerTask( CleanUploadsTask::class );
             TaskManager::registerTask( DeleteUploadsTask::class );
+            TaskManager::registerTask( VerifyLibraryTask::class );
+            TaskManager::registerTask( SyncLocalTask::class );
             foreach ( $this->toolInfo['compatibleImageOptimizers'] as $key => $plugin ) {
                 
                 if ( is_plugin_active( $plugin ) ) {
@@ -4270,8 +4274,11 @@ TEMPLATE;
         $fileParts = explode( '/', $fileInfo->key() );
         $filename = array_pop( $fileParts );
         $url = $this->client->url( $fileInfo->key() );
+        $providerClass = get_class( $this->client );
+        $providerId = $providerClass::identifier();
         $s3Info = [
             'url'       => $url,
+            'provider'  => $providerId,
             'mime-type' => $fileInfo->mimeType(),
             'bucket'    => $this->client->bucket(),
             'privacy'   => StorageToolSettings::privacy( $fileInfo->mimeType() ),
@@ -5575,10 +5582,14 @@ MIGRATED;
         $reportLine = [ $postId ];
         $mimeType = get_post_mime_type( $postId );
         $reportLine[] = $mimeType;
+        $metaFromAttachment = true;
         $meta = get_post_meta( $postId, '_wp_attachment_metadata', true );
+        
         if ( empty($meta) || empty($meta['s3']) ) {
+            $metaFromAttachment = false;
             $meta = get_post_meta( $postId, 'ilab_s3_info', true );
         }
+        
         
         if ( empty($meta) || empty($meta['s3']) ) {
             $reportLine[] = 'Missing';
@@ -5589,22 +5600,21 @@ MIGRATED;
         
         $provider = arrayPath( $meta, 's3/provider', null );
         
-        if ( empty($provider) ) {
-            $reportLine[] = 'Missing provider';
-            $reporter->add( $reportLine );
-            $infoCallback( "S3 provider missing.", true );
-            return;
-        }
-        
-        
-        if ( $provider != StorageToolSettings::driver() ) {
-            $reportLine[] = 'Missing provider';
+        if ( !empty($provider) && $provider != StorageToolSettings::driver() ) {
+            $reportLine[] = 'Wrong provider';
             $reporter->add( $reportLine );
             $infoCallback( "S3 provider mismatch, is '{$provider}' expecting '" . StorageToolSettings::driver() . "'.", true );
             return;
         }
         
-        $reportLine[] = 'S3 Info Exists';
+        $providerWorked = 0;
+        
+        if ( empty($provider) ) {
+            $reportLine[] = 'S3 info exists, but provider is missing, trying with current provider';
+        } else {
+            $reportLine[] = 'S3 Info Exists';
+        }
+        
         $infoCallback( "Checking attachment url ... " );
         $url = wp_get_attachment_url( $postId );
         try {
@@ -5622,6 +5632,7 @@ MIGRATED;
         }
         
         if ( in_array( $code, [ 200, 206 ] ) ) {
+            $providerWorked++;
             $reportLine[] = $url;
         } else {
             $reportLine[] = "Missing, code: {$code}";
@@ -5654,6 +5665,7 @@ MIGRATED;
                         }
                         
                         if ( in_array( $code, [ 200, 206 ] ) ) {
+                            $providerWorked++;
                             $reportLine[] = $url;
                         } else {
                             $reportLine[] = "Missing, code: {$code}";
@@ -5707,6 +5719,7 @@ MIGRATED;
                         }
                         
                         if ( in_array( $code, [ 200, 206 ] ) ) {
+                            $providerWorked++;
                             $sizesData[$sizeKey] = $url;
                         } else {
                             $sizesData[$sizeKey] = "Missing, code: {$code}";
@@ -5717,6 +5730,276 @@ MIGRATED;
                     }
                 }
                 $reportLine = array_merge( $reportLine, array_values( $sizesData ) );
+            }
+        
+        }
+        
+        
+        if ( empty($provider) && $providerWorked >= 1 ) {
+            $reportLine[] = 'Fixed missing provider.';
+            $meta['s3']['provider'] = StorageToolSettings::driver();
+            
+            if ( $metaFromAttachment ) {
+                update_post_meta( $postId, '_wp_attachment_metadata', $meta );
+            } else {
+                update_post_meta( $postId, 'ilab_s3_info', $meta );
+            }
+        
+        }
+        
+        $reporter->add( $reportLine );
+    }
+    
+    //endregion
+    //region Local Sync
+    /**
+     * @param int $postId
+     * @param TaskReporter $reporter
+     * @param \Closure $infoCallback
+     */
+    public function syncLocal( $postId, $reporter, $infoCallback )
+    {
+        $client = new Client();
+        $allSizes = ilab_get_image_sizes();
+        $sizeKeys = array_keys( $allSizes );
+        $sizeKeys = array_sort( $sizeKeys );
+        $sizesData = [];
+        foreach ( $sizeKeys as $key ) {
+            $sizesData[$key] = null;
+            $sizesData[$key . ' Local'] = null;
+        }
+        $reportLine = [ $postId ];
+        $mimeType = get_post_mime_type( $postId );
+        $reportLine[] = $mimeType;
+        $metaFromAttachment = true;
+        $meta = get_post_meta( $postId, '_wp_attachment_metadata', true );
+        
+        if ( empty($meta) || empty($meta['s3']) ) {
+            $metaFromAttachment = false;
+            $meta = get_post_meta( $postId, 'ilab_s3_info', true );
+        }
+        
+        
+        if ( empty($meta) || empty($meta['s3']) ) {
+            $reportLine[] = 'Missing';
+            $reporter->add( $reportLine );
+            $infoCallback( "Missing S3 metadata.", true );
+            return;
+        }
+        
+        $provider = arrayPath( $meta, 's3/provider', null );
+        
+        if ( !empty($provider) && $provider != StorageToolSettings::driver() ) {
+            $reportLine[] = 'Wrong provider';
+            $reporter->add( $reportLine );
+            $infoCallback( "S3 provider mismatch, is '{$provider}' expecting '" . StorageToolSettings::driver() . "'.", true );
+            return;
+        }
+        
+        $providerWorked = 0;
+        
+        if ( empty($provider) ) {
+            $reportLine[] = 'S3 info exists, but provider is missing, trying with current provider';
+        } else {
+            $reportLine[] = 'S3 Info Exists';
+        }
+        
+        $uploadDir = trailingslashit( wp_upload_dir()['basedir'] );
+        $attachmentKey = arrayPath( $meta, 's3/key' );
+        
+        if ( empty($attachmentKey) ) {
+            $reportLine[] = 'Missing key';
+            $reportLine[] = '';
+        } else {
+            $infoCallback( "Checking attachment url ... " );
+            $url = wp_get_attachment_url( $postId );
+            try {
+                $res = $client->get( $url, [
+                    'headers' => [
+                    'Range' => 'bytes=0-0',
+                ],
+                ] );
+                $code = $res->getStatusCode();
+            } catch ( RequestException $ex ) {
+                $code = 400;
+                if ( $ex->hasResponse() ) {
+                    $code = $ex->getResponse()->getStatusCode();
+                }
+            }
+            
+            if ( in_array( $code, [ 200, 206 ] ) ) {
+                $providerWorked++;
+                $localFile = $uploadDir . $attachmentKey;
+                $localFileDir = pathinfo( $localFile, PATHINFO_DIRNAME );
+                if ( !file_exists( $localFileDir ) ) {
+                    @mkdir( $localFileDir, 0755, true );
+                }
+                
+                if ( !file_exists( $localFileDir ) ) {
+                    $reportLine[] = "Could not create directory.";
+                    $reportLine[] = '';
+                    return;
+                } else {
+                    $client->get( $url, [
+                        'sink' => $localFile,
+                    ] );
+                    $reportLine[] = $url;
+                    $reportLine[] = $localFile;
+                }
+            
+            } else {
+                $reportLine[] = "Missing, code: {$code}";
+                $reportLine[] = '';
+            }
+        
+        }
+        
+        
+        if ( strpos( $mimeType, 'image' ) === 0 ) {
+            
+            if ( !empty(arrayPath( $meta, 'original_image' )) ) {
+                $originalKey = arrayPath( $meta, 'original_image_s3/key' );
+                
+                if ( empty($originalKey) ) {
+                    $reportLine[] = 'Missing key';
+                    $reportLine[] = '';
+                } else {
+                    try {
+                        $privacy = arrayPath( $meta, 'original_image_s3/privacy', 'authenticated-read' );
+                        $infoCallback( "Checking original url ... " );
+                        $doSign = $this->client->usesSignedURLs( $mimeType ) || $privacy === 'authenticated-read';
+                        $url = ( $doSign ? $this->client->presignedUrl( $originalKey, $this->client->signedURLExpirationForType( $mimeType ) ) : $this->client->url( $originalKey, $mimeType ) );
+                        try {
+                            $res = $client->get( $url, [
+                                'headers' => [
+                                'Range' => 'bytes=0-0',
+                            ],
+                            ] );
+                            $code = $res->getStatusCode();
+                        } catch ( RequestException $ex ) {
+                            $code = 400;
+                            if ( $ex->hasResponse() ) {
+                                $code = $ex->getResponse()->getStatusCode();
+                            }
+                        }
+                        
+                        if ( in_array( $code, [ 200, 206 ] ) ) {
+                            $providerWorked++;
+                            $localFile = $uploadDir . $originalKey;
+                            $localFileDir = pathinfo( $localFile, PATHINFO_DIRNAME );
+                            if ( !file_exists( $localFileDir ) ) {
+                                @mkdir( $localFileDir, 0755, true );
+                            }
+                            
+                            if ( !file_exists( $localFileDir ) ) {
+                                $reportLine[] = "Could not create directory.";
+                                $reportLine[] = '';
+                                return;
+                            } else {
+                                $client->get( $url, [
+                                    'sink' => $localFile,
+                                ] );
+                                $reportLine[] = $url;
+                                $reportLine[] = $localFile;
+                            }
+                        
+                        } else {
+                            $reportLine[] = "Missing, code: {$code}";
+                            $reportLine[] = '';
+                        }
+                    
+                    } catch ( \Exception $ex ) {
+                        $reportLine[] = "Client error: " . $ex->getMessage();
+                        $reportLine[] = '';
+                    }
+                }
+            
+            } else {
+                $reportLine[] = '';
+                $reportLine[] = '';
+            }
+            
+            $sizes = arrayPath( $meta, 'sizes' );
+            
+            if ( !empty($sizes) ) {
+                $infoCallback( "Checking sizes ... " );
+                foreach ( $sizes as $sizeKey => $sizeInfo ) {
+                    
+                    if ( empty(arrayPath( $sizeInfo, 's3' )) ) {
+                        $sizesData[$sizeKey] = 'Missing S3 metadata';
+                        $sizesData[$sizeKey . ' Local'] = '';
+                        continue;
+                    }
+                    
+                    $sizeS3Key = arrayPath( $sizeInfo, 's3/key' );
+                    
+                    if ( empty($sizeS3Key) ) {
+                        $sizesData[$sizeKey] = 'Missing S3 key';
+                        $sizesData[$sizeKey . ' Local'] = '';
+                        continue;
+                    }
+                    
+                    $privacy = arrayPath( $sizeInfo, 's3/privacy', 'authenticated-read' );
+                    try {
+                        $doSign = $this->client->usesSignedURLs( $mimeType ) || $privacy === 'authenticated-read';
+                        $url = ( $doSign ? $this->client->presignedUrl( $sizeS3Key, $this->client->signedURLExpirationForType( $mimeType ) ) : $this->client->url( $sizeS3Key, $mimeType ) );
+                        try {
+                            $res = $client->get( $url, [
+                                'headers' => [
+                                'Range' => 'bytes=0-0',
+                            ],
+                            ] );
+                            $code = $res->getStatusCode();
+                        } catch ( RequestException $ex ) {
+                            $code = 400;
+                            if ( $ex->hasResponse() ) {
+                                $code = $ex->getResponse()->getStatusCode();
+                            }
+                        }
+                        
+                        if ( in_array( $code, [ 200, 206 ] ) ) {
+                            $providerWorked++;
+                            $localFile = $uploadDir . $sizeS3Key;
+                            $localFileDir = pathinfo( $localFile, PATHINFO_DIRNAME );
+                            if ( !file_exists( $localFileDir ) ) {
+                                @mkdir( $localFileDir, 0755, true );
+                            }
+                            
+                            if ( !file_exists( $localFileDir ) ) {
+                                $sizesData[$sizeKey] = "Could not create directory.";
+                                $sizesData[$sizeKey . ' Local'] = '';
+                                return;
+                            } else {
+                                $client->get( $url, [
+                                    'sink' => $localFile,
+                                ] );
+                                $sizesData[$sizeKey] = $url;
+                                $sizesData[$sizeKey . ' Local'] = $localFile;
+                            }
+                        
+                        } else {
+                            $sizesData[$sizeKey] = "Missing, code: {$code}";
+                        }
+                    
+                    } catch ( \Exception $ex ) {
+                        $sizesData[$sizeKey] = "Client error: " . $ex->getMessage();
+                        $sizesData[$sizeKey . ' Local'] = '';
+                    }
+                }
+                $reportLine = array_merge( $reportLine, array_values( $sizesData ) );
+            }
+        
+        }
+        
+        
+        if ( empty($provider) && $providerWorked >= 1 ) {
+            $reportLine[] = 'Fixed missing provider.';
+            $meta['s3']['provider'] = StorageToolSettings::driver();
+            
+            if ( $metaFromAttachment ) {
+                update_post_meta( $postId, '_wp_attachment_metadata', $meta );
+            } else {
+                update_post_meta( $postId, 'ilab_s3_info', $meta );
             }
         
         }
