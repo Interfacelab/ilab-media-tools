@@ -7,6 +7,7 @@ use MediaCloud\Vendor\Aws\CacheInterface;
 use MediaCloud\Vendor\Aws\Exception\CredentialsException;
 use MediaCloud\Vendor\Aws\Sts\StsClient;
 use MediaCloud\Vendor\GuzzleHttp\Promise;
+use function MediaCloud\Vendor\Aws\safe_is_readable;
 
 /**
  * Credential providers are functions that accept no arguments and return a
@@ -426,7 +427,7 @@ class CredentialProvider
                 : false;
             $stsClient = isset($config['stsClient']) ? $config['stsClient'] : null;
 
-            if (!is_readable($filename)) {
+            if (!safe_is_readable($filename)) {
                 return self::reject("Cannot read credentials from $filename");
             }
             $data = self::loadProfiles($filename);
@@ -508,7 +509,7 @@ class CredentialProvider
         $profile = $profile ?: (getenv(self::ENV_PROFILE) ?: 'default');
 
         return function () use ($profile, $filename) {
-            if (!is_readable($filename)) {
+            if (!safe_is_readable($filename)) {
                 return self::reject("Cannot read process credentials from $filename");
             }
             $data = \MediaCloud\Vendor\Aws\parse_ini_file($filename, true, INI_SCANNER_RAW);

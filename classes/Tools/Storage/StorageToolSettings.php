@@ -59,6 +59,7 @@ if (!defined('ABSPATH')) { header('Location: /'); die; }
  * @property bool $cacheLookups
  * @property bool $skipOtherImport
  * @property bool $keepSubsitePath
+ * @property bool $replaceAllImageUrls
  */
 class StorageToolSettings extends ToolSettings {
 	//region Static Class Variables
@@ -95,6 +96,7 @@ class StorageToolSettings extends ToolSettings {
 		"cacheLookups" => ["mcloud-storage-cache-lookups", null, true],
 		"skipOtherImport" => ["mcloud-storage-skip-import-other-plugin", null, false],
 		"keepSubsitePath" => ["mcloud-storage-keep-subsite-path", null, false],
+		"replaceAllImageUrls" => ["mcloud-storage-replace-all-image-urls", null, true],
 	];
 
 

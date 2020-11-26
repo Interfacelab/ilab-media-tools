@@ -31,9 +31,6 @@ class MuxHooks
     private  $settings ;
     public function __construct()
     {
-        if ( defined( 'MEDIACLOUD_DEV_MODE' ) && defined( 'MEDIACLOUD_VIDEO_SERVER' ) && !empty(constant( 'MEDIACLOUD_VIDEO_SERVER' )) ) {
-            $cool = 'shit';
-        }
         $this->settings = MuxToolSettings::instance();
         
         if ( ToolsManager::instance()->toolEnabled( 'storage' ) ) {

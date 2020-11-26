@@ -519,3 +519,19 @@ function is_valid_epoch($input)
     }
     return false;
 }
+
+function safe_is_readable($filename) {
+	$openBaseDir = ini_get('open_basedir');
+	if (empty($openBaseDir)) {
+		return is_readable($filename);
+	}
+
+	$dirs = explode(':', $openBaseDir);
+	foreach($dirs as $dir) {
+		if (strpos($filename, $dir) === 0) {
+			return is_readable($filename);
+		}
+	}
+
+	return false;
+}

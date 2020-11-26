@@ -6,6 +6,7 @@ use MediaCloud\Vendor\Aws\CacheInterface;
 use MediaCloud\Vendor\Aws\ConfigurationProviderInterface;
 use MediaCloud\Vendor\Aws\S3\RegionalEndpoint\Exception\ConfigurationException;
 use MediaCloud\Vendor\GuzzleHttp\Promise;
+use function MediaCloud\Vendor\Aws\safe_is_readable;
 
 /**
  * A configuration provider is a function that returns a promise that is
@@ -128,7 +129,7 @@ class ConfigurationProvider extends AbstractConfigurationProvider
         $profile = $profile ?: (getenv(self::ENV_PROFILE) ?: 'default');
 
         return function () use ($profile, $filename) {
-            if (!is_readable($filename)) {
+            if (!safe_is_readable($filename)) {
                 return self::reject("Cannot read configuration from $filename");
             }
             $data = \MediaCloud\Vendor\Aws\parse_ini_file($filename, true);

@@ -7,6 +7,7 @@ use MediaCloud\Vendor\Aws\ClientSideMonitoring\Exception\ConfigurationException;
 use MediaCloud\Vendor\Aws\ConfigurationProviderInterface;
 use MediaCloud\Vendor\GuzzleHttp\Promise;
 use MediaCloud\Vendor\GuzzleHttp\Promise\PromiseInterface;
+use function MediaCloud\Vendor\Aws\safe_is_readable;
 
 /**
  * A configuration provider is a function that accepts no arguments and returns
@@ -161,7 +162,7 @@ class ConfigurationProvider extends AbstractConfigurationProvider
         $profile = $profile ?: (getenv(self::ENV_PROFILE) ?: 'aws_csm');
 
         return function () use ($profile, $filename) {
-            if (!is_readable($filename)) {
+            if (!safe_is_readable($filename)) {
                 return self::reject("Cannot read CSM config from $filename");
             }
             $data = \MediaCloud\Vendor\Aws\parse_ini_file($filename, true);

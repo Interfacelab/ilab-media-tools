@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 5.6
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.1.7
+Stable tag: 4.1.8
 Requires PHP: 7.1
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -105,51 +105,66 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 == Changelog ==
 
-= 4.1.7 =
+= 4.1.8 =
 
-- When Debugging is enabled, a log file will be generated next to the CSV report.  This log file includes all the logging
+* And we're back.  Thanks to everyone for the well wishes, truly appreciated!
+* Updated Freemius SDK to latest
+* Added `mcloud-cloud/storage/should-handle-image-upload` filter to override image uploading logic when performing uploads
+  with certain other plugins.
+* Fix for `open_basedir restriction` error messages.
+* Fix for integrated help documentation.
+* Added option to turn off brute force image URL replacement for image tags missing the `wp-image-{NUMBER}` css class.
+  If you are seeing a lot of database calls on a page with a lot of images, try adding this snippet to your theme's functions.php
+  to insure that Media Cloud has enough "metadata" to do it's job:  https://gist.github.com/jawngee/36c104f8a8b8ea7e7f6b0f0b837affa5
+* Launched new support and helpdesk site, https://support.mediacloud.press/
+* Added two new people to our support staff, welcome to Quynh and welcome back to Charles!
+* Use BLACKFRIDAY2020 for 33% off annual licenses, good until December 2nd.
+
+= 4.1.6 =
+
+* When Debugging is enabled, a log file will be generated next to the CSV report.  This log file includes all the logging
   that would normally be in the Debug Log, but limited to the time period the task was running.  If you are running into
   issues with a task, make sure to turn on Debugging, re-run the task and then attach both the CSV and the log file
   to a support ticket https://support.mediacloud.press/submit-issue/
-- The `report` command line command has been renamed to `verify`
-- You can run the Verify Library task from the WordPress admin by going to Media Cloud -> Task Manager.  In the
+* The `report` command line command has been renamed to `verify`
+* You can run the Verify Library task from the WordPress admin by going to Media Cloud -> Task Manager.  In the
   **Available Tasks** click on **Verify Library**.  When it is done running, a report will be in your
   `WP_CONTENT/mcloud-reports` directory
-- Added a Sync Local task that copies down media from cloud storage to your local server.  You can run it from the
+* Added a Sync Local task that copies down media from cloud storage to your local server.  You can run it from the
   WordPress admin by going to Media Cloud -> Task Manager.  In the **Available Tasks** click on **Sync Local**.
-- You can also run the Sync Local task from the command line via `wp mediacloud syncLocal report-filename.csv`
-- Fixed a bug with direct uploads where the cloud storage provider wasn't being saved in the cloud metadata.  If you
+* You can also run the Sync Local task from the command line via `wp mediacloud syncLocal report-filename.csv`
+* Fixed a bug with direct uploads where the cloud storage provider wasn't being saved in the cloud metadata.  If you
   run the Verify Library task, Media Cloud will fix the issue with any existing direct uploads in your library.
-- Added paging to the `syncLocal` and `verify` command line commands, ex: `wp mediacloud verify verify.csv --limit=100 --page=1`
-- Fixed Sync Local, Verify Library and Regenerate Thumbnails to work with Imgix enabled.
+* Added paging to the `syncLocal` and `verify` command line commands, ex: `wp mediacloud verify verify.csv --limit=100 --page=1`
+* Fixed Sync Local, Verify Library and Regenerate Thumbnails to work with Imgix enabled.
 
 = 4.1.4 =
 
-- Fix for Regenerate Thumbnails command, it will first attempt to download the original image, if that can't be found then
+* Fix for Regenerate Thumbnails command, it will first attempt to download the original image, if that can't be found then
   it will use the "scaled" image that WordPress 5.5 generates.
-- Added a new command, `wp mediacloud report report-name.csv` that iterates through all of the items in your media library and reports
+* Added a new command, `wp mediacloud report report-name.csv` that iterates through all of the items in your media library and reports
   on their cloud storage status.
-- The Migrate To Cloud, Import From Cloud, Clean Uploads and Regenerate Thumbnails tasks now generate CSV reports when
+* The Migrate To Cloud, Import From Cloud, Clean Uploads and Regenerate Thumbnails tasks now generate CSV reports when
   they run so you can see more details about what they did.  The reports are located in your
   `WP_CONTENT/mcloud-reports` directory.
-- You can toggle task reporting on or off in the Settings -> Batch Processing settings or through the
+* You can toggle task reporting on or off in the Settings -> Batch Processing settings or through the
   `MCLOUD_TASKS_GENERATE_REPORTS` environment variable.  The default value is ON.
-- The Migrate To Cloud task has a new toggle *Generate Verification Report* which causes the task to verify that the
+* The Migrate To Cloud task has a new toggle *Generate Verification Report* which causes the task to verify that the
   media migrated successfully.   This will generate a report in the aforementioned reports directory.
-- The `migrateToCloud` wp-cli command now accepts a `--verify` flag to force verification.
+* The `migrateToCloud` wp-cli command now accepts a `--verify` flag to force verification.
 
 = 4.1.2 =
 
-- Fix for WooCommerce integration with files that have malformed metadata
+* Fix for WooCommerce integration with files that have malformed metadata
 
 = 4.1.1 =
 
-- Fix for compatibility with Amp plugin and any other plugin using symfony polyfills.
-- Fix for edge case issue where the S3 library was closing a resource stream causing a fatal error.
-- Added hooks `media-cloud/tools/added-tools` and `media-cloud/tools/added-tools` for inserting other tools in other plugins into the media cloud menu.
-- Fix for Mux database tables failing installation on constricted MySQL systems.
-- Only check for Mux database tables if Mux is enabled.
-- Fix for front end uploads with some form plugins.
+* Fix for compatibility with Amp plugin and any other plugin using symfony polyfills.
+* Fix for edge case issue where the S3 library was closing a resource stream causing a fatal error.
+* Added hooks `media-cloud/tools/added-tools` and `media-cloud/tools/added-tools` for inserting other tools in other plugins into the media cloud menu.
+* Fix for Mux database tables failing installation on constricted MySQL systems.
+* Only check for Mux database tables if Mux is enabled.
+* Fix for front end uploads with some form plugins.
 
 
 = 4.1.0 =

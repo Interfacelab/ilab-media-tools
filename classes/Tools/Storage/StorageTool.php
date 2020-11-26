@@ -1274,10 +1274,11 @@ class StorageTool extends Tool
         if ( isset( $upload['type'] ) && $ignoreMimeTypes && StorageToolSettings::mimeTypeIsIgnored( $upload['type'] ) ) {
             return $upload;
         }
-        if ( $this->fileIsDisplayableImage( $upload['file'] ) ) {
+        if ( isset( $_REQUEST["action"] ) && $_REQUEST["action"] == "upload-plugin" ) {
             return $upload;
         }
-        if ( isset( $_REQUEST["action"] ) && $_REQUEST["action"] == "upload-plugin" ) {
+        $shouldHandleImageUpload = apply_filters( 'media-cloud/storage/should-handle-image-upload', false, $upload );
+        if ( empty($shouldHandleImageUpload) && $this->fileIsDisplayableImage( $upload['file'] ) ) {
             return $upload;
         }
         $shouldHandle = apply_filters( 'media-cloud/storage/should-handle-upload', true, $upload );
@@ -2189,6 +2190,9 @@ class StorageTool extends Tool
             $content = str_replace( '&gt;', '>', $content );
         }
         
+        //	    if (defined('MEDIACLOUD_DEV_MODE')) {
+        //		    $content = preg_replace('/wp-image-[0-9]+/', '', $content);
+        //	    }
         if ( !preg_match_all( '/<img [^>]+>/', $content, $matches ) ) {
             return $originalContent;
         }
@@ -2274,7 +2278,7 @@ class StorageTool extends Tool
             }
             
             
-            if ( !$imageFound ) {
+            if ( !$imageFound && !empty($this->settings->replaceAllImageUrls) ) {
                 $escapedBase = str_replace( '/', '\\/', $uploadDir['baseurl'] );
                 $escapedBase = str_replace( '.', '\\.', $escapedBase );
                 $imageRegex = "#(data-src|src)\\s*=\\s*[\\'\"]+({$escapedBase}[^\\'\"]*(jpg|png|gif))[\\'\"]+#";
