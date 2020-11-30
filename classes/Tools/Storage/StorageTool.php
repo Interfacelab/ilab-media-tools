@@ -4786,6 +4786,18 @@ TEMPLATE;
             __METHOD__,
             __LINE__
         );
+        $mimeType = get_post_mime_type( $postId );
+        
+        if ( StorageGlobals::mimeTypeIsIgnored( $mimeType ) ) {
+            Logger::info(
+                "Mime type {$mimeType} for {$postId} is ignored.",
+                [],
+                __METHOD__,
+                __LINE__
+            );
+            return;
+        }
+        
         add_filter(
             'media-cloud/storage/ignore-existing-s3-data',
             function ( $shouldIgnore, $attachmentId ) use( $postId ) {
