@@ -25,7 +25,6 @@ return [
 		"groups" => [
 			"ilab-media-s3-debug-settings" => [
 				"title" => "Debug Settings",
-				"description" => "If you are having issues with ILAB Media Cloud, you can turn on logging to possibly help track down issues.",
 				"options" => [
 					"mcloud-debug-logging-level" => [
 						"title" => "Logging Level",
@@ -38,6 +37,12 @@ return [
 							"warning" => "Warning",
 							"error" => "Error"
 						]
+					],
+					"mcloud-debug-content-filtering" => [
+						"title" => "Debug Content Filtering",
+						"description" => "If you are seeing issues with URLs not being updated correctly, enable this to troubleshoot.  When enabled, it will log content filtering as well as generate a report in <code style='white-space: nowrap'>".trailingslashit(WP_CONTENT_DIR)."mcloud-reports</code>.  <strong>DO NOT LEAVE THIS RUNNING.</strong>  Only use to troubleshoot specific pages and then make sure to turn it off.",
+						"type" => "checkbox",
+						"default" => false,
 					],
 					"mcloud-debug-max-database-entries" => [
 						"title" => "Maximum Database Entries",

@@ -127,7 +127,7 @@ final class StorageGlobals {
 			$this->privacyDocs = Environment::Option('mcloud-storage-privacy-docs', null, "inherit");
 		}
 
-		if(!in_array($this->privacy, ['public-read', 'authenticated-read'])) {
+		if(!in_array($this->privacy, ['public-read', 'authenticated-read', 'private'])) {
 			NoticeManager::instance()->displayAdminNotice('error', "Your AWS S3 settings are incorrect.  The ACL '{$this->privacy}' is not valid.  Defaulting to 'public-read'.");
 			$this->privacy = 'public-read';
 		}

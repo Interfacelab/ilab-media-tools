@@ -31,7 +31,8 @@ if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
 class BackblazeS3Storage extends S3Storage {
 	const BACKBLAZE_ACL = [
-		StorageConstants::ACL_PRIVATE_READ => 'PRIVATE',
+		StorageConstants::ACL_PRIVATE => 'PRIVATE',
+		StorageConstants::ACL_AUTHENTICATED_READ => 'PRIVATE',
 		StorageConstants::ACL_PUBLIC_READ => 'public_read'
 	];
 

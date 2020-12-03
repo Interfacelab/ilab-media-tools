@@ -60,7 +60,10 @@ class TaskReporter {
 		}
 
 		$reportDir = trailingslashit(WP_CONTENT_DIR).'mcloud-reports';
-		@mkdir($reportDir, 0755, true);
+		if (!file_exists($reportDir)) {
+			@mkdir($reportDir, 0755, true);
+		}
+
 		if (file_exists($reportDir)) {
 			if (!empty($this->taskFileName)) {
 				if (strpos($this->taskFileName, '/') !== 0) {

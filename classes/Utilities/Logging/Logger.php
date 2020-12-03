@@ -14,6 +14,7 @@
 namespace MediaCloud\Plugin\Utilities\Logging;
 
 use MediaCloud\Plugin\CLI\Command;
+use MediaCloud\Plugin\Tools\Debugging\DebuggingToolSettings;
 use MediaCloud\Plugin\Utilities\Environment;
 use MediaCloud\Vendor\Monolog\Formatter\LineFormatter;
 use MediaCloud\Vendor\Monolog\Handler\ErrorLogHandler;
@@ -34,6 +35,9 @@ class Logger {
 	private $useWPCLI = false;
 
 	private $tempLoggers = [];
+
+	/** @var DebuggingToolSettings  */
+	private $settings = null;
 	//endregion
 
 	//region Constructor
@@ -49,7 +53,9 @@ class Logger {
 		$enabled = ($this->useWPCLI) ?: Environment::Option("mcloud-tool-enabled-debugging", 'ILAB_MEDIA_DEBUGGING_ENABLED', false);
 
 		if ($enabled) {
-			$level = Environment::Option('mcloud-debug-logging-level', null, 'info');
+			$this->settings = DebuggingToolSettings::instance();
+
+			$level = $this->settings->debugLoggingLevel;
 
 			if ($level != 'none') {
 				$realLevel = MonologLogger::INFO;
@@ -69,8 +75,8 @@ class Logger {
                 $errorLogHandler->setFormatter(new LineFormatter("%channel%.%level_name%: %message% %context% %extra%"));
 				$this->logger->pushHandler($errorLogHandler);
 
-				$papertrailHost = Environment::Option('mcloud-debug-remote-url', null, null);
-				$papertrailPort = Environment::Option('mcloud-debug-remote-url-port', null, null);
+				$papertrailHost = $this->settings->debugRemoteUrl;//Environment::Option('mcloud-debug-remote-url', null, null);
+				$papertrailPort = $this->settings->debugRemotePort;//Environment::Option('mcloud-debug-remote-url-port', null, null);
 
 				if (!empty($papertrailHost) && !empty($papertrailPort)) {
 					$papertrail = new SyslogUdpHandler($papertrailHost, $papertrailPort);

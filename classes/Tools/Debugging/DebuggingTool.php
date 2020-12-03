@@ -32,12 +32,16 @@ if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
  * Debugging tool.
  */
 class DebuggingTool extends Tool {
+	/** @var DebuggingToolSettings|null  */
+	private $settings = null;
+
 	public function __construct( $toolName, $toolInfo, $toolManager ) {
 		parent::__construct( $toolName, $toolInfo, $toolManager );
 
 		if ($this->enabled()) {
-            Logger::instance();
+			$this->settings = DebuggingToolSettings::instance();
 
+            Logger::instance();
 
             if (isset($_REQUEST['page']) && ($_REQUEST['page'] == 'media-tools-debug-log') && isset($_POST['action'])) {
             	if (!current_user_can('manage_options')) {

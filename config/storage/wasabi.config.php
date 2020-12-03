@@ -52,16 +52,16 @@ return [
         "dynamic" => true,
         "description" => "The following options control how the storage tool handles uploads.",
         "options" => [
-            "mcloud-storage-privacy" => [
-                "title" => "Upload Privacy ACL",
-                "description" => "This will set the privacy for each upload.  You should leave it as <code>public-read</code> unless you are using Imgix.",
-                "type" => "select",
-	            "display-order" => 1,
-                "options" => [
-                    "public-read" => "Public",
-                    "authenticated-read" => "Private"
-                ],
-            ],
+	        "mcloud-storage-privacy" => [
+		        "title" => "Upload Privacy ACL",
+		        "description" => "This will set the privacy for each upload.  You should leave it as <code>public-read</code> unless you are using Imgix.  If using Scaleways, for private uploads you must use <strong>Private</strong>, for other providers <strong>Authenticated Read</strong> is preferred.",
+		        "type" => "select",
+		        "options" => [
+			        "public-read" => "Public",
+			        "authenticated-read" => "Authenticated Read",
+			        "private" => "Private"
+		        ],
+	        ],
 	        "mcloud-storage-advanced-privacy" => [
 		        "title" => "Advanced Privacy",
 		        "display-order" => 2,
@@ -97,7 +97,8 @@ return [
 				"default" => 'authenticated-read',
 				"options" => [
 					"public-read" => "Public",
-					"authenticated-read" => "Private"
+					"authenticated-read" => "Authenticated Read",
+					"private" => "Private"
 				],
 			],
 		]

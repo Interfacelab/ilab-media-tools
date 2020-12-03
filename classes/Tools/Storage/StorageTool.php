@@ -13,6 +13,8 @@
 namespace MediaCloud\Plugin\Tools\Storage;
 
 use  MediaCloud\Plugin\Tasks\TaskReporter ;
+use  MediaCloud\Plugin\Tools\Debugging\DebuggingTool ;
+use  MediaCloud\Plugin\Tools\Debugging\DebuggingToolSettings ;
 use  MediaCloud\Plugin\Tools\Storage\FileInfo ;
 use  MediaCloud\Plugin\Tools\Storage\StorageConstants ;
 use  MediaCloud\Plugin\Tools\Storage\StorageException ;
@@ -92,11 +94,16 @@ class StorageTool extends Tool
     private  $processed = array() ;
     private  $generated = array() ;
     private  $updateCallCount = 0 ;
+    /** @var DebuggingToolSettings */
+    private  $debugSettings = null ;
+    /** @var TaskReporter[] */
+    private  $reporters = array() ;
     //endregion
     //region Constructor
     public function __construct( $toolName, $toolInfo, $toolManager )
     {
         $this->settings = StorageToolSettings::instance();
+        $this->debugSettings = DebuggingToolSettings::instance();
         if ( !empty($toolInfo['storageDrivers']) ) {
             foreach ( $toolInfo['storageDrivers'] as $key => $data ) {
                 if ( empty($data['name']) || empty($data['class']) || empty($data['config']) ) {
@@ -663,7 +670,7 @@ class StorageTool extends Tool
     
     private function testPrivacy( $type )
     {
-        if ( StorageToolSettings::privacy( $type ) === 'authenticated-read' && !$this->client->usesSignedURLs( $type ) ) {
+        if ( StorageToolSettings::privacy( $type ) !== 'public-read' && !$this->client->usesSignedURLs( $type ) ) {
             return false;
         }
         return true;
@@ -836,7 +843,7 @@ class StorageTool extends Tool
                 __LINE__
             );
             Prefixer::previousVersion();
-            $privacy = Environment::Option( 'mcloud-storage-big-size-original-privacy', null, 'authenticated-read' );
+            $privacy = Environment::Option( 'mcloud-storage-big-size-original-privacy', null, 'private' );
             $doUpload = apply_filters( 'media-cloud/storage/upload-master', true );
             $newData = $this->processFile(
                 $upload_path,
@@ -1631,7 +1638,34 @@ class StorageTool extends Tool
                     }
                     $meta['s3']['options']['params']['Expires'] = $expires;
                 }
-            
+                
+                if ( isset( $meta['sizes'] ) && !empty($meta['sizes']) ) {
+                    foreach ( $meta['sizes'] as $size => $sizeData ) {
+                        if ( !isset( $sizeData['s3'] ) ) {
+                            continue;
+                        }
+                        try {
+                            $this->client->copy(
+                                $sizeData['s3']['key'],
+                                $sizeData['s3']['key'],
+                                $acl,
+                                ( isset( $sizeData['mime-type'] ) ? $sizeData['mime-type'] : $mime ),
+                                $cacheControl,
+                                $expires
+                            );
+                            $meta['sizes'][$size]['s3']['privacy'] = $acl;
+                        } catch ( StorageException $ex ) {
+                            Logger::error(
+                                "Error Copying Size {$size}",
+                                [
+                                'exception' => $ex->getMessage(),
+                            ],
+                                __METHOD__,
+                                __LINE__
+                            );
+                        }
+                    }
+                }
             } catch ( StorageException $ex ) {
                 Logger::error(
                     'Error Copying Object',
@@ -1892,12 +1926,12 @@ class StorageTool extends Tool
             return null;
         }
         $type = typeFromMeta( $meta );
-        $privacy = arrayPath( $meta, 's3/privacy', 'authenticated-read' );
-        $doSign = $this->client->usesSignedURLs( $type ) || $privacy === 'authenticated-read' && is_admin();
+        $privacy = arrayPath( $meta, 's3/privacy', 'private' );
+        $doSign = $this->client->usesSignedURLs( $type ) || $privacy !== 'public-read' && is_admin();
         
         if ( $doSign ) {
             
-            if ( $privacy === 'authenticated-read' && is_admin() ) {
+            if ( $privacy !== 'public-read' && is_admin() ) {
                 $url = $this->client->presignedUrl( $meta['s3']['key'], $this->client->signedURLExpirationForType( $type ) );
             } else {
                 $url = $this->client->url( $meta['s3']['key'], $type );
@@ -1969,6 +2003,56 @@ class StorageTool extends Tool
     }
     
     /**
+     * @return TaskReporter|null
+     */
+    private function getReporter()
+    {
+        if ( empty($this->debugSettings->debugContentFiltering) ) {
+            return null;
+        }
+        $reportId = sanitize_title( $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
+        
+        if ( !isset( $this->reporters[$reportId] ) ) {
+            $reporter = new TaskReporter( $reportId, [
+                'Post ID',
+                'Type',
+                'Found URL',
+                'Mapped URL',
+                'Notes'
+            ], true );
+            $reporter->open();
+            $this->reporters[$reportId] = $reporter;
+        } else {
+            $reporter = $this->reporters[$reportId];
+        }
+        
+        return $reporter;
+    }
+    
+    private function addToReport(
+        $postId = null,
+        $type = null,
+        $oldUrl = null,
+        $newUrl = null,
+        $notes = null
+    )
+    {
+        if ( empty($this->debugSettings->debugContentFiltering) ) {
+            return;
+        }
+        $reporter = $this->getReporter();
+        if ( !empty($reporter) ) {
+            $reporter->add( [
+                $postId,
+                $type,
+                $oldUrl,
+                $newUrl,
+                $notes
+            ] );
+        }
+    }
+    
+    /**
      * Fixes Gutenberg's image block, why put the size on the f*cking <figure> and not the <img>?
      *
      * @param $content
@@ -1998,6 +2082,20 @@ class StorageTool extends Tool
                                     $newFigure = str_replace( $imageTagMatch[0], $newImage, $figureMatch );
                                     $newFigure = str_replace( "wp-image-{$imageId}", "wp-image-{$imageId}", $newFigure );
                                     $content = str_replace( $figureMatch, $newFigure, $content );
+                                    $this->addToReport(
+                                        $imageId,
+                                        'Gutenberg Figure',
+                                        $srcs[0],
+                                        $newUrl[0]
+                                    );
+                                } else {
+                                    $this->addToReport(
+                                        $imageId,
+                                        'Gutenberg Figure',
+                                        $srcs[0],
+                                        null,
+                                        'Attachment image src is null'
+                                    );
                                 }
                             
                             }
@@ -2034,9 +2132,25 @@ class StorageTool extends Tool
                     
                     if ( preg_match( '/href\\s*=\\s*"([^"]+)"/', $anchor, $hrefs ) ) {
                         $newUrl = wp_get_attachment_url( $id );
+                        
                         if ( $newUrl !== $hrefs[1] ) {
                             $content = str_replace( $hrefs[1], $newUrl, $content );
+                            $this->addToReport(
+                                $id,
+                                'Gutenberg Image Anchor',
+                                $hrefs[1],
+                                $newUrl
+                            );
+                        } else {
+                            $this->addToReport(
+                                $id,
+                                'Gutenberg Image Anchor',
+                                $hrefs[1],
+                                $newUrl,
+                                'Anchor URL is the same.'
+                            );
                         }
+                    
                     }
                 
                 }
@@ -2052,9 +2166,25 @@ class StorageTool extends Tool
                     
                     if ( preg_match( '/src\\s*=\\s*"([^"]+)"/', $audioTag, $srcs ) ) {
                         $newUrl = wp_get_attachment_url( $id );
+                        
                         if ( $newUrl !== $srcs[1] ) {
                             $content = str_replace( $srcs[1], $newUrl, $content );
+                            $this->addToReport(
+                                $id,
+                                'Gutenberg Audio|Video',
+                                $srcs[1],
+                                $newUrl
+                            );
+                        } else {
+                            $this->addToReport(
+                                $id,
+                                'Gutenberg Audio|Video',
+                                $srcs[1],
+                                $newUrl,
+                                'URL is the same.'
+                            );
                         }
+                    
                     }
                 
                 }
@@ -2073,11 +2203,26 @@ class StorageTool extends Tool
                     
                     if ( preg_match( '/background-image:url\\(([^)]+)\\)/', $coverImage, $backgroundUrl ) ) {
                         $newUrl = wp_get_attachment_url( $id );
+                        
                         if ( $backgroundUrl[1] === $newUrl ) {
+                            $this->addToReport(
+                                $id,
+                                'Gutenberg Cover Image',
+                                $backgroundUrl[1],
+                                $newUrl,
+                                'URL is the same.'
+                            );
                             continue;
                         }
+                        
                         $newCoverImage = str_replace( $backgroundUrl[1], $newUrl, $coverImage );
                         $content = str_replace( $coverImage, $newCoverImage, $content );
+                        $this->addToReport(
+                            $id,
+                            'Gutenberg Cover Image',
+                            $backgroundUrl[1],
+                            $newUrl
+                        );
                     }
                 
                 }
@@ -2129,6 +2274,32 @@ class StorageTool extends Tool
                                     $newGalleryImage = str_replace( $srcs[0], " src=\"{$newUrl[0]}\"", $newGalleryImage );
                                     $newGalleryImage = str_replace( 'class="', "class=\"mcloud-attachment-{$id} ", $newGalleryImage );
                                     $content = str_replace( $galleryImage, $newGalleryImage, $content );
+                                    $this->addToReport(
+                                        $id,
+                                        'Gutenberg Gallery Image',
+                                        $srcs[1],
+                                        $newUrl[0]
+                                    );
+                                } else {
+                                    
+                                    if ( !empty($newUrl) ) {
+                                        $this->addToReport(
+                                            $id,
+                                            'Gutenberg Gallery Image',
+                                            $srcs[1],
+                                            $newUrl[0],
+                                            "Gallery image URL is the same."
+                                        );
+                                    } else {
+                                        $this->addToReport(
+                                            $id,
+                                            'Gutenberg Gallery Image',
+                                            $srcs[1],
+                                            null,
+                                            "New URL is empty."
+                                        );
+                                    }
+                                
                                 }
                             
                             }
@@ -2298,6 +2469,7 @@ class StorageTool extends Tool
                         $id = attachment_url_to_postid( $matchedUrl );
                     }
                     
+                    
                     if ( !empty($id) ) {
                         
                         if ( !empty($textSize) ) {
@@ -2315,13 +2487,31 @@ class StorageTool extends Tool
                             ];
                         }
                     
+                    } else {
+                        $this->addToReport(
+                            null,
+                            'Image',
+                            $matchedUrl,
+                            null,
+                            'Unable to map URL to post ID.'
+                        );
                     }
+                
                 }
             
+            } else {
+                if ( !$imageFound ) {
+                    $this->addToReport(
+                        null,
+                        'Image',
+                        $src,
+                        null,
+                        'Unable to map URL to post ID.'
+                    );
+                }
             }
         
         }
-        // https://mediacloud.test/app/uploads
         foreach ( $replacements as $id => $data ) {
             $content = $this->replaceImageInContent( $id, $data, $content );
         }
@@ -2335,6 +2525,46 @@ class StorageTool extends Tool
         }
         
         return $content;
+    }
+    
+    /**
+     * @param $url
+     *
+     * @return int|null
+     */
+    private function getShortCodeSource( $url, $type = 'Video' )
+    {
+        $uploadDir = wp_get_upload_dir();
+        $baseFile = ltrim( str_replace( $uploadDir['baseurl'], '', $url ), '/' );
+        //	    $baseFile = ltrim(parse_url($url, PHP_URL_PATH), '/');
+        
+        if ( empty($baseFile) ) {
+            $this->addToReport(
+                null,
+                $type,
+                $url,
+                null,
+                'Base file is empty.'
+            );
+            return null;
+        }
+        
+        global  $wpdb ;
+        $query = $wpdb->prepare( "select post_id from {$wpdb->postmeta} where meta_key='_wp_attached_file' and meta_value = %s", $baseFile );
+        $postId = $wpdb->get_var( $query );
+        
+        if ( empty($postId) ) {
+            $this->addToReport(
+                null,
+                $type,
+                $url,
+                null,
+                'Could not map URL to post ID.'
+            );
+            return null;
+        }
+        
+        return $postId;
     }
     
     /**
@@ -2358,6 +2588,7 @@ class StorageTool extends Tool
         if ( isset( $atts['src'] ) ) {
             $default_types = wp_get_video_extensions();
             $postId = null;
+            $found = false;
             foreach ( $default_types as $type ) {
                 
                 if ( !empty($atts[$type]) ) {
@@ -2365,23 +2596,27 @@ class StorageTool extends Tool
                     if ( strpos( $url, '?' ) !== false ) {
                         $url = preg_replace( '/(\\?.*)/', '', $url );
                     }
-                    $baseFile = ltrim( parse_url( $url, PHP_URL_PATH ), '/' );
-                    if ( empty($baseFile) ) {
-                        return $output;
-                    }
-                    global  $wpdb ;
-                    $query = $wpdb->prepare( "select post_id from {$wpdb->postmeta} where meta_key='_wp_attached_file' and meta_value = %s", $baseFile );
-                    $postId = $wpdb->get_var( $query );
-                    if ( empty($postId) ) {
-                        return $output;
-                    }
+                    $postId = $this->getShortCodeSource( $url );
+                    $found = !empty($postId);
                     break;
                 }
             
             }
+            if ( !$found ) {
+                $postId = $this->getShortCodeSource( $atts['src'] );
+            }
+            
             if ( empty($postId) ) {
+                $this->addToReport(
+                    null,
+                    'Video',
+                    $atts['src'],
+                    null,
+                    "Unable to map URL to post ID"
+                );
                 return $output;
             }
+            
             $post = get_post( $postId );
             $meta = wp_get_attachment_metadata( $post->ID );
             $url = $this->getAttachmentURL( null, $post->ID );
@@ -2390,9 +2625,33 @@ class StorageTool extends Tool
                 $mime = arrayPath( $meta, 'mime_type', $post->post_mime_type );
                 $insert = "<source type='{$mime}' src='{$url}'/>";
                 $insert .= "<a href='{$url}'>{$post->post_title}</a>";
+                
                 if ( preg_match( '/<video(?:[^>]*)>((?s).*)<\\/video>/m', $output, $matches ) ) {
                     $output = str_replace( $matches[1], $insert, $output );
+                    $this->addToReport(
+                        $postId,
+                        'Video',
+                        $atts['src'],
+                        $url
+                    );
+                } else {
+                    $this->addToReport(
+                        $postId,
+                        'Video',
+                        $atts['src'],
+                        null,
+                        "Unable to find src in content html"
+                    );
                 }
+            
+            } else {
+                $this->addToReport(
+                    $postId,
+                    'Video',
+                    $atts['src'],
+                    null,
+                    "Attachment URL is null."
+                );
             }
         
         }
@@ -2428,23 +2687,27 @@ class StorageTool extends Tool
                     if ( strpos( $url, '?' ) !== false ) {
                         $url = preg_replace( '/(\\?.*)/', '', $url );
                     }
-                    $baseFile = ltrim( parse_url( $url, PHP_URL_PATH ), '/' );
-                    if ( empty($baseFile) ) {
-                        return $output;
-                    }
-                    global  $wpdb ;
-                    $query = $wpdb->prepare( "select post_id from {$wpdb->postmeta} where meta_key='_wp_attached_file' and meta_value = %s", $baseFile );
-                    $postId = $wpdb->get_var( $query );
-                    if ( empty($postId) ) {
-                        return $output;
-                    }
+                    $postId = $this->getShortCodeSource( $url, 'Audio' );
+                    $found = !empty($postId);
                     break;
                 }
             
             }
+            if ( !$found ) {
+                $postId = $this->getShortCodeSource( $atts['src'], 'Audio' );
+            }
+            
             if ( empty($postId) ) {
+                $this->addToReport(
+                    null,
+                    'Audio',
+                    $atts['src'],
+                    null,
+                    "Unable to map URL to post ID"
+                );
                 return $output;
             }
+            
             $post = get_post( $postId );
             $meta = wp_get_attachment_metadata( $post->ID );
             $url = $this->getAttachmentURL( null, $post->ID );
@@ -2453,9 +2716,33 @@ class StorageTool extends Tool
                 $mime = arrayPath( $meta, 'mime_type', $post->post_mime_type );
                 $insert = "<source type='{$mime}' src='{$url}'/>";
                 $insert .= "<a href='{$url}'>{$post->post_title}</a>";
+                
                 if ( preg_match( '/<audio(?:[^>]*)>((?s).*)<\\/audio>/m', $output, $matches ) ) {
                     $output = str_replace( $matches[1], $insert, $output );
+                    $this->addToReport(
+                        $postId,
+                        'Audio',
+                        $atts['src'],
+                        $url
+                    );
+                } else {
+                    $this->addToReport(
+                        $postId,
+                        'Audio',
+                        $atts['src'],
+                        null,
+                        "Unable to find URL in content HTML"
+                    );
                 }
+            
+            } else {
+                $this->addToReport(
+                    $postId,
+                    'Audio',
+                    $atts['src'],
+                    null,
+                    "Attachment URL is empty."
+                );
             }
         
         }
@@ -2588,6 +2875,14 @@ class StorageTool extends Tool
         return '';
     }
     
+    /**
+     * @param $id
+     * @param $data
+     * @param $content
+     *
+     * @return string|string[]
+     * @throws \MediaCloud\Plugin\Tools\Storage\StorageException
+     */
     private function replaceImageInContent( $id, $data, $content )
     {
         $id = apply_filters(
@@ -2622,9 +2917,18 @@ class StorageTool extends Tool
             $url = $url[0];
         }
         $url = preg_replace( '/&lang=[aA-zZ0-9]+/m', '', $url );
+        
         if ( empty($url) || $url == $data['src'] && empty($srcSet) ) {
+            $this->addToReport(
+                $id,
+                'Image',
+                $data['src'],
+                null,
+                'Unable to map URL'
+            );
             return $content;
         }
+        
         
         if ( !empty($data['image']) && $this->replaceSrcSet ) {
             $image = $data['image'];
@@ -2636,6 +2940,12 @@ class StorageTool extends Tool
             $content = str_replace( $data['image'], $image, $content );
         }
         
+        $this->addToReport(
+            $id,
+            'Image',
+            $data['src'],
+            $url
+        );
         return str_replace( $data['src'], $url, $content );
     }
     
@@ -3354,7 +3664,7 @@ TEMPLATE;
                         $mimeType = ( isset( $meta['s3']['mime-type'] ) ? $meta['s3']['mime-type'] : '' );
                         $cloudIcon = ILAB_PUB_IMG_URL . '/ilab-cloud-icon.svg';
                         $lockIcon = ILAB_PUB_IMG_URL . '/ilab-icon-lock.svg';
-                        $lockImg = ( !empty($privacy) && $privacy === StorageConstants::ACL_PRIVATE_READ ? "<img class='mcloud-lock' src='{$lockIcon}' height='22'>" : '' );
+                        $lockImg = ( !empty($privacy) && $privacy !== StorageConstants::ACL_PUBLIC_READ ? "<img class='mcloud-lock' src='{$lockIcon}' height='22'>" : '' );
                         echo  "<a class='media-cloud-info-link' data-post-id='{$id}' data-container='list' data-mime-type='{$mimeType}' href='" . $meta['s3']['url'] . "' target=_blank><img src='{$cloudIcon}' width='24'>{$lockImg}</a>" ;
                     }
                 
@@ -3368,6 +3678,7 @@ TEMPLATE;
                 
                 if ( $this->client()->canUpdateACL() ) {
                     $actions['mcloud-make-private'] = "Change Privacy to Private";
+                    $actions['mcloud-make-authenticated-read'] = "Change Privacy to Authenticated Read";
                     $actions['mcloud-make-public'] = "Change Privacy to Public";
                 }
                 
@@ -3378,7 +3689,19 @@ TEMPLATE;
                 function ( $redirect_to, $action_name, $post_ids ) {
                 
                 if ( in_array( $action_name, [ 'mcloud-make-private', 'mcloud-make-public' ] ) ) {
-                    $privacy = ( $action_name === 'mcloud-make-private' ? StorageConstants::ACL_PRIVATE_READ : StorageConstants::ACL_PUBLIC_READ );
+                    
+                    if ( $action_name === 'mcloud-make-private' ) {
+                        $privacy = StorageConstants::ACL_PRIVATE;
+                    } else {
+                        
+                        if ( $action_name === 'mcloud-make-authenticated-read' ) {
+                            $privacy = StorageConstants::ACL_AUTHENTICATED_READ;
+                        } else {
+                            $privacy = StorageConstants::ACL_PUBLIC_READ;
+                        }
+                    
+                    }
+                    
                     foreach ( $post_ids as $postId ) {
                         $attachmentMeta = true;
                         $updated = false;
@@ -3482,6 +3805,9 @@ TEMPLATE;
             ?>>Public</option>
                 <option value="authenticated-read" <?php 
             echo  ( $selected == 'authenticated-read' ? 'selected' : '' ) ;
+            ?>>Authenticated Read</option>
+                <option value="private" <?php 
+            echo  ( $selected == 'private' ? 'selected' : '' ) ;
             ?>>Private</option>
             </select>
 			<?php 
@@ -3548,21 +3874,59 @@ TEMPLATE;
             
             
             if ( $_REQUEST['cloud_privacy'] == 'public-read' ) {
-                $meta_query[] = [ [
+                $meta_query[] = [
+                    'relation' => 'OR',
+                    [
                     'key'     => '_wp_attachment_metadata',
                     'value'   => '"public-read"',
                     'compare' => 'LIKE',
                     'type'    => 'CHAR',
-                ] ];
+                ],
+                    [
+                    'key'     => 'ilab_s3_info',
+                    'value'   => '"public-read"',
+                    'compare' => 'LIKE',
+                    'type'    => 'CHAR',
+                ],
+                ];
             } else {
+                
                 if ( $_REQUEST['cloud_privacy'] == 'authenticated-read' ) {
-                    $meta_query[] = [ [
+                    $meta_query[] = [
+                        'relation' => 'OR',
+                        [
                         'key'     => '_wp_attachment_metadata',
                         'value'   => '"authenticated-read"',
                         'compare' => 'LIKE',
                         'type'    => 'CHAR',
-                    ] ];
+                    ],
+                        [
+                        'key'     => 'ilab_s3_info',
+                        'value'   => '"authenticated-read"',
+                        'compare' => 'LIKE',
+                        'type'    => 'CHAR',
+                    ],
+                    ];
+                } else {
+                    if ( $_REQUEST['cloud_privacy'] == 'private' ) {
+                        $meta_query[] = [
+                            'relation' => 'OR',
+                            [
+                            'key'     => '_wp_attachment_metadata',
+                            'value'   => '"private"',
+                            'compare' => 'LIKE',
+                            'type'    => 'CHAR',
+                        ],
+                            [
+                            'key'     => 'ilab_s3_info',
+                            'value'   => '"private"',
+                            'compare' => 'LIKE',
+                            'type'    => 'CHAR',
+                        ],
+                        ];
+                    }
                 }
+            
             }
             
             if ( count( $meta_query ) > 1 ) {
@@ -3627,7 +3991,7 @@ TEMPLATE;
             echo  $additionalIcons ;
             ?><img data-post-id="{{data.id}}" data-container="grid" data-mime-type="{{data.type}}" src="<?php 
             echo  ILAB_PUB_IMG_URL . '/ilab-cloud-icon.svg' ;
-            ?>" width="29" height="18" class="ilab-s3-logo"><# if (data.hasOwnProperty("s3") && (data.s3.privacy=="authenticated-read")) {#><img src="<?php 
+            ?>" width="29" height="18" class="ilab-s3-logo"><# if (data.hasOwnProperty("s3") && (data.s3.privacy!="public-read")) {#><img src="<?php 
             echo  ILAB_PUB_IMG_URL . '/ilab-icon-lock.svg' ;
             ?>" height="18" class="mcloud-grid-lock"><#}#>\n';
                         txt = txt.replace(search, replace);
@@ -3645,7 +4009,7 @@ TEMPLATE;
             echo  $additionalIcons ;
             ?><img data-post-id="{{data.id}}" data-container="grid" data-mime-type="{{data.type}}" src="<?php 
             echo  ILAB_PUB_IMG_URL . '/ilab-cloud-icon.svg' ;
-            ?>" width="29" height="18" class="ilab-s3-logo"><# if (data.hasOwnProperty("s3") && (data.s3.privacy=="authenticated-read")) {#><img src="<?php 
+            ?>" width="29" height="18" class="ilab-s3-logo"><# if (data.hasOwnProperty("s3") && (data.s3.privacy!="public-read")) {#><img src="<?php 
             echo  ILAB_PUB_IMG_URL . '/ilab-icon-lock.svg' ;
             ?>" height="18" class="mcloud-grid-lock"><#}#>\n';
                         txt = txt.replace(search, replace);
@@ -3953,9 +4317,9 @@ TEMPLATE;
                 $originalImageKey = arrayPath( $meta, 'original_image_s3/key' );
                 
                 if ( !empty($originalImageKey) ) {
-                    $privacy = arrayPath( $meta, 'original_image_s3/privacy', 'authenticated-read' );
+                    $privacy = arrayPath( $meta, 'original_image_s3/privacy', 'private' );
                     try {
-                        $doSign = $this->client->usesSignedURLs( $mimeType ) || $privacy === 'authenticated-read';
+                        $doSign = $this->client->usesSignedURLs( $mimeType ) || $privacy !== 'public-read';
                         $url = ( $doSign ? $this->client->presignedUrl( $originalImageKey, $this->client->signedURLExpirationForType( $mimeType ) ) : $this->client->url( $originalImageKey, $mimeType ) );
                         try {
                             $httpClient->get( $url, [
@@ -3990,9 +4354,9 @@ TEMPLATE;
                 $imageKey = arrayPath( $meta, 's3/key' );
                 
                 if ( !empty($imageKey) ) {
-                    $privacy = arrayPath( $meta, 's3/privacy', 'authenticated-read' );
+                    $privacy = arrayPath( $meta, 's3/privacy', 'private' );
                     try {
-                        $doSign = $this->client->usesSignedURLs( $mimeType ) || $privacy === 'authenticated-read';
+                        $doSign = $this->client->usesSignedURLs( $mimeType ) || $privacy !== 'public-read';
                         $url = ( $doSign ? $this->client->presignedUrl( $imageKey, $this->client->signedURLExpirationForType( $mimeType ) ) : $this->client->url( $imageKey, $mimeType ) );
                         try {
                             $filename = pathinfo( $scaledImagePath, PATHINFO_FILENAME );
@@ -5663,9 +6027,9 @@ MIGRATED;
                 
                 if ( !empty($originalKey) ) {
                     try {
-                        $privacy = arrayPath( $meta, 'original_image_s3/privacy', 'authenticated-read' );
+                        $privacy = arrayPath( $meta, 'original_image_s3/privacy', 'private' );
                         $infoCallback( "Checking original url ... " );
-                        $doSign = $this->client->usesSignedURLs( $mimeType ) || $privacy === 'authenticated-read';
+                        $doSign = $this->client->usesSignedURLs( $mimeType ) || $privacy !== 'public-read';
                         $originalUrl = ( $doSign ? $this->client->presignedUrl( $originalKey, $this->client->signedURLExpirationForType( $mimeType ) ) : $this->client->url( $originalKey, $mimeType ) );
                         
                         if ( $originalUrl == $attachmentUrl ) {
@@ -5723,9 +6087,9 @@ MIGRATED;
                         continue;
                     }
                     
-                    $privacy = arrayPath( $sizeInfo, 's3/privacy', 'authenticated-read' );
+                    $privacy = arrayPath( $sizeInfo, 's3/privacy', 'private' );
                     try {
-                        $doSign = $this->client->usesSignedURLs( $mimeType ) || $privacy === 'authenticated-read';
+                        $doSign = $this->client->usesSignedURLs( $mimeType ) || $privacy !== 'public-read';
                         $url = ( $doSign ? $this->client->presignedUrl( $sizeS3Key, $this->client->signedURLExpirationForType( $mimeType ) ) : $this->client->url( $sizeS3Key, $mimeType ) );
                         
                         if ( !empty($url) && ($url == $attachmentUrl || $url == $originalUrl) ) {
@@ -5896,9 +6260,9 @@ MIGRATED;
                     $reportLine[] = '';
                 } else {
                     try {
-                        $privacy = arrayPath( $meta, 'original_image_s3/privacy', 'authenticated-read' );
+                        $privacy = arrayPath( $meta, 'original_image_s3/privacy', 'private' );
                         $infoCallback( "Checking original url ... " );
-                        $doSign = $this->client->usesSignedURLs( $mimeType ) || $privacy === 'authenticated-read';
+                        $doSign = $this->client->usesSignedURLs( $mimeType ) || $privacy !== 'public-read';
                         $originalUrl = ( $doSign ? $this->client->presignedUrl( $originalKey, $this->client->signedURLExpirationForType( $mimeType ) ) : $this->client->url( $originalKey, $mimeType ) );
                         
                         if ( $originalUrl != $attachmentUrl ) {
@@ -5977,9 +6341,9 @@ MIGRATED;
                         continue;
                     }
                     
-                    $privacy = arrayPath( $sizeInfo, 's3/privacy', 'authenticated-read' );
+                    $privacy = arrayPath( $sizeInfo, 's3/privacy', 'private' );
                     try {
-                        $doSign = $this->client->usesSignedURLs( $mimeType ) || $privacy === 'authenticated-read';
+                        $doSign = $this->client->usesSignedURLs( $mimeType ) || $privacy !== 'public-read';
                         $url = ( $doSign ? $this->client->presignedUrl( $sizeS3Key, $this->client->signedURLExpirationForType( $mimeType ) ) : $this->client->url( $sizeS3Key, $mimeType ) );
                         
                         if ( !empty($url) && ($url == $attachmentUrl || $url == $originalUrl) ) {

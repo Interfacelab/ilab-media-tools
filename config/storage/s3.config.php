@@ -68,8 +68,15 @@ return [
                     'sa-east-1' => 'South America (São Paulo)',
 	                'cn-north-1' => 'China (Beijing)',
 	                'cn-northwest-1' => 'China (Ningxia)',
+	                'custom' => 'Custom',
                 ],
             ],
+	        "mcloud-storage-s3-custom-region" => [
+		        "title" => "Custom Region",
+		        "description" => "Amazon adds new regions all of the time and some S3 compatible services use different regions than Amazon S3.  You can enter that region here.  Please insure that <strong>Region</strong> above is set to <strong>Custom</strong>.",
+		        "display-order" => 12,
+		        "type" => "text-field",
+	        ],
             "mcloud-storage-s3-use-transfer-acceleration" => [
                 "title" => "Use Transfer Acceleration",
                 "description" => "Amazon S3 Transfer Acceleration enables fast, easy, and secure transfers of files over long distances between your client and an S3 bucket. Transfer Acceleration takes advantage of Amazon CloudFront’s globally distributed edge locations.  <strong>You must have it enabled on your bucket in the S3 console.</strong>",
@@ -86,12 +93,12 @@ return [
         "options" => [
 	        "mcloud-storage-privacy" => [
 		        "title" => "Upload Privacy ACL",
-		        "description" => "This will set the privacy for each upload.  You should leave it as <code>public-read</code> unless you are using Imgix.",
-		        "display-order" => 1,
+		        "description" => "This will set the privacy for each upload.  You should leave it as <code>public-read</code> unless you are using Imgix.  If using Scaleways, for private uploads you must use <strong>Private</strong>, for other providers <strong>Authenticated Read</strong> is preferred.",
 		        "type" => "select",
 		        "options" => [
 			        "public-read" => "Public",
-			        "authenticated-read" => "Private"
+			        "authenticated-read" => "Authenticated Read",
+			        "private" => "Private"
 		        ],
 	        ],
 	        "mcloud-storage-advanced-privacy" => [
@@ -129,7 +136,8 @@ return [
 				"default" => 'authenticated-read',
 				"options" => [
 					"public-read" => "Public",
-					"authenticated-read" => "Private"
+					"authenticated-read" => "Authenticated Read",
+					"private" => "Private"
 				],
 			],
 		]

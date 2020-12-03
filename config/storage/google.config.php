@@ -50,7 +50,8 @@ return [
                 "type" => "select",
                 "options" => [
                     "public-read" => "Public",
-                    "authenticated-read" => "Private"
+	                "authenticated-read" => "Authenticated Read",
+	                "private" => "Private",
                 ],
             ],
 	        "mcloud-storage-advanced-privacy" => [
@@ -88,7 +89,8 @@ return [
 				"default" => 'authenticated-read',
 				"options" => [
 					"public-read" => "Public",
-					"authenticated-read" => "Private"
+					"authenticated-read" => "Authenticated Read",
+					"private" => "Private"
 				],
 			],
 		]

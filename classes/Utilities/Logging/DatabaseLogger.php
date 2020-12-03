@@ -14,6 +14,7 @@
 
 namespace MediaCloud\Plugin\Utilities\Logging;
 
+use MediaCloud\Plugin\Tools\Debugging\DebuggingToolSettings;
 use MediaCloud\Plugin\Utilities\Environment;
 
 /**
@@ -32,7 +33,10 @@ class DatabaseLogger {
     private $limit = 1000;
 
     public function __construct() {
-        $this->limit = (int)Environment::Option('mcloud-debug-max-database-entries', null, $this->limit);
+        $this->limit = (int)DebuggingToolSettings::instance()->maxDatabaseEntries;
+        if (empty($this->limit)) {
+        	$this->limit = 1000;
+        }
 
         $this->insureTable();
         $this->pruneLog();

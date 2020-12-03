@@ -65,7 +65,10 @@ Not uploaded.
 		Public
 		</option>
 		<option value="authenticated-read" {{ ($privacy == 'authenticated-read') ? 'selected' : '' }}>
-		Authenticated Users
+			Authenticated Users
+		</option>
+		<option value="private" {{ ($privacy == 'private') ? 'selected' : '' }}>
+			Private
 		</option>
 	</select>
 </div>

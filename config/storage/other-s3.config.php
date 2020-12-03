@@ -60,8 +60,15 @@ return [
 	                'sa-east-1' => 'South America (São Paulo)',
 	                'cn-north-1' => 'China (Beijing)',
 	                'cn-northwest-1' => 'China (Ningxia)',
+	                "custom" => "Custom",
                 ],
             ],
+	        "mcloud-storage-s3-custom-region" => [
+		        "title" => "Custom Region",
+		        "description" => "Amazon adds new regions all of the time and some S3 compatible services use different regions than Amazon S3.  You can enter that region here.  Please insure that <strong>Region</strong> above is set to <strong>Custom</strong>.",
+		        "display-order" => 12,
+		        "type" => "text-field",
+	        ],
             "mcloud-storage-s3-endpoint" => [
                 "title" => "Custom Endpoint",
                 "description" => "Some S3 compatible services use a custom API endpoint URL or server name.  For example, with a DigitalOcean space in NYC-3 region, this value would be <code>nyc3.digitaloceanspaces.com</code>",
@@ -82,16 +89,16 @@ return [
         "dynamic" => true,
         "description" => "The following options control how the storage tool handles uploads.",
         "options" => [
-            "mcloud-storage-privacy" => [
-                "title" => "Upload Privacy ACL",
-                "description" => "This will set the privacy for each upload.  You should leave it as <code>public-read</code> unless you are using Imgix.",
-                "type" => "select",
-	            "display-order" => 1,
-                "options" => [
-                    "public-read" => "Public",
-                    "authenticated-read" => "Private"
-                ],
-            ],
+	        "mcloud-storage-privacy" => [
+		        "title" => "Upload Privacy ACL",
+		        "description" => "This will set the privacy for each upload.  You should leave it as <code>public-read</code> unless you are using Imgix.  If using Scaleways, for private uploads you must use <strong>Private</strong>, for other providers <strong>Authenticated Read</strong> is preferred.",
+		        "type" => "select",
+		        "options" => [
+			        "public-read" => "Public",
+			        "authenticated-read" => "Authenticated Read",
+			        "private" => "Private"
+		        ],
+	        ],
 	        "mcloud-storage-advanced-privacy" => [
 		        "title" => "Advanced Privacy",
 		        "description" => "",
@@ -127,7 +134,8 @@ return [
 				"default" => 'authenticated-read',
 				"options" => [
 					"public-read" => "Public",
-					"authenticated-read" => "Private"
+					"authenticated-read" => "Authenticated Read",
+					"private" => "Private"
 				],
 			],
 		]

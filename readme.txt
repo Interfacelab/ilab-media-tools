@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 5.6
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.1.9
+Stable tag: 4.1.12
 Requires PHP: 7.1
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -104,6 +104,28 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 
 == Changelog ==
+
+= 4.1.12 =
+
+* Added `privacy` ACL to cloud storage uploads.  Since the first days of Media Cloud, we've been using the `authenticated-read`
+  ACL for private cloud storage uploads.  There was a historical reason for that and functionally there is no difference
+  between `authenticated-read` and `private` ACLs for nearly all cloud storage providers.  If you are using Scaleway and have
+  private uploads enabled, make sure you change the privacy settings from Authenticated Read to Private.  For other
+  cloud storage providers you do not need to do this, but we suggest you do.  You will also need to change the privacy on
+  any existing private uploads by going to the Media Library, switching to list view, filtering on `Authenticated Read`
+  and then doing a bulk action `Change Privacy to Private`.
+* Added the ability to specify a custom region.  Mostly useful for S3 compatible cloud storage providers, but also useful
+  when Amazon released a new region and their is a lag time for us updating our list.
+* Fixed changing ACL on the attachment edit screen to update the ACL for any generated image sizes.
+* Fix for direct uploading non-image files when using the "Add New" page in WordPress admin.
+* Added a new debugging mode that will generate a CSV log file of URL replacements on a given page.  Enable it by going to
+  **Media Cloud -> Debug Settings** and toggle on **Debug Content Filtering**.  Visit a page that you are having issues
+  with and a log file will be generated in your `WP-CONTENT/mcloud-reports` directory.  DO NOT LEAVE THIS RUNNING.  Turn
+  it on, load your page, turn it off.  Note that this CSV file only logs URL replacements that happen in the content of
+  a post, it will not log URL replacements that happen elsewhere in your page that are the result of calling functions
+  like `wp_get_image_src()` in your templates.
+* Fixed URL replacements for video and audio shortcodes (videos inserted with classic editor or via the [video] shortcode).
+* Last day to use BLACKFRIDAY2020 for 33% off annual licenses, ends December 3rd!
 
 = 4.1.9 =
 

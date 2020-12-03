@@ -13,7 +13,8 @@ $docValue = \MediaCloud\Plugin\Utilities\Environment::Option('mcloud-storage-pri
                 <select id="mcloud-storage-privacy-images" name="mcloud-storage-privacy-images">
                     <option value="inherit" {{($imageValue === 'inherit') ? 'selected' : ''}}>Inherit</option>
                     <option value="public-read" {{($imageValue === 'public-read') ? 'selected' : ''}}>Public</option>
-                    <option value="authenticated-read" {{($imageValue === 'authenticated-read') ? 'selected' : ''}}>Private</option>
+                    <option value="authenticated-read" {{($imageValue === 'authenticated-read') ? 'selected' : ''}}>Authenticated Read</option>
+                    <option value="private" {{($imageValue === 'private') ? 'selected' : ''}}>Private</option>
                 </select>
                 <p class="description">This will set the privacy for image uploads.</p>
             </div>
@@ -26,7 +27,8 @@ $docValue = \MediaCloud\Plugin\Utilities\Environment::Option('mcloud-storage-pri
                 <select id="mcloud-storage-privacy-video" name="mcloud-storage-privacy-video">
                     <option value="inherit" {{($videoValue === 'inherit') ? 'selected' : ''}}>Inherit</option>
                     <option value="public-read" {{($videoValue === 'public-read') ? 'selected' : ''}}>Public</option>
-                    <option value="authenticated-read" {{($videoValue === 'authenticated-read') ? 'selected' : ''}}>Private</option>
+                    <option value="authenticated-read" {{($videoValue === 'authenticated-read') ? 'selected' : ''}}>Authenticated Read</option>
+                    <option value="private" {{($videoValue === 'private') ? 'selected' : ''}}>Private</option>
                 </select>
                 <p class="description">This will set the privacy for video uploads.</p>
             </div>
@@ -39,7 +41,8 @@ $docValue = \MediaCloud\Plugin\Utilities\Environment::Option('mcloud-storage-pri
                 <select id="mcloud-storage-privacy-audio" name="mcloud-storage-privacy-audio">
                     <option value="inherit" {{($audioValue === 'inherit') ? 'selected' : ''}}>Inherit</option>
                     <option value="public-read" {{($audioValue === 'public-read') ? 'selected' : ''}}>Public</option>
-                    <option value="authenticated-read" {{($audioValue === 'authenticated-read') ? 'selected' : ''}}>Private</option>
+                    <option value="authenticated-read" {{($audioValue === 'authenticated-read') ? 'selected' : ''}}>Authenticated Read</option>
+                    <option value="private" {{($audioValue === 'private') ? 'selected' : ''}}>Private</option>
                 </select>
                 <p class="description">This will set the privacy for audio uploads.</p>
             </div>
@@ -52,7 +55,8 @@ $docValue = \MediaCloud\Plugin\Utilities\Environment::Option('mcloud-storage-pri
                 <select id="mcloud-storage-privacy-docs" name="mcloud-storage-privacy-docs">
                     <option value="inherit" {{($docValue === 'inherit') ? 'selected' : ''}}>Inherit</option>
                     <option value="public-read" {{($docValue === 'public-read') ? 'selected' : ''}}>Public</option>
-                    <option value="authenticated-read" {{($docValue === 'authenticated-read') ? 'selected' : ''}}>Private</option>
+                    <option value="authenticated-read" {{($docValue === 'authenticated-read') ? 'selected' : ''}}>Authenticated Read</option>
+                    <option value="private" {{($docValue === 'private') ? 'selected' : ''}}>Private</option>
                 </select>
                 <p class="description">This will set the privacy for document uploads.</p>
             </div>

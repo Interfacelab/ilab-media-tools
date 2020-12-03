@@ -20,5 +20,6 @@ if (!defined('ABSPATH')) { header('Location: /'); die; }
 
 final class StorageConstants {
 	const ACL_PUBLIC_READ = 'public-read';
-	const ACL_PRIVATE_READ = 'authenticated-read';
+	const ACL_AUTHENTICATED_READ = 'authenticated-read';
+	const ACL_PRIVATE = 'private';
 }

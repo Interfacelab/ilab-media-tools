@@ -162,6 +162,10 @@ class S3StorageSettings extends ToolSettings {
 			} else if ((StorageToolSettings::driver() !== 'wasabi') && (StorageToolSettings::driver() !== 'do')) {
 				$region = Environment::Option('mcloud-storage-s3-region', ['ILAB_AWS_S3_REGION', 'ILAB_CLOUD_REGION'], 'auto');
 
+				if ($region === 'custom') {
+					$region = Environment::Option('mcloud-storage-s3-custom-region', null, 'auto');
+				}
+
 				if($region !== 'auto') {
 					$this->_region = $region;
 				}

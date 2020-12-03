@@ -45,7 +45,8 @@ class GoogleStorage implements StorageInterface, ConfiguresWizard {
 	use StorageWizardTrait;
 
 	const GOOGLE_ACL = [
-		StorageConstants::ACL_PRIVATE_READ => 'authenticatedRead',
+		StorageConstants::ACL_PRIVATE => 'authenticatedRead',
+		StorageConstants::ACL_AUTHENTICATED_READ => 'authenticatedRead',
 		StorageConstants::ACL_PUBLIC_READ => 'publicRead'
 	];
 

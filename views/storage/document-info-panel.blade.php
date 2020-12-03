@@ -47,10 +47,13 @@
                     <label for="s3-access-acl">Access</label>
                     <select id="s3-access-acl" name="s3-access-acl">
                         <option value="public-read" {{ ($privacy == 'public-read') ? 'selected' : '' }}>
-                        Public
+                            Public
                         </option>
                         <option value="authenticated-read" {{ ($privacy == 'authenticated-read') ? 'selected' : '' }}>
-                        Authenticated Users
+                            Authenticated Users
+                        </option>
+                        <option value="private" {{ ($privacy == 'private') ? 'selected' : '' }}>
+                            Private
                         </option>
                     </select>
                 </div>
