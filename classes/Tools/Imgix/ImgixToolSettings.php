@@ -61,15 +61,17 @@ class ImgixToolSettings extends DynamicImagesToolSettings {
 			if ($this->_imgixDomains === null) {
 				$this->_imgixDomains = [];
 				$domains = Environment::Option('mcloud-imgix-domains', null, '');
-				$domain_lines = explode("\n", $domains);
+				if (!empty($domains)) {
+					$domain_lines = explode("\n", $domains);
 
-				if(count($domain_lines) <= 1) {
-					$domain_lines = explode(',', $domains);
-				}
+					if(count($domain_lines) <= 1) {
+						$domain_lines = explode(',', $domains);
+					}
 
-				foreach($domain_lines as $d) {
-					if(!empty($d)) {
-						$this->_imgixDomains[] = trim($d);
+					foreach($domain_lines as $d) {
+						if(!empty($d)) {
+							$this->_imgixDomains[] = trim($d);
+						}
 					}
 				}
 			}

@@ -2,6 +2,9 @@
 
 namespace MediaCloud\Vendor\GuzzleHttp\Promise;
 
+
+use MediaCloud\Plugin\Utilities\Logging\Logger;
+
 /**
  * A promise that has been rejected.
  *
@@ -14,7 +17,16 @@ class RejectedPromise implements PromiseInterface
 
     public function __construct($reason)
     {
-        if (method_exists($reason, 'then')) {
+    	if (is_array($reason) && (\MediaCloud\Plugin\Utilities\isKeyedArray($reason))) {
+            foreach($reason as $key => $value) {
+            	if (is_object($value)) {
+		            if (method_exists($value, 'then')) {
+			            throw new \InvalidArgumentException(
+				            'You cannot create a RejectedPromise with a promise.');
+		            }
+	            }
+		    }
+	    } else if (method_exists($reason, 'then')) {
             throw new \InvalidArgumentException(
                 'You cannot create a RejectedPromise with a promise.');
         }

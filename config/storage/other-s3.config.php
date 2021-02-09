@@ -131,7 +131,7 @@ return [
 				"description" => "This will set the privacy for the original image upload.",
 				"display-order" => 43,
 				"type" => "select",
-				"default" => 'authenticated-read',
+				"default" => 'private',
 				"options" => [
 					"public-read" => "Public",
 					"authenticated-read" => "Authenticated Read",

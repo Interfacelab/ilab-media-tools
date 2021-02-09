@@ -272,20 +272,24 @@ interface StorageInterface {
 	/**
 	 * @param string $path
 	 * @param string $delimiter
+	 * @param int $limit
+	 * @param string $next
 	 *
 	 * @return StorageFile[]
 	 */
-	public function dir($path = '', $delimiter = '/');
+	public function dir($path = '', $delimiter = '/', $limit = -1, $next = null);
 
 	/**
 	 * Similar to dir() but returns an array of keys as strings.
 	 *
 	 * @param string $path
 	 * @param string $delimiter
+	 * @param int $limit
+	 * @param string $next
 	 *
-	 * @return string[]
+	 * @return array
 	 */
-	public function ls($path = '', $delimiter = '/');
+	public function ls($path = '', $delimiter = '/', $limit = -1, $next = null);
 
 	/**
 	 * Determines if the storage provider supports browsing

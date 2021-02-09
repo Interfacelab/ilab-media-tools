@@ -13,6 +13,8 @@
 
 namespace MediaCloud\Plugin\Tools\Storage;
 
+use MediaCloud\Plugin\Utilities\Logging\Logger;
+
 /**
  * Interface for creating the required tables
  */
@@ -38,16 +40,12 @@ final class StoragePostMap {
 		}
 
 		$currentVersion = get_site_option(self::DB_KEY);
-		if (!empty($currentVersion) && version_compare(self::DB_VERSION, $currentVersion, '==')) {
-			global $wpdb;
-
-			$tableName = $wpdb->base_prefix.'mcloud_post_map';
-			$exists = ($wpdb->get_var("SHOW TABLES LIKE '$tableName'") == $tableName);
-			if ($exists) {
-				static::$installed = true;
-				return true;
-			}
+		if (!empty($currentVersion) && version_compare(self::DB_VERSION, $currentVersion, '<=')) {
+			static::$installed = true;
+			return true;
 		}
+
+		Logger::warning("Storage map version mismatch $currentVersion => ".self::DB_VERSION." = ".version_compare(self::DB_VERSION, $currentVersion, '<='));
 
 		return static::installMapTable();
 	}
@@ -56,6 +54,11 @@ final class StoragePostMap {
 		global $wpdb;
 
 		$tableName = $wpdb->base_prefix.'mcloud_post_map';
+
+		$suppress = $wpdb->suppress_errors(true);
+		$wpdb->query("drop table {$tableName}");
+		$wpdb->suppress_errors($suppress);
+
 		$charset = $wpdb->get_charset_collate();
 
 		$sql = "CREATE TABLE {$tableName} (

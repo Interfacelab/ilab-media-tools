@@ -110,6 +110,7 @@ final class TaskManager {
 			add_action('wp_ajax_mcloud_start_task', [$this, 'actionStartTask']);
 			add_action('wp_ajax_mcloud_cancel_task', [$this, 'actionCancelTask']);
 			add_action('wp_ajax_mcloud_cancel_all_tasks', [$this, 'actionCancelAllTasks']);
+			add_action('wp_ajax_mcloud_nuke_all_tasks', [$this, 'actionNukeAllTasks']);
 			add_action('wp_ajax_mcloud_task_status', [$this, 'actionTaskStatus']);
 			add_action('wp_ajax_mcloud_all_task_statuses', [$this, 'actionAllTaskStatuses']);
 
@@ -336,6 +337,19 @@ final class TaskManager {
 				$task->save();
 			}
 		}
+
+		wp_send_json(['status' => 'ok', 'message', 'Tasks cancelled.']);
+	}
+
+	/**
+	 * Cancels all running tasks
+	 */
+	public function actionNukeAllTasks() {
+		Logger::info("Nuking All Tasks ... ", [], __METHOD__, __LINE__);
+		check_ajax_referer('mcloud_nuke_all_tasks', 'nonce');
+
+		// SQL TO DELETE IT ALL EVERYTHING
+		TaskDatabase::nukeData();
 
 		wp_send_json(['status' => 'ok', 'message', 'Tasks cancelled.']);
 	}

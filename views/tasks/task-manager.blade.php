@@ -13,6 +13,9 @@
                     <button type="button" class="button button-primary button-small button-start-task" data-task-id="{{$id}}" data-has-options="{{!empty($taskClass::taskOptions())}}" data-nonce="{{wp_create_nonce('mcloud_start_task')}}">{{$taskClass::title()}}</button>
                 @endforeach
             </div>
+            <div class="actions">
+                <button type="button" class="button button-nuke-all button-small" data-nuke-all-nonce="{{wp_create_nonce('mcloud_nuke_all_tasks')}}">Reset All Task Data</button>
+            </div>
         </div>
 
         <div class="task-list running-tasks">

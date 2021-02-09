@@ -68,6 +68,32 @@ final class ToolsManager
     {
         //        MigrationsManager::instance()->migrate();
         $this->tools = [];
+        if ( class_exists( '\\hyperdb' ) || class_exists( '\\LudicrousDB' ) ) {
+            add_filter(
+                'pre_update_option',
+                function ( $value, $option, $old_value ) {
+                
+                if ( empty($value) && strpos( $option, 'mcloud' ) === 0 ) {
+                    $type = strtolower( gettype( $value ) );
+                    
+                    if ( in_array( $type, [ 'boolean', 'null' ] ) ) {
+                        Logger::info(
+                            "pre_update_option: Empty {$option} => " . $type,
+                            [],
+                            __METHOD__,
+                            __LINE__
+                        );
+                        return (string) '0';
+                    }
+                
+                }
+                
+                return $value;
+            },
+                10,
+                3
+            );
+        }
         $hasRun = get_option( 'mcloud-has-run', false );
         
         if ( empty($hasRun) ) {
@@ -305,6 +331,7 @@ final class ToolsManager
             ToolsManager::registerTool( "troubleshooting", include ILAB_CONFIG_DIR . '/troubleshooting.config.php' );
             ToolsManager::registerTool( "batch-processing", include ILAB_CONFIG_DIR . '/batch-processing.config.php' );
             ToolsManager::registerTool( "tasks", include ILAB_CONFIG_DIR . '/tasks.config.php' );
+            ToolsManager::registerTool( "reports", include ILAB_CONFIG_DIR . '/reports.config.php' );
             if ( LicensingManager::CanTrack() ) {
                 ToolsManager::registerTool( "opt-in", include ILAB_CONFIG_DIR . '/opt-in.config.php' );
             }

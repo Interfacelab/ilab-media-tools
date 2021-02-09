@@ -12,6 +12,4 @@
 <p><strong>Note:</strong></p>
 <ol>
     <li><strong>Always backup your database before performing this operation.</strong></li>
-    <li>This has not been tested with every Elementor add-on, but it has been tested with the most popular ones.  <strong>If you are using a lot of Elementor add-ons, always double check your pages after running this task.  If you find issues, please open a support ticket and be sure to specify which add-on is causing issues.</strong></li>
-    <li><strong>ALWAYS BACKUP YOUR DATABASE BEFORE PERFORMING THIS OPERATION.</strong></li>
 </ol>

@@ -2,10 +2,10 @@
 Contributors: mediacloud, interfacelab, freemius
 Tags: offload, amazon, s3, imgix, uploads, video, video encoding, google cloud storage, digital ocean spaces, wasabi, media, cdn, rekognition, cloudfront, images, crop, image editing, image editor, optimize, image optimization, media library, offload, offload s3, filepicker, smush, imagify, shortpixel
 Requires at least: 4.9
-Tested up to: 5.6
+Tested up to: 5.6.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.1.14
+Stable tag: 4.2.0
 Requires PHP: 7.1
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -104,6 +104,56 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 
 == Changelog ==
+
+= 4.2.0 =
+
+* Massive overhaul of Elementor integration.  Media Cloud now will support any Elementor addon and running the
+  **Elementor Update Task** is super safe.  Instead of the brute force text search/replace we were doing before, we are
+  now analyzing every installed Elementor widget's properties for images to update and then walking your Elementor post
+  or page's structure to update accordingly.
+* Rewrote the Storage Browser from the ground up.  Much much much faster and can now handle buckets of any size and
+  file count.
+* **Update Elementor** task now generates a report on what was replaced/updated on your Elementor pages/posts.
+* Support for custom sizes in images in Elementor.
+* New integration for Google Web Stories.  If you use Google Web Stories, you may need to run the "Update Web Stories"
+  task to make sure all of your URLs are correct.  You should only have to run this task once, though you will need to
+  run it again anytime you change Media Cloud's config in such a way that it changes the URLs to your images.
+* Fix for "dynamically" resized images using Imgix that ignored the image's default parameters set in the image editor.
+* Fix for URL replacement where two or more of the same images at different sizes were being replaced by a single size
+  when using the classic editor.
+* When adding media to a post that links to the original media, we are now replacing those URLs as well.  You can turn
+  this off in **Cloud Storage Settings** in the **URL Replacement** category.
+* Disable optimizers during migrate task to prevent certain images from being skipped.
+* Fix for built-in ShortPixel optimization
+* Fixed Unlink From Cloud task not scrubbing all S3 metadata
+* Fix for imgix urls being double urlencoded
+* Fix for image sizes in gallery blocks in Gutenberg
+* PHP 8 compatibility fixes
+* Fix for direct uploads going to unicode directory names
+* CLI commands have been "namespaced" and some names have changed.  For example, what used to be
+  `wp mediacloud migrateToCloud` is now `wp mediacloud:storage migrate`.
+* The Update Elementor command line is now `wp mediacloud:elementor update`
+* Verify Library task can now be accessed from the menu
+* Verify Library task has a new option, **Include Local** that will verify everything in your Media Library, including
+  items that are not on cloud storage.  This is a good first step prior to migrating your library for the first time to
+  see if you are missing any local files which may cause your migration to fail.
+* Added new setting toggle **Replace URLs** in **Cloud Storage Settings** that allows you to turn off Media Cloud's
+  realtime URL replacement.  If you've been using Media Cloud since day zero of your WordPress site (you haven't
+  migrated an existing site) and haven't changed any settings which would change the URL for your cloud storage since
+  then (for example adding a CDN or enabling imgix), you may be able to turn this setting off.   Note that the URL
+  replacement overhead is very minimal to begin with so the potential performance gain won't be noticeable in most cases.
+* When Debugging is enabled, Media Cloud will now log to Query Monitor's log if you have that plugin installed
+  and activated.
+* Added **Reset Task Data** to the Task Manager to clear out all task data from the database, aka the nuclear option.
+* Added Report Viewer to view the reports that the various tasks that Media Cloud runs produces.
+* Added new CLI command `wp mediacloud:storage replace` which will search and replace URLs in your database.  When used
+  in conjunction with the new **Replace URLs** toggle in **Cloud Storage Settings** you can minimize all of the work
+  that Media Cloud is doing on the front end to make sure that URLs are correct.  ***There are a lot of caveats to using
+  this command***.  Please read this article for more information:
+  https://support.mediacloud.press/articles/advanced-usage/command-line/replace-urls
+* Compatibility fixes with HyperDB and LudicrousDB
+* Fix for settings sometimes not being saved when using Redis object caching
+* The Media Cloud heartbeat now only runs for administrators or users who have the `mcloud_heartbeat` capability
 
 = 4.1.14 =
 

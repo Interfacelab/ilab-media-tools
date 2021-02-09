@@ -53,7 +53,7 @@ return [
 					],
 					"mcloud-tasks-generate-reports" => [
 						"title" => "Generate Reports",
-						"description" => "When this is enabled, certain tasks will generate CSV reports that will tell you more details about what happened when the task was running.  You can find these reports in the <code>".WP_CONTENT_DIR."/mcloud-reports/</code> directory on your server.",
+						"description" => "When this is enabled, certain tasks will generate CSV reports that will tell you more details about what happened when the task was running.  You can find these reports in the <code>".\MediaCloud\Plugin\Tasks\TaskReporter::reporterDirectory()."</code> directory on your server.",
 						"type" => "checkbox",
 						"default" => true
 					],

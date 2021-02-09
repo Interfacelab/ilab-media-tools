@@ -86,12 +86,20 @@ class Logger {
 					$this->logger->pushHandler(new DatabaseLoggerHandler($realLevel));
 				}
 
+				$this->logger->pushHandler(new QueryMonitorLoggerHandler($realLevel));
 			}
 
-            set_error_handler(function($errno, $errstr, $errfile, $errline, $errContext) {
-                $this->logSystemError($errno, $errstr, $errfile, $errline);
-                return false;
-            });
+			if (version_compare(phpversion(), '8', '>=')) {
+				set_error_handler(function($errno, $errstr, $errfile, $errline) {
+					$this->logSystemError($errno, $errstr, $errfile, $errline);
+					return false;
+				});
+			} else {
+				set_error_handler(function($errno, $errstr, $errfile, $errline, $errContext) {
+					$this->logSystemError($errno, $errstr, $errfile, $errline);
+					return false;
+				});
+			}
 
             register_shutdown_function(function(){
                 $lastError = error_get_last();

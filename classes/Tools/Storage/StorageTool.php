@@ -13,15 +13,6 @@
 namespace MediaCloud\Plugin\Tools\Storage;
 
 use  MediaCloud\Plugin\Tasks\TaskReporter ;
-use  MediaCloud\Plugin\Tools\Debugging\DebuggingTool ;
-use  MediaCloud\Plugin\Tools\Debugging\DebuggingToolSettings ;
-use  MediaCloud\Plugin\Tools\Storage\FileInfo ;
-use  MediaCloud\Plugin\Tools\Storage\StorageConstants ;
-use  MediaCloud\Plugin\Tools\Storage\StorageException ;
-use  MediaCloud\Plugin\Tools\Storage\StorageInterface ;
-use  MediaCloud\Plugin\Tools\Storage\StoragePostMap ;
-use  MediaCloud\Plugin\Tools\Storage\StorageToolMigrations ;
-use  MediaCloud\Plugin\Tools\Storage\StorageToolSettings ;
 use  MediaCloud\Plugin\Tasks\TaskManager ;
 use  MediaCloud\Plugin\Tasks\TaskRunner ;
 use  MediaCloud\Plugin\Tasks\TaskSchedule ;
@@ -62,6 +53,8 @@ if ( !defined( 'ABSPATH' ) ) {
 class StorageTool extends Tool
 {
     //region Properties/Class Variables
+    /** @var null|array */
+    protected  $allSizes = null ;
     /** @var StorageToolSettings  */
     private  $settings = null ;
     /** @var array */
@@ -86,24 +79,17 @@ class StorageTool extends Tool
     private  $deleteCache = array() ;
     /** @var callable */
     private  $dieHandler = null ;
-    /** @var null|array */
-    protected  $allSizes = null ;
-    private  $disableSrcSet = false ;
-    private  $replaceSrcSet = false ;
     /** @var array Already processed post IDs */
     private  $processed = array() ;
     private  $generated = array() ;
     private  $updateCallCount = 0 ;
-    /** @var DebuggingToolSettings */
-    private  $debugSettings = null ;
-    /** @var TaskReporter[] */
-    private  $reporters = array() ;
+    /** @var StorageContentHooks|null  */
+    private  $contentHooks = null ;
     //endregion
     //region Constructor
     public function __construct( $toolName, $toolInfo, $toolManager )
     {
         $this->settings = StorageToolSettings::instance();
-        $this->debugSettings = DebuggingToolSettings::instance();
         if ( !empty($toolInfo['storageDrivers']) ) {
             foreach ( $toolInfo['storageDrivers'] as $key => $data ) {
                 if ( empty($data['name']) || empty($data['class']) || empty($data['config']) ) {
@@ -294,6 +280,7 @@ class StorageTool extends Tool
                 }
             
             }
+            $this->contentHooks = new StorageContentHooks( $this );
             TaskManager::registerTask( CleanUploadsTask::class );
             TaskManager::registerTask( DeleteUploadsTask::class );
             TaskManager::registerTask( VerifyLibraryTask::class );
@@ -356,12 +343,6 @@ class StorageTool extends Tool
             }
             if ( $this->usingImageOptimizer ) {
                 $this->displayOptimizerAdminNotice();
-            }
-            global  $wp_version ;
-            $this->disableSrcSet = Environment::Option( 'mcloud-storage-disable-srcset', null, false );
-            $this->replaceSrcSet = empty($this->disableSrcSet) && version_compare( $wp_version, '5.3', '>=' );
-            if ( $this->replaceSrcSet ) {
-                $this->replaceSrcSet = Environment::Option( 'mcloud-storage-replace-srcset', null, true );
             }
             global  $wp_version ;
             // NOTE: We handle this differently for 5.3 than versions prior.  Also, in the previous update
@@ -461,36 +442,6 @@ class StorageTool extends Tool
             add_action( 'add_attachment', [ $this, 'addAttachment' ], 1000 );
             add_action( 'edit_attachment', [ $this, 'editAttachment' ] );
             add_filter(
-                'the_content',
-                [ $this, 'fixGutenbergFigures' ],
-                PHP_INT_MAX - 2,
-                1
-            );
-            add_filter(
-                'the_content',
-                [ $this, 'filterGutenbergContent' ],
-                PHP_INT_MAX - 1,
-                1
-            );
-            add_filter(
-                'the_content',
-                [ $this, 'filterContent' ],
-                PHP_INT_MAX - 1,
-                1
-            );
-            add_filter(
-                'the_editor_content',
-                [ $this, 'filterContent' ],
-                PHP_INT_MAX - 1,
-                2
-            );
-            add_filter(
-                'render_block',
-                [ $this, 'filterBlocks' ],
-                PHP_INT_MAX - 1,
-                2
-            );
-            add_filter(
                 'media-cloud/storage/process-file-name',
                 function ( $filename ) {
                 if ( !$this->client ) {
@@ -511,12 +462,6 @@ class StorageTool extends Tool
                     return $editors;
                 }, PHP_INT_MAX );
             }
-            add_filter(
-                'wp_calculate_image_srcset',
-                [ $this, 'calculateSrcSet' ],
-                10000,
-                5
-            );
             add_filter(
                 'wp_prepare_attachment_for_js',
                 [ $this, 'prepareAttachmentForJS' ],
@@ -540,29 +485,6 @@ class StorageTool extends Tool
                 [ $this, 'attachmentIdFromURL' ],
                 1000,
                 2
-            );
-            add_filter( 'image_size_names_choose', function ( $sizes ) {
-                if ( $this->allSizes == null ) {
-                    $this->allSizes = ilab_get_image_sizes();
-                }
-                foreach ( $this->allSizes as $sizeKey => $size ) {
-                    if ( !isset( $sizes[$sizeKey] ) ) {
-                        $sizes[$sizeKey] = ucwords( preg_replace( "/[-_]/", " ", $sizeKey ) );
-                    }
-                }
-                return $sizes;
-            } );
-            add_filter(
-                'wp_video_shortcode',
-                [ $this, 'filterVideoShortcode' ],
-                PHP_INT_MAX,
-                5
-            );
-            add_filter(
-                'wp_audio_shortcode',
-                [ $this, 'filterAudioShortcode' ],
-                PHP_INT_MAX,
-                5
             );
             
             if ( ToolsManager::instance()->toolEnabled( 'debugging' ) ) {
@@ -1424,6 +1346,9 @@ class StorageTool extends Tool
         if ( apply_filters( 'media-cloud/imgix/enabled', false ) ) {
             return $fail;
         }
+        if ( empty(apply_filters( 'media-cloud/storage/override-url', true )) ) {
+            return $fail;
+        }
         return $this->forcedImageDownsize( $fail, $id, $size );
     }
     
@@ -1437,6 +1362,9 @@ class StorageTool extends Tool
      */
     public function forcedImageDownsize( $fail, $id, $size )
     {
+        if ( empty(apply_filters( 'media-cloud/storage/override-url', true )) ) {
+            return $fail;
+        }
         if ( empty($size) || empty($id) || is_array( $size ) ) {
             return $fail;
         }
@@ -1682,90 +1610,6 @@ class StorageTool extends Tool
     }
     
     /**
-     * Filters an image’s ‘srcset’ sources.  (https://core.trac.wordpress.org/browser/tags/4.8/src/wp-includes/media.php#L1203)
-     *
-     * @param array $sources
-     * @param array $size_array
-     * @param string $image_src
-     * @param array $image_meta
-     * @param int $attachment_id
-     *
-     * @return array
-     */
-    public function calculateSrcSet(
-        $sources,
-        $size_array,
-        $image_src,
-        $image_meta,
-        $attachment_id
-    )
-    {
-        if ( !apply_filters( 'media-cloud/storage/can-calculate-srcset', true ) ) {
-            return $sources;
-        }
-        global  $wp_current_filter ;
-        if ( in_array( 'the_content', $wp_current_filter ) ) {
-            if ( $this->disableSrcSet || $this->replaceSrcSet ) {
-                return [];
-            }
-        }
-        if ( $this->disableSrcSet ) {
-            return [];
-        }
-        $attachment_id = apply_filters(
-            'wpml_object_id',
-            $attachment_id,
-            'attachment',
-            true
-        );
-        if ( $this->allSizes == null ) {
-            $this->allSizes = ilab_get_image_sizes();
-        }
-        $allSizesNames = array_keys( $this->allSizes );
-        foreach ( $image_meta['sizes'] as $sizeName => $sizeData ) {
-            $width = $sizeData['width'];
-            if ( isset( $sources[$width] ) ) {
-                
-                if ( in_array( $sizeName, $allSizesNames ) ) {
-                    $src = wp_get_attachment_image_src( $attachment_id, $sizeName );
-                    
-                    if ( is_array( $src ) ) {
-                        // fix for wpml
-                        $url = preg_replace( '/&lang=[aA-zZ0-9]+/m', '', $src[0] );
-                        $sources[$width]['url'] = $url;
-                    } else {
-                        unset( $sources[$width] );
-                    }
-                
-                } else {
-                    unset( $sources[$width] );
-                }
-            
-            }
-        }
-        
-        if ( isset( $image_meta['width'] ) ) {
-            $width = $image_meta['width'];
-            
-            if ( isset( $sources[$width] ) ) {
-                $src = wp_get_attachment_image_src( $attachment_id, 'full' );
-                
-                if ( is_array( $src ) ) {
-                    // fix for wpml
-                    $url = preg_replace( '/&lang=[aA-zZ0-9]+/m', '', $src[0] );
-                    $sources[$width]['url'] = $url;
-                } else {
-                    unset( $sources[$width] );
-                }
-            
-            }
-        
-        }
-        
-        return $sources;
-    }
-    
-    /**
      * Filters the attachment data prepared for JavaScript. (https://core.trac.wordpress.org/browser/tags/4.8/src/wp-includes/media.php#L3279)
      *
      * @param array $response
@@ -1867,6 +1711,9 @@ class StorageTool extends Tool
         if ( empty($this->client) ) {
             return $url;
         }
+        if ( empty(apply_filters( 'media-cloud/storage/override-url', true )) ) {
+            return $url;
+        }
         $meta = wp_get_attachment_metadata( $post_id );
         $new_url = null;
         if ( $meta ) {
@@ -1925,9 +1772,12 @@ class StorageTool extends Tool
         if ( empty($this->client) ) {
             return null;
         }
+        $cdn = apply_filters( 'media-cloud/storage/override-cdn', StorageToolSettings::cdn() );
+        $docCdn = apply_filters( 'media-cloud/storage/override-doc-cdn', StorageToolSettings::docCdn() );
         $type = typeFromMeta( $meta );
         $privacy = arrayPath( $meta, 's3/privacy', 'private' );
         $doSign = $this->client->usesSignedURLs( $type ) || $privacy !== 'public-read' && is_admin();
+        $ignoreCDN = apply_filters( 'media-cloud/storage/ignore-cdn', false );
         
         if ( $doSign ) {
             
@@ -1942,9 +1792,9 @@ class StorageTool extends Tool
                 return $url;
             } else {
                 
-                if ( !empty(StorageToolSettings::cdn()) ) {
-                    $cdnScheme = parse_url( StorageToolSettings::cdn(), PHP_URL_SCHEME );
-                    $cdnHost = parse_url( StorageToolSettings::cdn(), PHP_URL_HOST );
+                if ( !empty($cdn) && empty($ignoreCDN) ) {
+                    $cdnScheme = parse_url( $cdn, PHP_URL_SCHEME );
+                    $cdnHost = parse_url( $cdn, PHP_URL_HOST );
                     $urlScheme = parse_url( $url, PHP_URL_SCHEME );
                     $urlHost = parse_url( $url, PHP_URL_HOST );
                     return str_replace( "{$urlScheme}://{$urlHost}", "{$cdnScheme}://{$cdnHost}", $url );
@@ -1956,13 +1806,13 @@ class StorageTool extends Tool
         
         } else {
             
-            if ( StorageToolSettings::cdn() ) {
-                return StorageToolSettings::cdn() . '/' . $meta['s3']['key'];
+            if ( !empty($cdn) && empty($ignoreCDN) ) {
+                return $cdn . '/' . $meta['s3']['key'];
             } else {
                 
                 if ( isset( $meta['s3']['url'] ) ) {
                     
-                    if ( isset( $meta['file'] ) && StorageToolSettings::docCdn() ) {
+                    if ( isset( $meta['file'] ) && !empty($docCdn) && empty($ignoreCDN) ) {
                         $ext = strtolower( pathinfo( $meta['file'], PATHINFO_EXTENSION ) );
                         $image_exts = array(
                             'jpg',
@@ -1972,7 +1822,7 @@ class StorageTool extends Tool
                             'png'
                         );
                         if ( !in_array( $ext, $image_exts ) ) {
-                            return trim( StorageToolSettings::docCdn(), '/' ) . '/' . $meta['s3']['key'];
+                            return trim( $docCdn, '/' ) . '/' . $meta['s3']['key'];
                         }
                     }
                     
@@ -2002,1130 +1852,9 @@ class StorageTool extends Tool
     
     }
     
-    /**
-     * @return TaskReporter|null
-     */
-    private function getReporter()
-    {
-        if ( empty($this->debugSettings->debugContentFiltering) ) {
-            return null;
-        }
-        $reportId = sanitize_title( $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
-        
-        if ( !isset( $this->reporters[$reportId] ) ) {
-            $reporter = new TaskReporter( $reportId, [
-                'Post ID',
-                'Type',
-                'Found URL',
-                'Mapped URL',
-                'Notes'
-            ], true );
-            $reporter->open();
-            $this->reporters[$reportId] = $reporter;
-        } else {
-            $reporter = $this->reporters[$reportId];
-        }
-        
-        return $reporter;
-    }
-    
-    private function addToReport(
-        $postId = null,
-        $type = null,
-        $oldUrl = null,
-        $newUrl = null,
-        $notes = null
-    )
-    {
-        if ( empty($this->debugSettings->debugContentFiltering) ) {
-            return;
-        }
-        $reporter = $this->getReporter();
-        if ( !empty($reporter) ) {
-            $reporter->add( [
-                $postId,
-                $type,
-                $oldUrl,
-                $newUrl,
-                $notes
-            ] );
-        }
-    }
-    
-    /**
-     * Fixes Gutenberg's image block, why put the size on the f*cking <figure> and not the <img>?
-     *
-     * @param $content
-     *
-     * @return mixed
-     */
-    public function fixGutenbergFigures( $content )
-    {
-        if ( !apply_filters( 'media-cloud/storage/fix-gutenberg-image-blocks', true ) ) {
-            return $content;
-        }
-        if ( preg_match_all( '/(<figure(.*)(?=<\\/figure>))/m', $content, $figures ) ) {
-            foreach ( $figures[0] as $figureMatch ) {
-                
-                if ( preg_match( '/<figure(?:.*)class\\s*=\\s*(?:.*)wp-block-image(?:.*)size-([aA-zZ0-9-_.]+)/', $figureMatch, $sizeMatches ) ) {
-                    $size = $sizeMatches[1];
-                    
-                    if ( preg_match( '/class\\s*=\\s*(?:.*)wp-image-([0-9]+)/m', $figureMatch, $imageIdMatches ) ) {
-                        $imageId = $imageIdMatches[1];
-                        if ( preg_match( '/<img\\s+([^>]+)>/m', $figureMatch, $imageTagMatch ) ) {
-                            
-                            if ( preg_match( '/\\s+src=[\'"]([^\'"]+)[\'"]+/', $imageTagMatch[0], $srcs ) ) {
-                                $newUrl = wp_get_attachment_image_src( $imageId, $size );
-                                
-                                if ( !empty($newUrl) ) {
-                                    $newImage = str_replace( $srcs[0], " src=\"{$newUrl[0]}\"", $imageTagMatch[0] );
-                                    $newFigure = str_replace( $imageTagMatch[0], $newImage, $figureMatch );
-                                    $newFigure = str_replace( "wp-image-{$imageId}", "wp-image-{$imageId}", $newFigure );
-                                    $content = str_replace( $figureMatch, $newFigure, $content );
-                                    $this->addToReport(
-                                        $imageId,
-                                        'Gutenberg Figure',
-                                        $srcs[0],
-                                        $newUrl[0]
-                                    );
-                                } else {
-                                    $this->addToReport(
-                                        $imageId,
-                                        'Gutenberg Figure',
-                                        $srcs[0],
-                                        null,
-                                        'Attachment image src is null'
-                                    );
-                                }
-                            
-                            }
-                        
-                        }
-                    }
-                
-                }
-            
-            }
-        }
-        return $content;
-    }
-    
-    /**
-     * Filter the content for the blocks we've already processed
-     * @param $content
-     *
-     * @return mixed
-     * @throws StorageException
-     */
-    public function filterGutenbergContent( $content )
-    {
-        if ( !apply_filters( 'media-cloud/storage/can-filter-content', true ) ) {
-            return $content;
-        }
-        $replacements = [];
-        //Filter Anchors
-        if ( preg_match_all( '/<a\\s+[^>]+>/m', $content, $anchors ) ) {
-            foreach ( $anchors[0] as $anchor ) {
-                
-                if ( preg_match( '/mcloud-attachment-([0-9]+)/', $anchor, $attachmentId ) ) {
-                    $id = $attachmentId[1];
-                    
-                    if ( preg_match( '/href\\s*=\\s*"([^"]+)"/', $anchor, $hrefs ) ) {
-                        $newUrl = wp_get_attachment_url( $id );
-                        
-                        if ( $newUrl !== $hrefs[1] ) {
-                            $content = str_replace( $hrefs[1], $newUrl, $content );
-                            $this->addToReport(
-                                $id,
-                                'Gutenberg Image Anchor',
-                                $hrefs[1],
-                                $newUrl
-                            );
-                        } else {
-                            $this->addToReport(
-                                $id,
-                                'Gutenberg Image Anchor',
-                                $hrefs[1],
-                                $newUrl,
-                                'Anchor URL is the same.'
-                            );
-                        }
-                    
-                    }
-                
-                }
-            
-            }
-        }
-        //Filter Audio or Video Tags
-        if ( preg_match_all( '/<(?:audio|video)\\s+[^>]+>/m', $content, $audioTags ) ) {
-            foreach ( $audioTags[0] as $audioTag ) {
-                
-                if ( preg_match( '/mcloud-attachment-([0-9]+)/', $audioTag, $attachmentId ) ) {
-                    $id = $attachmentId[1];
-                    
-                    if ( preg_match( '/src\\s*=\\s*"([^"]+)"/', $audioTag, $srcs ) ) {
-                        $newUrl = wp_get_attachment_url( $id );
-                        
-                        if ( $newUrl !== $srcs[1] ) {
-                            $content = str_replace( $srcs[1], $newUrl, $content );
-                            $this->addToReport(
-                                $id,
-                                'Gutenberg Audio|Video',
-                                $srcs[1],
-                                $newUrl
-                            );
-                        } else {
-                            $this->addToReport(
-                                $id,
-                                'Gutenberg Audio|Video',
-                                $srcs[1],
-                                $newUrl,
-                                'URL is the same.'
-                            );
-                        }
-                    
-                    }
-                
-                }
-            
-            }
-        }
-        // Filter Cover Images
-        if ( preg_match_all( '/<div\\s+(?:[^>]+)wp-block-cover(?:[^>]+)>/m', $content, $coverImages ) ) {
-            foreach ( $coverImages[0] as $coverImage ) {
-                if ( strpos( $coverImage, 'background-image' ) === false ) {
-                    continue;
-                }
-                
-                if ( preg_match( '/mcloud-attachment-([0-9]+)/', $coverImage, $attachmentId ) ) {
-                    $id = $attachmentId[1];
-                    
-                    if ( preg_match( '/background-image:url\\(([^)]+)\\)/', $coverImage, $backgroundUrl ) ) {
-                        $newUrl = wp_get_attachment_url( $id );
-                        
-                        if ( $backgroundUrl[1] === $newUrl ) {
-                            $this->addToReport(
-                                $id,
-                                'Gutenberg Cover Image',
-                                $backgroundUrl[1],
-                                $newUrl,
-                                'URL is the same.'
-                            );
-                            continue;
-                        }
-                        
-                        $newCoverImage = str_replace( $backgroundUrl[1], $newUrl, $coverImage );
-                        $content = str_replace( $coverImage, $newCoverImage, $content );
-                        $this->addToReport(
-                            $id,
-                            'Gutenberg Cover Image',
-                            $backgroundUrl[1],
-                            $newUrl
-                        );
-                    }
-                
-                }
-            
-            }
-        }
-        //Fix Galleries
-        $galleryAnchors = [];
-        $galleryImages = [];
-        preg_match_all( '/<li\\s+(?:[^>]*)blocks-gallery-item(?:[^>]+)>\\s*<figure\\s*(?:[^>]*)>\\s*(<img[^>]+>)\\s*<\\/figure>\\s*<\\/li>/m', $content, $galleryElements );
-        
-        if ( count( $galleryElements ) === 2 && !empty($galleryElements[1]) ) {
-            $galleryImages = $galleryElements[1];
-        } else {
-            preg_match_all(
-                '/<li\\s+(?:[^>]*)blocks-gallery-item(?:[^>]+)>\\s*<figure\\s*(?:[^>]*)>\\s*(<a[^>]+>)\\s*(<img[^>]+>)\\s*<\\/a>\\s*<\\/figure>\\s*<\\/li>/m',
-                $content,
-                $galleryElements,
-                PREG_SET_ORDER,
-                0
-            );
-            if ( !empty($galleryElements) ) {
-                foreach ( $galleryElements as $galleryElement ) {
-                    $galleryAnchors[] = $galleryElement[1];
-                    $galleryImages[] = $galleryElement[2];
-                }
-            }
-        }
-        
-        
-        if ( !empty($galleryImages) || !empty($galleryAnchors) ) {
-            $attachmentIds = [];
-            foreach ( $galleryImages as $galleryImage ) {
-                
-                if ( preg_match( '/data-id\\s*=\\s*[\'"]+([0-9]+)/', $galleryImage, $attachmentId ) ) {
-                    $id = $attachmentId[1];
-                    $attachmentIds[] = $id;
-                    
-                    if ( preg_match( '/data-full-url\\s*=\\s*["\']([^\'"]+)/m', $galleryImage, $fullUrl ) ) {
-                        $newUrl = wp_get_attachment_image_src( $id, 'full' );
-                        
-                        if ( !empty($newUrl) && $fullUrl[1] !== $newUrl[0] ) {
-                            $newGalleryImage = str_replace( $fullUrl[0], "data-full-url=\"{$newUrl[0]}\"", $galleryImage );
-                            
-                            if ( preg_match( '/\\s+src\\s*=\\s*["\']([^\'"]+)/m', $newGalleryImage, $srcs ) ) {
-                                $newUrl = wp_get_attachment_image_src( $id, 'large' );
-                                
-                                if ( !empty($newUrl) && $srcs[1] !== $newUrl[0] ) {
-                                    $newGalleryImage = str_replace( $srcs[0], " src=\"{$newUrl[0]}\"", $newGalleryImage );
-                                    $newGalleryImage = str_replace( 'class="', "class=\"mcloud-attachment-{$id} ", $newGalleryImage );
-                                    $content = str_replace( $galleryImage, $newGalleryImage, $content );
-                                    $this->addToReport(
-                                        $id,
-                                        'Gutenberg Gallery Image',
-                                        $srcs[1],
-                                        $newUrl[0]
-                                    );
-                                } else {
-                                    
-                                    if ( !empty($newUrl) ) {
-                                        $this->addToReport(
-                                            $id,
-                                            'Gutenberg Gallery Image',
-                                            $srcs[1],
-                                            $newUrl[0],
-                                            "Gallery image URL is the same."
-                                        );
-                                    } else {
-                                        $this->addToReport(
-                                            $id,
-                                            'Gutenberg Gallery Image',
-                                            $srcs[1],
-                                            null,
-                                            "New URL is empty."
-                                        );
-                                    }
-                                
-                                }
-                            
-                            }
-                        
-                        }
-                    
-                    }
-                
-                }
-            
-            }
-            $anchorIndex = 0;
-            foreach ( $galleryAnchors as $galleryAnchor ) {
-                
-                if ( strpos( $galleryAnchor, 'attachment-link' ) !== false ) {
-                    $anchorIndex++;
-                    continue;
-                }
-                
-                if ( strpos( $galleryAnchor, 'media-link' ) !== false ) {
-                    if ( preg_match( '/\\s+href\\s*=\\s*["\']([^\'"]+)/m', $galleryAnchor, $srcs ) ) {
-                        
-                        if ( $anchorIndex < count( $attachmentIds ) ) {
-                            $id = $attachmentIds[$anchorIndex];
-                            $newUrl = wp_get_attachment_image_src( $id, 'full' );
-                            
-                            if ( !empty($newUrl) && $srcs[1] !== $newUrl[0] ) {
-                                $newGalleryAnchor = str_replace( $srcs[0], " href=\"{$newUrl[0]}\"", $galleryAnchor );
-                                $content = str_replace( $galleryAnchor, $newGalleryAnchor, $content );
-                            }
-                        
-                        }
-                    
-                    }
-                }
-                $anchorIndex++;
-            }
-        }
-        
-        return $content;
-    }
-    
-    /**
-     * Filter the content to replace CDN
-     * @param $content
-     *
-     * @return mixed
-     * @throws StorageException
-     */
-    public function filterContent( $content, $context = 'post' )
-    {
-        if ( !apply_filters( 'media-cloud/storage/can-filter-content', true ) ) {
-            return $content;
-        }
-        $originalContent = $content;
-        
-        if ( $context !== 'post' ) {
-            $content = str_replace( '&lt;', '<', $content );
-            $content = str_replace( '&gt;', '>', $content );
-        }
-        
-        //	    if (defined('MEDIACLOUD_DEV_MODE')) {
-        //		    $content = preg_replace('/wp-image-[0-9]+/', '', $content);
-        //	    }
-        if ( !preg_match_all( '/<img [^>]+>/', $content, $matches ) ) {
-            return $originalContent;
-        }
-        $uploadDir = wp_get_upload_dir();
-        $replacements = [];
-        $resizedReplacements = [];
-        foreach ( $matches[0] as $image ) {
-            $imageFound = false;
-            if ( !preg_match( "#src=['\"]+([^'\"]+)['\"]+#", $image, $srcMatches ) || strpos( $image, 'mcloud-attachment-' ) !== false ) {
-                continue;
-            }
-            $src = $srcMatches[1];
-            // parse img tags with classes because these usually indicate the wordpress size
-            
-            if ( preg_match( '/class\\s*=\\s*(?:[\\"\']{1})([^\\"\']+)(?:[\\"\']{1})/m', $image, $matches ) ) {
-                $classes = explode( ' ', $matches[1] );
-                $size = null;
-                $id = null;
-                foreach ( $classes as $class ) {
-                    
-                    if ( strpos( $class, 'wp-image-' ) === 0 ) {
-                        $parts = explode( '-', $class );
-                        $id = array_pop( $parts );
-                    } else {
-                        if ( strpos( $class, 'size-' ) === 0 ) {
-                            $size = str_replace( 'size-', '', $class );
-                        }
-                    }
-                
-                }
-                
-                if ( !empty($id) && empty($size) ) {
-                    
-                    if ( preg_match( '/sizes=[\'"]+\\(max-(width|height)\\:\\s*([0-9]+)px/m', $image, $sizeMatches ) ) {
-                        $which = $sizeMatches[1];
-                        $px = $sizeMatches[2];
-                        $meta = wp_get_attachment_metadata( $id );
-                        if ( !empty($meta['sizes']) ) {
-                            foreach ( $meta['sizes'] as $sizeKey => $sizeData ) {
-                                
-                                if ( $sizeData[$which] == $px ) {
-                                    $size = $sizeKey;
-                                    break;
-                                }
-                            
-                            }
-                        }
-                    }
-                    
-                    if ( empty($size) ) {
-                        
-                        if ( preg_match( '/wpsize=([aA-zZ0-9-_]*)/m', $src, $wpSizeMatches ) ) {
-                            $size = $wpSizeMatches[1];
-                        } else {
-                            
-                            if ( preg_match( '/(([0-9]+)x([0-9]+)\\.(?:jpg|jpeg|gif|png))/', $src, $dimensionMatches ) ) {
-                                $size = 'full';
-                                $width = $dimensionMatches[2];
-                                $height = $dimensionMatches[3];
-                                $size = ilab_find_nearest_size( $id, $width, $height );
-                                if ( empty($size) ) {
-                                    $size = 'full';
-                                }
-                            } else {
-                                $size = 'full';
-                            }
-                        
-                        }
-                    
-                    }
-                }
-                
-                
-                if ( !empty($id) && is_numeric( $id ) ) {
-                    $imageFound = true;
-                    $replacements[$id] = [
-                        'image' => $image,
-                        'src'   => $src,
-                        'size'  => $size,
-                    ];
-                }
-            
-            }
-            
-            
-            if ( !$imageFound && !empty($this->settings->replaceAllImageUrls) ) {
-                $escapedBase = str_replace( '/', '\\/', $uploadDir['baseurl'] );
-                $escapedBase = str_replace( '.', '\\.', $escapedBase );
-                $imageRegex = "#(data-src|src)\\s*=\\s*[\\'\"]+({$escapedBase}[^\\'\"]*(jpg|png|gif))[\\'\"]+#";
-                
-                if ( preg_match( $imageRegex, $image, $matches ) ) {
-                    $matchedUrl = $matches[2];
-                    $textSize = null;
-                    $cleanedUrl = null;
-                    $size = 'full';
-                    
-                    if ( preg_match( '/(-[0-9x]+)\\.(?:jpg|gif|png)/m', $matchedUrl, $sizeMatches ) ) {
-                        $cleanedUrl = str_replace( $sizeMatches[1], '', $matchedUrl );
-                        $id = attachment_url_to_postid( $cleanedUrl );
-                        $textSize = trim( $sizeMatches[1], '-' );
-                        $size = explode( 'x', $textSize );
-                    } else {
-                        $id = attachment_url_to_postid( $matchedUrl );
-                    }
-                    
-                    
-                    if ( !empty($id) ) {
-                        
-                        if ( !empty($textSize) ) {
-                            $resizedReplacements[$id . '-' . $textSize] = [
-                                'id'    => $id,
-                                'image' => $image,
-                                'src'   => $matchedUrl,
-                                'size'  => $size,
-                            ];
-                        } else {
-                            $replacements[$id] = [
-                                'image' => $image,
-                                'src'   => $matchedUrl,
-                                'size'  => $size,
-                            ];
-                        }
-                    
-                    } else {
-                        $this->addToReport(
-                            null,
-                            'Image',
-                            $matchedUrl,
-                            null,
-                            'Unable to map URL to post ID.'
-                        );
-                    }
-                
-                }
-            
-            } else {
-                if ( !$imageFound ) {
-                    $this->addToReport(
-                        null,
-                        'Image',
-                        $src,
-                        null,
-                        'Unable to map URL to post ID.'
-                    );
-                }
-            }
-        
-        }
-        foreach ( $replacements as $id => $data ) {
-            $content = $this->replaceImageInContent( $id, $data, $content );
-        }
-        foreach ( $resizedReplacements as $id => $data ) {
-            $content = $this->replaceImageInContent( $data['id'], $data, $content );
-        }
-        
-        if ( $context !== 'post' ) {
-            $content = str_replace( '<', '&lt;', $content );
-            $content = str_replace( '>', '&gt;', $content );
-        }
-        
-        return $content;
-    }
-    
-    /**
-     * @param $url
-     *
-     * @return int|null
-     */
-    private function getShortCodeSource( $url, $type = 'Video' )
-    {
-        $uploadDir = wp_get_upload_dir();
-        $baseFile = ltrim( str_replace( $uploadDir['baseurl'], '', $url ), '/' );
-        //	    $baseFile = ltrim(parse_url($url, PHP_URL_PATH), '/');
-        
-        if ( empty($baseFile) ) {
-            $this->addToReport(
-                null,
-                $type,
-                $url,
-                null,
-                'Base file is empty.'
-            );
-            return null;
-        }
-        
-        global  $wpdb ;
-        $query = $wpdb->prepare( "select post_id from {$wpdb->postmeta} where meta_key='_wp_attached_file' and meta_value = %s", $baseFile );
-        $postId = $wpdb->get_var( $query );
-        
-        if ( empty($postId) ) {
-            $this->addToReport(
-                null,
-                $type,
-                $url,
-                null,
-                'Could not map URL to post ID.'
-            );
-            return null;
-        }
-        
-        return $postId;
-    }
-    
-    /**
-     * @param string $output  Video shortcode HTML output.
-     * @param array  $atts    Array of video shortcode attributes.
-     * @param string $video   Video file.
-     * @param int    $post_id Post ID.
-     * @param string $library Media library used for the video shortcode.
-     * @return string
-     * @throws StorageException
-     */
-    public function filterVideoShortcode(
-        $output,
-        $atts,
-        $video,
-        $post_id,
-        $library
-    )
-    {
-        
-        if ( isset( $atts['src'] ) ) {
-            $default_types = wp_get_video_extensions();
-            $postId = null;
-            $found = false;
-            foreach ( $default_types as $type ) {
-                
-                if ( !empty($atts[$type]) ) {
-                    $url = $atts[$type];
-                    if ( strpos( $url, '?' ) !== false ) {
-                        $url = preg_replace( '/(\\?.*)/', '', $url );
-                    }
-                    $postId = $this->getShortCodeSource( $url );
-                    $found = !empty($postId);
-                    break;
-                }
-            
-            }
-            if ( !$found ) {
-                $postId = $this->getShortCodeSource( $atts['src'] );
-            }
-            
-            if ( empty($postId) ) {
-                $this->addToReport(
-                    null,
-                    'Video',
-                    $atts['src'],
-                    null,
-                    "Unable to map URL to post ID"
-                );
-                return $output;
-            }
-            
-            $post = get_post( $postId );
-            $meta = wp_get_attachment_metadata( $post->ID );
-            $url = $this->getAttachmentURL( null, $post->ID );
-            
-            if ( !empty($url) ) {
-                $mime = arrayPath( $meta, 'mime_type', $post->post_mime_type );
-                $insert = "<source type='{$mime}' src='{$url}'/>";
-                $insert .= "<a href='{$url}'>{$post->post_title}</a>";
-                
-                if ( preg_match( '/<video(?:[^>]*)>((?s).*)<\\/video>/m', $output, $matches ) ) {
-                    $output = str_replace( $matches[1], $insert, $output );
-                    $this->addToReport(
-                        $postId,
-                        'Video',
-                        $atts['src'],
-                        $url
-                    );
-                } else {
-                    $this->addToReport(
-                        $postId,
-                        'Video',
-                        $atts['src'],
-                        null,
-                        "Unable to find src in content html"
-                    );
-                }
-            
-            } else {
-                $this->addToReport(
-                    $postId,
-                    'Video',
-                    $atts['src'],
-                    null,
-                    "Attachment URL is null."
-                );
-            }
-        
-        }
-        
-        return $output;
-    }
-    
-    /**
-     * @param string $output  Audio shortcode HTML output.
-     * @param array  $atts    Array of audio shortcode attributes.
-     * @param string $audio   Audio file.
-     * @param int    $post_id Post ID.
-     * @param string $library Media library used for the audio shortcode.
-     * @return string
-     * @throws StorageException
-     */
-    public function filterAudioShortcode(
-        $output,
-        $atts,
-        $audio,
-        $post_id,
-        $library
-    )
-    {
-        
-        if ( isset( $atts['src'] ) ) {
-            $default_types = wp_get_audio_extensions();
-            $postId = null;
-            foreach ( $default_types as $type ) {
-                
-                if ( !empty($atts[$type]) ) {
-                    $url = $atts[$type];
-                    if ( strpos( $url, '?' ) !== false ) {
-                        $url = preg_replace( '/(\\?.*)/', '', $url );
-                    }
-                    $postId = $this->getShortCodeSource( $url, 'Audio' );
-                    $found = !empty($postId);
-                    break;
-                }
-            
-            }
-            if ( !$found ) {
-                $postId = $this->getShortCodeSource( $atts['src'], 'Audio' );
-            }
-            
-            if ( empty($postId) ) {
-                $this->addToReport(
-                    null,
-                    'Audio',
-                    $atts['src'],
-                    null,
-                    "Unable to map URL to post ID"
-                );
-                return $output;
-            }
-            
-            $post = get_post( $postId );
-            $meta = wp_get_attachment_metadata( $post->ID );
-            $url = $this->getAttachmentURL( null, $post->ID );
-            
-            if ( !empty($url) ) {
-                $mime = arrayPath( $meta, 'mime_type', $post->post_mime_type );
-                $insert = "<source type='{$mime}' src='{$url}'/>";
-                $insert .= "<a href='{$url}'>{$post->post_title}</a>";
-                
-                if ( preg_match( '/<audio(?:[^>]*)>((?s).*)<\\/audio>/m', $output, $matches ) ) {
-                    $output = str_replace( $matches[1], $insert, $output );
-                    $this->addToReport(
-                        $postId,
-                        'Audio',
-                        $atts['src'],
-                        $url
-                    );
-                } else {
-                    $this->addToReport(
-                        $postId,
-                        'Audio',
-                        $atts['src'],
-                        null,
-                        "Unable to find URL in content HTML"
-                    );
-                }
-            
-            } else {
-                $this->addToReport(
-                    $postId,
-                    'Audio',
-                    $atts['src'],
-                    null,
-                    "Attachment URL is empty."
-                );
-            }
-        
-        }
-        
-        return $output;
-    }
-    
-    private function generateSrcSet( $id, $sizeName )
-    {
-        if ( $this->allSizes === null ) {
-            $this->allSizes = ilab_get_image_sizes();
-        }
-        if ( !is_string( $sizeName ) ) {
-            return '';
-        }
-        if ( $sizeName !== 'full' && !isset( $this->allSizes[$sizeName] ) ) {
-            return '';
-        }
-        $meta = wp_get_attachment_metadata( $id );
-        $w = ( empty($meta['width']) ? (int) 0 : (int) $meta['width'] );
-        $h = ( empty($meta['height']) ? (int) 0 : (int) $meta['height'] );
-        if ( !isset( $meta['sizes'] ) || empty($w) || empty($h) ) {
-            return '';
-        }
-        
-        if ( $sizeName === 'full' ) {
-            $size = [
-                'width'  => $w,
-                'height' => $h,
-                'crop'   => false,
-            ];
-        } else {
-            $size = $this->allSizes[$sizeName];
-        }
-        
-        $cropped = !empty($size['crop']);
-        $sw = ( empty($size['width']) ? (int) 0 : (int) $size['width'] );
-        $sh = ( empty($size['height']) ? (int) 0 : (int) $size['height'] );
-        if ( $cropped && (empty($sw) || empty($sh)) ) {
-            return '';
-        }
-        
-        if ( $cropped ) {
-            $filteredSizes = array_filter( $this->allSizes, function ( $v, $k ) use( $meta, $sw, $sh ) {
-                if ( empty($v['crop']) ) {
-                    return false;
-                }
-                $nsw = ( empty($v['width']) ? (int) 0 : (int) $v['width'] );
-                $nsh = ( empty($v['height']) ? (int) 0 : (int) $v['height'] );
-                if ( empty($nsw) || empty($nsh) ) {
-                    return false;
-                }
-                $nratio = floor( $nsw / $nsh * 10 );
-                $sratio = floor( $sw / $sh * 10 );
-                return ($k === 'full' || isset( $meta['sizes'][$k] )) && $nratio === $sratio && $nsw <= $sw;
-            }, ARRAY_FILTER_USE_BOTH );
-        } else {
-            $currentSize = sizeToFitSize(
-                $w,
-                $h,
-                $sw,
-                $sh
-            );
-            $filteredSizes = array_filter( $this->allSizes, function ( $v, $k ) use(
-                $meta,
-                $currentSize,
-                $w,
-                $h,
-                $sw,
-                $sh
-            ) {
-                $nsw = ( empty($v['width']) ? (int) 0 : (int) $v['width'] );
-                $nsh = ( empty($v['height']) ? (int) 0 : (int) $v['height'] );
-                if ( $nsw === 0 ) {
-                    $nsw = 100000;
-                }
-                if ( $nsh === 0 ) {
-                    $nsh = 100000;
-                }
-                $newSize = sizeToFitSize(
-                    $w,
-                    $h,
-                    $nsw,
-                    $nsh
-                );
-                return ($k === 'full' || isset( $meta['sizes'][$k] )) && empty($v['crop']) && $newSize[0] <= $currentSize[0] && $newSize[1] <= $currentSize[1];
-            }, ARRAY_FILTER_USE_BOTH );
-        }
-        
-        $sortedFilteredSizes = $filteredSizes;
-        uksort( $sortedFilteredSizes, function ( $a, $b ) use( $meta ) {
-            $aw = (int) $meta['sizes'][$a]['width'];
-            $bw = (int) $meta['sizes'][$b]['width'];
-            if ( $aw === $bw ) {
-                return 0;
-            }
-            return ( $aw < $bw ? -1 : 1 );
-        } );
-        if ( $sizeName === 'full' ) {
-            $sortedFilteredSizes['full'] = $size;
-        }
-        if ( count( $sortedFilteredSizes ) <= 1 ) {
-            return '';
-        }
-        $sources = [];
-        foreach ( $sortedFilteredSizes as $name => $sizeInfo ) {
-            $csize = ( $name === 'full' ? $size : $meta['sizes'][$name] );
-            $sw = (int) $csize['width'];
-            
-            if ( $name != $sizeName ) {
-                $sizeKey = "(max-width: {$sw}px) {$sw}px";
-            } else {
-                $sizeKey = "100vw";
-            }
-            
-            $src = wp_get_attachment_image_src( $id, $name );
-            if ( !empty($src) ) {
-                $sources[$sizeKey] = $src[0] . " {$sw}w";
-            }
-        }
-        
-        if ( !empty($sources) ) {
-            $sizes = "(max-width: {$sw}px) 100vw, {$sw}px";
-            //implode(', ', array_keys($sources));
-            $srcset = implode( ', ', array_values( $sources ) );
-            $generated = "srcset='{$srcset}' sizes='{$sizes}'";
-            return $generated;
-        }
-        
-        return '';
-    }
-    
-    /**
-     * @param $id
-     * @param $data
-     * @param $content
-     *
-     * @return string|string[]
-     * @throws \MediaCloud\Plugin\Tools\Storage\StorageException
-     */
-    private function replaceImageInContent( $id, $data, $content )
-    {
-        $id = apply_filters(
-            'wpml_object_id',
-            $id,
-            'attachment',
-            true
-        );
-        
-        if ( empty($data['size']) ) {
-            $meta = wp_get_attachment_metadata( $id );
-            $url = $this->getAttachmentURLFromMeta( $meta );
-            $srcSet = '';
-        } else {
-            $url = image_downsize( $id, $data['size'] );
-            $srcSet = ( empty($data['image']) ? '' : $this->generateSrcSet( $id, $data['size'] ) );
-        }
-        
-        
-        if ( $url === false ) {
-            $siteId = apply_filters( 'global_media.site_id', false );
-            
-            if ( $siteId != false ) {
-                switch_to_blog( $siteId );
-                $url = image_downsize( $id, $data['size'] );
-                restore_current_blog();
-            }
-        
-        }
-        
-        if ( is_array( $url ) ) {
-            $url = $url[0];
-        }
-        $url = preg_replace( '/&lang=[aA-zZ0-9]+/m', '', $url );
-        
-        if ( empty($url) || $url == $data['src'] && empty($srcSet) ) {
-            $this->addToReport(
-                $id,
-                'Image',
-                $data['src'],
-                null,
-                'Unable to map URL'
-            );
-            return $content;
-        }
-        
-        
-        if ( !empty($data['image']) && $this->replaceSrcSet ) {
-            $image = $data['image'];
-            $image = preg_replace( '/(sizes\\s*=\\s*[\'"]{1}(?:[^\'"]*)[\'"]{1})/m', '', $image );
-            $image = preg_replace( '/(srcset\\s*=\\s*[\'"]{1}(?:[^\'"]*)[\'"]{1})/m', '', $image );
-            if ( !empty($srcSet) ) {
-                $image = str_replace( '<img ', "<img {$srcSet} ", $image );
-            }
-            $content = str_replace( $data['image'], $image, $content );
-        }
-        
-        $this->addToReport(
-            $id,
-            'Image',
-            $data['src'],
-            $url
-        );
-        return str_replace( $data['src'], $url, $content );
-    }
-    
     public function attachmentIdFromURL( $postId, $url )
     {
         return StoragePostMap::attachmentIdFromURL( $postId, $url, $this->client()->bucket() );
-    }
-    
-    //endregion
-    //region Block Processing
-    private function processFileBlock( $id, $block_content )
-    {
-        if ( preg_match_all(
-            '/<a\\s+([^>]*)>/m',
-            $block_content,
-            $anchors,
-            PREG_SET_ORDER,
-            0
-        ) ) {
-            foreach ( $anchors as $anchor ) {
-                
-                if ( preg_match( '/class\\s*=\\s*"([^"]*)\\"/', $anchor[0], $class ) ) {
-                    $newAnchor = str_replace( $class[1], "{$class[1]} mcloud-attachment-{$id}", $anchor[0] );
-                } else {
-                    $newAnchor = str_replace( ">", " class=\"mcloud-attachment-{$id}\">", $anchor[0] );
-                }
-                
-                $block_content = str_replace( $anchor[0], $newAnchor, $block_content );
-            }
-        }
-        return $block_content;
-    }
-    
-    private function processAudioBlock( $id, $block_content )
-    {
-        if ( preg_match_all(
-            '/<audio\\s+([^>]*)>/m',
-            $block_content,
-            $audioTags,
-            PREG_SET_ORDER,
-            0
-        ) ) {
-            foreach ( $audioTags as $audioTag ) {
-                
-                if ( preg_match( '/class\\s*=\\s*"([^"]*)\\"/', $audioTag[0], $class ) ) {
-                    $newAudioTag = str_replace( $class[1], "{$class[1]} mcloud-attachment-{$id}", $audioTag[0] );
-                } else {
-                    $newAudioTag = str_replace( ">", " class=\"mcloud-attachment-{$id}\">", $audioTag[0] );
-                }
-                
-                
-                if ( preg_match( '/src\\s*=\\s*"(.*)\\"/', $audioTag[0], $source ) ) {
-                    $newUrl = wp_get_attachment_url( $id );
-                    $newAudioTag = str_replace( $source[1], $newUrl, $newAudioTag );
-                }
-                
-                $block_content = str_replace( $audioTag[0], $newAudioTag, $block_content );
-            }
-        }
-        return $block_content;
-    }
-    
-    private function processVideoBlock( $id, $block_content )
-    {
-        if ( preg_match_all(
-            '/<video\\s+([^>]*)>/m',
-            $block_content,
-            $videoTags,
-            PREG_SET_ORDER,
-            0
-        ) ) {
-            foreach ( $videoTags as $videoTag ) {
-                
-                if ( preg_match( '/class\\s*=\\s*"([^"]*)\\"/', $videoTag[0], $class ) ) {
-                    $newVideoTag = str_replace( $class[1], "{$class[1]} mcloud-attachment-{$id}", $videoTag[0] );
-                } else {
-                    $newVideoTag = str_replace( ">", " class=\"mcloud-attachment-{$id}\">", $videoTag[0] );
-                }
-                
-                
-                if ( preg_match( '/src\\s*=\\s*"(.*)\\"/', $videoTag[0], $source ) ) {
-                    $newUrl = wp_get_attachment_url( $id );
-                    $newVideoTag = str_replace( $source[1], $newUrl, $newVideoTag );
-                }
-                
-                $block_content = str_replace( $videoTag[0], $newVideoTag, $block_content );
-            }
-        }
-        return $block_content;
-    }
-    
-    private function processCoverBlock( $id, $block_content )
-    {
-        if ( preg_match_all(
-            '/class\\s*=\\s*"([^"]*)/m',
-            $block_content,
-            $classes,
-            PREG_SET_ORDER,
-            0
-        ) ) {
-            foreach ( $classes as $class ) {
-                if ( strpos( $class[1], 'inner_container' ) !== false ) {
-                    continue;
-                }
-                if ( strpos( $class[1], 'wp-block-cover' ) === false ) {
-                    continue;
-                }
-                $block_content = str_replace( $class[1], "{$class[1]} mcloud-attachment-{$id}", $block_content );
-            }
-        }
-        return $block_content;
-    }
-    
-    private function processGallery( $linkType, $block_content )
-    {
-        if ( preg_match_all( '/<a\\s+(?:[^>]+)>/m', $block_content, $anchors ) ) {
-            foreach ( $anchors[0] as $anchor ) {
-                
-                if ( strpos( 'class=', $anchor ) === false ) {
-                    $newAnchor = str_replace( '<a ', "<a class=\"{$linkType}-link\" ", $anchor );
-                } else {
-                    $newAnchor = str_replace( 'class=\\"', "class=\"{$linkType}-link ", $anchor );
-                }
-                
-                $block_content = str_replace( $anchor, $newAnchor, $block_content );
-            }
-        }
-        return $block_content;
-    }
-    
-    /**
-     * Filters the File block to include the goddamn attachment ID
-     *
-     * @param $block_content
-     * @param $block
-     *
-     * @return mixed
-     */
-    function filterBlocks( $block_content, $block )
-    {
-        
-        if ( isset( $block['blockName'] ) ) {
-            $id = arrayPath( $block, 'attrs/id', null );
-            
-            if ( !empty($id) ) {
-                
-                if ( $block['blockName'] === 'core/file' ) {
-                    $block_content = $this->processFileBlock( $id, $block_content );
-                } else {
-                    
-                    if ( $block['blockName'] === 'core/audio' ) {
-                        $block_content = $this->processAudioBlock( $id, $block_content );
-                    } else {
-                        
-                        if ( $block['blockName'] === 'core/video' ) {
-                            $block_content = $this->processVideoBlock( $id, $block_content );
-                        } else {
-                            if ( $block['blockName'] === 'core/cover' ) {
-                                $block_content = $this->processCoverBlock( $id, $block_content );
-                            }
-                        }
-                    
-                    }
-                
-                }
-            
-            } else {
-                
-                if ( $block['blockName'] === 'core/gallery' ) {
-                    $linkTo = arrayPath( $block, 'attrs/linkTo' );
-                    if ( !empty($linkTo) ) {
-                        $block_content = $this->processGallery( $linkTo, $block_content );
-                    }
-                }
-            
-            }
-        
-        }
-        
-        return $block_content;
     }
     
     //endregion
@@ -5034,9 +3763,15 @@ TEMPLATE;
     
     //endregion
     //region File List
-    public function getFileList( $directoryKeys = array( '' ), $skipThumbnails = false )
+    public function getFileList(
+        $directoryKeys = array( '' ),
+        $skipThumbnails = false,
+        $limit = -1,
+        $next = null
+    )
     {
         $tempFileList = [];
+        $nextToken = null;
         foreach ( $directoryKeys as $key ) {
             
             if ( empty($key) || strpos( strrev( $key ), '/' ) === 0 ) {
@@ -5045,7 +3780,14 @@ TEMPLATE;
                         continue;
                     }
                 }
-                $tempFileList = $this->client()->ls( $key, null );
+                $res = $this->client()->ls(
+                    $key,
+                    '/',
+                    $limit,
+                    $next
+                );
+                $nextToken = $res['next'];
+                $tempFileList = $res['files'];
             } else {
                 $tempFileList[] = $key;
             }
@@ -5061,14 +3803,15 @@ TEMPLATE;
                     if ( preg_match( '/([0-9]+x[0-9]+)\\.(?:.*)$/', $file, $matches ) ) {
                         $sourceFile = str_replace( '-' . $matches[1], '', $file );
                         
-                        if ( isset( $fileList[$sourceFile] ) ) {
-                            $fileList[$sourceFile][] = $file;
+                        if ( isset( $fileList[strtolower( $sourceFile )] ) ) {
+                            $fileList[strtolower( $sourceFile )][] = $file;
                         } else {
                             
-                            if ( isset( $unmatchedFileList[$sourceFile] ) ) {
-                                $unmatchedFileList[$sourceFile]['thumbs'][] = $file;
+                            if ( isset( $unmatchedFileList[strtolower( $sourceFile )] ) ) {
+                                $unmatchedFileList[strtolower( $sourceFile )]['thumbs'][] = $file;
                             } else {
-                                $unmatchedFileList[$sourceFile] = [
+                                $unmatchedFileList[strtolower( $sourceFile )] = [
+                                    'key'    => $sourceFile,
                                     'thumbs' => [ $file ],
                                 ];
                             }
@@ -5080,14 +3823,15 @@ TEMPLATE;
                         if ( preg_match( '/.*-scaled\\.[aA-zZ]+/', $file, $scaledMatch ) ) {
                             $sourceFile = str_replace( '-scaled', '', $file );
                             
-                            if ( isset( $fileList[$sourceFile] ) ) {
-                                $fileList[$sourceFile]['scaled'] = $file;
+                            if ( isset( $fileList[strtolower( $sourceFile )] ) ) {
+                                $fileList[strtolower( $sourceFile )]['scaled'] = $file;
                             } else {
                                 
-                                if ( isset( $unmatchedFileList[$sourceFile] ) ) {
-                                    $unmatchedFileList[$sourceFile]['scaled'] = $file;
+                                if ( isset( $unmatchedFileList[strtolower( $sourceFile )] ) ) {
+                                    $unmatchedFileList[strtolower( $sourceFile )]['scaled'] = $file;
                                 } else {
-                                    $unmatchedFileList[$sourceFile] = [
+                                    $unmatchedFileList[strtolower( $sourceFile )] = [
+                                        'key'    => $sourceFile,
                                         'scaled' => $file,
                                     ];
                                 }
@@ -5095,7 +3839,7 @@ TEMPLATE;
                             }
                         
                         } else {
-                            $fileList[$file] = [
+                            $fileList[strtolower( $file )] = [
                                 'key'             => $file,
                                 'missingOriginal' => false,
                                 'thumbs'          => [],
@@ -5108,7 +3852,7 @@ TEMPLATE;
             }
         } else {
             foreach ( $tempFileList as $file ) {
-                $fileList[$file] = [
+                $fileList[strtolower( $file )] = [
                     'key'             => $file,
                     'missingOriginal' => false,
                     'thumbs'          => [],
@@ -5120,7 +3864,7 @@ TEMPLATE;
             if ( !isset( $fileList[$key] ) && isset( $thumbs['scaled'] ) ) {
                 $fileList[$key] = [
                     'key'             => $thumbs['scaled'],
-                    'originalKey'     => $key,
+                    'originalKey'     => $thumbs['key'],
                     'missingOriginal' => true,
                     'thumbs'          => [],
                 ];
@@ -5136,7 +3880,10 @@ TEMPLATE;
             }
         
         }
-        return array_values( $fileList );
+        return [
+            'next'  => $nextToken,
+            'files' => array_values( $fileList ),
+        ];
     }
     
     //endregion
@@ -5944,12 +4691,39 @@ MIGRATED;
     
     //endregion
     //region Verification
+    private function verifyLocal( $uploadDir, $url )
+    {
+        $attachmentFile = trailingslashit( $uploadDir['basedir'] ) . ltrim( str_replace( $uploadDir['baseurl'], '', $url ), '/' );
+        
+        if ( file_exists( $attachmentFile ) ) {
+            return $url;
+        } else {
+            return 'Missing';
+        }
+    
+    }
+    
+    private function getLocalUrl( $callback )
+    {
+        add_filter( 'media-cloud/storage/override-url', '__return_false', PHP_INT_MAX );
+        add_filter( 'media-cloud/dynamic-images/skip-url-generation', '__return_true', PHP_INT_MAX );
+        $callback();
+        remove_filter( 'media-cloud/storage/override-url', '__return_false', PHP_INT_MAX );
+        remove_filter( 'media-cloud/dynamic-images/skip-url-generation', '__return_true', PHP_INT_MAX );
+    }
+    
     /**
      * @param int $postId
+     * @param boolean $includeLocal
      * @param TaskReporter $reporter
      * @param \Closure $infoCallback
      */
-    public function verifyPost( $postId, $reporter, $infoCallback )
+    public function verifyPost(
+        $postId,
+        $includeLocal,
+        $reporter,
+        $infoCallback
+    )
     {
         $client = new Client();
         $allSizes = ilab_get_image_sizes();
@@ -5957,6 +4731,9 @@ MIGRATED;
         $sizeKeys = array_sort( $sizeKeys );
         $sizesData = [];
         foreach ( $sizeKeys as $key ) {
+            if ( $includeLocal ) {
+                $sizesData[$key . ' Local'] = null;
+            }
             $sizesData[$key] = null;
         }
         $reportLine = [ $postId ];
@@ -5967,105 +4744,81 @@ MIGRATED;
         
         if ( empty($meta) || empty($meta['s3']) ) {
             $metaFromAttachment = false;
-            $meta = get_post_meta( $postId, 'ilab_s3_info', true );
+            $otherMeta = get_post_meta( $postId, 'ilab_s3_info', true );
+            if ( !empty($otherMeta) ) {
+                $meta = $otherMeta;
+            }
         }
         
         
-        if ( empty($meta) || empty($meta['s3']) ) {
-            $reportLine[] = 'Missing';
+        if ( empty($meta) ) {
+            $reportLine[] = 'Missing metadata';
             $reporter->add( $reportLine );
-            $infoCallback( "Missing S3 metadata.", true );
-            return;
+            $infoCallback( "Missing metadata.", true );
+        }
+        
+        $processS3 = true;
+        
+        if ( empty($meta['s3']) ) {
+            $reportLine[] = 'Missing S3 metadata';
+            $processS3 = false;
+            
+            if ( !$includeLocal ) {
+                $reporter->add( $reportLine );
+                $infoCallback( "Missing S3 metadata.", true );
+                return;
+            }
+        
         }
         
         $provider = arrayPath( $meta, 's3/provider', null );
         
         if ( !empty($provider) && $provider != StorageToolSettings::driver() ) {
+            $processS3 = false;
             $reportLine[] = 'Wrong provider';
-            $reporter->add( $reportLine );
-            $infoCallback( "S3 provider mismatch, is '{$provider}' expecting '" . StorageToolSettings::driver() . "'.", true );
-            return;
+            
+            if ( !$includeLocal ) {
+                $reporter->add( $reportLine );
+                $infoCallback( "S3 provider mismatch, is '{$provider}' expecting '" . StorageToolSettings::driver() . "'.", true );
+                return;
+            }
+        
         }
         
         $providerWorked = 0;
-        
-        if ( empty($provider) ) {
-            $reportLine[] = 'S3 info exists, but provider is missing, trying with current provider';
-        } else {
-            $reportLine[] = 'S3 Info Exists';
-        }
-        
-        $infoCallback( "Checking attachment url ... " );
-        $attachmentUrl = wp_get_attachment_url( $postId );
-        try {
-            $res = $client->get( $attachmentUrl, [
-                'headers' => [
-                'Range' => 'bytes=0-0',
-            ],
-            ] );
-            $code = $res->getStatusCode();
-        } catch ( RequestException $ex ) {
-            $code = 400;
-            if ( $ex->hasResponse() ) {
-                $code = $ex->getResponse()->getStatusCode();
-            }
-        }
-        
-        if ( in_array( $code, [ 200, 206 ] ) ) {
-            $providerWorked++;
-            $reportLine[] = $attachmentUrl;
-        } else {
-            $reportLine[] = "Missing, code: {$code}";
-        }
-        
-        $originalUrl = null;
-        
-        if ( strpos( $mimeType, 'image' ) === 0 ) {
+        if ( $processS3 ) {
             
-            if ( !empty(arrayPath( $meta, 'original_image' )) ) {
-                $originalKey = arrayPath( $meta, 'original_image_s3/key' );
+            if ( empty($provider) ) {
+                $reportLine[] = 'S3 info exists, but provider is missing, trying with current provider';
+            } else {
+                $reportLine[] = 'S3 Info Exists';
+            }
+        
+        }
+        $uploadDir = wp_get_upload_dir();
+        
+        if ( !$processS3 ) {
+            add_filter( 'media-cloud/storage/override-url', '__return_false', PHP_INT_MAX );
+            add_filter( 'media-cloud/dynamic-images/skip-url-generation', '__return_true', PHP_INT_MAX );
+            $infoCallback( "Checking attachment url ... " );
+            $attachmentUrl = wp_get_attachment_url( $postId );
+            $reportLine[] = $this->verifyLocal( $uploadDir, $attachmentUrl );
+            $reportLine[] = '';
+            $originalImage = wp_get_original_image_url( $postId );
+            
+            if ( !empty($originalImage) ) {
+                $originalFile = wp_get_original_image_path( $postId );
                 
-                if ( !empty($originalKey) ) {
-                    try {
-                        $privacy = arrayPath( $meta, 'original_image_s3/privacy', 'private' );
-                        $infoCallback( "Checking original url ... " );
-                        $doSign = $this->client->usesSignedURLs( $mimeType ) || $privacy !== 'public-read';
-                        $originalUrl = ( $doSign ? $this->client->presignedUrl( $originalKey, $this->client->signedURLExpirationForType( $mimeType ) ) : $this->client->url( $originalKey, $mimeType ) );
-                        
-                        if ( $originalUrl == $attachmentUrl ) {
-                            $reportLine[] = '';
-                        } else {
-                            try {
-                                $res = $client->get( $originalUrl, [
-                                    'headers' => [
-                                    'Range' => 'bytes=0-0',
-                                ],
-                                ] );
-                                $code = $res->getStatusCode();
-                            } catch ( RequestException $ex ) {
-                                $code = 400;
-                                if ( $ex->hasResponse() ) {
-                                    $code = $ex->getResponse()->getStatusCode();
-                                }
-                            }
-                            
-                            if ( in_array( $code, [ 200, 206 ] ) ) {
-                                $providerWorked++;
-                                $reportLine[] = $originalUrl;
-                            } else {
-                                $reportLine[] = "Missing, code: {$code}";
-                            }
-                        
-                        }
-                    
-                    } catch ( \Exception $ex ) {
-                        $reportLine[] = "Client error: " . $ex->getMessage();
-                    }
+                if ( file_exists( $originalFile ) ) {
+                    $reportLine[] = $originalImage;
+                    $reportLine[] = '';
                 } else {
-                    $reportLine[] = "Missing original image S3 key.";
+                    $reportLine[] = 'Missing';
+                    $reportLine[] = '';
                 }
             
             } else {
+                $reportLine[] = '';
                 $reportLine[] = '';
             }
             
@@ -6074,68 +4827,205 @@ MIGRATED;
             if ( !empty($sizes) ) {
                 $infoCallback( "Checking sizes ... " );
                 foreach ( $sizes as $sizeKey => $sizeInfo ) {
-                    
-                    if ( empty(arrayPath( $sizeInfo, 's3' )) ) {
-                        $sizesData[$sizeKey] = 'Missing S3 metadata';
+                    $url = wp_get_attachment_image_url( $postId, $sizeKey );
+                    if ( empty($url) ) {
                         continue;
                     }
-                    
-                    $sizeS3Key = arrayPath( $sizeInfo, 's3/key' );
-                    
-                    if ( empty($sizeS3Key) ) {
-                        $sizesData[$sizeKey] = 'Missing S3 key';
-                        continue;
-                    }
-                    
-                    $privacy = arrayPath( $sizeInfo, 's3/privacy', 'private' );
-                    try {
-                        $doSign = $this->client->usesSignedURLs( $mimeType ) || $privacy !== 'public-read';
-                        $url = ( $doSign ? $this->client->presignedUrl( $sizeS3Key, $this->client->signedURLExpirationForType( $mimeType ) ) : $this->client->url( $sizeS3Key, $mimeType ) );
-                        
-                        if ( !empty($url) && ($url == $attachmentUrl || $url == $originalUrl) ) {
-                            $reportLine[] = '';
-                        } else {
-                            try {
-                                $res = $client->get( $url, [
-                                    'headers' => [
-                                    'Range' => 'bytes=0-0',
-                                ],
-                                ] );
-                                $code = $res->getStatusCode();
-                            } catch ( RequestException $ex ) {
-                                $code = 400;
-                                if ( $ex->hasResponse() ) {
-                                    $code = $ex->getResponse()->getStatusCode();
-                                }
-                            }
-                            
-                            if ( in_array( $code, [ 200, 206 ] ) ) {
-                                $providerWorked++;
-                                $sizesData[$sizeKey] = $url;
-                            } else {
-                                $sizesData[$sizeKey] = "Missing, code: {$code}";
-                            }
-                        
-                        }
-                    
-                    } catch ( \Exception $ex ) {
-                        $sizesData[$sizeKey] = "Client error: " . $ex->getMessage();
-                    }
+                    $result = $this->verifyLocal( $uploadDir, $url );
+                    $sizesData[$sizeKey . ' Local'] = $result;
                 }
                 $reportLine = array_merge( $reportLine, array_values( $sizesData ) );
             }
-        
-        }
-        
-        
-        if ( empty($provider) && $providerWorked >= 1 ) {
-            $reportLine[] = 'Fixed missing provider.';
-            $meta['s3']['provider'] = StorageToolSettings::driver();
             
-            if ( $metaFromAttachment ) {
-                update_post_meta( $postId, '_wp_attachment_metadata', $meta );
+            remove_filter( 'media-cloud/storage/override-url', '__return_false', PHP_INT_MAX );
+            remove_filter( 'media-cloud/dynamic-images/skip-url-generation', '__return_true', PHP_INT_MAX );
+        } else {
+            $infoCallback( "Checking attachment url ... " );
+            if ( $includeLocal ) {
+                $this->getLocalUrl( function () use( $postId, $uploadDir, &$reportLine ) {
+                    $attachmentUrl = wp_get_attachment_url( $postId );
+                    $reportLine[] = $this->verifyLocal( $uploadDir, $attachmentUrl );
+                } );
+            }
+            $attachmentUrl = wp_get_attachment_url( $postId );
+            try {
+                $res = $client->get( $attachmentUrl, [
+                    'headers' => [
+                    'Range' => 'bytes=0-0',
+                ],
+                ] );
+                $code = $res->getStatusCode();
+            } catch ( RequestException $ex ) {
+                $code = 400;
+                if ( $ex->hasResponse() ) {
+                    $code = $ex->getResponse()->getStatusCode();
+                }
+            }
+            
+            if ( in_array( $code, [ 200, 206 ] ) ) {
+                $providerWorked++;
+                $reportLine[] = $attachmentUrl;
             } else {
-                update_post_meta( $postId, 'ilab_s3_info', $meta );
+                $reportLine[] = "Missing, code: {$code}";
+            }
+            
+            $originalUrl = null;
+            
+            if ( strpos( $mimeType, 'image' ) === 0 ) {
+                
+                if ( !empty(arrayPath( $meta, 'original_image' )) ) {
+                    if ( $includeLocal ) {
+                        $this->getLocalUrl( function () use( $postId, &$reportLine ) {
+                            $originalImage = wp_get_original_image_url( $postId );
+                            
+                            if ( !empty($originalImage) ) {
+                                $originalFile = wp_get_original_image_path( $postId );
+                                
+                                if ( file_exists( $originalFile ) ) {
+                                    $reportLine[] = $originalImage;
+                                } else {
+                                    $reportLine[] = 'Missing';
+                                }
+                            
+                            } else {
+                                $reportLine[] = '';
+                            }
+                        
+                        } );
+                    }
+                    $originalKey = arrayPath( $meta, 'original_image_s3/key' );
+                    
+                    if ( !empty($originalKey) ) {
+                        try {
+                            $privacy = arrayPath( $meta, 'original_image_s3/privacy', 'private' );
+                            $infoCallback( "Checking original url ... " );
+                            $doSign = $this->client->usesSignedURLs( $mimeType ) || $privacy !== 'public-read';
+                            $originalUrl = ( $doSign ? $this->client->presignedUrl( $originalKey, $this->client->signedURLExpirationForType( $mimeType ) ) : $this->client->url( $originalKey, $mimeType ) );
+                            
+                            if ( $originalUrl == $attachmentUrl ) {
+                                $reportLine[] = '';
+                            } else {
+                                try {
+                                    $res = $client->get( $originalUrl, [
+                                        'headers' => [
+                                        'Range' => 'bytes=0-0',
+                                    ],
+                                    ] );
+                                    $code = $res->getStatusCode();
+                                } catch ( RequestException $ex ) {
+                                    $code = 400;
+                                    if ( $ex->hasResponse() ) {
+                                        $code = $ex->getResponse()->getStatusCode();
+                                    }
+                                }
+                                
+                                if ( in_array( $code, [ 200, 206 ] ) ) {
+                                    $providerWorked++;
+                                    $reportLine[] = $originalUrl;
+                                } else {
+                                    $reportLine[] = "Missing, code: {$code}";
+                                }
+                            
+                            }
+                        
+                        } catch ( \Exception $ex ) {
+                            $reportLine[] = "Client error: " . $ex->getMessage();
+                        }
+                    } else {
+                        $reportLine[] = "Missing original image S3 key.";
+                    }
+                
+                } else {
+                    if ( $includeLocal ) {
+                        $reportLine[] = '';
+                    }
+                    $reportLine[] = '';
+                }
+                
+                $sizes = arrayPath( $meta, 'sizes' );
+                
+                if ( !empty($sizes) ) {
+                    $infoCallback( "Checking sizes ... " );
+                    foreach ( $sizes as $sizeKey => $sizeInfo ) {
+                        if ( $includeLocal ) {
+                            $this->getLocalUrl( function () use(
+                                $postId,
+                                $uploadDir,
+                                $sizeKey,
+                                &$sizesData
+                            ) {
+                                $url = wp_get_attachment_image_url( $postId, $sizeKey );
+                                if ( empty($url) ) {
+                                    return;
+                                }
+                                $result = $this->verifyLocal( $uploadDir, $url );
+                                $sizesData[$sizeKey . ' Local'] = $result;
+                            } );
+                        }
+                        
+                        if ( empty(arrayPath( $sizeInfo, 's3' )) ) {
+                            $sizesData[$sizeKey] = 'Missing S3 metadata';
+                            continue;
+                        }
+                        
+                        $sizeS3Key = arrayPath( $sizeInfo, 's3/key' );
+                        
+                        if ( empty($sizeS3Key) ) {
+                            $sizesData[$sizeKey] = 'Missing S3 key';
+                            continue;
+                        }
+                        
+                        $privacy = arrayPath( $sizeInfo, 's3/privacy', 'private' );
+                        try {
+                            $doSign = $this->client->usesSignedURLs( $mimeType ) || $privacy !== 'public-read';
+                            $url = ( $doSign ? $this->client->presignedUrl( $sizeS3Key, $this->client->signedURLExpirationForType( $mimeType ) ) : $this->client->url( $sizeS3Key, $mimeType ) );
+                            
+                            if ( !empty($url) && ($url == $attachmentUrl || $url == $originalUrl) ) {
+                                $reportLine[] = '';
+                            } else {
+                                try {
+                                    $res = $client->get( $url, [
+                                        'headers' => [
+                                        'Range' => 'bytes=0-0',
+                                    ],
+                                    ] );
+                                    $code = $res->getStatusCode();
+                                } catch ( RequestException $ex ) {
+                                    $code = 400;
+                                    if ( $ex->hasResponse() ) {
+                                        $code = $ex->getResponse()->getStatusCode();
+                                    }
+                                }
+                                
+                                if ( in_array( $code, [ 200, 206 ] ) ) {
+                                    $providerWorked++;
+                                    $sizesData[$sizeKey] = $url;
+                                } else {
+                                    $sizesData[$sizeKey] = "Missing, code: {$code}";
+                                }
+                            
+                            }
+                        
+                        } catch ( \Exception $ex ) {
+                            $sizesData[$sizeKey] = "Client error: " . $ex->getMessage();
+                        }
+                    }
+                    $reportLine = array_merge( $reportLine, array_values( $sizesData ) );
+                }
+            
+            }
+            
+            
+            if ( empty($provider) && $providerWorked >= 1 ) {
+                $reportLine[] = 'Fixed missing provider.';
+                $meta['s3']['provider'] = StorageToolSettings::driver();
+                
+                if ( $metaFromAttachment ) {
+                    update_post_meta( $postId, '_wp_attachment_metadata', $meta );
+                } else {
+                    update_post_meta( $postId, 'ilab_s3_info', $meta );
+                }
+            
             }
         
         }

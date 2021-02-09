@@ -19,7 +19,7 @@ namespace MediaCloud\Plugin\Tools\Storage;
 
 use MediaCloud\Vendor\Carbon\Carbon;
 
-class StorageFile {
+class StorageFile implements \JsonSerializable {
 	/** @var string The type of file (DIR or FILE) */
 	protected $type;
 
@@ -153,5 +153,16 @@ class StorageFile {
 	 */
 	public function url() {
 		return $this->url;
+	}
+
+	public function jsonSerialize() {
+		return [
+			'type' => strtolower($this->type),
+			'key' => urldecode($this->key),
+			'name' => urldecode($this->name),
+			'date' => $this->dateString(),
+			'size' => $this->sizeString(),
+			'url' => $this->url,
+		];
 	}
 }

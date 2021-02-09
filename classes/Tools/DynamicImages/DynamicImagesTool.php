@@ -25,6 +25,8 @@ use function MediaCloud\Plugin\Utilities\json_response;
 use function MediaCloud\Plugin\Utilities\parse_req;
 
 abstract class DynamicImagesTool extends Tool {
+	protected $forcedEnabled = false;
+
     /** @var DynamicImagesToolSettings  */
     protected $settings = null;
 
@@ -42,6 +44,10 @@ abstract class DynamicImagesTool extends Tool {
         parent::__construct($toolName, $toolInfo, $toolManager);
 
         add_filter('media-cloud/dynamic-images/enabled', function($enabled){
+            if ($this->forcedEnabled) {
+                return $this->forcedEnabled;
+            }
+
             if (!$enabled) {
                 return $this->enabled();
             }
@@ -115,10 +121,9 @@ abstract class DynamicImagesTool extends Tool {
 
         $this->hookupUI();
 
-        add_filter('wp_get_attachment_url', [$this, 'getAttachmentURL'], 10000, 2);
-        add_filter('wp_prepare_attachment_for_js', array($this, 'prepareAttachmentForJS'), 1000, 3);
+        $this->setupHooks();
 
-        add_filter('image_downsize', [$this, 'imageDownsize'], 1000, 3);
+        add_filter('wp_prepare_attachment_for_js', array($this, 'prepareAttachmentForJS'), 1000, 3);
 
         add_filter('image_get_intermediate_size', [$this, 'imageGetIntermediateSize'], 0, 3);
 
@@ -230,12 +235,32 @@ abstract class DynamicImagesTool extends Tool {
         }, 100000, 3);
     }
 
+    protected function setupHooks() {
+	    add_filter('wp_get_attachment_url', [$this, 'getAttachmentURL'], 10000, 2);
+	    add_filter('image_downsize', [$this, 'imageDownsize'], 1000, 3);
+    }
+
+    protected function tearDownHooks() {
+	    remove_filter('wp_get_attachment_url', [$this, 'getAttachmentURL'], 10000);
+	    remove_filter('image_downsize', [$this, 'imageDownsize'], 1000);
+    }
+
     public function registerSettings() {
         parent::registerSettings();
 
         register_setting('ilab-imgix-preset', 'ilab-imgix-presets');
         register_setting('ilab-imgix-preset', 'ilab-imgix-size-presets');
     }
+
+	public function forceEnable($enabled) {
+		$this->forcedEnabled = $enabled;
+		if ($this->forcedEnabled) {
+		    $this->setupHooks();
+		} else {
+		    $this->tearDownHooks();
+		}
+	}
+
     //endregion
 
     //region URL Generation

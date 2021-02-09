@@ -177,6 +177,19 @@ final class TaskDatabase {
 
 	//endregion
 
+	//region Nuke
+
+	public static function nukeData() {
+		global $wpdb;
+
+		$wpdb->query("delete from {$wpdb->base_prefix}mcloud_task");
+		$wpdb->query("delete from {$wpdb->base_prefix}mcloud_task_data");
+		$wpdb->query("delete from {$wpdb->base_prefix}mcloud_task_schedule");
+		$wpdb->query("delete from {$wpdb->base_prefix}mcloud_task_token");
+	}
+
+	//endregion
+
 	//region Tokens
 
 	public static function setToken($token, $tokenVal) {

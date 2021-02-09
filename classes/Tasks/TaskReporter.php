@@ -18,20 +18,20 @@ use MediaCloud\Vendor\Monolog\Formatter\LineFormatter;
 use MediaCloud\Vendor\Monolog\Handler\StreamHandler;
 use MediaCloud\Vendor\Monolog\Logger as MonologLogger;
 
-class TaskReporter {
+class TaskReporter implements ITaskReporter {
 	/** @var null|Task  */
 	private $task = null;
-	private $headerFields = [];
 
 	private $reportCSV = null;
 	private $taskFileName = null;
 	private $alwaysGenerate = false;
-	private $loggerAdded = false;
+
+	protected $headerFields = [];
 
 	/**
 	 * TaskReporter constructor.
 	 *
-	 * @param Task|string $taskorArray
+	 * @param Task|string $taskOrFileName
 	 * @param array $headerFields
 	 */
 	public function __construct($taskOrFileName, array $headerFields, bool $alwaysGenerate = false) {
@@ -44,6 +44,42 @@ class TaskReporter {
 		}
 
 		$this->alwaysGenerate = $alwaysGenerate;
+	}
+
+	public static function reporterDirectory(?string $file = null) {
+		$reportDir = trailingslashit(WP_CONTENT_DIR).'mcloud-reports';
+		if (is_multisite() && !is_network_admin()) {
+			$reportDir .= '/'.get_current_blog_id();
+		}
+
+		if (!file_exists($reportDir)) {
+			@mkdir($reportDir, 0755, true);
+		}
+
+		if (!file_exists($reportDir)) {
+			return null;
+		}
+
+		if (!empty($file)) {
+			return trailingslashit($reportDir).$file;
+		}
+
+		return $reportDir;
+	}
+
+	public static function reporterUrl(?string $file = null) {
+		if (is_multisite() && !is_network_admin()) {
+			$url = content_url('/mcloud-reports/'.get_current_blog_id());
+			$url = site_url(parse_url($url, PHP_URL_PATH));
+		} else {
+			$url = content_url('/mcloud-reports');
+		}
+
+		if (!empty($file)) {
+			return trailingslashit($url).$file;
+		}
+
+		return $url;
 	}
 
 	public function open() {
@@ -59,12 +95,9 @@ class TaskReporter {
 			return false;
 		}
 
-		$reportDir = trailingslashit(WP_CONTENT_DIR).'mcloud-reports';
-		if (!file_exists($reportDir)) {
-			@mkdir($reportDir, 0755, true);
-		}
+		$reportDir = static::reporterDirectory();
 
-		if (file_exists($reportDir)) {
+		if (!empty($reportDir)) {
 			if (!empty($this->taskFileName)) {
 				if (strpos($this->taskFileName, '/') !== 0) {
 					$this->taskFileName = trailingslashit($reportDir).$this->taskFileName;
@@ -128,5 +161,9 @@ class TaskReporter {
 				Logger::instance()->removeTemporaryLogger($this->task::identifier());
 			}
 		}
+	}
+
+	public function headerFields(): array {
+		return $this->headerFields;
 	}
 }

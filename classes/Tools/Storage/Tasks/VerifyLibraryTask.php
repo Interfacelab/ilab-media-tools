@@ -51,7 +51,7 @@ class VerifyLibraryTask extends AttachmentTask {
 	}
 
 	public static function showInMenu() {
-		return false;
+		return true;
 	}
 
 	/**
@@ -102,27 +102,38 @@ class VerifyLibraryTask extends AttachmentTask {
 	 */
 	public static function taskOptions() {
 		return [
+			'include-local' => [
+				"title" => "Include Local Files",
+				"description" => "Processes all files, including those not on cloud storage.",
+				"type" => "checkbox",
+				"default" => false
+			],
 		];
 	}
+
+	/** @var null|\Closure  */
+	public static $callback = null;
 
 	//endregion
 
 	//region Data
 
 	protected function filterPostArgs($args) {
-		$args['meta_query'] = [
-			'relation' => 'OR',
-			[
-				'key'     => '_wp_attachment_metadata',
-				'value'   => '"s3"',
-				'compare' => 'LIKE',
-				'type'    => 'CHAR',
-			],
-			[
-				'key'     => 'ilab_s3_info',
-				'compare' => 'EXISTS',
-			],
-		];
+		if (empty($this->options['include-local'])) {
+			$args['meta_query'] = [
+				'relation' => 'OR',
+				[
+					'key'     => '_wp_attachment_metadata',
+					'value'   => '"s3"',
+					'compare' => 'LIKE',
+					'type'    => 'CHAR',
+				],
+				[
+					'key'     => 'ilab_s3_info',
+					'compare' => 'EXISTS',
+				],
+			];
+		}
 
 		return $args;
 	}
@@ -133,13 +144,35 @@ class VerifyLibraryTask extends AttachmentTask {
 			$sizeKeys = array_keys($allSizes);
 			$sizeKeys = array_sort($sizeKeys);
 
-			$this->reportHeaders = array_merge(array_merge([
+			$fields = [
 				'Post ID',
 				'Mime Type',
 				'S3 Metadata Status',
 				'Attachment URL',
 				'Original Source Image URL',
-			], $sizeKeys), ['Notes']);
+			];
+
+			if (!empty($this->options['include-local'])) {
+				$fields = [
+					'Post ID',
+					'Mime Type',
+					'S3 Metadata Status',
+					'Attachment URL Local',
+					'Attachment URL',
+					'Original Source Image URL Local',
+					'Original Source Image URL',
+				];
+
+				$newSizeKeys = [];
+				foreach($sizeKeys as $sizeKey) {
+					$newSizeKeys[] = $sizeKey . " Local";
+					$newSizeKeys[] = $sizeKey;
+				}
+
+				$sizeKeys = $newSizeKeys;
+			}
+
+			$this->reportHeaders = array_merge(array_merge($fields, $sizeKeys), ['Notes']);
 		}
 
 		return parent::reporter();
@@ -178,7 +211,8 @@ class VerifyLibraryTask extends AttachmentTask {
 
 		$this->updateCurrentPost($post_id);
 
-		ToolsManager::instance()->tools['storage']->verifyPost($post_id, $this->reporter(), function($message, $newLine = false) {});
+		$callback = !empty(static::$callback) ? static::$callback : function($message, $newLine = false) {};
+		ToolsManager::instance()->tools['storage']->verifyPost($post_id, !empty($this->options['include-local']), $this->reporter(), $callback);
 
 		Logger::info("Finished verifying $post_id", [], __METHOD__, __LINE__);
 

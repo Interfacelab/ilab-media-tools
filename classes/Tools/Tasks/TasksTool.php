@@ -40,8 +40,13 @@ class TasksTool extends Tool {
 	public function setup() {
 		parent::setup();
 
+		add_action('init', function() {
+			$role = get_role('administrator');
+			$role->add_cap('mcloud_heartbeat', true);
+		});
+
 		if (is_admin()) {
-			if ($this->settings->heartbeatEnabled) {
+			if ($this->settings->heartbeatEnabled && current_user_can('mcloud_heartbeat')) {
 				add_action('admin_enqueue_scripts', function() {
 					$script = View::render_view('base.heartbeat', [ 'heartbeatFrequency' => (int)$this->settings->heartbeatFrequency * 1000]);
 					wp_register_script('task-manager-heartbeat', '', ['jquery']);

@@ -40,7 +40,7 @@ return [
 					],
 					"mcloud-debug-content-filtering" => [
 						"title" => "Debug Content Filtering",
-						"description" => "If you are seeing issues with URLs not being updated correctly, enable this to troubleshoot.  When enabled, it will log content filtering as well as generate a report in <code style='white-space: nowrap'>".trailingslashit(WP_CONTENT_DIR)."mcloud-reports</code>.  <strong>DO NOT LEAVE THIS RUNNING.</strong>  Only use to troubleshoot specific pages and then make sure to turn it off.",
+						"description" => "If you are seeing issues with URLs not being updated correctly, enable this to troubleshoot.  When enabled, it will log content filtering as well as generate a report in <code style='white-space: nowrap'>".\MediaCloud\Plugin\Tasks\TaskReporter::reporterDirectory()."</code>.  <strong>DO NOT LEAVE THIS RUNNING.</strong>  Only use to troubleshoot specific pages and then make sure to turn it off.",
 						"type" => "checkbox",
 						"default" => false,
 					],

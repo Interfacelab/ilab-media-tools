@@ -184,33 +184,48 @@ class UnlinkTask extends AttachmentTask {
 			$meta = get_post_meta($post_id, '_wp_attachment_metadata', true);
 		}
 
+		$changed = false;
+		$url = wp_get_attachment_url($post_id);
+
 		if (empty($meta)) {
 			$this->reporter()->add([
 				$post_id,
-				wp_get_attachment_url($post_id),
+				$url,
 				null,
 				'Missing metadata'
 			]);
+
+			Logger::info("Finished processing $post_id", [], __METHOD__, __LINE__);
+
+			return true;
 		}
 
-		Logger::info("Meta keys:".implode(', ', array_keys($meta)));
+
 		if (isset($meta['s3'])) {
-			$url = wp_get_attachment_url($post_id);
-
+			$changed = true;
 			unset($meta['s3']);
-			if(isset($meta['sizes'])) {
-				$sizes = $meta['sizes'];
-				foreach($sizes as $size => $sizeData) {
-					if(isset($sizeData['s3'])) {
-						unset($sizeData['s3']);
-					}
+		}
 
-					$sizes[$size] = $sizeData;
+		if(isset($meta['sizes'])) {
+			$sizes = $meta['sizes'];
+			foreach($sizes as $size => $sizeData) {
+				if(isset($sizeData['s3'])) {
+					$changed = true;
+					unset($sizeData['s3']);
 				}
 
-				$meta['sizes'] = $sizes;
+				$sizes[$size] = $sizeData;
 			}
 
+			$meta['sizes'] = $sizes;
+		}
+
+		if (isset($meta['original_image_s3'])) {
+			$changed = true;
+			unset($meta['original_image_s3']);
+		}
+
+		if ($changed) {
 			if ($isS3Info) {
 				delete_post_meta($post_id, 'ilab_s3_info');
 			} else {
@@ -228,7 +243,7 @@ class UnlinkTask extends AttachmentTask {
 		} else {
 			$this->reporter()->add([
 				$post_id,
-				wp_get_attachment_url($post_id),
+				$url,
 				null,
 				'Missing cloud storage metadata'
 			]);

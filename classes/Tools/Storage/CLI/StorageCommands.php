@@ -17,7 +17,9 @@
 namespace MediaCloud\Plugin\Tools\Storage\CLI;
 
 use  MediaCloud\Plugin\CLI\Command ;
+use  MediaCloud\Plugin\Tasks\TaskManager ;
 use  MediaCloud\Plugin\Tasks\TaskReporter ;
+use  MediaCloud\Plugin\Tools\Integrations\PlugIns\WebStories\Tasks\UpdateWebStoriesTask ;
 use  MediaCloud\Plugin\Tools\Storage\StorageToolSettings ;
 use  MediaCloud\Plugin\Tools\Browser\Tasks\ImportFromStorageTask ;
 use  MediaCloud\Plugin\Tools\Integrations\PlugIns\Elementor\Tasks\UpdateElementorTask ;
@@ -27,9 +29,12 @@ use  MediaCloud\Plugin\Tools\Storage\Tasks\MigrateFromOtherTask ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\MigrateTask ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\RegenerateThumbnailTask ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\UnlinkTask ;
+use  MediaCloud\Plugin\Tools\Storage\Tasks\VerifyLibraryTask ;
 use  MediaCloud\Plugin\Tools\ToolsManager ;
 use  MediaCloud\Plugin\Utilities\Logging\Logger ;
+use  MediaCloud\Plugin\Utilities\Search\Searcher ;
 use  MediaCloud\Vendor\GuzzleHttp\Client ;
+use  Mpdf\Shaper\Sea ;
 use function  MediaCloud\Plugin\Utilities\arrayPath ;
 
 if ( !defined( 'ABSPATH' ) ) {
@@ -101,6 +106,9 @@ class StorageCommands extends Command
      * [--delete-migrated]
      * : Deletes migrated media from your local WordPress server.  Note: You must have Delete Uploads enabled in Cloud Storage for this setting to have any effect.  If you have Delete Uploads disabled, turning this on will have zero effect.
      *
+     * [--allow-optimizers]
+     * : If you are using the Image Optimization feature, or using a third party image optimization plugin, this will allow them to run, if needed, during migration.  Generally speaking, you do not want to turn this on as an error with an optimization can derail the entire migration.  You should optimize your media before running the migration and keep this option turned off.
+     *
      * @when after_wp_load
      *
      * @param $args
@@ -108,7 +116,7 @@ class StorageCommands extends Command
      *
      * @throws \Exception
      */
-    public function migrateToCloud( $args, $assoc_args )
+    public function migrate( $args, $assoc_args )
     {
         /** @var \Freemius $media_cloud_licensing */
         global  $media_cloud_licensing ;
@@ -146,7 +154,7 @@ class StorageCommands extends Command
      *
      * @throws \Exception
      */
-    public function importFromCloud( $args, $assoc_args )
+    public function import( $args, $assoc_args )
     {
         /** @var \Freemius $media_cloud_licensing */
         global  $media_cloud_licensing ;
@@ -268,39 +276,6 @@ class StorageCommands extends Command
     }
     
     /**
-     * Migrate NextGen Gallery images to cloud storage.
-     *
-     * @when after_wp_load
-     *
-     * @param $args
-     * @param $assoc_args
-     *
-     * @throws \Exception
-     */
-    public function migrateNGG( $args, $assoc_args )
-    {
-        global  $media_cloud_licensing ;
-        self::Error( "Only available in the Premium version.  To upgrade: https://mediacloud.press/pricing/" );
-    }
-    
-    /**
-     * Updates Elementor's data with the correct URLs.
-     *
-     *
-     * @when after_wp_load
-     *
-     * @param $args
-     * @param $assoc_args
-     *
-     * @throws \Exception
-     */
-    public function updateElementor( $args, $assoc_args )
-    {
-        global  $media_cloud_licensing ;
-        self::Error( "Only available in the Premium version.  To upgrade: https://mediacloud.press/pricing/" );
-    }
-    
-    /**
      * Migrate other plugin settings
      *
      *
@@ -311,7 +286,7 @@ class StorageCommands extends Command
      *
      * @throws \Exception
      */
-    public function migrateFromOther( $args, $assoc_args )
+    public function migrateOtherPlugin( $args, $assoc_args )
     {
         /** @var MigrateFromOtherTask $task */
         $task = new MigrateFromOtherTask();
@@ -639,8 +614,8 @@ class StorageCommands extends Command
      *
      * ## OPTIONS
      *
-     * <filename>
-     * : The filename for the CSV report to generate
+     * [--local]
+     * : Processes all files, including those not on cloud storage.
      *
      * [--limit=<number>]
      * : The maximum number of items to process, default is infinity.
@@ -653,7 +628,7 @@ class StorageCommands extends Command
      *
      * ## EXAMPLES
      *
-     *     wp mediacloud verify verify.csv
+     *     wp mediacloud verify
      *
      * @when after_wp_load
      *
@@ -664,77 +639,35 @@ class StorageCommands extends Command
      */
     public function verify( $args, $assoc_args )
     {
-        if ( count( $args ) == 0 ) {
-            self::Error( "Missing required argument.  Run the command: wp mediacloud verify <filename.csv>" );
-        }
-        $allSizes = ilab_get_image_sizes();
-        $sizeKeys = array_keys( $allSizes );
-        $sizeKeys = array_sort( $sizeKeys );
-        /** @var StorageTool $storageTool */
-        $storageTool = ToolsManager::instance()->tools['storage'];
-        $csvFileName = $args[0];
-        if ( strpos( $csvFileName, '/' ) !== 0 ) {
-            $csvFileName = trailingslashit( getcwd() ) . $csvFileName;
-        }
-        if ( file_exists( $csvFileName ) ) {
-            unlink( $csvFileName );
-        }
-        $headers = array_merge( array_merge( [
-            'Post ID',
-            'Mime Type',
-            'S3 Metadata Status',
-            'Attachment URL',
-            'Original Source Image URL'
-        ], $sizeKeys ), [ 'Notes' ] );
-        $reporter = new TaskReporter( $csvFileName, $headers, true );
-        $queryArgs = [
-            'post_type'   => 'attachment',
-            'post_status' => 'inherit',
-            'fields'      => 'ids',
-            'orderby'     => 'date',
-            'order'       => 'desc',
-            'meta_query'  => [
-            'relation' => 'OR',
-            [
-            'key'     => '_wp_attachment_metadata',
-            'value'   => '"s3"',
-            'compare' => 'LIKE',
-            'type'    => 'CHAR',
-        ],
-            [
-            'key'     => 'ilab_s3_info',
-            'compare' => 'EXISTS',
-        ],
-        ],
-        ];
-        
-        if ( isset( $assoc_args['limit'] ) ) {
-            $queryArgs['posts_per_page'] = $assoc_args['limit'];
+        $options = $assoc_args;
+        if ( isset( $options['limit'] ) ) {
             
-            if ( isset( $assoc_args['page'] ) ) {
-                $queryArgs['offset'] = max( 0, ($assoc_args['page'] - 1) * $assoc_args['limit'] );
-            } else {
-                if ( isset( $assoc_args['offset'] ) ) {
-                    $queryArgs['offset'] = $assoc_args['offset'];
-                }
+            if ( isset( $options['page'] ) ) {
+                $options['offset'] = max( 0, ($assoc_args['page'] - 1) * $assoc_args['limit'] );
+                unset( $options['page'] );
             }
         
-        } else {
-            $queryArgs['posts_per_page'] = -1;
         }
         
-        $query = new \WP_Query( $queryArgs );
-        $postIds = $query->posts;
-        add_filter( 'media-cloud/dynamic-images/skip-url-generation', '__return_true' );
-        foreach ( $postIds as $postId ) {
-            self::Info( "Processing {$postId} ... " );
-            $storageTool->verifyPost( $postId, $reporter, function ( $message, $newLine = false ) {
-                self::Info( $message, $newLine );
-            } );
-            self::Info( "Done.", true );
+        if ( isset( $options['order-by'] ) ) {
+            $orderBy = $options['order-by'];
+            $dir = arrayPath( $options, 'order', 'asc' );
+            unset( $options['order-by'] );
+            unset( $options['order'] );
+            $options['sort-order'] = $orderBy . '-' . $dir;
         }
-        remove_filter( 'media-cloud/dynamic-images/skip-url-generation', '__return_true' );
-        $reporter->close();
+        
+        
+        if ( isset( $options['local'] ) && !empty($options['local']) ) {
+            unset( $options['local'] );
+            $options['include-local'] = true;
+        }
+        
+        $task = new VerifyLibraryTask();
+        VerifyLibraryTask::$callback = function ( $message, $newLine = false ) {
+            self::Info( $message, $newLine );
+        };
+        $this->runTask( $task, $options );
     }
     
     /**
@@ -847,9 +780,70 @@ class StorageCommands extends Command
         $reporter->close();
     }
     
+    /**
+     * Replaces URLs in content with the cloud storage URL.  This will only replace local URLs.
+     *
+     * ## OPTIONS
+     *
+     * [--dry-run]
+     * : Simulate the search and replace
+     *
+     * [--local]
+     * : Revert to local URLs regardless of current cloud storage settings
+     *
+     * [--imgix]
+     * : Generate imgix URLs, use this if you are trying to switch back from imgix.  To use this switch, you should have an imgix domain and/or signing key saved in imgix settings, otherwise use the --imgix-domain and --imgix-key arguments.
+     *
+     * [--imgix-domain=<string>]
+     * : The imgix domain to use, if not using what is saved in the settings
+     *
+     * [--imgix-key=<string>]
+     * : The imgix signing key to use, if not using what is saved in the settings
+     *
+     * [--cdn=<string>]
+     * : If you are trying to rollback from a setup that used a CDN, specify the CDN here, including the https:// part.
+     *
+     * [--doc-cdn=<string>]
+     * : If you are trying to rollback from a setup that used a doc CDN, specify the doc CDN here, including the https:// part.
+     *
+     * [--batch-size=<number>]
+     * : The number of attachments to process in a batch
+     *
+     * [--sleep=<number>]
+     * : The amount of time, in milliseconds, to sleep between replacements.  Will slow down processing, but reduce database CPU usage.  Default is 250, use 0 to disable.
+     *
+     * [--continue]
+     * : Internal use
+     *
+     * [--limit=<number>]
+     * : Internal use
+     *
+     * [--page=<number>]
+     * : Internal use
+     *
+     * [--token=<string>]
+     * : Internal use
+     *
+     * ## EXAMPLES
+     *
+     *     wp mediacloud syncLocal sync.csv
+     *
+     * @when after_wp_load
+     *
+     * @param $cmdArgs
+     * @param $assoc_args
+     *
+     */
+    public function replace( $cmdArgs, $assoc_args )
+    {
+        /** @var \Freemius $media_cloud_licensing */
+        global  $media_cloud_licensing ;
+        self::Error( "Only available in the Premium version.  To upgrade: https://mediacloud.press/pricing/" );
+    }
+    
     public static function Register()
     {
-        \WP_CLI::add_command( 'mediacloud', __CLASS__ );
+        \WP_CLI::add_command( 'mediacloud:storage', __CLASS__ );
     }
 
 }

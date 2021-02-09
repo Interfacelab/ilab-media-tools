@@ -708,11 +708,12 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 		return $fileInfo;
 	}
 
-	public function dir($path = '', $delimiter = '/') {
+	public function dir($path = '', $delimiter = '/', $limit = -1, $next = null) {
 		if(!$this->client) {
 			throw new InvalidStorageSettingsException('Storage settings are invalid');
 		}
 
+		$foundDirs = [];
 		$contents = [];
 		try {
 			$args =  [
@@ -724,33 +725,61 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 				$args['Delimiter'] = $delimiter;
 			}
 
-			$results  = $this->client->getPaginator('ListObjects', $args);
+			if ($limit !== -1) {
+				$args['MaxKeys'] = $limit;
+			}
 
-			foreach($results as $result) {
-				if (!empty($result['CommonPrefixes'])) {
-					foreach($result['CommonPrefixes'] as $prefix) {
-						$contents[] = new StorageFile('DIR', $prefix['Prefix']);
+			if (!empty($next)) {
+				$args['ContinuationToken'] = $next;
+			}
+
+			$results  = $this->client->getPaginator('ListObjectsV2', $args);
+
+			$result = $results->current();
+			if (empty($result)) {
+				return [
+					'next' => null,
+					'files' => []
+				];
+			}
+
+			if (!empty($result['CommonPrefixes'])) {
+				foreach($result['CommonPrefixes'] as $prefix) {
+					$decodedPrefix = urldecode($prefix['Prefix']);
+					if (in_array($decodedPrefix, $foundDirs)) {
+						continue;
 					}
-				}
 
-				if (!empty($result['Contents'])) {
-					foreach($result['Contents'] as $object) {
-						if ($object['Key'] == $path) {
-							continue;
-						}
-
-						$contents[] = new StorageFile('FILE', $object['Key'], null, $object['LastModified'], intval($object['Size']), $this->presignedUrl($object['Key']));
-					}
+					$foundDirs[] = $decodedPrefix;
+					$contents[] = new StorageFile('DIR', $decodedPrefix);
 				}
 			}
-		} catch(AwsException $ex) {
 
+			if (!empty($result['Contents'])) {
+				foreach($result['Contents'] as $object) {
+					if ($object['Key'] == $path) {
+						continue;
+					}
+
+					$contents[] = new StorageFile('FILE', $object['Key'], null, $object['LastModified'], intval($object['Size']), $this->presignedUrl($object['Key']));
+				}
+			}
+
+			return [
+				'next' => isset($result['NextContinuationToken']) ? $result['NextContinuationToken'] : null,
+				'files' => $contents
+			];
+		} catch(AwsException $ex) {
+			Logger::error("Error listing objects for $path: ".$ex->getMessage(), [], __METHOD__, __LINE__);
 		}
 
-		return $contents;
+		return [
+			'next' => null,
+			'files' => []
+		];
 	}
 
-	public function ls($path = '', $delimiter = '/') {
+	public function ls($path = '', $delimiter = '/', $limit = -1, $next = null) {
 		if(!$this->client) {
 			throw new InvalidStorageSettingsException('Storage settings are invalid');
 		}
@@ -766,24 +795,44 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 				$args['Delimiter'] = $delimiter;
 			}
 
-			$results  = $this->client->getPaginator('ListObjects', $args);
-
-			foreach($results as $result) {
-				if (!empty($result['Contents'])) {
-					foreach($result['Contents'] as $object) {
-						if ($object['Key'] == $path) {
-							continue;
-						}
-
-						$contents[] = $object['Key'];
-					}
-				}
+			if ($limit !== -1) {
+				$args['MaxKeys'] = $limit;
 			}
-		} catch(AwsException $ex) {
 
+			if (!empty($next)) {
+				$args['ContinuationToken'] = $next;
+			}
+
+			$results  = $this->client->getPaginator('ListObjectsV2', $args);
+
+			$result = $results->current();
+			if (empty($result) || empty($result['Contents'])) {
+				return [
+					'next' => null,
+					'files' => []
+				];
+			}
+
+			foreach($result['Contents'] as $object) {
+				if ($object['Key'] == $path) {
+					continue;
+				}
+
+				$contents[] = $object['Key'];
+			}
+
+			return [
+				'next' => isset($result['NextContinuationToken']) ? $result['NextContinuationToken'] : null,
+				'files' => $contents
+			];
+		} catch(AwsException $ex) {
+			Logger::error("Error listing objects for $path: ".$ex->getMessage(), [], __METHOD__, __LINE__);
 		}
 
-		return $contents;
+		return [
+			'next' => null,
+			'files' => []
+		];
 	}
 	//endregion
 
@@ -807,7 +856,9 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 	}
 
 	public function presignedUrl($key, $expiration = 0) {
-		if ((StorageToolSettings::driver() === 's3') && ($this->settings->validSignedCDNSettings())) {
+		$ignoreCDN = apply_filters('media-cloud/storage/ignore-cdn', false);
+
+		if ((StorageToolSettings::driver() === 's3') && ($this->settings->validSignedCDNSettings()) && empty($ignoreCDN)) {
 			if (empty($expiration)) {
 				$expiration = $this->settings->presignedURLExpiration;
 			}
@@ -947,7 +998,7 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 		$builder->select('Complete', 'Basic setup is now complete!  Configure advanced settings or setup imgix.')
 			->group('wizard.cloud-storage.providers.s3.success', 'select-buttons')
 				->option('configure-imgix', 'Set Up imgix', null, null, 'imgix')
-				->option('advanced-settings', 'Advanced Settings', null, null, null, null, 'admin:admin.php?page=media-cloud-settings&tab=storage')
+				->option('advanced-settings', 'Finish &amp; Exit Wizard', null, null, null, null, 'admin:admin.php?page=media-cloud-settings&tab=storage')
 			->endGroup()
 		->endStep();
 

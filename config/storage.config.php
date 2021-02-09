@@ -314,9 +314,15 @@ return [
                 ]
             ],
 			"ilab-media-cloud-performance-settings" => [
-				"title" => "Performance Settings",
+				"title" => "URL Replacement",
 				"description" => "",
 				"options" => [
+					"mcloud-storage-filter-content" => [
+						"title" => "Replace URLs",
+						"description" => "When this is enabled, Media Cloud will replace URLs in content on the fly.  <strong>You should not turn this off in most circumstances.</strong>  However, if you've been using Media Cloud since day zero of your WordPress site, you may be able to turn this setting off.",
+						"type" => "checkbox",
+						"default" => true
+					],
 					"mcloud-storage-replace-all-image-urls" => [
 						"title" => "Replace ALL Image URLs",
 						"description" => "When this is enabled, Media Cloud will attempt to replace all of the URLs for images that it finds in a post's content.  In some rare cases, this can result in a lot of database queries as the image tag Media Cloud is trying to replace the URL for is missing a CSS class that helps it figure out which attachment the image tag represents.  When that CSS class exists, typically <code>wp-image-{NUMBER}</code>, Media Cloud can quickly lookup the metadata it needs to create the cloud storage URL.  When it's missing, Media Cloud will then have to do some database queries to try to figure things out.  If you have a wp_posts table that is very large, this can be slow going. <strong>If you disable this, the image URLs for these images missing the required <code>wp-image-{NUMBER}</code> class will not be replaced and it will be up to you to do this process manually.</strong>.  Note that this setting is only really relevant for older sites, or sites using horribly built themes.  If you do have to disable this, you can add <a href='https://gist.github.com/jawngee/36c104f8a8b8ea7e7f6b0f0b837affa5' target='_blank'>this snippet</a> to your theme's functions.php and it should help you significantly.  Also, if you do turn this option off, please let us know so we can determine what kind of themes require it to be disabled.  <strong>Again, to reiterate, it's a very rare set of circumstances that would lead you to disable this option.  So don't do it unless you are absolutely certain it will help.</strong>",
@@ -326,6 +332,12 @@ return [
 					"mcloud-storage-cache-lookups" => [
 						"title" => "Cache Attachment Lookups",
 						"description" => "When this is enabled, Media Cloud will cache the results of any database queries it performs to map a URL to an attachment ID so that it can dynamically generate the correct URL.  This should be left on as some of the queries that Media Cloud uses can be slow on sites with a large number of rows in the <code>wp_post</code> database table.  But, if you are having problems, you can turn it off to restore the previous behavior.",
+						"type" => "checkbox",
+						"default" => true
+					],
+					"mcloud-storage-replace-hrefs" => [
+						"title" => "Replace Anchor Tag URLs",
+						"description" => "When this is enabled, Media Cloud will replace any anchor tag's <code>href</code> if it points to an image attachment.",
 						"type" => "checkbox",
 						"default" => true
 					],
