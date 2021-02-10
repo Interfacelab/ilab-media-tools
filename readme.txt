@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 5.6.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.2.0
+Stable tag: 4.2.1
 Requires PHP: 7.1
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -105,8 +105,9 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 == Changelog ==
 
-= 4.2.0 =
+= 4.2.1 =
 
+* Fix for incorrect imgix URL generation
 * Massive overhaul of Elementor integration.  Media Cloud now will support any Elementor addon and running the
   **Elementor Update Task** is super safe.  Instead of the brute force text search/replace we were doing before, we are
   now analyzing every installed Elementor widget's properties for images to update and then walking your Elementor post

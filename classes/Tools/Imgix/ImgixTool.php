@@ -1007,7 +1007,7 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
 
     //region Testing
 
-    public function urlForKey($key) {
+    public function urlForKey($imageKey) {
 	    $domain = apply_filters('media-cloud/dynamic-images/override-domain', !empty($this->settings->imgixDomains) ? $this->settings->imgixDomains[0] : null);
 	    $imgix = new UrlBuilder($domain, $this->settings->useHTTPS);
 	    $key = apply_filters('media-cloud/dynamic-images/override-key', $this->settings->signingKey);
@@ -1015,7 +1015,7 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
 		    $imgix->setSignKey($key);
 	    }
 
-        return $imgix->createURL($key, []);
+        return $imgix->createURL($imageKey, []);
     }
 
     //endregion

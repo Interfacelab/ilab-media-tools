@@ -20,6 +20,7 @@ use MediaCloud\Plugin\Tools\Storage\StorageTool;
 use MediaCloud\Plugin\Tools\Tool;
 use MediaCloud\Plugin\Tools\ToolsManager;
 use MediaCloud\Plugin\Utilities\Logging\ErrorCollector;
+use MediaCloud\Plugin\Utilities\Logging\Logger;
 use MediaCloud\Plugin\Utilities\Tracker;
 use MediaCloud\Plugin\Utilities\View;
 use MediaCloud\Vendor\Carbon\CarbonInterval;
@@ -537,7 +538,16 @@ class SystemCompatibilityTool extends Tool {
         $errors = [];
 
         try {
+        	Logger::info("Imgix test- uploading sample image with privacy:".StorageToolSettings::privacy(), [], __METHOD__, __LINE__);
             $storageTool->client()->upload('_troubleshooter/sample.jpg',ILAB_TOOLS_DIR.'/public/img/test-image.jpg', StorageToolSettings::privacy());
+
+            $url = $storageTool->client()->url('_troubleshooter/sample.jpg');
+	        $result = ilab_file_get_contents($url);
+
+	        if ($result != file_get_contents(ILAB_TOOLS_DIR.'/public/img/test-image.jpg')) {
+		        $errors[] = "Uploaded <a href='$url'>sample file</a> is not publicly viewable.";
+	        }
+
             $imgixURL = $imgixTool->urlForKey('_troubleshooter/sample.jpg');
 
             $faster = new FasterImage();
