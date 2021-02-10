@@ -16,12 +16,14 @@ use  MediaCloud\Plugin\Tasks\TaskManager ;
 use  MediaCloud\Plugin\Tools\Network\NetworkTool ;
 use  MediaCloud\Plugin\Utilities\Environment ;
 use  MediaCloud\Plugin\Utilities\LicensingManager ;
+use  MediaCloud\Plugin\Utilities\Logging\Logger ;
 use  MediaCloud\Plugin\Utilities\NoticeManager ;
 use  MediaCloud\Plugin\Utilities\Tracker ;
 use  MediaCloud\Plugin\Utilities\View ;
 use function  MediaCloud\Plugin\Utilities\arrayPath ;
 use function  MediaCloud\Plugin\Utilities\json_response ;
 use  MediaCloud\Plugin\Wizard\SetupWizard ;
+use function  MediaCloud\Plugin\Utilities\vomit ;
 
 if ( !defined( 'ABSPATH' ) ) {
     header( 'Location: /' );
@@ -66,7 +68,6 @@ final class ToolsManager
     //region Constructor
     public function __construct()
     {
-        //        MigrationsManager::instance()->migrate();
         $this->tools = [];
         if ( class_exists( '\\hyperdb' ) || class_exists( '\\LudicrousDB' ) ) {
             add_filter(
@@ -75,17 +76,9 @@ final class ToolsManager
                 
                 if ( empty($value) && strpos( $option, 'mcloud' ) === 0 ) {
                     $type = strtolower( gettype( $value ) );
-                    
                     if ( in_array( $type, [ 'boolean', 'null' ] ) ) {
-                        Logger::info(
-                            "pre_update_option: Empty {$option} => " . $type,
-                            [],
-                            __METHOD__,
-                            __LINE__
-                        );
                         return (string) '0';
                     }
-                
                 }
                 
                 return $value;

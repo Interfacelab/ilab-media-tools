@@ -17,6 +17,10 @@ namespace MediaCloud\Plugin\Utilities {
 
 	if (!defined('ABSPATH') && empty($GLOBALS['__composer_autoload_files'])) { header('Location: /'); die; }
 
+	if (function_exists('\MediaCloud\Plugin\Utilities\vomit')) {
+		return;
+	}
+
 	/**
 	 * Brute force debug tool
 	 * @param $what
