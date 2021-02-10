@@ -761,14 +761,14 @@ class StorageContentHooks {
 	/**
 	 * @param string $output Video shortcode HTML output.
 	 * @param array $atts Array of video shortcode attributes.
-	 * @param string $video Video file.
-	 * @param int $post_id Post ID.
-	 * @param string $library Media library used for the video shortcode.
+	 * @param ?string $video Video file.
+	 * @param ?int $post_id Post ID.
+	 * @param ?string $library Media library used for the video shortcode.
 	 *
 	 * @return string
 	 * @throws StorageException
 	 */
-	public function filterVideoShortcode(string $output, array $atts, string $video, int $post_id, string $library): string {
+	public function filterVideoShortcode(string $output, array $atts, ?string $video, ?int $post_id, ?string $library): string {
 		if (isset($atts['src'])) {
 			$default_types = wp_get_video_extensions();
 			$postId = null;
@@ -824,14 +824,14 @@ class StorageContentHooks {
 	/**
 	 * @param string $output Audio shortcode HTML output.
 	 * @param array $atts Array of audio shortcode attributes.
-	 * @param string $audio Audio file.
-	 * @param int $post_id Post ID.
-	 * @param string $library Media library used for the audio shortcode.
+	 * @param ?string $audio Audio file.
+	 * @param ?int $post_id Post ID.
+	 * @param ?string $library Media library used for the audio shortcode.
 	 *
 	 * @return string
 	 * @throws StorageException
 	 */
-	public function filterAudioShortcode(string $output, array $atts, string $audio, int $post_id, string $library): string {
+	public function filterAudioShortcode(string $output, array $atts, ?string $audio, ?int $post_id, ?string $library): string {
 		if (isset($atts['src'])) {
 			$default_types = wp_get_audio_extensions();
 			$postId = null;
