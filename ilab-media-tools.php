@@ -5,7 +5,7 @@ Plugin Name: Media Cloud
 Plugin URI: https://github.com/interfacelab/ilab-media-tools
 Description: Automatically upload media to Amazon S3 and integrate with Imgix, a real-time image processing CDN.  Boosts site performance and simplifies workflows.
 Author: interfacelab
-Version: 4.2.3
+Version: 4.2.6
 Author URI: http://interfacelab.io
 */
 // Copyright (c) 2016 Interfacelab LLC. All rights reserved.
@@ -94,7 +94,7 @@ if ( defined( 'MEDIA_CLOUD_VERSION' ) ) {
 }
 
 // Version Defines
-define( 'MEDIA_CLOUD_VERSION', '4.2.3' );
+define( 'MEDIA_CLOUD_VERSION', '4.2.6' );
 define( 'MEDIA_CLOUD_INFO_VERSION', '4.0.2' );
 define( 'MCLOUD_IS_BETA', false );
 // Directory defines
@@ -174,9 +174,10 @@ if ( function_exists( 'media_cloud_licensing' ) ) {
     media_cloud_licensing()->add_filter( 'permission_list', function ( $permissions ) {
         $permissions['feature-tracking'] = array(
             'icon-class' => 'dashicons dashicons-admin-generic',
-            'label'      => media_cloud_licensing()->get_text_inline( 'Plugin Features', 'plugin-features' ),
-            'desc'       => media_cloud_licensing()->get_text_inline( 'Anonymously track which plugin features are being used to allow us to prioritize development.', 'permissions-plugin-features' ),
-            'priority'   => 16,
+            'label'      => media_cloud_licensing()->get_text_inline( 'Media Cloud Features', 'plugin-features' ),
+            'desc'       => media_cloud_licensing()->get_text_inline( 'Anonymously track which Media Cloud features are being used to allow us to prioritize development.', 'permissions-plugin-features' ),
+            'priority'   => 50,
+            'optional'   => true,
         );
         return $permissions;
     } );

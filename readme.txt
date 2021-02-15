@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 5.6.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.2.3
+Stable tag: 4.2.6
 Requires PHP: 7.1
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -105,8 +105,18 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 == Changelog ==
 
-= 4.2.3 =
+= 4.2.6 =
 
+* Fixes for direct uploads for huge image files
+* Fix for hyperdb not storing null values
+* Fix for support links
+* Fixes for migrate task
+* Updated to latest Freemius SDK
+
+
+= 4.2.5 =
+
+* Fixes for migration task
 * Fix redeclared function error when using as a composer dependency
 * Fix for bug introduced 4.2.2
 * Fix for PHP 7.4 type errors

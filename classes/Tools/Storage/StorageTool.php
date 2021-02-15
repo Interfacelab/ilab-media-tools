@@ -856,7 +856,7 @@ class StorageTool extends Tool
         
         $upload_info = wp_upload_dir();
         $upload_path = $upload_info['basedir'];
-        $path_base = pathinfo( $data['file'] )['dirname'];
+        $path_base = pathinfo( $data['file'], PATHINFO_DIRNAME );
         if ( $path_base === '.' ) {
             $path_base = '';
         }
@@ -873,9 +873,54 @@ class StorageTool extends Tool
             $path_base = '';
         }
         
-        if ( !file_exists( $upload_path . DIRECTORY_SEPARATOR . $data['file'] ) ) {
+        $sourceFile = $upload_path . DIRECTORY_SEPARATOR . $data['file'];
+        Logger::info(
+            "Metadata:" . json_encode( $originalData, JSON_PRETTY_PRINT ),
+            [],
+            __METHOD__,
+            __LINE__
+        );
+        
+        if ( !file_exists( $sourceFile ) ) {
+            Logger::error(
+                "Missing {$sourceFile}",
+                [],
+                __METHOD__,
+                __LINE__
+            );
             return $originalData;
         }
+        
+        
+        if ( is_dir( $sourceFile ) ) {
+            Logger::error(
+                "{$sourceFile} is directory.  Skipping.",
+                [],
+                __METHOD__,
+                __LINE__
+            );
+            return $originalData;
+        }
+        
+        $sourceFileSize = filesize( $sourceFile );
+        
+        if ( filesize( $sourceFile ) < 512 ) {
+            Logger::error(
+                "File too small {$sourceFile} => {$sourceFileSize} bytes",
+                [],
+                __METHOD__,
+                __LINE__
+            );
+            return $originalData;
+        } else {
+            Logger::info(
+                "File size {$sourceFile} => {$sourceFileSize} bytes",
+                [],
+                __METHOD__,
+                __LINE__
+            );
+        }
+        
         if ( !$mime ) {
             $mime = wp_get_image_mime( $upload_path . DIRECTORY_SEPARATOR . $data['file'] );
         }

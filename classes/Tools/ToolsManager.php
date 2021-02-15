@@ -77,7 +77,7 @@ final class ToolsManager
                 if ( empty($value) && strpos( $option, 'mcloud' ) === 0 ) {
                     $type = strtolower( gettype( $value ) );
                     if ( in_array( $type, [ 'boolean', 'null' ] ) ) {
-                        return (string) '0';
+                        return (string) '';
                     }
                 }
                 
@@ -165,7 +165,8 @@ final class ToolsManager
         $actionLinksPrefix = ( is_multisite() ? 'network_admin_' : '' );
         add_filter( $actionLinksPrefix . 'plugin_action_links_' . ILAB_PLUGIN_NAME, function ( $links ) {
             $links[] = "<a href='" . ilab_admin_url( 'admin.php?page=media-cloud-settings' ) . "'>Settings</a>";
-            $links[] = "<a href='https://discourse.interfacelab.io' target='_blank'>Support</a>";
+            global  $media_cloud_licensing ;
+            $links[] = "<a href='https://users.freemius.com' target='_blank'>Billing</a>";
             return $links;
         } );
         $maxTime = ini_get( 'max_execution_time' );
