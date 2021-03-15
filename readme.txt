@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 5.6.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.2.6
+Stable tag: 4.2.7
 Requires PHP: 7.1
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -104,6 +104,21 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 
 == Changelog ==
+
+= 4.2.7 =
+
+* You can specify different privacy levels to different image sizes defined in your theme using the Image Size Manager.
+  This is useful if you are selling stock photos and want to make high-res variations private until sale.
+* Added a new setting for Imgix, **Serve Private Images**.  When enabled, private images, or image sizes that have had
+  their privacy level set to private, will be rendered through imgix.  When disabled, any private images or private
+  image sizes will be served from cloud storage using signed URLs, if that's enabled.
+* If you change the privacy for an image size, make sure to run the **Update Image Privacy** task that can be found in
+  the **Task Manager**.
+* Fix for direct uploads when the upload doesn't have a mime type, for example .R3D files.  You may need to add
+  these mime types to WordPress to allow uploads though.
+* Fix for direct uploads with DigitalOcean
+* Added `media-cloud/storage/sign-url` filter to disable pre-signing image URLs in the WordPress admin.  This is very edge
+  case, so you should only use this if support directs you to, or you know what you are doing.
 
 = 4.2.6 =
 

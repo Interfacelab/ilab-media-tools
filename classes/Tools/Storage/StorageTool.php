@@ -16,6 +16,7 @@ use  MediaCloud\Plugin\Tasks\TaskReporter ;
 use  MediaCloud\Plugin\Tasks\TaskManager ;
 use  MediaCloud\Plugin\Tasks\TaskRunner ;
 use  MediaCloud\Plugin\Tasks\TaskSchedule ;
+use  MediaCloud\Plugin\Tools\ImageSizes\ImageSizePrivacy ;
 use  MediaCloud\Plugin\Tools\Optimizer\OptimizerConsts ;
 use  MediaCloud\Plugin\Tools\Optimizer\OptimizerTool ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\CleanUploadsTask ;
@@ -85,6 +86,10 @@ class StorageTool extends Tool
     private  $updateCallCount = 0 ;
     /** @var StorageContentHooks|null  */
     private  $contentHooks = null ;
+    /** @var string|null  */
+    private  $cloudIconSVG = null ;
+    /** @var string|null  */
+    private  $lockIconSVG = null ;
     //endregion
     //region Constructor
     public function __construct( $toolName, $toolInfo, $toolManager )
@@ -633,6 +638,28 @@ class StorageTool extends Tool
     }
     
     //region WordPress Upload/Attachment Hooks & Filters
+    private function cloudIcon()
+    {
+        
+        if ( $this->cloudIconSVG === null ) {
+            $svg = file_get_contents( ILAB_PUB_IMG_DIR . '/ilab-cloud-icon.svg' );
+            $this->cloudIconSVG = 'data:image/svg+xml;base64,' . base64_encode( $svg );
+        }
+        
+        return $this->cloudIconSVG;
+    }
+    
+    private function lockIcon()
+    {
+        
+        if ( $this->lockIconSVG === null ) {
+            $svg = file_get_contents( ILAB_PUB_IMG_DIR . '/ilab-icon-lock.svg' );
+            $this->lockIconSVG = 'data:image/svg+xml;base64,' . base64_encode( $svg );
+        }
+        
+        return $this->lockIconSVG;
+    }
+    
     public function handleUpdateAttachmentMetadataFor53( $data, $id )
     {
         $this->updateCallCount++;
@@ -1821,7 +1848,8 @@ class StorageTool extends Tool
         $docCdn = apply_filters( 'media-cloud/storage/override-doc-cdn', StorageToolSettings::docCdn() );
         $type = typeFromMeta( $meta );
         $privacy = arrayPath( $meta, 's3/privacy', 'private' );
-        $doSign = $this->client->usesSignedURLs( $type ) || $privacy !== 'public-read' && is_admin();
+        $doSign = $this->client->usesSignedURLs( $type ) && $privacy != 'public-read' || $privacy !== 'public-read' && is_admin();
+        $doSign = apply_filters( 'media-cloud/storage/sign-url', $doSign );
         $ignoreCDN = apply_filters( 'media-cloud/storage/ignore-cdn', false );
         
         if ( $doSign ) {
@@ -2082,6 +2110,9 @@ class StorageTool extends Tool
             
             $uploadType = typeFromMeta( $data );
             $privacy = StorageToolSettings::privacy( $uploadType );
+            if ( !empty($currentSize) && is_string( $currentSize ) ) {
+                $privacy = ImageSizePrivacy::privacyForSize( $currentSize, $privacy );
+            }
             if ( !empty($forcedAcl) ) {
                 $privacy = $forcedAcl;
             }
@@ -2436,8 +2467,10 @@ TEMPLATE;
                     if ( !empty($meta) && isset( $meta['s3'] ) ) {
                         $privacy = arrayPath( $meta, 's3/privacy', null );
                         $mimeType = ( isset( $meta['s3']['mime-type'] ) ? $meta['s3']['mime-type'] : '' );
-                        $cloudIcon = ILAB_PUB_IMG_URL . '/ilab-cloud-icon.svg';
-                        $lockIcon = ILAB_PUB_IMG_URL . '/ilab-icon-lock.svg';
+                        $cloudIcon = $this->cloudIcon();
+                        //ILAB_PUB_IMG_URL.'/ilab-cloud-icon.svg';
+                        $lockIcon = $this->lockIcon();
+                        //ILAB_PUB_IMG_URL.'/ilab-icon-lock.svg';
                         $lockImg = ( !empty($privacy) && $privacy !== StorageConstants::ACL_PUBLIC_READ ? "<img class='mcloud-lock' src='{$lockIcon}' height='22'>" : '' );
                         echo  "<a class='media-cloud-info-link' data-post-id='{$id}' data-container='list' data-mime-type='{$mimeType}' href='" . $meta['s3']['url'] . "' target=_blank><img src='{$cloudIcon}' width='24'>{$lockImg}</a>" ;
                     }
@@ -2764,9 +2797,9 @@ TEMPLATE;
             ?>"><?php 
             echo  $additionalIcons ;
             ?><img data-post-id="{{data.id}}" data-container="grid" data-mime-type="{{data.type}}" src="<?php 
-            echo  ILAB_PUB_IMG_URL . '/ilab-cloud-icon.svg' ;
+            echo  $this->cloudIcon() ;
             ?>" width="29" height="18" class="ilab-s3-logo"><# if (data.hasOwnProperty("s3") && (data.s3.privacy!="public-read")) {#><img src="<?php 
-            echo  ILAB_PUB_IMG_URL . '/ilab-icon-lock.svg' ;
+            echo  $this->lockIcon() ;
             ?>" height="18" class="mcloud-grid-lock"><#}#>\n';
                         txt = txt.replace(search, replace);
                         attachTemplate.text(txt);
@@ -2782,9 +2815,9 @@ TEMPLATE;
             ?>"><?php 
             echo  $additionalIcons ;
             ?><img data-post-id="{{data.id}}" data-container="grid" data-mime-type="{{data.type}}" src="<?php 
-            echo  ILAB_PUB_IMG_URL . '/ilab-cloud-icon.svg' ;
+            echo  $this->cloudIcon() ;
             ?>" width="29" height="18" class="ilab-s3-logo"><# if (data.hasOwnProperty("s3") && (data.s3.privacy!="public-read")) {#><img src="<?php 
-            echo  ILAB_PUB_IMG_URL . '/ilab-icon-lock.svg' ;
+            echo  $this->lockIcon() ;
             ?>" height="18" class="mcloud-grid-lock"><#}#>\n';
                         txt = txt.replace(search, replace);
                         attachTemplate.text(txt);

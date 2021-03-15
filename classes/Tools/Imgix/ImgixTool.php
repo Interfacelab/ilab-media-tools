@@ -13,6 +13,7 @@
 
 namespace MediaCloud\Plugin\Tools\Imgix;
 
+use MediaCloud\Plugin\Tools\ImageSizes\ImageSizePrivacy;
 use MediaCloud\Plugin\Tools\Storage\StorageToolSettings;
 use MediaCloud\Plugin\Tools\DynamicImages\DynamicImagesTool;
 use MediaCloud\Plugin\Tools\Storage\StorageTool;
@@ -859,6 +860,21 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
                 $result = $storageTool->forcedImageDownsize($fail, $id, $size);
                 return $result;
             }
+        }
+
+        if (empty($this->settings->servePrivateImages)) {
+			$privacy = StorageToolSettings::privacy('image');
+			if (is_string($size)) {
+				$privacy = ImageSizePrivacy::privacyForSize($size, $privacy);
+			}
+
+			if ($privacy != 'public-read') {
+				/** @var StorageTool $storageTool */
+				$storageTool = ToolsManager::instance()->tools['storage'];
+
+				$result = $storageTool->forcedImageDownsize($fail, $id, $size);
+				return $result;
+			}
         }
 
         return parent::imageDownsize($fail, $id, $size);
