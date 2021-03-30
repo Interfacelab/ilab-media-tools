@@ -53,7 +53,7 @@ final class TaskManager {
 
 		static::registerTask(TestTask::class);
 
-		$this->runningTasks = Task::runningTasks();
+		$this->runningTasks = (is_admin() || defined('DOING_CRON')) ? Task::runningTasks() : [];
 		$this->setupHooks();
 	}
 

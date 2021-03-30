@@ -50,7 +50,7 @@ return [
 						"type" => "number",
 						"step" => 1,
 						"min" => 100,
-						"max" => 10000,
+						"max" => 1000000,
                         "default" => 1000
 					],
 					"mcloud-debug-remote-url" => [

@@ -737,12 +737,10 @@ class StorageContentHooks {
 	 * @return int|null
 	 */
 	private function getShortCodeSource($url, $type='Video'): ?int {
-		$uploadDir = wp_get_upload_dir();
-		$baseFile = ltrim(str_replace($uploadDir['baseurl'], '', $url), '/');
+		$baseFile = ltrim(parse_url($url, PHP_URL_PATH), '/');
 
 		if (empty($baseFile)) {
 			$this->addToReport(null, $type, $url, null, 'Base file is empty.');
-
 			return null;
 		}
 
@@ -750,9 +748,15 @@ class StorageContentHooks {
 		$query = $wpdb->prepare("select post_id from {$wpdb->postmeta} where meta_key='_wp_attached_file' and meta_value = %s", $baseFile);
 		$postId = $wpdb->get_var($query);
 		if (empty($postId)) {
-			$this->addToReport(null, $type, $url, null, 'Could not map URL to post ID.');
+			$this->addToReport(null, $type, $url, null, 'Could not map URL to post ID with exact match.');
 
-			return null;
+			$query = $wpdb->prepare("select post_id from {$wpdb->postmeta} where meta_key='_wp_attached_file' and meta_value like %s", '%'.$baseFile);
+			$postId = $wpdb->get_var($query);
+			if (empty($postId)) {
+				$this->addToReport(null, $type, $url, null, 'Could not map URL to post ID with like match.');
+
+				return null;
+			}
 		}
 
 		return $postId;
@@ -768,7 +772,7 @@ class StorageContentHooks {
 	 * @return string
 	 * @throws StorageException
 	 */
-	public function filterVideoShortcode(string $output, array $atts, ?string $video, ?int $post_id, ?string $library): string {
+	public function filterVideoShortcode($output, $atts, $video, $post_id, $library) {
 		if (isset($atts['src'])) {
 			$default_types = wp_get_video_extensions();
 			$postId = null;
@@ -831,7 +835,7 @@ class StorageContentHooks {
 	 * @return string
 	 * @throws StorageException
 	 */
-	public function filterAudioShortcode(string $output, array $atts, ?string $audio, ?int $post_id, ?string $library): string {
+	public function filterAudioShortcode($output, $atts, $audio, $post_id, $library) {
 		if (isset($atts['src'])) {
 			$default_types = wp_get_audio_extensions();
 			$postId = null;
