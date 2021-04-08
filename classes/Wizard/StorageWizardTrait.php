@@ -16,6 +16,7 @@
 
 namespace MediaCloud\Plugin\Wizard;
 
+use MediaCloud\Plugin\Tasks\TaskDatabase;
 use MediaCloud\Plugin\Tools\Storage\StorageToolSettings;
 use MediaCloud\Plugin\Utilities\Environment;
 use MediaCloud\Plugin\Utilities\Logging\ErrorCollector;
@@ -27,8 +28,9 @@ trait StorageWizardTrait {
 	 */
 	public static function addTests($builder) {
 		$builder->test('Validate Storage Settings', 'Running tests ...', [static::class, 'testStorageSettings']);
+		$builder->test('Database Installation', 'Running tests ...', [static::class, 'testDatabaseInstall']);
 		$builder->test('Upload Sample File', 'Running tests ...', [static::class, 'testUploadSampleFile']);
-		$builder->test('Verify Uploaded File Is Publicly Accessble', 'Running tests ...', [static::class, 'testStorageAcl']);
+		$builder->test('Verify Uploaded File Is Publicly Accessible', 'Running tests ...', [static::class, 'testStorageAcl']);
 		$builder->test('Delete Uploaded File', 'Running tests ...', [static::class, 'testDeleteFromStorage']);
 	}
 
@@ -62,6 +64,54 @@ trait StorageWizardTrait {
 				'status' => 'error',
 				'message' => 'There was an error or errors trying to connect to the storage provider.',
 				'errors' => $errorCollector->errors()
+			]);
+		}
+	}
+
+	public static function testDatabaseInstall() {
+		if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'media-cloud-wizard-test')) {
+			wp_send_json(['status' => 'error', 'message' => 'Nonce is invalid.  Please try refreshing the page and submitting the form again.'], 200);
+		}
+
+		TaskDatabase::init(false);
+		$taskTableExists = TaskDatabase::taskTableExists();
+		if (!$taskTableExists) {
+			TaskDatabase::init(true);
+		}
+
+		$taskTableExists = TaskDatabase::taskTableExists();
+		$taskDataTableExists = TaskDatabase::taskDataTableExists();
+		$taskScheduleTableExists = TaskDatabase::taskScheduleTableExists();
+		$taskTokenTableExists = TaskDatabase::taskTokenTableExists();
+
+		$errors = [];
+
+		if (!$taskTableExists) {
+			$errors[] = 'Tasks table is not installed.';
+		}
+
+		if (!$taskDataTableExists) {
+			$errors[] = 'Tasks data table is not installed.';
+		}
+
+		if (!$taskScheduleTableExists) {
+			$errors[] = 'Tasks schedule table is not installed.';
+		}
+
+		if (!$taskTokenTableExists) {
+			$errors[] = 'Tasks token table is not installed.';
+		}
+
+		if (empty($errors)) {
+			wp_send_json([
+				'status' => 'success',
+				'message' => 'Required database tables are installed.'
+			]);
+		} else {
+			wp_send_json([
+				'status' => 'error',
+				'message' => 'Missing required database tables.  Please contact your hosting support for adding permissions to your database user to be able to create and modify database tables.  Things like migrating to cloud, import from cloud and other background tasks will not work until this issue is resolved.',
+				'errors' => $errors
 			]);
 		}
 	}

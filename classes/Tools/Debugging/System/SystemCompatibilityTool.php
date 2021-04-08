@@ -13,6 +13,8 @@
 
 namespace MediaCloud\Plugin\Tools\Debugging\System;
 
+use MediaCloud\Plugin\Tasks\TaskDatabase;
+use MediaCloud\Plugin\Tools\Optimizer\Models\Data\BackgroundData;
 use MediaCloud\Plugin\Tools\Storage\StorageToolSettings;
 use MediaCloud\Plugin\Tasks\TaskRunner;
 use MediaCloud\Plugin\Tools\Imgix\ImgixTool;
@@ -35,12 +37,13 @@ if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
  */
 class SystemCompatibilityTool extends Tool {
 	const STEP_ENVIRONMENT = 1;
-	const STEP_VALIDATE_CLIENT = 2;
-	const STEP_TEST_UPLOADS = 3;
-	const STEP_TEST_ACL = 4;
-	const STEP_TEST_DELETE = 5;
-	const STEP_TEST_BACKGROUND_CONNECTIVITY = 6;
-	const STEP_TEST_IMGIX = 7;
+	const STEP_TEST_DATABASE_INSTALLED = 2;
+	const STEP_VALIDATE_CLIENT = 3;
+	const STEP_TEST_UPLOADS = 4;
+	const STEP_TEST_ACL = 5;
+	const STEP_TEST_DELETE = 6;
+	const STEP_TEST_BACKGROUND_CONNECTIVITY = 7;
+	const STEP_TEST_IMGIX = 8;
 
     public function __construct( $toolName, $toolInfo, $toolManager ) {
         parent::__construct( $toolName, $toolInfo, $toolManager );
@@ -103,6 +106,13 @@ class SystemCompatibilityTool extends Tool {
 				    'status' => 'Running tests ...'
 			    ];
 			    break;
+		    case self::STEP_TEST_DATABASE_INSTALLED:
+			    return [
+				    'index' => $step,
+				    'title' => 'Database Installed',
+				    'status' => 'Running tests ... This may take several minutes ...'
+			    ];
+			    break;
 		    case self::STEP_TEST_BACKGROUND_CONNECTIVITY:
 			    return [
 				    'index' => $step,
@@ -160,10 +170,13 @@ class SystemCompatibilityTool extends Tool {
         } else if ($step == self::STEP_TEST_DELETE) {
             // Step 4 - Delete file
             $this->testDeletingFiles();
+        } else if ($step == self::STEP_TEST_DATABASE_INSTALLED) {
+	        // Step 5 - Verify that the bulk importer process can work
+	        $this->testDatabaseInstalled();
         } else if ($step == self::STEP_TEST_BACKGROUND_CONNECTIVITY) {
 	        // Step 5 - Verify that the bulk importer process can work
 	        $this->testBackgroundConnectivity();
-        }  else if ($step == self::STEP_TEST_IMGIX) {
+        } else if ($step == self::STEP_TEST_IMGIX) {
             // Step 6 - Test Imgix
             $this->testImgix();
         }
@@ -320,7 +333,7 @@ class SystemCompatibilityTool extends Tool {
 
         $data = [
             'html' => $html,
-	        'next' => $this->stepInfo(self::STEP_VALIDATE_CLIENT)
+	        'next' => $this->stepInfo(self::STEP_TEST_DATABASE_INSTALLED)
         ];
 
         if (!$errors) {
@@ -487,6 +500,61 @@ class SystemCompatibilityTool extends Tool {
 	    }
 
         wp_send_json($data);
+    }
+
+    private function testDatabaseInstalled() {
+	    Tracker::trackView("System Test - Database", "/system-test/database");
+
+
+	    TaskDatabase::init(false);
+	    $taskTableExists = TaskDatabase::taskTableExists();
+	    if (!$taskTableExists) {
+	    	TaskDatabase::init(true);
+	    }
+
+	    $taskTableExists = TaskDatabase::taskTableExists();
+	    $taskDataTableExists = TaskDatabase::taskDataTableExists();
+	    $taskScheduleTableExists = TaskDatabase::taskScheduleTableExists();
+	    $taskTokenTableExists = TaskDatabase::taskTokenTableExists();
+
+	    $errors = [];
+
+	    if (!$taskTableExists) {
+	    	$errors[] = 'Tasks table is not installed.';
+	    }
+
+	    if (!$taskDataTableExists) {
+		    $errors[] = 'Tasks data table is not installed.';
+	    }
+
+	    if (!$taskScheduleTableExists) {
+		    $errors[] = 'Tasks schedule table is not installed.';
+	    }
+
+	    if (!$taskTokenTableExists) {
+		    $errors[] = 'Tasks token table is not installed.';
+	    }
+
+	    $html = View::render_view('debug/trouble-shooter-step.php', [
+		    'success' => empty($errors),
+		    'title' => 'Database Installed',
+		    'success_message' => 'The required database tables are installed.',
+		    'error_message' => 'Missing required database tables.  Please contact your hosting support for adding permissions to your database user to be able to create and modify database tables.  Things like migrating to cloud, import from cloud and other background tasks will not work until this issue is resolved.',
+		    'errors' => $errors
+	    ]);
+
+	    $data = [
+		    'html' => $html,
+	    ];
+
+	    if (count($errors) > 0) {
+		    Tracker::trackView("System Test - Database - Error", "/system-test/database/error");
+	    } else {
+		    Tracker::trackView("System Test - Database - Success", "/system-test/database/success");
+		    $data['next'] = $this->stepInfo(self::STEP_VALIDATE_CLIENT);
+	    }
+
+	    wp_send_json($data);
     }
 
     private function testBackgroundConnectivity($attempts = 0, $mode = 'ssl', $timeoutOverride = false) {

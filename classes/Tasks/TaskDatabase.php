@@ -24,27 +24,29 @@ final class TaskDatabase {
 	/**
 	 * Insures the additional database tables are installed
 	 */
-	public static function init() {
+	public static function init($force = false) {
 		// Task
-		static::installTaskTable();
+		static::installTaskTable($force);
 
 		// TaskChunk
-		static::installDataTable();
+		static::installDataTable($force);
 
 		// TaskSchedule
-		static::installScheduleTable();
+		static::installScheduleTable($force);
 
 		// TaskSchedule
-		static::installTokenTable();
+		static::installTokenTable($force);
 	}
 
 
 	//region Install Database Tables
 
-	protected static function installTaskTable() {
-		$currentVersion = get_site_option('mcloud_task_table_db_version');
-		if (!empty($currentVersion) && version_compare(self::DB_VERSION, $currentVersion, '<=')) {
-			return;
+	protected static function installTaskTable($force = false) {
+		if (!$force) {
+			$currentVersion = get_site_option('mcloud_task_table_db_version');
+			if (!empty($currentVersion) && version_compare(self::DB_VERSION, $currentVersion, '<=')) {
+				return;
+			}
 		}
 
 		global $wpdb;
@@ -88,10 +90,12 @@ final class TaskDatabase {
 		}
 	}
 
-	protected static function installDataTable() {
-		$currentVersion = get_site_option('mcloud_task_data_db_version');
-		if (!empty($currentVersion) && version_compare(self::DB_VERSION, $currentVersion, '<=')) {
-			return;
+	protected static function installDataTable($force = false) {
+		if (!$force) {
+			$currentVersion = get_site_option('mcloud_task_data_db_version');
+			if(!empty($currentVersion) && version_compare(self::DB_VERSION, $currentVersion, '<=')) {
+				return;
+			}
 		}
 
 		global $wpdb;
@@ -116,10 +120,12 @@ final class TaskDatabase {
 		}
 	}
 
-	protected static function installScheduleTable() {
-		$currentVersion = get_site_option('mcloud_task_schedule_db_version');
-		if (!empty($currentVersion) && version_compare(self::DB_VERSION, $currentVersion, '<=')) {
-			return;
+	protected static function installScheduleTable($force = false) {
+		if (!$force) {
+			$currentVersion = get_site_option('mcloud_task_schedule_db_version');
+			if(!empty($currentVersion) && version_compare(self::DB_VERSION, $currentVersion, '<=')) {
+				return;
+			}
 		}
 
 		global $wpdb;
@@ -148,10 +154,12 @@ final class TaskDatabase {
 		}
 	}
 
-	protected static function installTokenTable() {
-		$currentVersion = get_site_option('mcloud_task_token_db_version');
-		if (!empty($currentVersion) && version_compare(self::DB_VERSION, $currentVersion, '<=')) {
-			return;
+	protected static function installTokenTable($force = false) {
+		if (!$force) {
+			$currentVersion = get_site_option('mcloud_task_token_db_version');
+			if(!empty($currentVersion) && version_compare(self::DB_VERSION, $currentVersion, '<=')) {
+				return;
+			}
 		}
 
 		global $wpdb;
@@ -173,6 +181,29 @@ final class TaskDatabase {
 		if ($exists) {
 			update_site_option('mcloud_task_token_db_version', self::DB_VERSION);
 		}
+	}
+
+	private static function tableExists($tableName) {
+		global $wpdb;
+		$tableName = $wpdb->base_prefix.$tableName;
+		$exists = ($wpdb->get_var("SHOW TABLES LIKE '$tableName'") === $tableName);
+		return $exists;
+	}
+
+	public static function taskTableExists() {
+		return self::tableExists('mcloud_task');
+	}
+
+	public static function taskDataTableExists() {
+		return self::tableExists('mcloud_task_data');
+	}
+
+	public static function taskScheduleTableExists() {
+		return self::tableExists('mcloud_task_schedule');
+	}
+
+	public static function taskTokenTableExists() {
+		return self::tableExists('mcloud_task_token');
 	}
 
 	//endregion
