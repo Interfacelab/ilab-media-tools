@@ -180,16 +180,25 @@ class Logger {
         }
     }
 
-	private function prepMessage($message, $function = null, $line = null) {
+	private function prepMessage($message, $function = null, $line = null, &$context) {
 		if (!empty($function)) {
-			if (!empty($line)) {
-				$message = ':'.$line.' '.$message;
-			}
 
 			$functionParts = explode('\\', $function);
 			$function = array_pop($functionParts);
+			$functionParts = explode('::', $function);
+			$prefix = $function;
+			if (count($functionParts) > 1) {
+				$context['__class'] = array_shift($functionParts);
+				$context['__method'] = array_shift($functionParts);
+				$context['__line'] = intval($line);
+				$prefix = '';
+			} else {
+				if (!empty($line)) {
+					$prefix = $prefix.':'.$line.' ';
+				}
+			}
 
-			$message = $function.$message.(empty($line) ? '' : ' ');
+			$message = $prefix.$message;
 		}
 
 		$pid = @getmypid();
@@ -206,7 +215,7 @@ class Logger {
         }
 
 		if ($this->logger) {
-			$message = $this->prepMessage($message, $function, $line);
+			$message = $this->prepMessage($message, $function, $line, $context);
 			$this->logger->addInfo($message, array_merge($this->context, $context));
 		}
 	}
@@ -217,7 +226,7 @@ class Logger {
         }
 
 		if ($this->logger) {
-			$message = $this->prepMessage($message, $function, $line);
+			$message = $this->prepMessage($message, $function, $line, $context);
 			$this->logger->addWarning($message, array_merge($this->context, $context));
 		}
 	}
@@ -228,7 +237,7 @@ class Logger {
         }
 
         if ($this->logger) {
-	        $message = $this->prepMessage($message, $function, $line);
+	        $message = $this->prepMessage($message, $function, $line, $context);
 	        $this->logger->addError($message, array_merge($this->context, $context));
 		}
 	}
@@ -236,7 +245,7 @@ class Logger {
 	protected function doStartTiming($message, $context=[], $function = null, $line = null) {
 		if ($this->logger) {
 			$this->time[] = microtime(true);
-			$message = $this->prepMessage($message, $function, $line);
+			$message = $this->prepMessage($message, $function, $line, $context);
 			$this->logger->addInfo($message, array_merge($this->context, $context));
 		}
 	}
@@ -245,7 +254,7 @@ class Logger {
 		if ($this->logger) {
 			$time = array_pop($this->time);
 			$context['time'] = microtime(true) - $time;
-			$message = $this->prepMessage($message, $function, $line);
+			$message = $this->prepMessage($message, $function, $line, $context);
 			$this->logger->addInfo($message, array_merge($this->context, $context));
 		}
 	}

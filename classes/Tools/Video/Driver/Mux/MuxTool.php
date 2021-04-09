@@ -484,7 +484,7 @@ class MuxTool extends Tool
                 $mux['src'] = $asset->videoUrl( false );
                 $mux['gif'] = $asset->gifUrl( false );
             } catch ( \Exception $ex ) {
-                Logger::info(
+                Logger::error(
                     "Mux: Exception fetching Mux Asset {$mux['muxId']}: " . $ex->getMessage(),
                     [],
                     __METHOD__,
@@ -514,7 +514,7 @@ class MuxTool extends Tool
         try {
             MuxAPI::assetAPI()->deleteAsset( $muxId );
         } catch ( \Exception $ex ) {
-            Logger::info(
+            Logger::error(
                 'Mux: Error deleting asset from Mux: ' . $ex->getMessage(),
                 [],
                 __METHOD__,

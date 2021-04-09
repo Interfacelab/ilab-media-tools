@@ -111,20 +111,20 @@ class MuxAPI {
 		}
 
 		if (empty($time) || empty($signature) || empty($body)) {
-			Logger::info("Mux: Missing time and/or signature.", [], __METHOD__, __LINE__);
+			Logger::error("Mux: Missing time and/or signature.", [], __METHOD__, __LINE__);
 			return false;
 		}
 
 		$expected = hash_hmac('sha256', "{$time}.{$body}", $secret);
 
 		if ($expected !== $signature) {
-			Logger::info("Mux: Signature mismatch.", [], __METHOD__, __LINE__);
+			Logger::error("Mux: Signature mismatch.", [], __METHOD__, __LINE__);
 			return false;
 		}
 
 		$offset = time() - $time;
 		if ($offset > $tolerance) {
-			Logger::info("Mux: Signature time tolerance exceeded.", [], __METHOD__, __LINE__);
+			Logger::error("Mux: Signature time tolerance exceeded.", [], __METHOD__, __LINE__);
 			return false;
 		}
 
@@ -139,7 +139,7 @@ class MuxAPI {
 	 */
 	public static function signingKey() {
 		if (static::keysAPI() === null) {
-			Logger::info("Mux: Could not create keys API", [], __METHOD__, __LINE__);
+			Logger::error("Mux: Could not create keys API", [], __METHOD__, __LINE__);
 			return null;
 		}
 
@@ -151,7 +151,7 @@ class MuxAPI {
 					'privateKey' => $signingKey['privateKey']
 				];
 			} else {
-				Logger::info('Mux: Key expired, creating a new one.', [], __METHOD__, __LINE__);
+				Logger::warning('Mux: Key expired, creating a new one.', [], __METHOD__, __LINE__);
 			}
 		}
 
@@ -159,7 +159,7 @@ class MuxAPI {
 			$result = static::keysAPI()->createUrlSigningKey();
 			$muxKey = $result->getData();
 			if ($muxKey === null) {
-				Logger::info("Mux: Error creating new signing key.", [], __METHOD__, __LINE__);
+				Logger::error("Mux: Error creating new signing key.", [], __METHOD__, __LINE__);
 				return null;
 			}
 
@@ -182,7 +182,7 @@ class MuxAPI {
 				'privateKey' => $signingKey['privateKey']
 			];
 		} catch (ApiException $ex) {
-			Logger::info("Mux: Error creating signing key: ".$ex->getMessage(), [], __METHOD__, __LINE__);
+			Logger::error("Mux: Error creating signing key: ".$ex->getMessage(), [], __METHOD__, __LINE__);
 		}
 
 		return null;

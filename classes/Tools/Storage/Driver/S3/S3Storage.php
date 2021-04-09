@@ -198,7 +198,7 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 
 				if (empty($valid) && empty($connectError)) {
 					try {
-						Logger::info("Bucket does not exist, trying to list buckets.", [], __METHOD__, __LINE__);
+						Logger::warning("Bucket does not exist, trying to list buckets.", [], __METHOD__, __LINE__);
 
 						$result = $client->listBuckets();
 						$buckets = $result->get('Buckets');
@@ -216,7 +216,7 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
                                 $errorCollector->addError("Bucket {$this->settings->bucket} does not exist.");
                             }
 
-                            Logger::info("Bucket does not exist.", [], __METHOD__, __LINE__);
+                            Logger::error("Bucket does not exist.", [], __METHOD__, __LINE__);
                         }
 					} catch(AwsException $ex) {
                         if ($errorCollector) {

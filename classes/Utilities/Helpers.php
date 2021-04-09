@@ -259,7 +259,7 @@ namespace MediaCloud\Plugin\Utilities {
 		if (function_exists('ini_get')) {
 			$memory_limit = ini_get('memory_limit');
 		} else {
-			Logger::info("ini_get disabled is disabled, unable to determine real memory limit", [], __FUNCTION__, __LINE__);
+			Logger::warning("ini_get disabled is disabled, unable to determine real memory limit", [], __FUNCTION__, __LINE__);
 		}
 
 		if (empty($memory_limit) || ($memory_limit == -1)) {

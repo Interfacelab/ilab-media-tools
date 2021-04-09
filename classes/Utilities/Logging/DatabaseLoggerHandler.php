@@ -33,9 +33,24 @@ class DatabaseLoggerHandler extends AbstractProcessingHandler {
      */
     protected function write(array $record) {
         $context = '';
+        $class = null;
+        $method = null;
+        $line = null;
         if (isset($record['context']) && is_array($record['context']) && (count($record['context']) > 0)) {
             $flattenedContext = [];
             foreach($record['context'] as $key => $value) {
+            	if (in_array($key, ['__class', '__method', '__line'])) {
+            		if ($key === '__class') {
+            			$class = $value;
+		            } else if ($key === '__method') {
+			            $method = $value;
+		            } else if ($key === '__line') {
+			            $line = $value;
+		            }
+
+            		continue;
+	            }
+
                 if (is_array($value)) {
                     continue;
                 }
@@ -50,6 +65,6 @@ class DatabaseLoggerHandler extends AbstractProcessingHandler {
             $context = implode(", ", $flattenedContext);
         }
 
-        $this->logger->log($record['channel'], $record['level_name'], $record['message'], $context);
+        $this->logger->log($record['channel'], $record['level_name'], $record['message'], $context, $class, $method, $line);
     }
 }

@@ -101,7 +101,7 @@ class MuxHooks
     {
         
         if ( empty($asset->attachmentId) ) {
-            Logger::info(
+            Logger::error(
                 "Mux: Missing attachment id, cannot update meta.",
                 [],
                 __METHOD__,
@@ -119,7 +119,7 @@ class MuxHooks
         $meta = get_post_meta( $asset->attachmentId, '_wp_attachment_metadata', true );
         
         if ( empty($meta) ) {
-            Logger::info(
+            Logger::error(
                 "Mux: Attachment {$asset->attachmentId} meta is missing or empty, cannot update.",
                 [],
                 __METHOD__,
@@ -156,7 +156,7 @@ class MuxHooks
         );
         
         if ( MuxAPI::assetAPI() === null ) {
-            Logger::info(
+            Logger::error(
                 "Mux: Unable to create API client",
                 [],
                 __METHOD__,
@@ -169,7 +169,7 @@ class MuxHooks
             $result = MuxAPI::assetAPI()->getAssetInputInfo( $asset->muxId );
             
             if ( $result === null ) {
-                Logger::info(
+                Logger::error(
                     "Mux: Could not get asset input info for {$asset->muxId}",
                     [],
                     __METHOD__,
@@ -179,7 +179,7 @@ class MuxHooks
             }
         
         } catch ( \Exception $ex ) {
-            Logger::info(
+            Logger::error(
                 "Mux: Mux error fetching input info: " . $ex->getMessage(),
                 [],
                 __METHOD__,
@@ -190,7 +190,7 @@ class MuxHooks
         $inputInfos = $result->getData();
         
         if ( empty($inputInfos) ) {
-            Logger::info(
+            Logger::error(
                 "Mux: Could not find asset inputs for {$asset->muxId}",
                 [],
                 __METHOD__,
@@ -255,7 +255,7 @@ class MuxHooks
         }
         
         if ( has_post_thumbnail( $asset->attachmentId ) ) {
-            Logger::info(
+            Logger::warning(
                 "Mux: Thumbnail already exists",
                 [],
                 __METHOD__,
@@ -268,7 +268,7 @@ class MuxHooks
         $url = $asset->thumbnailUrl();
         
         if ( empty($url) ) {
-            Logger::info(
+            Logger::error(
                 "Mux: Could not generate URL for thumbnail?",
                 [],
                 __METHOD__,
@@ -292,7 +292,7 @@ class MuxHooks
         file_put_contents( $filePath, ilab_file_get_contents( $url ) );
         
         if ( !file_exists( $filePath ) ) {
-            Logger::info(
+            Logger::error(
                 "Mux: Could not download image {$url}.",
                 [],
                 __METHOD__,
@@ -516,7 +516,7 @@ class MuxHooks
         if ( strpos( $_SERVER['REQUEST_URI'], '/__mux/webhook' ) === 0 ) {
             
             if ( !isset( $_SERVER['HTTP_MUX_SIGNATURE'] ) ) {
-                Logger::info(
+                Logger::error(
                     "Mux: Missing Mux Signature",
                     [],
                     __METHOD__,
@@ -530,7 +530,7 @@ class MuxHooks
             $body = file_get_contents( 'php://input' );
             
             if ( !MuxAPI::validateSignature( $_SERVER['HTTP_MUX_SIGNATURE'], $body, $this->settings->webhookSecret ) ) {
-                Logger::info(
+                Logger::error(
                     "Mux: Invalid Mux Signature",
                     [],
                     __METHOD__,
@@ -544,7 +544,7 @@ class MuxHooks
             $data = json_decode( $body, true );
             $type = arrayPath( $data, 'type', null );
             if ( empty($type) ) {
-                Logger::info(
+                Logger::error(
                     "Mux: Webhook missing type.  Exiting.",
                     [],
                     __METHOD__,

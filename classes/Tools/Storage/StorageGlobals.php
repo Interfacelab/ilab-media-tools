@@ -361,7 +361,7 @@ final class StorageGlobals {
 	/** @return bool */
 	public static function queuedDeletes() {
 		$canQueue = apply_filters('media-cloud/storage/queue-deletes', true);
-		Logger::info("StorageGlobals::queuedDeletes - Filter returned: '$canQueue'", [], __METHOD__, __LINE__);
+		Logger::info("Filter returned: '$canQueue'", [], __METHOD__, __LINE__);
 		return (!empty($canQueue) && self::instance()->queuedDeletes);
 	}
 

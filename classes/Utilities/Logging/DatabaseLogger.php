@@ -23,6 +23,8 @@ use MediaCloud\Plugin\Utilities\Environment;
  * @package MediaCloud\Plugin\Utilities
  */
 class DatabaseLogger {
+	const DB_VERSION = '1.0.5';
+
     /** @var bool  */
     private $enabled = false;
 
@@ -51,8 +53,11 @@ class DatabaseLogger {
      * @param $level
      * @param $message
      * @param $context
+     * @param $class
+     * @param $method
+     * @param $line
      */
-    public function log($channel, $level, $message, $context = '') {
+    public function log($channel, $level, $message, $context = '', $class = null, $method = null, $line = null) {
         if (!$this->enabled) {
             return;
         }
@@ -61,7 +66,7 @@ class DatabaseLogger {
 
         global $wpdb;
 
-        $query = $wpdb->prepare("insert into {$this->table} (date, channel, level, message, context) values (%s, %s, %s, %s, %s)", current_time('mysql', true), $channel, $level, $message, $context);
+        $query = $wpdb->prepare("insert into {$this->table} (date, channel, level, message, context, class, method, line) values (%s, %s, %s, %s, %s, %s, %s, %d)", current_time('mysql', true), $channel, $level, $message, $context, $class, $method, $line);
         $wpdb->query($query);
     }
     //endregion
@@ -72,33 +77,39 @@ class DatabaseLogger {
      * Insures the table exists
      */
     protected function insureTable() {
-        global $wpdb;
+	    global $wpdb;
+	    $this->table = $wpdb->base_prefix.'ilab_mc_logging';
 
-        $this->table = $wpdb->base_prefix.'ilab_mc_logging';
+	    $currentVersion = get_site_option('mcloud_logging_table_db_version');
+	    if (!empty($currentVersion) && version_compare(self::DB_VERSION, $currentVersion, '<=')) {
+		    $this->enabled = true;
+		    return;
+	    }
 
-        $tableSchema = <<<SQL
-        create table {$this->table} (
-          id bigint not null auto_increment,
-          date datetime not null,
-          channel varchar(32) not null,
-          level varchar(16) not null,
-          message text,
-          context text,
-          primary key(id)
-        );
-SQL;
+	    $charset = $wpdb->get_charset_collate();
 
-        global $wpdb;
+        $tableSchema = "CREATE TABLE {$this->table} (
+	id BIGINT AUTO_INCREMENT,
+	date DATETIME NOT NULL,
+	class VARCHAR(128),
+	method VARCHAR(128),
+	channel VARCHAR(32) NOT NULL,
+	level VARCHAR(16) NOT NULL,
+	message TEXT NULL,
+	context TEXT NULL,
+	line BIGINT NULL,
+	PRIMARY KEY  (id)
+) {$charset};";
 
-        $query = $wpdb->prepare("SHOW TABLES LIKE %s", $wpdb->esc_like($this->table));
+	    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+	    $result = dbDelta($tableSchema);
 
-        $this->enabled = ($wpdb->get_var($query) == $this->table);
+	    $exists = ($wpdb->get_var("SHOW TABLES LIKE '$this->table'") == $this->table);
+	    if ($exists) {
+		    update_site_option('mcloud_logging_table_db_version', self::DB_VERSION);
+	    }
 
-        if (!$this->enabled) {
-            $wpdb->query($tableSchema);
-
-            $this->enabled = ($wpdb->get_var($query) == $this->table);
-        }
+	    $this->enabled = $exists;
     }
 
     /**
@@ -141,9 +152,9 @@ SQL;
         global $wpdb;
 
         $fd = fopen('php://temp/maxmemory:1048576', 'w');
-        fputcsv($fd, ["date", "channel", "level", "message", "context"]);
+        fputcsv($fd, ["date", "channel", "level", "class", "method", "line", "message", "context"]);
 
-        $rows = $wpdb->get_results("select date, channel, level, message, context from {$this->table} order by id asc", ARRAY_N);
+        $rows = $wpdb->get_results("select date, channel, level, class, method, line, message, context from {$this->table} order by id asc", ARRAY_N);
 
         if (is_array($rows) && count($rows) > 0) {
             foreach($rows as $row) {
@@ -162,17 +173,63 @@ SQL;
 
     // region Querying
 
-    public function getLogEntries($perPage = 50, $pageNumber = 1) {
+    public function getLogEntries($logLevel = null, $class = null, $search = null, $perPage = 50, $pageNumber = 1) {
         global $wpdb;
 
         $offset = ($pageNumber - 1) * $perPage;
-        $query = "select * from {$this->table} order by id desc limit $perPage offset $offset";
+        $where = $this->buildWhere($logLevel, $class, $search);
+        $query = "select * from {$this->table} {$where} order by id desc limit $perPage offset $offset";
         return $wpdb->get_results($query, ARRAY_A);
     }
 
-    public function totalEntries() {
+    private function buildWhere($logLevel, $class, $search) {
+    	$where = [];
+    	$whereVals = [];
+
+    	if (!empty($logLevel)) {
+    		$where[] = 'level = %s';
+    		$whereVals[] = $logLevel;
+	    }
+
+    	if (!empty($class)) {
+    		if ($class === 'not-empty') {
+    			$where[] = 'class is not null and class != \'\'';
+		    } else if ($class === 'empty') {
+			    $where[] = 'class is null or class = \'\'';
+		    } else {
+    			$where[] = 'class = %s';
+    			$whereVals[] = $class;
+		    }
+	    }
+
+    	if (!empty($search)) {
+    		$where[] = 'message like %s';
+    		$whereVals[] = '%'.$search.'%';
+	    }
+
+    	if (count($where) > 0) {
+    		if (count($whereVals) > 0) {
+			    $whereClause = ' where '.implode(' and ', $where);
+
+			    global $wpdb;
+			    return $wpdb->prepare($whereClause, $whereVals);
+		    } else {
+    			return ' where '.implode(' and ', $where);
+		    }
+	    }
+
+    	return '';
+    }
+
+    public function totalEntries($logLevel = null, $class = null, $search = null) {
         global $wpdb;
-        return $wpdb->get_var("select count(id) from {$this->table}");
+        return $wpdb->get_var("select count(id) from {$this->table}".$this->buildWhere($logLevel, $class, $search));
+    }
+
+    public function getClasses() {
+	    global $wpdb;
+	    $query = "select distinct class from {$this->table} where class is not null and class != '' order by class asc";
+	    return $wpdb->get_results($query, ARRAY_A);
     }
 
     // endregion

@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 5.7
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.2.10
+Stable tag: 4.2.11
 Requires PHP: 7.1
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -104,6 +104,12 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 
 == Changelog ==
+
+= 4.2.11 =
+
+* Fix for Elementor Update task on unicode/utf-8 pages.
+* Debug log can now be filtered and searched
+* Insure logging is using appropriate logging levels
 
 = 4.2.10 =
 

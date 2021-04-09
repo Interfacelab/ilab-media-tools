@@ -34,16 +34,36 @@
     }
 
     .column-channel {
-        width: 140px !important;
+        /*width: 140px !important;*/
     }
 
     .column-date {
-        width: 140px !important;
+        /*width: 140px !important;*/
     }
 
     .column-level {
-        width: 60px !important;
+        /*width: 60px !important;*/
         white-space: nowrap;
+    }
+
+    .column-class {
+        /*width: 160px !important;*/
+        white-space: nowrap;
+    }
+
+    .column-method {
+        /*width: 160px !important;*/
+        white-space: nowrap;
+    }
+
+    .column-line {
+        /*width: 60px !important;*/
+        white-space: nowrap;
+    }
+
+    .column-message {
+        /*max-width: 100%;*/
+        width: 100% !important;
     }
 </style>
 @endsection
