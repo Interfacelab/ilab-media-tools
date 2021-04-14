@@ -94,7 +94,7 @@ class DatabaseLogTable extends \WP_List_Table {
     }
 
     public function column_message($item) {
-        return esc_html($item['message']);
+        return (strpos($item['message'], '<pre>') !== false) ? $item['message'] : esc_html($item['message']);
     }
 
 	public function column_context($item) {

@@ -299,6 +299,14 @@ class GoogleStorage implements StorageInterface, ConfiguresWizard {
 		return null;
 	}
 
+	public function isUsingPathStyleEndPoint() {
+		return false;
+	}
+
+	public function acl($key) {
+		return null;
+	}
+
 	public function insureACL($key, $acl) {
 		if (!$this->usesBucketPolicyOnly()) {
 			$object = $this->client->bucket($this->settings->bucket)->object($key);

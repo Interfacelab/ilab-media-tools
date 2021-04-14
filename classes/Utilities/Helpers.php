@@ -189,6 +189,42 @@ namespace MediaCloud\Plugin\Utilities {
 				$currentObject = $currentObject[$part];
 			}
 		}
+
+		return $default;
+	}
+
+	/**
+	 * Determines if the string starts with any of the supplied strings
+	 *
+	 * @param $haystack
+	 * @param $needles
+	 * @return bool
+	 */
+	function stringStartsWithAny($haystack, $needles) {
+		foreach($needles as $needle) {
+			if (strpos($haystack, $needle) === 0) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Determines if the string contains any of the supplied strings
+	 *
+	 * @param $haystack
+	 * @param $needles
+	 * @return bool
+	 */
+	function stringContainsAny($haystack, $needles) {
+		foreach($needles as $needle) {
+			if (strpos($haystack, $needle) !== false) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -335,6 +371,34 @@ namespace MediaCloud\Plugin\Utilities {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Disables non-Media Cloud hooks and filters for the specified action/filter names
+	 *
+	 * @param string[] $hooks
+	 */
+	function disableHooks($hooks) {
+		global $wp_filter;
+
+		foreach($hooks as $hookName) {
+			if (!isset($wp_filter[$hookName])) {
+				continue;
+			}
+
+			$wpHook = $wp_filter[$hookName];
+			foreach($wpHook->callbacks as $priority => $hooks) {
+				foreach($hooks as $hook => $hookData) {
+					if (is_array($hookData['function']) && is_object($hookData['function'][0])) {
+						if (strpos(get_class($hookData['function'][0]), 'MediaCloud') === 0) {
+							continue;
+						}
+					}
+
+					$wpHook->remove_filter($hook, $hookData['function'], $priority);
+				}
+			}
+		}
 	}
 }
 

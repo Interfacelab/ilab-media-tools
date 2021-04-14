@@ -226,6 +226,14 @@ class BackblazeStorage implements StorageInterface, AuthCacheInterface, Configur
 		return null;
 	}
 
+	public function isUsingPathStyleEndPoint() {
+		return false;
+	}
+
+	public function acl($key) {
+		return null;
+	}
+
 	public function insureACL($key, $acl) {
 	}
 

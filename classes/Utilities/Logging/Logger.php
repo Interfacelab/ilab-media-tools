@@ -210,6 +210,10 @@ class Logger {
 	}
 
 	protected function doLogInfo($message, $context=[], $function = null, $line = null) {
+		if (!empty($this->settings) && $this->settings->matchesFilter($message)) {
+			return;
+		}
+
 	    if ($this->useWPCLI) {
             Command::Info($message, true);
         }
@@ -221,7 +225,11 @@ class Logger {
 	}
 
 	protected function doLogWarning($message, $context=[], $function = null, $line = null) {
-        if ($this->useWPCLI) {
+		if (!empty($this->settings) && $this->settings->matchesFilter($message)) {
+			return;
+		}
+
+		if ($this->useWPCLI) {
             Command::Warn($message);
         }
 
@@ -232,7 +240,11 @@ class Logger {
 	}
 
 	protected function doLogError($message, $context=[], $function = null, $line = null) {
-        if ($this->useWPCLI) {
+		if (!empty($this->settings) && $this->settings->matchesFilter($message)) {
+			return;
+		}
+
+		if ($this->useWPCLI) {
             Command::Error($message." => ".((isset($context['exception'])) ? $context['exception'] : "No error message"));
         }
 
@@ -272,6 +284,14 @@ class Logger {
 		}
 
 		return self::$instance;
+	}
+
+	public static function backtrace($context=[], $function = null, $line = null) {
+		$stack = debug_backtrace(0);
+		array_shift($stack);
+
+		$stackJSON = "<pre>".esc_html(json_encode($stack, JSON_PRETTY_PRINT))."</pre>";
+		Logger::info("Stack Dump:\n$stackJSON", $context, $function, $line);
 	}
 
 	/**

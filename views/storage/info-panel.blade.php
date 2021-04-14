@@ -66,8 +66,9 @@
     </div>
     @if (!$imgixEnabled && $enabled)
     <div class="button-row">
-        <a data-post-id="{{$postId}}" data-imgix-enabled="{{($imgixEnabled) ? 'true': 'false'}}" href="#" class="ilab-info-regenerate-thumbnails button button-warning button-small">Regenerate Image</a>
-        <div id="ilab-info-regenerate-status" style="display:none;"><div class="spinner is-active"></div>Regenerating ...</div>
+        {!! do_action('media-cloud/ui/info-panel/actions', $postId) !!}
+{{--        <a data-post-id="{{$postId}}" data-imgix-enabled="{{($imgixEnabled) ? 'true': 'false'}}" href="#" class="ilab-info-regenerate-thumbnails button button-warning button-small">Regenerate Image</a>--}}
+{{--        <div id="ilab-info-regenerate-status" style="display:none;"><div class="spinner is-active"></div>Regenerating ...</div>--}}
     </div>
     @endif
 </div>

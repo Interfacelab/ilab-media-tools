@@ -1,0 +1,1 @@
+<p>This attempts to fix any missing or errant cloud storage metadata for files in your media library.  If you have run the <strong>Unlink From Cloud</strong> task this will effectively reverse that.  Once it has run there will be a report available in <code>{{\MediaCloud\Plugin\Tasks\TaskReporter::reporterDirectory()}}</code>.</p>

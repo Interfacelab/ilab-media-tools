@@ -13,6 +13,7 @@
 
 namespace MediaCloud\Plugin\Tools\Debugging;
 
+use MediaCloud\Plugin\Tools\Storage\StorageTool;
 use MediaCloud\Plugin\Tools\Tool;
 use MediaCloud\Plugin\Tools\ToolsManager;
 use MediaCloud\Plugin\Utilities\Logging\DatabaseLogger;
@@ -20,9 +21,15 @@ use MediaCloud\Plugin\Utilities\Logging\DatabaseLogTable;
 use MediaCloud\Plugin\Utilities\Logging\Logger;
 use MediaCloud\Plugin\Utilities\NoticeManager;
 use MediaCloud\Plugin\Utilities\View;
+use MediaCloud\Vendor\GuzzleHttp\Client;
+use MediaCloud\Vendor\GuzzleHttp\Exception\RequestException;
 use MediaCloud\Vendor\ParagonIE\EasyRSA\EasyRSA;
 use MediaCloud\Vendor\ParagonIE\EasyRSA\PublicKey;
 use MediaCloud\Vendor\Probe\ProviderFactory;
+use function MediaCloud\Plugin\Utilities\arrayPath;
+use function MediaCloud\Plugin\Utilities\disableHooks;
+use function MediaCloud\Plugin\Utilities\postIdExists;
+use function MediaCloud\Plugin\Utilities\stringStartsWithAny;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
@@ -61,7 +68,6 @@ class DebuggingTool extends Tool {
             $message = "Media Cloud debugging is enabled.  This may affect performance.  Unless you are troubleshooting and issue, you should $link.  You can dismiss this notice and it'll be shown to you again in 24 hours.";
             NoticeManager::instance()->displayAdminNotice('warning', $message,true, 'ilab-debug-tools-warning', 1);
         }
-
 	}
 
 
@@ -192,5 +198,4 @@ class DebuggingTool extends Tool {
     }
 
     //endregion
-
 }

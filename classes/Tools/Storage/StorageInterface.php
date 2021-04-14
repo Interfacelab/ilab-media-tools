@@ -144,6 +144,13 @@ interface StorageInterface {
 	public function region();
 
 	/**
+	 * If using a custom endpoint, is it a path style endpoint
+	 * @return bool
+	 */
+	public function isUsingPathStyleEndPoint();
+
+
+	/**
 	 * Determines if a file exists in a given bucket.
 	 *
 	 * @param string $key
@@ -210,6 +217,14 @@ interface StorageInterface {
 	 * @return FileInfo
 	 */
 	public function info($key);
+
+	/**
+	 * Returns the ACL for the given key
+	 * @param string $key
+	 * @throws StorageException
+	 * @return string|null
+	 */
+	public function acl($key);
 
 	/**
 	 * Insures the ACL is set on the given key.

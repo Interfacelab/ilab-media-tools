@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 5.7
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.2.11
+Stable tag: 4.2.18
 Requires PHP: 7.1
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -104,6 +104,18 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 
 == Changelog ==
+
+= 4.2.18 =
+
+* New feature allows you to upload a new image file to replace an existing one. (Premium Only)
+* Added buttons to various media screens to regenerate thumbnails for the media being viewed. (Premium only)
+* Added a metadata panel to the attachment edit page that allows you to view and edit the cloud storage metadata for images, as well as attempt to automatically fix any issues.
+* Additionally, the metadata panel will "audit" the attachment and show you any potential issues (missing local file, etc).
+* Added a **Fix Metadata** task that will attempt to fix any cloud storage metadata issues with items in your media library.
+* Added `media-cloud/storage/prefix` filter for adding your own custom tokens to the upload path.  See an example here: https://gist.github.com/jawngee/f01c74f781b4e8cd4a6d40983e626b99
+* Added a regex filter to debug logging to skip logging any unwanted messages.
+* Fixed placement of Storage Info popup in the Media Library grid mode.
+* Fixed a visual feedback bug where Direct Uploads appeared to not have finished uploading even though they had.
 
 = 4.2.11 =
 

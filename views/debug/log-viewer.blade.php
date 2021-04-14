@@ -63,7 +63,12 @@
 
     .column-message {
         /*max-width: 100%;*/
-        width: 100% !important;
+        width: 75% !important;
+    }
+
+    .column-context {
+        /*max-width: 100%;*/
+        width: 25% !important;
     }
 </style>
 @endsection

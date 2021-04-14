@@ -90,6 +90,10 @@ class OtherS3Storage extends S3Storage {
 			stream_context_set_default($defaults);
 		}
 
+		if (!empty($headers[0]) && (strpos($headers[0], '403 Forbidden') !== false)) {
+			throw new StorageException("Cannot fetch info for $url.");
+		}
+
 		$length = arrayPath($headers, 'Content-Length', false);
 		if (empty($length)) {
 			$length = arrayPath($headers, 'content-length', false);

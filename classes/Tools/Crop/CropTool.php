@@ -105,11 +105,13 @@ class CropTool extends Tool  {
 	 */
 	private function hookupUI()
 	{
-		// TODO: Still need to hook up the edit attachment page
-
 		add_filter('media_row_actions',function($actions,$post){
-			$newaction['ilab_crop_image'] = '<a class="ilab-thickbox" href="'.$this->cropPageURL($post->ID).'" title="Crop Image">' . __('Crop Image') . '</a>';
-			return array_merge($actions,$newaction);
+			if (strpos($post->post_mime_type, 'image') === 0) {
+				$newaction['ilab_crop_image'] = '<a class="ilab-thickbox" href="' . $this->cropPageURL($post->ID) . '" title="Crop Image">' . __('Crop Image') . '</a>';
+				return array_merge($actions, $newaction);
+			}
+
+			return $actions;
 		},10,2);
 
 		add_filter('admin_post_thumbnail_html', function($content,$id){
@@ -120,7 +122,7 @@ class CropTool extends Tool  {
 			if (!current_user_can('edit_post',$image_id))
 				return $content;
 
-			$content.='<a class="ilab-thickbox" href="'.$this->cropPageURL($image_id).'">'.__('Crop Image').'</a>';
+			$content.='<p class="hide-if-no-js"><a class="ilab-thickbox" href="'.$this->cropPageURL($image_id).'">'.__('Crop Image').'</a></p>';
 			return $content;
 		},10,2);
 
@@ -159,8 +161,9 @@ class CropTool extends Tool  {
                             });
 
                         attachTemplate=jQuery('#tmpl-image-details');
-                        if (attachTemplate)
-                            attachTemplate.text(attachTemplate.text().replace(/(<input type="button" class="replace-attachment button")/,'<a href="<?php echo $this->cropPageURL('{{data.attachment.id}}')?>" class="ilab-thickbox button"><?php echo __('Crop Image') ?></a>&nbsp;$1'));
+                        if (attachTemplate) {
+                            attachTemplate.text(attachTemplate.text().replace(/(<input type="button" class="replace-attachment button")/, '<a href="<?php echo $this->cropPageURL('{{data.attachment.id}}')?>" class="ilab-thickbox button"><?php echo __('Crop Image') ?></a>&nbsp;$1'));
+                        }
 
                         attachTemplate=jQuery('#tmpl-attachment-details-two-column');
                         if (attachTemplate)
@@ -174,8 +177,8 @@ class CropTool extends Tool  {
                         attachTemplate=jQuery('#tmpl-attachment-details');
                         if (attachTemplate)
                         {
-                            attachTemplate.text(attachTemplate.text().replace(/(<a(?:.*)class="(?:.*)edit-imgix(?:.*)"[^>]*[^<]+<\/a>)/, '$1<br><a class="ilab-thickbox" href="<?php echo $this->cropPageURL('{{data.id}}')?>"><?php echo __('Crop Image') ?></a>'));
-                            attachTemplate.text(attachTemplate.text().replace(/(<a class="(?:.*)edit-attachment(?:.*)"[^>]+[^<]+<\/a>)/, '$1\n<a class="ilab-thickbox" href="<?php echo $this->cropPageURL('{{data.id}}')?>"><?php echo __('Crop Image') ?></a>'));
+                            attachTemplate.text(attachTemplate.text().replace(/(<a(?:.*)class="(?:.*)edit-imgix(?:.*)"[^>]*[^<]+<\/a>)/, '$1<a class="ilab-thickbox" style="display:block" href="<?php echo $this->cropPageURL('{{data.id}}')?>"><?php echo __('Crop Image') ?></a>'));
+                            attachTemplate.text(attachTemplate.text().replace(/(<a class="(?:.*)edit-attachment(?:.*)"[^>]+[^<]+<\/a>)/, '$1\n<a class="ilab-thickbox" style="display:block" href="<?php echo $this->cropPageURL('{{data.id}}')?>"><?php echo __('Crop Image') ?></a>'));
                         }
                     });
                 </script>

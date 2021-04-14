@@ -157,6 +157,7 @@ final class Prefixer {
 			}
 		}
 
+		$prefix = apply_filters('media-cloud/storage/prefix', $prefix, $id);
 		$prefix = trim($prefix, '/').'/';
 
 		Logger::info("Generated prefix: {$prefix}", [], __METHOD__, __LINE__);

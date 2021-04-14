@@ -63,6 +63,11 @@ return [
 						"description" => "The port number for the remote log target to send logs to, this will be supplied by Media Cloud support.",
 						"type" => "text-field",
 					],
+					"mcloud-debug-ignored-regex" => [
+						"title" => "Ignored Regex Filters",
+						"description" => "One regex per line that will filter out debug messages.",
+						"type" => "text-area",
+					],
 				]
 			]
 		]

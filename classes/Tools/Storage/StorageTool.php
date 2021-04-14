@@ -21,6 +21,7 @@ use  MediaCloud\Plugin\Tools\Optimizer\OptimizerConsts ;
 use  MediaCloud\Plugin\Tools\Optimizer\OptimizerTool ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\CleanUploadsTask ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\DeleteUploadsTask ;
+use  MediaCloud\Plugin\Tools\Storage\Tasks\FixMetadataTask ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\MigrateFromOtherTask ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\MigrateTask ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\RegenerateThumbnailTask ;
@@ -267,7 +268,9 @@ class StorageTool extends Tool
     public function setup()
     {
         parent::setup();
+        StorageUtilities::instance();
         TaskManager::registerTask( UnlinkTask::class );
+        TaskManager::registerTask( FixMetadataTask::class );
         
         if ( $this->enabled() ) {
             if ( is_admin() ) {
@@ -1418,9 +1421,21 @@ class StorageTool extends Tool
         if ( apply_filters( 'media-cloud/imgix/enabled', false ) ) {
             return $fail;
         }
+        
         if ( empty(apply_filters( 'media-cloud/storage/override-url', true )) ) {
+            Logger::info(
+                "Override URL is false",
+                [
+                'fail' => $fail,
+                'id'   => $id,
+                'size' => $size,
+            ],
+                __METHOD__,
+                __LINE__
+            );
             return $fail;
         }
+        
         return $this->forcedImageDownsize( $fail, $id, $size );
     }
     
@@ -1486,6 +1501,9 @@ class StorageTool extends Tool
     public function addAttachment( $post_id )
     {
         $file = get_post_meta( $post_id, '_wp_attached_file', true );
+        if ( empty($file) ) {
+            return;
+        }
         $fileKey = $file;
         if ( isset( $this->renamedDocs[$fileKey] ) ) {
             $fileKey = $this->renamedDocs[$file];
@@ -2842,6 +2860,13 @@ TEMPLATE;
                 'side',
                 'low'
             );
+            wp_enqueue_script(
+                'ilab-media-grid-js',
+                ILAB_PUB_JS_URL . '/ilab-media-grid.js',
+                [ 'jquery' ],
+                MEDIA_CLOUD_VERSION,
+                true
+            );
         } );
     }
     
@@ -2899,10 +2924,8 @@ TEMPLATE;
             if ( $blogSwitched ) {
                 restore_current_blog();
             }
-            ?>
-            Not uploaded.
-			<?php 
-            die;
+            echo  'Not uploaded.' ;
+            return;
         }
         
         $type = arrayPath( $meta, 'type', false );

@@ -35,6 +35,10 @@ return [
 		    "plugin" => "robin-image-optimizer/robin-image-optimizer.php",
 		    "description" => "The image optimization process is a black box with no available way for Media Cloud to hook into it.  So while it will optimize your images, Media Cloud will be unaware that any optimizations occurred and will not transfer the result to cloud storage."
 	    ],
+	    "WooCommerce Product Search" => [
+		    "class" => "\\WooCommerce_Product_Search",
+		    "description" => "WooCommerce Product Search works reasonably well with Media Cloud except that it can sometimes corrupt your image metadata due to some bugs in their code.  We have fixed this issue on our end, but if you are a paying customer of this plugin, you should contact them to urge them to fix the issue."
+	    ],
     ],
     "badPlugins" => [
 	    "OptiMole" => [
