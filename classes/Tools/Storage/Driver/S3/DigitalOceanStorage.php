@@ -106,6 +106,7 @@ class DigitalOceanStorage extends OtherS3Storage {
 					->selectField('mcloud-storage-s3-endpoint', 'Custom Endpoint', "", null, [
 						'nyc3.digitaloceanspaces.com' => 'nyc3.digitaloceanspaces.com',
 						'sfo2.digitaloceanspaces.com' => 'sfo2.digitaloceanspaces.com',
+						'sfo3.digitaloceanspaces.com' => 'sfo3.digitaloceanspaces.com',
 						'sgp1.digitaloceanspaces.com' => 'sgp1.digitaloceanspaces.com',
 						'fra1.digitaloceanspaces.com' => 'fra1.digitaloceanspaces.com',
 						'ams3.digitaloceanspaces.com' => 'ams3.digitaloceanspaces.com',

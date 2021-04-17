@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 5.7
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.2.18
+Stable tag: 4.2.20
 Requires PHP: 7.1
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -104,6 +104,12 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 
 == Changelog ==
+
+= 4.2.20 =
+
+* Added SFO3 region to DigitalOcean setup wizard
+* Added a new top level menu item to WordPress admin called *Cloud Tools* that contains all of Media Cloud's tools and tasks.  The main Media Cloud menu was getting way too large.  This only affects non-multisite WordPress sites.
+* You can turn off the *Cloud Tools* menu, reverting to previous behavior, in *Cloud Storage Settings* in the *Display Settings* section.
 
 = 4.2.18 =
 

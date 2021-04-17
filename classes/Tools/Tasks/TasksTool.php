@@ -57,25 +57,25 @@ class TasksTool extends Tool {
 		}
 	}
 
-	public function registerMenu($top_menu_slug, $networkMode = false, $networkAdminMenu = false) {
+	public function registerMenu($top_menu_slug, $networkMode = false, $networkAdminMenu = false, $tool_menu_slug = null) {
 		parent::registerMenu($top_menu_slug);
 
-	}
-
-	public function registerBatchToolMenu($tool_menu_slug, $networkMode = false, $networkAdminMenu = false) {
-		ToolsManager::instance()->insertBatchToolSeparator();
+		ToolsManager::instance()->insertToolSeparator();
 
 		if (!is_multisite() || is_network_admin() || empty(Environment::Option('media-cloud-task-manager-hide', null, true))) {
 			ToolsManager::instance()->addMultisiteTool($this);
 
 			$this->options_page = 'media-cloud-task-manager';
-			add_submenu_page($tool_menu_slug, 'Task Manager', 'Task Manager', 'manage_options', 'media-cloud-task-manager', [$this, 'renderTaskManager']);
+			add_submenu_page(!empty($tool_menu_slug) ? $tool_menu_slug : $top_menu_slug, 'Task Manager', 'Task Manager', 'manage_options', 'media-cloud-task-manager', [$this, 'renderTaskManager']);
 		}
+	}
 
-
+	public function registerBatchToolMenu($tool_menu_slug, $networkMode = false, $networkAdminMenu = false) {
 		if($networkMode && $networkAdminMenu) {
 			return;
 		}
+
+		ToolsManager::instance()->insertBatchToolSeparator();
 
 		$hasBatchTool = false;
 		foreach(TaskManager::registeredTasks() as $identifier => $taskClass) {

@@ -62,6 +62,7 @@ if (!defined('ABSPATH')) { header('Location: /'); die; }
  * @property bool $replaceAllImageUrls
  * @property bool $replaceAnchorHrefs
  * @property bool $filterContent
+ * @property bool $useToolMenu
  *
  */
 class StorageToolSettings extends ToolSettings {
@@ -102,6 +103,7 @@ class StorageToolSettings extends ToolSettings {
 		"replaceAllImageUrls" => ["mcloud-storage-replace-all-image-urls", null, true],
 		"replaceAnchorHrefs" => ["mcloud-storage-replace-hrefs", null, true],
 		"filterContent" => ["mcloud-storage-filter-content", null, true],
+		"useToolMenu" => ["mcloud-storage-display-tool-menu", null, true],
 	];
 
 

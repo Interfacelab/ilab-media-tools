@@ -57,7 +57,7 @@ class SetupWizard {
 	 *
 	 * @param $top_menu_slug
 	 */
-	public function registerMenu($top_menu_slug, $networkMode = false, $networkAdminMenu = false) {
+	public function registerMenu($top_menu_slug, $networkMode = false, $networkAdminMenu = false, $tool_menu_slug = null) {
 		add_submenu_page('media-cloud', 'Media Cloud Setup Wizard', 'Setup Wizard', 'manage_options', 'media-cloud-wizard', [$this, 'renderSetupWizard']);
 	}
 

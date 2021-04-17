@@ -50,7 +50,7 @@ class SyncLocalTask extends AttachmentTask {
 	}
 
 	public static function showInMenu() {
-		return false;
+		return true;
 	}
 
 	/**

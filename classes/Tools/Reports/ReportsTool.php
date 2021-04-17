@@ -38,7 +38,7 @@ class ReportsTool extends Tool {
 		parent::__construct( $toolName, $toolInfo, $toolManager );
 	}
 
-	public function registerMenu($top_menu_slug, $networkMode = false, $networkAdminMenu = false) {
+	public function registerMenu($top_menu_slug, $networkMode = false, $networkAdminMenu = false, $tool_menu_slug = null) {
 		parent::registerMenu($top_menu_slug);
 
 		if ($this->enabled()) {
@@ -50,7 +50,7 @@ class ReportsTool extends Tool {
 
 			ToolsManager::instance()->insertToolSeparator();
 			$this->options_page = 'media-tools-report-viewer';
-			add_submenu_page($top_menu_slug, 'Media Cloud Report Viewer', 'Report Viewer', 'manage_options', 'media-tools-report-viewer', [
+			add_submenu_page(!empty($tool_menu_slug) ? $tool_menu_slug : $top_menu_slug, 'Media Cloud Report Viewer', 'Report Viewer', 'manage_options', 'media-tools-report-viewer', [
 				$this,
 				'renderViewer'
 			]);

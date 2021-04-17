@@ -363,6 +363,12 @@ return [
 						"description" => "When this is selected, an extra column will be added to the media library's list view, as well as bulk actions for importing.",
 						"type" => "checkbox",
 						"default" => true
+					],
+					"mcloud-storage-display-tool-menu" => [
+						"title" => "WordPress Admin Tool Menu",
+						"description" => "When this is selected, all of Media Cloud's tools and tasks are moved to a new top level menu in WordPress admin called <strong>Cloud Tools</strong>.",
+						"type" => "checkbox",
+						"default" => true
 					]
 				]
 			],
