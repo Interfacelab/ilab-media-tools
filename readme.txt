@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 5.7
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.2.21
+Stable tag: 4.2.22
 Requires PHP: 7.1
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -105,8 +105,9 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 == Changelog ==
 
-= 4.2.21 =
+= 4.2.22 =
 
+* Fix for srcset generation with Imgix.
 * *System Check* has been renamed *System Test*
 * Added a plugin/theme check to the *System Test* that pinpoints any *potential* (emphasis on potential) issues with activated plugins or your current theme.
 * Added a new *Compatibility Manager* tool that allows you to disable hooks in other plugins or themes that might be causing issues with Media Cloud.  You must enable this tool in Cloud Storage Settings in the Advanced Settings panel.  Once activated, this tool will show you all the hooks that are activated on your WordPress install that might interfere with Media Cloud.  **Note that just because a plugin or theme shows up in the list, this does not mean it's incompatible.  You should only use this tool if directed by Media Cloud support**.

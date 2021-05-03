@@ -1107,12 +1107,30 @@ class StorageContentHooks {
 			$this->allSizes = ilab_get_image_sizes();
 		}
 
+		if ($size_array[0] < $size_array[1]) {
+			$srcAspect = 0;
+		} else if ($size_array[0] == $size_array[1]) {
+			$srcAspect = 1;
+		} else {
+			$srcAspect = 2;
+		}
+
 		$allSizesNames = array_keys($this->allSizes);
 
 		foreach($image_meta['sizes'] as $sizeName => $sizeData) {
-			$width = $sizeData['width'];
+			$width = intval($sizeData['width']);
+			$height = intval($sizeData['height']);
+
+			if ($width < $height) {
+				$sizeAspect = 0;
+			} else if ($width == $height) {
+				$sizeAspect = 1;
+			} else {
+				$sizeAspect = 2;
+			}
+
 			if (isset($sources[$width])) {
-				if (in_array($sizeName, $allSizesNames)) {
+				if (($sizeAspect == $srcAspect) && in_array($sizeName, $allSizesNames)) {
 					$src = wp_get_attachment_image_src($attachment_id, $sizeName);
 
 					if(is_array($src)) {
@@ -1129,14 +1147,28 @@ class StorageContentHooks {
 		}
 
 		if(isset($image_meta['width'])) {
-			$width = $image_meta['width'];
-			if(isset($sources[$width])) {
-				$src = wp_get_attachment_image_src($attachment_id, 'full');
+			$width = intval($image_meta['width']);
+			$height = intval($image_meta['height']);
 
-				if(is_array($src)) {
-					// fix for wpml
-					$url = preg_replace('/&lang=[aA-zZ0-9]+/m', '', $src[0]);
-					$sources[$width]['url'] = $url;
+			if ($width < $height) {
+				$sizeAspect = 0;
+			} else if ($width == $height) {
+				$sizeAspect = 1;
+			} else {
+				$sizeAspect = 2;
+			}
+
+			if(isset($sources[$width])) {
+				if ($sizeAspect == $srcAspect) {
+					$src = wp_get_attachment_image_src($attachment_id, 'full');
+
+					if(is_array($src)) {
+						// fix for wpml
+						$url = preg_replace('/&lang=[aA-zZ0-9]+/m', '', $src[0]);
+						$sources[$width]['url'] = $url;
+					} else {
+						unset($sources[$width]);
+					}
 				} else {
 					unset($sources[$width]);
 				}
