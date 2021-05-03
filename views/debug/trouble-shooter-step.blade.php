@@ -11,13 +11,13 @@
     <div>
         <div class="troubleshooter-title">{{$title}}</div>
         <div class="troubleshooter-message">
-            @if ($success)
+            @if ($success === true)
             {!! $success_message !!}
             @else
             {!! $error_message !!}
             @endif
         </div>
-        @if (!$success && !empty($errors))
+        @if (($success !== true) && !empty($errors))
         <ul class="troubleshooter-errors">
             @foreach($errors as $error)
             <li>{!! $error !!}</li>

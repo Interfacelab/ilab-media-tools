@@ -21,12 +21,16 @@ use MediaCloud\Plugin\Tools\Imgix\ImgixTool;
 use MediaCloud\Plugin\Tools\Storage\StorageTool;
 use MediaCloud\Plugin\Tools\Tool;
 use MediaCloud\Plugin\Tools\ToolsManager;
+use MediaCloud\Plugin\Utilities\Environment;
 use MediaCloud\Plugin\Utilities\Logging\ErrorCollector;
 use MediaCloud\Plugin\Utilities\Logging\Logger;
 use MediaCloud\Plugin\Utilities\Tracker;
 use MediaCloud\Plugin\Utilities\View;
 use MediaCloud\Vendor\Carbon\CarbonInterval;
 use MediaCloud\Vendor\FasterImage\FasterImage;
+use function MediaCloud\Plugin\Utilities\anyEmpty;
+use function MediaCloud\Plugin\Utilities\arrayPath;
+use function MediaCloud\Plugin\Utilities\discoverHooks;
 
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
@@ -36,33 +40,68 @@ if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
  * Debugging tool.
  */
 class SystemCompatibilityTool extends Tool {
+	public static $compatibleHooks = [
+		'get_attached_file',
+		'image_downsize',
+		'wp_get_attachment_url',
+		'wp_update_attachment_metadata',
+		'wp_get_attachment_image_src',
+		'wp_generate_attachment_metadata',
+		'wp_update_attachment_metadata',
+		'wp_handle_upload_prefilter',
+		'wp_handle_upload',
+	];
+
+
+	/** @var StorageToolSettings|null  */
+	private $settings = null;
+
 	const STEP_ENVIRONMENT = 1;
-	const STEP_TEST_DATABASE_INSTALLED = 2;
-	const STEP_VALIDATE_CLIENT = 3;
-	const STEP_TEST_UPLOADS = 4;
-	const STEP_TEST_ACL = 5;
-	const STEP_TEST_DELETE = 6;
-	const STEP_TEST_BACKGROUND_CONNECTIVITY = 7;
-	const STEP_TEST_IMGIX = 8;
+	const STEP_HOOKS = 2;
+	const STEP_TEST_DATABASE_INSTALLED = 3;
+	const STEP_VALIDATE_CLIENT = 4;
+	const STEP_TEST_UPLOADS = 5;
+	const STEP_TEST_ACL = 6;
+	const STEP_TEST_DELETE = 7;
+	const STEP_TEST_BACKGROUND_CONNECTIVITY = 8;
+	const STEP_TEST_IMGIX = 9;
 
     public function __construct( $toolName, $toolInfo, $toolManager ) {
         parent::__construct( $toolName, $toolInfo, $toolManager );
 
-        if ($this->enabled()) {
-	        add_action('wp_ajax_ilab_media_cloud_start_troubleshooting', [$this, 'startTroubleshooting']);
+        $this->settings = StorageToolSettings::instance();
+
+        if ($this->settings->useCompatibilityManager) {
+	        if (is_admin()) {
+		        add_action('wp_ajax_media_cloud_disable_hook', [$this, 'actionDisableHook']);
+		        add_action('wp_ajax_media_cloud_enable_hook', [$this, 'actionEnableHook']);
+		        add_action('wp_ajax_media_cloud_change_disabled_hook_type', [$this, 'actionChangeHookType']);
+	        }
+
+	        add_action('init', function() {
+	            $this->applyCompatibility();
+	        }, PHP_INT_MAX);
         }
 
         if (is_admin()) {
-        	TaskRunner::init();
+	        add_action('wp_ajax_ilab_media_cloud_start_troubleshooting', [$this, 'startTroubleshooting']);
+	        TaskRunner::init();
         }
     }
 
     public function registerMenu($top_menu_slug, $networkMode = false, $networkAdminMenu = false, $tool_menu_slug = null) {
 	    if($this->enabled() && (($networkMode && $networkAdminMenu) || (!$networkMode && !$networkAdminMenu))) {
-		    add_submenu_page($top_menu_slug, 'Media Cloud System Compatibility Test', 'System Check', 'manage_options', 'media-tools-troubleshooter', [
+		    add_submenu_page($top_menu_slug, 'Media Cloud System Compatibility Test', 'System Test', 'manage_options', 'media-tools-troubleshooter', [
 			    $this,
 			    'renderTroubleshooter'
 		    ]);
+
+		    if ($this->settings->useCompatibilityManager) {
+			    add_submenu_page($top_menu_slug, 'Media Cloud Compatibility Manager', 'Compat. Manager', 'manage_options', 'media-tools-compatibility', [
+				    $this,
+				    'renderCompatibilityManager'
+			    ]);
+		    }
 	    }
     }
 
@@ -76,6 +115,13 @@ class SystemCompatibilityTool extends Tool {
 			    return [
 				    'index' => $step,
 				    'title' => 'System Compatibility'
+			    ];
+			    break;
+		    case self::STEP_HOOKS:
+			    return [
+				    'index' => $step,
+				    'title' => 'Plugin and Theme Compatibility',
+				    'status' => 'Running tests ...'
 			    ];
 			    break;
 		    case self::STEP_VALIDATE_CLIENT:
@@ -158,6 +204,9 @@ class SystemCompatibilityTool extends Tool {
         if ($step == self::STEP_ENVIRONMENT) {
             // Step 1 - Make sure we can connect
             $this->testEnvironment();
+        } else if ($step == self::STEP_HOOKS) {
+	        // Step 1 - Make sure we can connect
+	        $this->testHooks();
         } else if ($step == self::STEP_VALIDATE_CLIENT) {
             // Step 1 - Make sure we can connect
             $this->testValidateClient();
@@ -333,7 +382,7 @@ class SystemCompatibilityTool extends Tool {
 
         $data = [
             'html' => $html,
-	        'next' => $this->stepInfo(self::STEP_TEST_DATABASE_INSTALLED)
+	        'next' => $this->stepInfo(self::STEP_HOOKS)
         ];
 
         if (!$errors) {
@@ -343,6 +392,47 @@ class SystemCompatibilityTool extends Tool {
         }
 
         wp_send_json($data);
+    }
+
+    private function testHooks() {
+	    $compatible = [
+		    'woocommerce',
+		    'elementor',
+		    'advanced-custom-fields-pro',
+		    'ewww-image-optimizer',
+		    'imagify',
+		    'kraken-image-optimizer',
+		    'shortpixel-image-optimizer',
+		    'wp-smushit',
+	    ];
+
+	    $foundHooks = discoverHooks(static::$compatibleHooks);
+	    $issues = [];
+	    foreach($foundHooks as $hook) {
+	    	if (in_array($hook['plugin'], $compatible)) {
+	    		continue;
+		    }
+
+		    $issue = "The {$hook['type']} <strong>{$hook['name']}</strong> uses the hook <code>{$hook['hook']}</code> which may interfere with Media Cloud.";
+		    if (!in_array($issue, $issues)) {
+		    	$issues[] = $issue;
+		    }
+	    }
+
+	    $html = View::render_view('debug/trouble-shooter-step.php', [
+		    'success' => (count($issues) === 0) ? true : 'maybe',
+		    'title' => 'Plugin and Theme Compatibility',
+		    'success_message' => 'There appears to be no issues with installed plugins or your currently active theme.',
+		    'error_message' => 'There may be issues with plugins and/or your currently active theme.  <strong>Important</strong>: Just because a plugin or theme appears in the list below DOES NOT mean it\'s incompatible with Media Cloud, it simply means there is the possibility of conflict.',
+		    'errors' => $issues
+	    ]);
+
+	    $data = [
+		    'html' => $html,
+		    'next' => $this->stepInfo(self::STEP_TEST_DATABASE_INSTALLED)
+	    ];
+
+	    wp_send_json($data);
     }
 
     private function testValidateClient() {
@@ -661,4 +751,115 @@ class SystemCompatibilityTool extends Tool {
 
     //endregion
 
+	//region Compatibility Manager
+	public function renderCompatibilityManager() {
+		$disabledHookOptions = Environment::Option('media-cloud-disabled-hooks', null, []);
+		$foundHooks = discoverHooks(static::$compatibleHooks);
+
+		$disabledHookHashes = array_keys($disabledHookOptions);
+
+		$disabledHooks = array_filter($foundHooks, function($hook) use ($disabledHookHashes) {
+			return in_array($hook['hash'], $disabledHookHashes);
+		});
+
+		foreach($disabledHooks as &$disabledHook) {
+			$disabledHook['disableType'] = $disabledHookOptions[$disabledHook['hash']];
+		}
+
+		$availableHooks = array_filter($foundHooks, function($hook) use ($disabledHookHashes) {
+			return !in_array($hook['hash'], $disabledHookHashes);
+		});
+
+		Tracker::trackView("Compatibility Manager", "/compatibility-manager");
+
+		echo View::render_view('base.compatibility-manager', [
+			'disabledHooks' => $disabledHooks,
+			'availableHooks' => $availableHooks,
+		]);
+	}
+
+	private function applyCompatibility() {
+    	if (is_admin() && (arrayPath($_REQUEST, 'page') === 'media-tools-compatibility')) {
+    		return;
+	    }
+
+    	if (!empty(apply_filters('media-cloud/compat/disable-apply', false))) {
+    		return;
+	    }
+
+		$disabledHookOptions = Environment::Option('media-cloud-disabled-hooks', null, []);
+		$foundHooks = discoverHooks(static::$compatibleHooks);
+		$disabledHookHashes = array_keys($disabledHookOptions);
+		$disabledHooks = array_filter($foundHooks, function($hook) use ($disabledHookHashes) {
+			return in_array($hook['hash'], $disabledHookHashes);
+		});
+
+		foreach($disabledHooks as $disabledHook) {
+			$type = $disabledHookOptions[$disabledHook['hash']];
+			if (($type == 'frontend') && is_admin()) {
+				continue;
+			} else if (($type == 'backend') && !is_admin()) {
+				continue;
+			}
+
+			remove_filter($disabledHook['hook'], $disabledHook['realCallable'], $disabledHook['priority']);
+		}
+	}
+
+	public function actionDisableHook() {
+		check_ajax_referer('media_cloud_disable_hook', 'nonce');
+		if (!current_user_can('manage_options')) {
+			return;
+		}
+
+		$hash = arrayPath($_REQUEST, 'hash');
+		$type = arrayPath($_REQUEST, 'type');
+		if (anyEmpty($hash, $type)) {
+			wp_send_json(['status' => 'error', 'message' => 'Missing argument'], 400);
+		}
+
+		$disabledHookOptions = Environment::Option('media-cloud-disabled-hooks', null, []);
+		$disabledHookOptions[$hash] = $type;
+		Environment::UpdateOption('media-cloud-disabled-hooks', $disabledHookOptions);
+	}
+
+	public function actionEnableHook() {
+		check_ajax_referer('media_cloud_enable_hook', 'nonce');
+		if (!current_user_can('manage_options')) {
+			return;
+		}
+
+		$hash = arrayPath($_REQUEST, 'hash');
+		$type = arrayPath($_REQUEST, 'type');
+		if (anyEmpty($hash, $type)) {
+			wp_send_json(['status' => 'error', 'message' => 'Missing argument'], 400);
+		}
+
+		$disabledHookOptions = Environment::Option('media-cloud-disabled-hooks', null, []);
+		unset($disabledHookOptions[$hash]);
+		Environment::UpdateOption('media-cloud-disabled-hooks', $disabledHookOptions);
+	}
+
+	public function actionChangeHookType() {
+		check_ajax_referer('media_cloud_enable_hook', 'nonce');
+		if (!current_user_can('manage_options')) {
+			return;
+		}
+
+		$hash = arrayPath($_REQUEST, 'hash');
+		$type = arrayPath($_REQUEST, 'type');
+		if (anyEmpty($hash, $type)) {
+			wp_send_json(['status' => 'error', 'message' => 'Missing argument'], 400);
+		}
+
+		$disabledHookOptions = Environment::Option('media-cloud-disabled-hooks', null, []);
+
+		if (isset($disabledHookOptions[$hash])) {
+			$disabledHookOptions[$hash] = $type;
+			Environment::UpdateOption('media-cloud-disabled-hooks', $disabledHookOptions);
+		}
+
+		wp_send_json(['status' => 'ok'], 200);
+	}
+	//endregion
 }

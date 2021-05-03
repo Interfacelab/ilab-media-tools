@@ -373,6 +373,145 @@ namespace MediaCloud\Plugin\Utilities {
 		return false;
 	}
 
+	function discoverHooks($hooks) {
+		global $wp_filter;
+
+		$time = microtime(true);
+
+		$foundHooks = [];
+		$hashes = [];
+		$themeDir = get_theme_file_path();
+
+		foreach($hooks as $hookName) {
+			if (!isset($wp_filter[$hookName])) {
+				continue;
+			}
+
+			$wpHook = $wp_filter[$hookName];
+			foreach($wpHook->callbacks as $priority => $hooks) {
+				foreach($hooks as $hook => $hookData) {
+					if (is_array($hookData['function']) && is_object($hookData['function'][0])) {
+						if (strpos(get_class($hookData['function'][0]), 'MediaCloud') === 0) {
+							continue;
+						}
+					}
+
+					$line = 0;
+					$type = 'unknown';
+					$hookCallable = null;
+					if (is_array($hookData['function'])) {
+						$type = 'array';
+						$hookCallable = [
+							'static' => is_string($hookData['function'][0]),
+							'class' => (is_string($hookData['function'][0])) ? $hookData['function'][0] : get_class($hookData['function'][0]),
+							'method' => $hookData['function'][1]
+						];
+
+						$ref = new \ReflectionClass($hookData['function'][0]);
+						$filename = $ref->getFileName();
+						$line = $ref->getStartLine();
+					} else if (is_string($hookData['function'])) {
+						$type = 'function';
+						$hookCallable = [
+							'function' => $hookData['function']
+						];
+
+						$ref = new \ReflectionFunction($hookData['function']);
+						$filename = $ref->getFileName();
+						$line = $ref->getStartLine();
+					} else if ($hookData['function'] instanceof \Closure) {
+						$type = 'closure';
+						$hookCallable = [];
+
+						$ref = new \ReflectionFunction($hookData['function']);
+						$line = $ref->getStartLine();
+						$filename = $ref->getFileName();
+						if ($ref->isClosure() && !empty($ref->getClosureThis())) {
+							if (strpos(get_class($ref->getClosureThis()), 'MediaCloud') === 0) {
+								continue;
+							}
+						}
+					}
+
+					if (strpos($filename, WP_PLUGIN_DIR) !== false) {
+						$filename = ltrim(str_replace(WP_PLUGIN_DIR, '', $filename), '/');
+						$filenameParts = explode('/', $filename);
+						$pluginFolder = array_shift($filenameParts);
+
+						$plugins = get_plugins('/'.$pluginFolder);
+						if (count($plugins) > 0) {
+							$plugin = array_values($plugins)[0];
+
+							$hash = md5(serialize([
+								'hook' => $hookName,
+								'priority' => $priority,
+								'type' => 'plugin',
+								'plugin' => $pluginFolder,
+								'callableType' => $type,
+								'callable' => $hookCallable,
+							]));
+
+							if (!in_array($hash, $hashes)) {
+								$hashes[] = $hash;
+
+								$foundHooks[] = [
+									'hook' => $hookName,
+									'priority' => $priority,
+									'type' => 'plugin',
+									'plugin' => $pluginFolder,
+									'name' => $plugin['Name'],
+									'callableType' => $type,
+									'callable' => $hookCallable,
+									'realCallable' => $hookData['function'],
+									'basename' => pathinfo('/'.$filename, PATHINFO_BASENAME),
+									'filename' => '/'.$filename,
+									'line' => $line,
+									'hash' => $hash
+								];
+							}
+						}
+					} else if (strpos($filename, $themeDir) !== false) {
+						$themeInfo = wp_get_theme();
+						$filename = ltrim(str_replace($themeDir, '', $filename), '/');
+						$filenameParts = explode('/', $filename);
+						$themeFolder = array_shift($filenameParts);
+
+						$hash = md5(serialize([
+							'hook' => $hookName,
+							'priority' => $priority,
+							'type' => 'plugin',
+							'plugin' => $themeFolder,
+							'callableType' => $type,
+							'callable' => $hookCallable,
+						]));
+
+						if (!in_array($hash, $hashes)) {
+							$hashes[] = $hash;
+
+							$foundHooks[] = [
+								'hook' => $hookName,
+								'priority' => $priority,
+								'type' => 'theme',
+								'plugin' => $themeFolder,
+								'name' => $themeInfo->get('Name'),
+								'callableType' => $type,
+								'callable' => $hookCallable,
+								'realCallable' => $hookData['function'],
+								'basename' => pathinfo('/'.$filename, PATHINFO_BASENAME),
+								'filename' => '/'.$filename,
+								'line' => $line,
+								'hash' => $hash
+							];
+						}
+					}
+				}
+			}
+		}
+
+		$time = microtime(true) - $time;
+		return $foundHooks;
+	}
+
 	/**
 	 * Disables non-Media Cloud hooks and filters for the specified action/filter names
 	 *

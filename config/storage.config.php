@@ -390,7 +390,19 @@ return [
 						"default" => true
 					]
 				]
-			]
+			],
+			"ilab-media-cloud-advanced-settings" => [
+				"title" => "Advanced Settings",
+				"description" => "",
+				"options" => [
+					"mcloud-storage-enable-compatibility-manager" => [
+						"title" => "Enable Compatibility Manager",
+						"description" => "When this is enabled, Media Cloud will provide a UI to enable/disable hooks and filters being used by other plugins.  You should only use this if directed by Media Cloud support.",
+						"type" => "checkbox",
+						"default" => false
+					]
+				]
+			],
 		]
 	]
 ];

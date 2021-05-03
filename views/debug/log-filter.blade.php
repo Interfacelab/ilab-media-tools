@@ -1,8 +1,4 @@
 <div class='log-options' style="display: flex; align-items: center">
-    <form method='post'><input type='hidden' name='action' value='csv'><input type='submit' style='display:inline-block; margin-right: 5px;' class='button button-primary' value='Export CSV'></form>
-    <form method='post'><input type='hidden' name='action' value='bug'><input type='submit' style='display:inline-block; margin-right: 15px;' class='button button-primary' value='Generate System Report'></form>
-    <form id='ilab-clear-log-form' method='post'><input type='hidden' name='action' value='clear-log'><input type='submit' style='display:inline-block' class='button button-warning' value='Clear Log'></form>
-    <div style="margin: 0 10px; opacity: 0.5;">|</div>
     <form method="get" style="display: flex; align-items: center">
         <input type="hidden" name="page" value="media-tools-debug-log">
         @if(isset($_REQUEST['paged']))
@@ -27,4 +23,7 @@
         <input name="message" placeholder="Search text" style="margin-right: 5px; padding: 6px 8px; border-radius: 3px; border: 1px solid #8c8f94;" value="{{(isset($_REQUEST['message'])) ? $_REQUEST['message'] : ''}}">
         <input type="submit" value="Filter" class="button">
     </form>
+    <div style="margin: 0 10px; opacity: 0.5;">|</div>
+    <button type="button" class="button button-primary actionable" data-action="mcloud-debug-clear-debug-log" data-action-type="reload" data-nonce="{{wp_create_nonce('mcloud-debug-clear-debug-log')}}">Clear Log</button>
+{{--    <form id='ilab-clear-log-form' method='post'><input type='hidden' name='action' value='clear-log'><input type='submit' style='display:inline-block' class='button button-warning' value='Clear Log'></form>--}}
 </div>
