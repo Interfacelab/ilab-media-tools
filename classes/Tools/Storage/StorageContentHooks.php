@@ -20,6 +20,7 @@ use MediaCloud\Plugin\Tasks\TaskReporter;
 use MediaCloud\Plugin\Tools\Debugging\DebuggingToolSettings;
 use MediaCloud\Plugin\Utilities\Environment;
 use MediaCloud\Plugin\Utilities\Logging\Logger;
+use function MediaCloud\Plugin\Utilities\anyEmpty;
 use function MediaCloud\Plugin\Utilities\arrayPath;
 
 if (!defined('ABSPATH')) { header('Location: /'); die; }
@@ -1074,6 +1075,17 @@ class StorageContentHooks {
 	//endregion
 
 	//region Srcset
+
+	private function getAspectRatio($width, $height) {
+		if ($width < $height) {
+			return 0;
+		} else if ($width == $height) {
+			return 1;
+		} else {
+			return 2;
+		}
+	}
+
 	/**
 	 * Filters an image’s ‘srcset’ sources.  (https://core.trac.wordpress.org/browser/tags/4.8/src/wp-includes/media.php#L1203)
 	 *
@@ -1103,79 +1115,63 @@ class StorageContentHooks {
 
 		$attachment_id = apply_filters('wpml_object_id', $attachment_id, 'attachment', true);
 
-		if ($this->allSizes == null) {
+		if (empty($this->allSizes)) {
 			$this->allSizes = ilab_get_image_sizes();
 		}
 
-		if ($size_array[0] < $size_array[1]) {
-			$srcAspect = 0;
-		} else if ($size_array[0] == $size_array[1]) {
-			$srcAspect = 1;
-		} else {
-			$srcAspect = 2;
+		$srcAspect = $this->getAspectRatio($size_array[0], $size_array[1]);
+
+		$imageWidth = intval($image_meta['width']);
+		$imageHeight = intval($image_meta['height']);
+
+		if (anyEmpty($imageWidth, $imageHeight)) {
+			return [];
 		}
 
 		$allSizesNames = array_keys($this->allSizes);
+		$newSources = [];
 
 		foreach($image_meta['sizes'] as $sizeName => $sizeData) {
-			$width = intval($sizeData['width']);
-			$height = intval($sizeData['height']);
+			$width = intval($this->allSizes[$sizeName]['width']);
+			$height = intval($this->allSizes[$sizeName]['height']);
 
-			if ($width < $height) {
-				$sizeAspect = 0;
-			} else if ($width == $height) {
-				$sizeAspect = 1;
+			$width = ($width === 0) ? 99999 : $width;
+			$height = ($height === 0) ? 99999 : $height;
+
+			if (empty($this->allSizes[$sizeName]['crop'])) {
+				$sizeDim = sizeToFitSize($imageWidth, $imageHeight, $width, $height);
 			} else {
-				$sizeAspect = 2;
+				$sizeDim = [$width, $height];
 			}
 
-			if (isset($sources[$width])) {
-				if (($sizeAspect == $srcAspect) && in_array($sizeName, $allSizesNames)) {
-					$src = wp_get_attachment_image_src($attachment_id, $sizeName);
+			$sizeAspect = $this->getAspectRatio($sizeDim[0], $sizeDim[1]);
 
-					if(is_array($src)) {
-						// fix for wpml
-						$url = preg_replace('/&lang=[aA-zZ0-9]+/m', '', $src[0]);
-						$sources[$width]['url'] = $url;
-					} else {
-						unset($sources[$width]);
-					}
-				} else {
-					unset($sources[$width]);
+			if (isset($sources["{$sizeDim[0]}"]) && ($sizeAspect == $srcAspect) && in_array($sizeName, $allSizesNames)) {
+				$src = wp_get_attachment_image_src($attachment_id, $sizeName);
+
+				if(is_array($src)) {
+					// fix for wpml
+					$url = preg_replace('/&lang=[aA-zZ0-9]+/m', '', $src[0]);
+					$newSources["{$sizeDim[0]}"] = $sources["{$sizeDim[0]}"];
+					$newSources["{$sizeDim[0]}"]['url'] = $url;
 				}
 			}
 		}
 
-		if(isset($image_meta['width'])) {
-			$width = intval($image_meta['width']);
-			$height = intval($image_meta['height']);
+		$imageAspect = $this->getAspectRatio($imageWidth, $imageHeight);
 
-			if ($width < $height) {
-				$sizeAspect = 0;
-			} else if ($width == $height) {
-				$sizeAspect = 1;
-			} else {
-				$sizeAspect = 2;
-			}
+		if(isset($sources["{$imageWidth}"]) && ($imageAspect == $srcAspect)) {
+			$src = wp_get_attachment_image_src($attachment_id, 'full');
 
-			if(isset($sources[$width])) {
-				if ($sizeAspect == $srcAspect) {
-					$src = wp_get_attachment_image_src($attachment_id, 'full');
-
-					if(is_array($src)) {
-						// fix for wpml
-						$url = preg_replace('/&lang=[aA-zZ0-9]+/m', '', $src[0]);
-						$sources[$width]['url'] = $url;
-					} else {
-						unset($sources[$width]);
-					}
-				} else {
-					unset($sources[$width]);
-				}
+			if(is_array($src)) {
+				// fix for wpml
+				$url = preg_replace('/&lang=[aA-zZ0-9]+/m', '', $src[0]);
+				$newSources["{$imageWidth}"] = $sources["{$imageWidth}"];
+				$newSources["{$imageWidth}"]['url'] = $url;
 			}
 		}
 
-		return $sources;
+		return $newSources;
 	}
 	//endregion
 }

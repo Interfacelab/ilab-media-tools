@@ -28,7 +28,7 @@ function sizeToFitSize($innerWidth, $innerHeight, $outerWidth, $outerHeight)  {
 
 		$ratio = $outerHeight / $innerHeight;
 
-		return [round($innerWidth * $ratio), $outerHeight];
+		return [intval(round($innerWidth * $ratio)), intval($outerHeight)];
 	}
 
 	if ($outerHeight <= 0) {
@@ -38,16 +38,16 @@ function sizeToFitSize($innerWidth, $innerHeight, $outerWidth, $outerHeight)  {
 
 		$ratio = $outerWidth / $innerWidth;
 
-		return [$outerWidth, round($innerHeight * $ratio)];
+		return [intval($outerWidth), intval(round($innerHeight * $ratio))];
 	}
 
     $ratioW = $outerWidth / $innerWidth;
     $ratioH = $outerHeight / $innerHeight;
 
     if ($ratioW < $ratioH) {
-        return [$outerWidth, round($innerHeight * $ratioW)];
+        return [intval($outerWidth), intval(round($innerHeight * $ratioW))];
     } else {
-        return [round($innerWidth * $ratioH), $outerHeight];
+        return [intval(round($innerWidth * $ratioH)), intval($outerHeight)];
     }
 }
 
@@ -60,9 +60,9 @@ function sizeToFillSize($innerWidth, $innerHeight, $outerWidth, $outerHeight, $p
     $ratioH = $outerHeight / $innerHeight;
 
     if (($ratioW > $ratioH) && ($preserveHeight)) {
-        return [$outerWidth, round($innerHeight * $ratioW)];
+        return [intval($outerWidth), intval(round($innerHeight * $ratioW))];
     } else {
-        return [round($innerWidth * $ratioH),$outerHeight];
+        return [intval(round($innerWidth * $ratioH)), intval($outerHeight)];
     }
 }
 

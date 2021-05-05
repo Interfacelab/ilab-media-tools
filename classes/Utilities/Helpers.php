@@ -260,6 +260,78 @@ namespace MediaCloud\Plugin\Utilities {
 	}
 
 	/**
+	 * Insures all items are set
+	 *
+	 * @param array $array
+	 * @param array $set
+	 *
+	 * @return bool
+	 */
+	function anyIsSet($array,...$set) {
+		foreach($set as $item) {
+			if (isset($array[$item])) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Insures all items are set
+
+	 * @param array $array
+	 * @param array $set
+	 *
+	 * @return bool
+	 */
+	function allIsSet($array, ...$set) {
+		foreach($set as $item) {
+			if (!isset($array[$item])) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Determines if an array contains any of the values in another array
+	 *
+	 * @param $array
+	 * @param $values
+	 *
+	 * @return bool
+	 */
+	function arrayContainsAny($array, $values) {
+		foreach($values as $val) {
+			if (in_array($val, $array)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Determines if an array contains all of the values in another array
+	 *
+	 * @param $array
+	 * @param $values
+	 *
+	 * @return bool
+	 */
+	function arrayContainsAll($array, $values) {
+		foreach($values as $val) {
+			if (!in_array($val, $array)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
 	 * Determines if an array is a keyed array
 	 *
 	 * @param array $arr

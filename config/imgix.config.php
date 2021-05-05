@@ -71,6 +71,35 @@ return [
 				"title" => "Imgix Image Settings",
 				"doc_link" => 'https://support.mediacloud.press/articles/documentation/imgix/imgix-image-settings',
 				"options" => [
+					"mcloud-imgix-crop-mode" => [
+						"title" => "Crop Mode",
+						"description" => "Controls the mode when rendering cropped images.  Multiple crop modes means that the crop will first try to center the crop on any detected faces, but if no faces are detected than the next crop mode will be used.  Note that any settings specified in the Image Size Manager or Image Editor will override this.",
+						"type" => "select",
+						"options" => [
+							"" => "Default",
+							'faces,position' => 'Faces, Position',
+							'faces,edges' => 'Faces, Edges',
+							'faces,entropy' => 'Faces, Entropy',
+						],
+						"default" => null
+					],
+					"mcloud-imgix-crop-position" => [
+						"title" => "Crop Position",
+						"description" => "Controls the default position of the crop.",
+						"type" => "select",
+						"options" => [
+							"center" => "Center",
+							'top,left' => "Top Left",
+							'top' => 'Top',
+							'top,right' => "Top Right",
+							'right' => 'Right',
+							'bottom,right' => 'Bottom Right',
+							'bottom' => 'Bottom',
+							'bottom, left' => 'Bottom Left',
+							'left' => 'Left',
+						],
+						"default" => 'center'
+					],
 					"mcloud-imgix-serve-private-images" => [
 						"title" => "Serve Private Images",
 						"description" => "When enabled, private images, or image sizes that have had their privacy level set to private, will be rendered through imgix.  When disabled, any private images or private image sizes will be served from cloud storage using signed URLs, if enabled.",
@@ -117,6 +146,12 @@ return [
 					"mcloud-imgix-detect-faces" => [
 						"title" => "Detect Faces",
 						"description" => "After each upload Media Cloud will use Imgix's face detection API to detect faces in the image.  This can be used with Focus Crop in the image editor, or on the front-end however you choose.  <strong>Note:</strong> If you are relying on this functionality, the better option would be to use the <a href='admin.php?page=media-cloud-settings&tab=vision'>Vision</a> tool.  It is more accurate with less false positives.  If Vision is enabled, this setting is ignored in favor of Vision's results.",
+						"type" => "checkbox",
+						"default" => false
+					],
+					"mcloud-imgix-remove-extra-variables" => [
+						"title" => "Remove Extra Query Variables",
+						"description" => "Removes extra query variables from the imgix URL such as the <code>ixlib</code> and <code>wpsize</code> variables.",
 						"type" => "checkbox",
 						"default" => false
 					]

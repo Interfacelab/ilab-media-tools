@@ -50,6 +50,7 @@ class SystemCompatibilityTool extends Tool {
 		'wp_update_attachment_metadata',
 		'wp_handle_upload_prefilter',
 		'wp_handle_upload',
+		'wp_calculate_image_srcset',
 	];
 
 

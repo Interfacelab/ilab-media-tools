@@ -25,6 +25,8 @@ use MediaCloud\Plugin\Wizard\ConfiguresWizard;
 use MediaCloud\Plugin\Wizard\WizardBuilder;
 use MediaCloud\Vendor\FasterImage\FasterImage;
 use MediaCloud\Vendor\Imgix\UrlBuilder;
+use function MediaCloud\Plugin\Utilities\anyIsSet;
+use function MediaCloud\Plugin\Utilities\arrayContainsAny;
 use function MediaCloud\Plugin\Utilities\arrayPath;
 
 if(!defined('ABSPATH')) {
@@ -239,6 +241,23 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
 		unset($params['padding-width']);
 		unset($params['padding-color']);
 
+		if (!empty($this->settings->cropMode) && !anyIsSet($params, 'rect', 'fp-x', 'fp-y')) {
+			$position = $this->settings->cropPosition;
+
+			if (isset($params['crop'])) {
+				$cropParts = explode(',', $params['crop']);
+				if (arrayContainsAny($cropParts, ['faces', 'focalpoint', 'edges', 'entropy'])) {
+					return $params;
+				}
+
+				if (arrayContainsAny($cropParts, ['left', 'top', 'right', 'bottom', 'center'])) {
+					$position = $params['crop'];
+				}
+			}
+
+			$params['crop'] = str_replace('position', $position, $this->settings->cropMode);
+		}
+
 		return $params;
 	}
 
@@ -269,6 +288,10 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
 		$key = apply_filters('media-cloud/dynamic-images/override-key', $this->settings->signingKey);
 		if(!empty($key)) {
 			$imgix->setSignKey($key);
+		}
+
+		if (!empty($this->settings->removeQueryVars)) {
+			$imgix->setIncludeLibraryParam(false);
 		}
 
 		if (isset($size['crop'])) {
@@ -423,6 +446,10 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
 		$key = apply_filters('media-cloud/dynamic-images/override-key', $this->settings->signingKey);
 		if(!empty($key)) {
 			$imgix->setSignKey($key);
+		}
+
+		if (!empty($this->settings->removeQueryVars)) {
+			$imgix->setIncludeLibraryParam(false);
 		}
 
 		if($size == 'full' && !$newSize) {
@@ -667,7 +694,7 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
 			$params = array_merge($params, $mergeParams);
 		}
 
-		if($size && !is_array($size)) {
+		if($size && !is_array($size) && empty($this->settings->removeQueryVars)) {
 			$params['wpsize'] = $size;
 		}
 
@@ -701,6 +728,10 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
 		$key = apply_filters('media-cloud/dynamic-images/override-key', $this->settings->signingKey);
 		if(!empty($key)) {
 			$imgix->setSignKey($key);
+		}
+
+		if (!empty($this->settings->removeQueryVars)) {
+			$imgix->setIncludeLibraryParam(false);
 		}
 
 		return $imgix->createURL(str_replace(['%2F', '%2540', '%40'], ['/', '@', '@'], urlencode($key)), $params);
@@ -1031,7 +1062,11 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
 		    $imgix->setSignKey($key);
 	    }
 
-        return $imgix->createURL($imageKey, []);
+	    if (!empty($this->settings->removeQueryVars)) {
+		    $imgix->setIncludeLibraryParam(false);
+	    }
+
+	    return $imgix->createURL($imageKey, []);
     }
 
     //endregion

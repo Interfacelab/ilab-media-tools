@@ -32,6 +32,9 @@ use MediaCloud\Plugin\Utilities\Environment;
  * @property bool renderSVG
  * @property bool detectFaces
  * @property bool generateThumbnails
+ * @property bool removeQueryVars
+ * @property ?string cropMode
+ * @property ?string cropPosition
  */
 class ImgixToolSettings extends DynamicImagesToolSettings {
 	private $_imgixDomains = null;
@@ -50,6 +53,9 @@ class ImgixToolSettings extends DynamicImagesToolSettings {
 		'generateThumbnails' => ['mcloud-imgix-generate-thumbnails', null, true],
 		'imageQuality' => ['mcloud-imgix-default-quality', null, null],
 		'renderSVG' => ['mcloud-imgix-render-svg-files', null, false],
+		'removeQueryVars' => ['mcloud-imgix-remove-extra-variables', null, false],
+		'cropMode' => ['mcloud-imgix-crop-mode', null, null],
+		'cropPosition' => ['mcloud-imgix-crop-position', null, 'center'],
 	];
 
 	public function __construct() {
