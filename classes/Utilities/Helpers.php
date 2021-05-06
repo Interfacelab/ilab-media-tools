@@ -471,6 +471,7 @@ namespace MediaCloud\Plugin\Utilities {
 					$line = 0;
 					$type = 'unknown';
 					$hookCallable = null;
+					$filename = null;
 					if (is_array($hookData['function'])) {
 						$type = 'array';
 						$hookCallable = [
@@ -479,46 +480,93 @@ namespace MediaCloud\Plugin\Utilities {
 							'method' => $hookData['function'][1]
 						];
 
-						$ref = new \ReflectionClass($hookData['function'][0]);
-						$filename = $ref->getFileName();
-						$line = $ref->getStartLine();
+						try {
+							$ref = new \ReflectionClass($hookData['function'][0]);
+							$filename = $ref->getFileName();
+							$line = $ref->getStartLine();
+						} catch (\Exception $ex) {
+							Logger::error("Error discovering hook: ".$ex->getMessage(), [], __METHOD__, __LINE__);
+						}
 					} else if (is_string($hookData['function'])) {
 						$type = 'function';
 						$hookCallable = [
 							'function' => $hookData['function']
 						];
 
-						$ref = new \ReflectionFunction($hookData['function']);
-						$filename = $ref->getFileName();
-						$line = $ref->getStartLine();
+						try {
+							$ref = new \ReflectionFunction($hookData['function']);
+							$filename = $ref->getFileName();
+							$line = $ref->getStartLine();
+						} catch (\Exception $ex) {
+							Logger::error("Error discovering hook: ".$ex->getMessage(), [], __METHOD__, __LINE__);
+						}
 					} else if ($hookData['function'] instanceof \Closure) {
 						$type = 'closure';
 						$hookCallable = [];
 
-						$ref = new \ReflectionFunction($hookData['function']);
-						$line = $ref->getStartLine();
-						$filename = $ref->getFileName();
-						if ($ref->isClosure() && !empty($ref->getClosureThis())) {
-							if (strpos(get_class($ref->getClosureThis()), 'MediaCloud') === 0) {
-								continue;
+						try {
+							$ref = new \ReflectionFunction($hookData['function']);
+							$line = $ref->getStartLine();
+							$filename = $ref->getFileName();
+							if ($ref->isClosure() && !empty($ref->getClosureThis())) {
+								if (strpos(get_class($ref->getClosureThis()), 'MediaCloud') === 0) {
+									continue;
+								}
 							}
+						} catch (\Exception $ex) {
+							Logger::error("Error discovering hook: ".$ex->getMessage(), [], __METHOD__, __LINE__);
 						}
 					}
 
-					if (strpos($filename, WP_PLUGIN_DIR) !== false) {
-						$filename = ltrim(str_replace(WP_PLUGIN_DIR, '', $filename), '/');
-						$filenameParts = explode('/', $filename);
-						$pluginFolder = array_shift($filenameParts);
+					if (!empty($filename)) {
+						if (strpos($filename, WP_PLUGIN_DIR) !== false) {
+							$filename = ltrim(str_replace(WP_PLUGIN_DIR, '', $filename), '/');
+							$filenameParts = explode('/', $filename);
+							$pluginFolder = array_shift($filenameParts);
 
-						$plugins = get_plugins('/'.$pluginFolder);
-						if (count($plugins) > 0) {
-							$plugin = array_values($plugins)[0];
+							$plugins = get_plugins('/'.$pluginFolder);
+							if (count($plugins) > 0) {
+								$plugin = array_values($plugins)[0];
+
+								$hash = md5(serialize([
+									'hook' => $hookName,
+									'priority' => $priority,
+									'type' => 'plugin',
+									'plugin' => $pluginFolder,
+									'callableType' => $type,
+									'callable' => $hookCallable,
+								]));
+
+								if (!in_array($hash, $hashes)) {
+									$hashes[] = $hash;
+
+									$foundHooks[] = [
+										'hook' => $hookName,
+										'priority' => $priority,
+										'type' => 'plugin',
+										'plugin' => $pluginFolder,
+										'name' => $plugin['Name'],
+										'callableType' => $type,
+										'callable' => $hookCallable,
+										'realCallable' => $hookData['function'],
+										'basename' => pathinfo('/'.$filename, PATHINFO_BASENAME),
+										'filename' => '/'.$filename,
+										'line' => $line,
+										'hash' => $hash
+									];
+								}
+							}
+						} else if (strpos($filename, $themeDir) !== false) {
+							$themeInfo = wp_get_theme();
+							$filename = ltrim(str_replace($themeDir, '', $filename), '/');
+							$filenameParts = explode('/', $filename);
+							$themeFolder = array_shift($filenameParts);
 
 							$hash = md5(serialize([
 								'hook' => $hookName,
 								'priority' => $priority,
 								'type' => 'plugin',
-								'plugin' => $pluginFolder,
+								'plugin' => $themeFolder,
 								'callableType' => $type,
 								'callable' => $hookCallable,
 							]));
@@ -529,9 +577,9 @@ namespace MediaCloud\Plugin\Utilities {
 								$foundHooks[] = [
 									'hook' => $hookName,
 									'priority' => $priority,
-									'type' => 'plugin',
-									'plugin' => $pluginFolder,
-									'name' => $plugin['Name'],
+									'type' => 'theme',
+									'plugin' => $themeFolder,
+									'name' => $themeInfo->get('Name'),
 									'callableType' => $type,
 									'callable' => $hookCallable,
 									'realCallable' => $hookData['function'],
@@ -542,45 +590,11 @@ namespace MediaCloud\Plugin\Utilities {
 								];
 							}
 						}
-					} else if (strpos($filename, $themeDir) !== false) {
-						$themeInfo = wp_get_theme();
-						$filename = ltrim(str_replace($themeDir, '', $filename), '/');
-						$filenameParts = explode('/', $filename);
-						$themeFolder = array_shift($filenameParts);
-
-						$hash = md5(serialize([
-							'hook' => $hookName,
-							'priority' => $priority,
-							'type' => 'plugin',
-							'plugin' => $themeFolder,
-							'callableType' => $type,
-							'callable' => $hookCallable,
-						]));
-
-						if (!in_array($hash, $hashes)) {
-							$hashes[] = $hash;
-
-							$foundHooks[] = [
-								'hook' => $hookName,
-								'priority' => $priority,
-								'type' => 'theme',
-								'plugin' => $themeFolder,
-								'name' => $themeInfo->get('Name'),
-								'callableType' => $type,
-								'callable' => $hookCallable,
-								'realCallable' => $hookData['function'],
-								'basename' => pathinfo('/'.$filename, PATHINFO_BASENAME),
-								'filename' => '/'.$filename,
-								'line' => $line,
-								'hash' => $hash
-							];
-						}
 					}
 				}
 			}
 		}
 
-		$time = microtime(true) - $time;
 		return $foundHooks;
 	}
 

@@ -586,6 +586,20 @@ final class ToolsManager
                         'media-cloud-settings-' . $toolId,
                         [ $this, 'renderSettings' ]
                     );
+                } else {
+                    
+                    if ( $toolId == 'integrations' ) {
+                        $displayedSettings[] = $toolId;
+                        add_submenu_page(
+                            'media-cloud',
+                            $tool->toolInfo['name'] . ' Settings',
+                            $tool->toolInfo['name'],
+                            'manage_options',
+                            'media-cloud-settings-' . $toolId,
+                            [ $this, 'renderSettings' ]
+                        );
+                    }
+                
                 }
             
             }
