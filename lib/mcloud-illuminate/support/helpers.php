@@ -4,7 +4,6 @@ use MediaCloud\Vendor\Illuminate\Support\Str;
 use MediaCloud\Vendor\Illuminate\Support\Optional;
 use MediaCloud\Vendor\Illuminate\Support\Collection;
 use MediaCloud\Vendor\Illuminate\Support\Debug\Dumper;
-use MediaCloud\Vendor\Illuminate\Contracts\Support\Htmlable;
 use MediaCloud\Vendor\Illuminate\Support\HigherOrderTapProxy;
 
 if (! function_exists('append_config')) {
@@ -572,9 +571,9 @@ if (! function_exists('e')) {
      */
     function e($value, $doubleEncode = false)
     {
-        if ($value instanceof Htmlable) {
-            return $value->toHtml();
-        }
+	    if (is_object($value) && method_exists($value, 'toHtml')) {
+	    	return $value->toHtml();
+	    }
 
         return htmlspecialchars($value, ENT_QUOTES, 'UTF-8', $doubleEncode);
     }
