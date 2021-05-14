@@ -1132,6 +1132,10 @@ class StorageContentHooks {
 		$newSources = [];
 
 		foreach($image_meta['sizes'] as $sizeName => $sizeData) {
+			if (!isset($this->allSizes[$sizeName])) {
+				continue;
+			}
+
 			$width = intval($this->allSizes[$sizeName]['width']);
 			$height = intval($this->allSizes[$sizeName]['height']);
 
