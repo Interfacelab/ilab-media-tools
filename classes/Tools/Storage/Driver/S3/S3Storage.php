@@ -870,7 +870,7 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 	//endregion
 
 	//region URLs
-	protected function presignedRequest($key, $expiration = 0) {
+	protected function presignedRequest($key, $expiration = 0, $options = []) {
 		if(!$this->client) {
 			throw new InvalidStorageSettingsException('Storage settings are invalid');
 		}
@@ -883,12 +883,21 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 			$expiration = 1;
 		}
 
-		$command = $this->client->getCommand('GetObject', ['Bucket' => $this->settings->bucket, 'Key' => $key]);
+		$commandOptions = [
+			'Bucket' => $this->settings->bucket,
+			'Key' => $key
+		];
+
+		if (!empty($options) && is_array($options)) {
+			$commandOptions = array_merge($commandOptions, $options);
+		}
+
+		$command = $this->client->getCommand('GetObject', $commandOptions);
 
 		return $this->client->createPresignedRequest($command, "+".((int)$expiration)." minutes");
 	}
 
-	public function presignedUrl($key, $expiration = 0) {
+	public function presignedUrl($key, $expiration = 0, $options = []) {
 		$ignoreCDN = apply_filters('media-cloud/storage/ignore-cdn', false);
 
 		if ((StorageToolSettings::driver() === 's3') && ($this->settings->validSignedCDNSettings()) && empty($ignoreCDN)) {
@@ -923,7 +932,7 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 
 			return $url;
 		} else {
-		    $req = $this->presignedRequest($key, $expiration);
+		    $req = $this->presignedRequest($key, $expiration, $options);
 		    $uri = $req->getUri();
 		    $url = $uri->__toString();
 

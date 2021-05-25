@@ -431,7 +431,7 @@ class BackblazeStorage implements StorageInterface, AuthCacheInterface, Configur
 	//endregion
 
 	//region URLs
-	public function presignedUrl($key, $expiration = 0) {
+	public function presignedUrl($key, $expiration = 0, $options = []) {
 		return $this->bucketUrl.$key;
 	}
 

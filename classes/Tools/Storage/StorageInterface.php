@@ -255,8 +255,9 @@ interface StorageInterface {
 	 * @throws StorageException
 	 * @return string
 	 * @param int $expiration
+	 * @param array $options
 	 */
-	public function presignedUrl($key, $expiration = 0);
+	public function presignedUrl($key, $expiration = 0, $options = []);
 
 	/**
 	 * Returns the URL (not-signed) for the item in a bucket

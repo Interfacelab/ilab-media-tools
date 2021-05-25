@@ -601,13 +601,19 @@ class GoogleStorage implements StorageInterface, ConfiguresWizard {
 	//endregion
 
 	//region URLs
-	public function presignedUrl($key, $expiration = 0) {
+	public function presignedUrl($key, $expiration = 0, $options = []) {
 		if (empty($expiration)) {
 			$expiration = $this->settings->presignedURLExpiration;
 		}
 
 		$object = $this->client->bucket($this->settings->bucket)->object($key);
-		return $object->signedUrl(new Timestamp(new \DateTime("+{$expiration} minutes")));
+		$signedUrl = $object->signedUrl(new Timestamp(new \DateTime("+{$expiration} minutes")));
+
+		if (!empty($options) && is_array($options) && isset($options['ResponseContentDisposition'])) {
+			$signedUrl .= '&response-content-disposition='.$options['ResponseContentDisposition'];
+		}
+
+		return $signedUrl;
 	}
 
 	public function url($key, $type = null) {
