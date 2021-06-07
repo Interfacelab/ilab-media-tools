@@ -2,10 +2,10 @@
 Contributors: mediacloud, interfacelab, freemius
 Tags: offload, amazon, s3, imgix, uploads, video, video encoding, google cloud storage, digital ocean spaces, wasabi, media, cdn, rekognition, cloudfront, images, crop, image editing, image editor, optimize, image optimization, media library, offload, offload s3, filepicker, smush, imagify, shortpixel
 Requires at least: 4.9
-Tested up to: 5.7
+Tested up to: 5.7.2
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.2.29
+Stable tag: 4.2.30
 Requires PHP: 7.1
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -104,6 +104,19 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 
 == Changelog ==
+
+= 4.2.30 =
+
+* Complete overhaul of BuddyPress and BuddyBoss integration. (Premium)
+* Added a new *Migrate BuddyPress Uploads* task which will migrate existing avatar and cover images to cloud storage.  Previously, Media Cloud would migrate these as they were requested on the front end.  (Premium)
+* Added a new WP-ClI command, `wp mediacloud:buddypress migrate` that wraps the *Migrate BuddyPress Uploads* task.  (Premium)
+* Renamed Computer Vision WP-CLI command from `wp vision` to `wp mediacloud:vision`.
+* Renamed the task manager WP-CLI command from `wp taskmanager` to `wp mediacloud:tasks`.
+* Fixed bug for when you have privacy for uploads set to private, but don't have signing enabled, the error message wasn't dismissible.
+* Added new setting *Enable Real Time Processing* to BuddyPress integration that controls the real-time uploading of avatar and cover images.  When disabled, you must run the *Migrate BuddyPress Uploads* task manually to upload these things to cloud storage.  (Premium)
+* Fixed compatibility with rtMedia for BuddyPress.  (Premium)
+* Fixed the `mediacloud:storage replace` command to search all wordpress tables, including custom ones.  (Premium)
+* **Note:** if you are using rtMedia with BuddyPress, you will need to run the CLI command `mediacloud:storage replace` after running the *Migrate to Cloud* task.  You will only need to do this once.  (Premium)
 
 = 4.2.29 =
 

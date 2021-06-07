@@ -118,8 +118,19 @@ class Searcher {
 	private static function getTables() {
 		global $wpdb;
 
-		$scope = 'all';
-		$wp_tables = array_values($wpdb->tables('all'));
+		$wp_tables = [];
+		$foundTables = $wpdb->get_results("SHOW TABLES FROM {$wpdb->dbname}", ARRAY_A);
+		foreach($foundTables as $foundTable) {
+			$table = array_first($foundTable);
+			if (strpos($table, $wpdb->prefix) !== 0) {
+				continue;
+			}
+
+			$wp_tables[] = $table;
+		}
+
+//		$scope = 'all';
+//		$wp_tables = array_values($wpdb->tables('all'));
 
 		if ( ! global_terms_enabled() ) {
 			// Only include sitecategories when it's actually enabled.

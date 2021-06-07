@@ -594,7 +594,12 @@ class StorageTool extends Tool
             $privacyErrors[] = 'Privacy for document uploads is set to private, but URL signing for documents is not enabled.  Documents will display fine in the admin, but appear broken on the front-end.  You should enable URL signing for documents.';
         }
         if ( !empty($privacyErrors) ) {
-            NoticeManager::instance()->displayGroupedAdminNotices( 'warning', $privacyErrors );
+            NoticeManager::instance()->displayGroupedAdminNotices(
+                'warning',
+                $privacyErrors,
+                true,
+                'privacy-errors-url-signing'
+            );
         }
     }
     

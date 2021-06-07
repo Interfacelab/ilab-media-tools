@@ -148,7 +148,7 @@ class TasksCommands extends Command {
 	}
 
 	public static function Register() {
-		\WP_CLI::add_command('taskmanager', __CLASS__);
+		\WP_CLI::add_command('mediacloud:tasks', __CLASS__);
 	}
 
 }

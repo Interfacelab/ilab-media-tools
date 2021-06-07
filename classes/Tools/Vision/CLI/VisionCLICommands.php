@@ -92,7 +92,7 @@ class VisionCLICommands extends Command {
 	}
 
 	public static function Register() {
-		\WP_CLI::add_command('vision', __CLASS__);
+		\WP_CLI::add_command('mediacloud:vision', __CLASS__);
 	}
 
 }
