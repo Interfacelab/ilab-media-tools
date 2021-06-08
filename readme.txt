@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 5.7.2
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.2.30
+Stable tag: 4.2.31
 Requires PHP: 7.1
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -104,6 +104,15 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 
 == Changelog ==
+
+= 4.2.31 =
+
+* Fix for Imgix with BuddyPress avatars and cover images. (Premium)
+* Made the setting **Replace srcset on image tags** disabled by default.  Will be removed in future versions of Media Cloud.
+* Added a warning if you have **Replace srcset on image tags** enabled.
+* **Cloud Tools** menu renamed **Cloud Tasks**.
+* Fix for custom defined image sizes in the **Image Size Manager** not showing up in the WordPress media selector. (Premium)
+
 
 = 4.2.30 =
 

@@ -41,12 +41,6 @@ class StorageContentHooks {
 	/** @var TaskReporter[] */
 	private $reporters = [];
 
-	/** @var bool  */
-	private $disableSrcSet;
-
-	/** @var bool  */
-	private $replaceSrcSet;
-
 	public function __construct(StorageTool $tool) {
 		$this->tool = $tool;
 		$this->settings = StorageToolSettings::instance();
@@ -86,13 +80,6 @@ class StorageContentHooks {
 
 			return $sizes;
 		});
-
-		global $wp_version;
-		$this->disableSrcSet = Environment::Option('mcloud-storage-disable-srcset', null, false);
-		$this->replaceSrcSet = empty($this->disableSrcSet) && version_compare($wp_version, '5.3', '>=');
-		if ($this->replaceSrcSet) {
-			$this->replaceSrcSet = Environment::Option('mcloud-storage-replace-srcset', null, true);
-		}
 	}
 
 	//region Gutenberg Filtering
@@ -1055,7 +1042,7 @@ class StorageContentHooks {
 			return $content;
 		}
 
-		if (!empty($data['image']) && $this->replaceSrcSet) {
+		if (!empty($data['image']) && $this->settings->replaceSrcSet) {
 			$image = $data['image'];
 			$image = preg_replace('/(sizes\s*=\s*[\'"]{1}(?:[^\'"]*)[\'"]{1})/m', '', $image);
 			$image = preg_replace('/(srcset\s*=\s*[\'"]{1}(?:[^\'"]*)[\'"]{1})/m', '', $image);
@@ -1104,12 +1091,12 @@ class StorageContentHooks {
 
 		global $wp_current_filter;
 		if (in_array('the_content', $wp_current_filter)) {
-			if ($this->disableSrcSet || $this->replaceSrcSet) {
+			if ($this->settings->disableSrcSet || $this->settings->replaceSrcSet) {
 				return [];
 			}
 		}
 
-		if ($this->disableSrcSet) {
+		if ($this->settings->disableSrcSet) {
 			return [];
 		}
 

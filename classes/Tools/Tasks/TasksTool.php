@@ -17,6 +17,7 @@ use MediaCloud\Plugin\Tasks\Task;
 use MediaCloud\Plugin\Tasks\TaskManager;
 use MediaCloud\Plugin\Tasks\TaskSettings;
 use MediaCloud\Plugin\Tools\Browser\Batch\ImportFromStorageBatchProcess;
+use MediaCloud\Plugin\Tools\Storage\StorageToolSettings;
 use MediaCloud\Plugin\Tools\Tool;
 use MediaCloud\Plugin\Tools\ToolsManager;
 use MediaCloud\Plugin\Utilities\Environment;
@@ -60,7 +61,9 @@ class TasksTool extends Tool {
 	public function registerMenu($top_menu_slug, $networkMode = false, $networkAdminMenu = false, $tool_menu_slug = null) {
 		parent::registerMenu($top_menu_slug);
 
-		ToolsManager::instance()->insertToolSeparator();
+		if ($networkMode || $networkAdminMenu || empty(StorageToolSettings::instance()->useToolMenu)) {
+			ToolsManager::instance()->insertToolSeparator();
+		}
 
 		if (!is_multisite() || is_network_admin() || empty(Environment::Option('media-cloud-task-manager-hide', null, true))) {
 			ToolsManager::instance()->addMultisiteTool($this);

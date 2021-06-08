@@ -725,9 +725,9 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
 	public function urlForStorageMedia($key, $params = []) {
 		$domain = apply_filters('media-cloud/dynamic-images/override-domain', !empty($this->settings->imgixDomains) ? $this->settings->imgixDomains[0] : null);
 		$imgix = new UrlBuilder($domain, $this->settings->useHTTPS);
-		$key = apply_filters('media-cloud/dynamic-images/override-key', $this->settings->signingKey);
-		if(!empty($key)) {
-			$imgix->setSignKey($key);
+		$signingKey = apply_filters('media-cloud/dynamic-images/override-key', $this->settings->signingKey);
+		if(!empty($signingKey)) {
+			$imgix->setSignKey($signingKey);
 		}
 
 		if (!empty($this->settings->removeQueryVars)) {

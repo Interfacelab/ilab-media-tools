@@ -365,8 +365,8 @@ return [
 						"default" => true
 					],
 					"mcloud-storage-display-tool-menu" => [
-						"title" => "WordPress Admin Tool Menu",
-						"description" => "When this is selected, all of Media Cloud's tools and tasks are moved to a new top level menu in WordPress admin called <strong>Cloud Tools</strong>.",
+						"title" => "Show Task Menu",
+						"description" => "When this is selected, all of Media Cloud's tasks are moved to a new top level menu in WordPress admin called <strong>Cloud Tasks</strong>.",
 						"type" => "checkbox",
 						"default" => true
 					]
@@ -384,10 +384,10 @@ return [
 					],
 					"mcloud-storage-replace-srcset" => [
 						"title" => "Replace srcset on image tags",
-						"description" => "MediaCloud can generate a more optimal <code>srcset</code> for image tags with WordPress versions greater than 5.3.  This is enabled by default, however if you are having issues, you should disable it to use WordPress's default <code>srcset</code> generation.  If <strong>Disable srcset on image tags</strong> is enabled, this setting will have no effect.  This setting only has an effect with post content via the classic editor or gutenberg blocks, it has no effect for image tags generated with <code>wp_get_attachment_image()</code>.",
+						"description" => "DEPRECATED.  You should disable this setting as it will be removed in a future version of Media Cloud.  MediaCloud can generate a more optimal <code>srcset</code> for image tags with WordPress versions greater than 5.3.",
 						"type" => "checkbox",
 						"wp_version" => ['>=', "5.3"],
-						"default" => true
+						"default" => false
 					]
 				]
 			],

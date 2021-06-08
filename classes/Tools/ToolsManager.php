@@ -147,6 +147,12 @@ final class ToolsManager
                         null,
                         'media-cloud'
                     );
+                    $this->tools['tasks']->registerMenu(
+                        'media-cloud',
+                        false,
+                        true,
+                        'media-cloud'
+                    );
                     register_setting( 'ilab-media-features', "mcloud-network-mode" );
                     $this->insertAccountSeparator();
                 }
@@ -399,6 +405,13 @@ final class ToolsManager
     public function addMenus( $networkMode, $networkAdminMenu )
     {
         global  $media_cloud_licensing ;
+        
+        if ( is_multisite() ) {
+            $showTasks = is_network_admin() || empty(Environment::Option( 'media-cloud-task-manager-hide', null, true ));
+        } else {
+            $showTasks = empty(StorageToolSettings::instance()->useToolMenu);
+        }
+        
         $networkMode = false;
         $networkAdminMenu = false;
         $this->isNetworkModeAdmin = false;
@@ -432,10 +445,10 @@ final class ToolsManager
                     [ $this, 'renderFeatureSettings' ]
                 );
                 
-                if ( StorageToolSettings::instance()->useToolMenu ) {
+                if ( !empty(StorageToolSettings::instance()->useToolMenu) ) {
                     add_menu_page(
-                        'Tools',
-                        'Cloud Tools',
+                        'Tasks',
+                        'Cloud Tasks',
                         'manage_options',
                         'media-cloud-tools',
                         [ $this, 'renderMultisiteLanding' ],
@@ -443,11 +456,17 @@ final class ToolsManager
                     );
                     add_submenu_page(
                         'media-cloud-tools',
-                        'Available Tools',
-                        'Available Tools',
+                        'Available Tasks',
+                        'Available Tasks',
                         'manage_options',
                         'media-cloud-tools',
                         [ $this, 'renderMultisiteLanding' ]
+                    );
+                    $this->tools['tasks']->registerMenu(
+                        'media-cloud-tools',
+                        $networkMode,
+                        $networkAdminMenu,
+                        'media-cloud-tools'
                     );
                 }
                 
@@ -455,7 +474,7 @@ final class ToolsManager
                     'media-cloud',
                     $networkMode,
                     $networkAdminMenu,
-                    ( StorageToolSettings::instance()->useToolMenu ? 'media-cloud-tools' : 'media-cloud' )
+                    'media-cloud'
                 );
             } else {
                 
@@ -635,12 +654,14 @@ final class ToolsManager
             register_setting( 'ilab-media-tools', "mcloud-tool-enabled-{$key}" );
             register_setting( $tool->optionsGroup(), "mcloud-tool-enabled-{$key}" );
             if ( $key != 'troubleshooting' ) {
-                $tool->registerMenu(
-                    'media-cloud',
-                    $networkMode,
-                    $networkAdminMenu,
-                    ( $this->isLocal && StorageToolSettings::instance()->useToolMenu ? 'media-cloud-tools' : 'media-cloud' )
-                );
+                if ( $key === 'tasks' && $showTasks || $key !== 'tasks' ) {
+                    $tool->registerMenu(
+                        'media-cloud',
+                        $networkMode,
+                        $networkAdminMenu,
+                        'media-cloud'
+                    );
+                }
             }
             $tool->registerSettings();
             if ( !empty($tool->toolInfo['related']) ) {
@@ -664,7 +685,7 @@ final class ToolsManager
         $hideBatch = Environment::Option( 'mcloud-network-hide-batch', null, false );
         if ( !is_multisite() || !$hideBatch ) {
             foreach ( $this->tools as $key => $tool ) {
-                $tool->registerBatchToolMenu( ( $this->isLocal && StorageToolSettings::instance()->useToolMenu ? 'media-cloud-tools' : 'media-cloud' ), $networkMode, $networkAdminMenu );
+                $tool->registerBatchToolMenu( ( $this->isLocal && !empty(StorageToolSettings::instance()->useToolMenu) ? 'media-cloud-tools' : 'media-cloud' ), $networkMode, $networkAdminMenu );
             }
         }
         $this->insertHelpToolSeparator();
@@ -734,7 +755,7 @@ final class ToolsManager
             return;
         }
         $this->hasInsertedToolSeparator = true;
-        $this->insertSeparator( 'Tools', ( $this->isLocal && StorageToolSettings::instance()->useToolMenu ? 'media-cloud-tools' : 'media-cloud' ) );
+        $this->insertSeparator( 'Tools', 'media-cloud' );
     }
     
     public function insertBatchToolSeparator()
@@ -743,7 +764,7 @@ final class ToolsManager
             return;
         }
         $this->hasInsertedBatchToolSeparator = true;
-        $this->insertSeparator( 'Batch Tools', ( $this->isLocal && StorageToolSettings::instance()->useToolMenu ? 'media-cloud-tools' : 'media-cloud' ) );
+        $this->insertSeparator( 'Tasks', ( $this->isLocal && !empty(StorageToolSettings::instance()->useToolMenu) ? 'media-cloud-tools' : 'media-cloud' ) );
     }
     
     public function insertHelpToolSeparator()

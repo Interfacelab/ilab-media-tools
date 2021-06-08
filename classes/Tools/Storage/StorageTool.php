@@ -273,11 +273,12 @@ class StorageTool extends Tool
         TaskManager::registerTask( FixMetadataTask::class );
         
         if ( $this->enabled() ) {
+            
             if ( is_admin() ) {
                 
                 if ( empty(get_option( 'uploads_use_yearmonth_folders' )) && empty(StorageToolSettings::prefixFormat()) ) {
                     $mediaUrl = ilab_admin_url( 'options-media.php' );
-                    $settingsUrl = ilab_admin_url( 'admin.php?page=media-cloud-settings-storage#upload-handling' );
+                    $settingsUrl = ilab_admin_url( 'admin.php?page=media-cloud-settings#upload-handling' );
                     NoticeManager::instance()->displayAdminNotice(
                         'warning',
                         "You have the WordPress setting <a href='{$mediaUrl}'><strong>Organize my uploads into month and year based folders</strong></a> disabled, but haven't specified an <em>Upload Path</em> in <a href='{$settingsUrl}'>Cloud Storage Settings</a>.  It is recommended that you either enable that setting, or set an upload directory.  We recommend setting the <em>Upload Path</em> to <code>@{date:Y/m}</code>.",
@@ -286,8 +287,21 @@ class StorageTool extends Tool
                         365
                     );
                 }
+                
+                
+                if ( !empty($this->settings->replaceSrcSet) ) {
+                    $settingsUrl = ilab_admin_url( 'admin.php?page=media-cloud-settings#responsive-image-settings' );
+                    NoticeManager::instance()->displayAdminNotice(
+                        'warning',
+                        "You currently have the option <strong>Replace srcset on image tags</strong> enabled.  This setting is being deprecated and will be removed in the future.  You should disable it now in <a href='{$settingsUrl}'>Cloud Storage Settings</a>.  If you run into any issues, please let us know.",
+                        true,
+                        'mcloud-deprecated-replace-srcset',
+                        365
+                    );
+                }
             
             }
+            
             $this->contentHooks = new StorageContentHooks( $this );
             TaskManager::registerTask( CleanUploadsTask::class );
             TaskManager::registerTask( DeleteUploadsTask::class );

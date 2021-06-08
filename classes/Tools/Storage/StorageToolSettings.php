@@ -64,6 +64,8 @@ if (!defined('ABSPATH')) { header('Location: /'); die; }
  * @property bool $filterContent
  * @property bool $useToolMenu
  * @property bool $useCompatibilityManager
+ * @property bool $replaceSrcSet
+ * @property bool $disableSrcSet
  *
  */
 class StorageToolSettings extends ToolSettings {
@@ -106,6 +108,7 @@ class StorageToolSettings extends ToolSettings {
 		"filterContent" => ["mcloud-storage-filter-content", null, true],
 		"useToolMenu" => ["mcloud-storage-display-tool-menu", null, true],
 		"useCompatibilityManager" => ["mcloud-storage-enable-compatibility-manager", null, false],
+		"disableSrcSet" => ["mcloud-storage-disable-srcset", null, false],
 	];
 
 
@@ -144,6 +147,9 @@ class StorageToolSettings extends ToolSettings {
 
 	/** @var null|array */
 	private $allowedMimes = null;
+
+	/** @var bool  */
+	private $_replaceSrcSet = null;
 
 	//endregion
 
@@ -322,12 +328,26 @@ class StorageToolSettings extends ToolSettings {
 			return ($canQueue && !empty($this->_queuedDeletes));
 		}
 
+		if ($name === 'replaceSrcSet') {
+			if ($this->_replaceSrcSet !== null) {
+				return $this->_replaceSrcSet;
+			}
+
+			global $wp_version;
+			$this->_replaceSrcSet = empty($this->disableSrcSet) && version_compare($wp_version, '5.3', '>=');
+			if (!empty($this->_replaceSrcSet)) {
+				$this->_replaceSrcSet = Environment::Option('mcloud-storage-replace-srcset', null, false);
+			}
+
+			return $this->_replaceSrcSet;
+		}
+
 
 		return parent::__get($name);
 	}
 
 	public function __isset($name) {
-		if (in_array($name, ['expires', 'privacy', 'ignoredMimeTypes', 'cdn', 'docCdn', 'signedCDN', 'privacyImages', 'privacyAudio', 'privacyVideo', 'privacyDocs'])) {
+		if (in_array($name, ['disableSrcSet', 'replaceSrcSet', 'expires', 'privacy', 'ignoredMimeTypes', 'cdn', 'docCdn', 'signedCDN', 'privacyImages', 'privacyAudio', 'privacyVideo', 'privacyDocs'])) {
 			return true;
 		}
 
