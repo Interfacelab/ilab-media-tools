@@ -573,7 +573,7 @@ class GoogleStorage implements StorageInterface, ConfiguresWizard {
 		];
 	}
 
-	public function ls($path = '', $delimiter = '/', $limit = -1, $next = null) {
+	public function ls($path = '', $delimiter = '/', $limit = -1, $next = null, $recursive = false) {
 		if(!$this->client) {
 			throw new InvalidStorageSettingsException('Storage settings are invalid');
 		}
@@ -591,6 +591,15 @@ class GoogleStorage implements StorageInterface, ConfiguresWizard {
 			}
 
 			$files[] = $file->name();
+		}
+
+		if (!empty($recursive)) {
+			foreach($fileIter->prefixes() as $prefix) {
+				$res = $this->ls($prefix, $delimiter, $limit, $next, true);
+				if (!empty($res['files'])) {
+					$files = array_merge($files, $res['files']);
+				}
+			}
 		}
 
 		return [

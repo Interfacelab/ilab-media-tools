@@ -375,7 +375,7 @@ class BackblazeStorage implements StorageInterface, AuthCacheInterface, Configur
 		];
 	}
 
-	public function ls($path = '', $delimiter = '/', $limit = -1, $next = null) {
+	public function ls($path = '', $delimiter = '/', $limit = -1, $next = null, $recursive = false) {
 		if(!$this->client) {
 			throw new InvalidStorageSettingsException('Storage settings are invalid');
 		}

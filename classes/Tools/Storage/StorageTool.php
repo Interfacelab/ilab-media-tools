@@ -40,6 +40,7 @@ use  MediaCloud\Vendor\GuzzleHttp\Exception\RequestException ;
 use  MediaCloud\Vendor\Smalot\PdfParser\Parser ;
 use function  MediaCloud\Plugin\Utilities\arrayPath ;
 use function  MediaCloud\Plugin\Utilities\gen_uuid ;
+use function  MediaCloud\Plugin\Utilities\ilab_set_time_limit ;
 use function  MediaCloud\Plugin\Utilities\typeFromMeta ;
 
 if ( !defined( 'ABSPATH' ) ) {
@@ -3143,7 +3144,7 @@ TEMPLATE;
             array_unshift( $editors, '\\MediaCloud\\Plugin\\Tools\\Storage\\StorageImageEditor' );
             return $editors;
         } );
-        @set_time_limit( 0 );
+        ilab_set_time_limit( 0 );
         $originalImagePath = $fullsizepath = wp_get_original_image_path( $postId, true );
         $originalImageBasePath = pathinfo( $originalImagePath, PATHINFO_DIRNAME );
         @mkdir( $originalImageBasePath, 0755, true );
@@ -3887,7 +3888,8 @@ TEMPLATE;
         $directoryKeys = array( '' ),
         $skipThumbnails = false,
         $limit = -1,
-        $next = null
+        $next = null,
+        $recursive = false
     )
     {
         $tempFileList = [];
@@ -3904,7 +3906,8 @@ TEMPLATE;
                     $key,
                     '/',
                     $limit,
-                    $next
+                    $next,
+                    $recursive
                 );
                 $nextToken = $res['next'];
                 $tempFileList = $res['files'];

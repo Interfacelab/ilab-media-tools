@@ -625,5 +625,17 @@ namespace MediaCloud\Plugin\Utilities {
 			}
 		}
 	}
+
+	/**
+	 * Wrapper for set_time_limit to see if it is enabled.
+	 *
+	 * @since 2.6.0
+	 * @param int $limit Time limit.
+	 */
+	function ilab_set_time_limit( $limit = 0 ) {
+		if ( function_exists( 'set_time_limit' ) && false === strpos( ini_get( 'disable_functions' ), 'set_time_limit' ) && ! ini_get( 'safe_mode' ) ) { // phpcs:ignore PHPCompatibility.IniDirectives.RemovedIniDirectives.safe_modeDeprecatedRemoved
+			@set_time_limit( $limit ); // @codingStandardsIgnoreLine
+		}
+	}
 }
 

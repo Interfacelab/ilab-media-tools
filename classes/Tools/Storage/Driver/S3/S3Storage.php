@@ -812,7 +812,7 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 		];
 	}
 
-	public function ls($path = '', $delimiter = '/', $limit = -1, $next = null) {
+	public function ls($path = '', $delimiter = '/', $limit = -1, $next = null, $recursive = false) {
 		if(!$this->client) {
 			throw new InvalidStorageSettingsException('Storage settings are invalid');
 		}
@@ -839,20 +839,44 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 			$results  = $this->client->getPaginator('ListObjectsV2', $args);
 
 			$result = $results->current();
-			if (empty($result) || empty($result['Contents'])) {
+			if (empty($recursive) && (empty($result) || empty($result['Contents']))) {
 				return [
 					'next' => null,
 					'files' => []
 				];
 			}
 
-			foreach($result['Contents'] as $object) {
-				if ($object['Key'] == $path) {
-					continue;
+			if (!empty($result['Contents'])) {
+				foreach($result['Contents'] as $object) {
+					if ($object['Key'] == $path) {
+						continue;
+					}
+
+					$contents[] = $object['Key'];
+				}
+			}
+
+			if (!empty($recursive)) {
+				$recursiveDirs = [];
+				if (!empty($result['CommonPrefixes'])) {
+					foreach($result['CommonPrefixes'] as $prefix) {
+						$decodedPrefix = urldecode($prefix['Prefix']);
+						if (in_array($decodedPrefix, $recursiveDirs)) {
+							continue;
+						}
+
+						$recursiveDirs[] =  $decodedPrefix;
+					}
 				}
 
-				$contents[] = $object['Key'];
+				foreach($recursiveDirs as $recursiveDir) {
+					$ls = $this->ls($recursiveDir, $delimiter, $limit, $next, true);
+					if (!empty($ls['files'])) {
+						$contents = array_merge($contents, $ls['files']);
+					}
+				}
 			}
+
 
 			return [
 				'next' => isset($result['NextContinuationToken']) ? $result['NextContinuationToken'] : null,

@@ -302,10 +302,11 @@ interface StorageInterface {
 	 * @param string $delimiter
 	 * @param int $limit
 	 * @param string $next
+	 * @param bool $recursive
 	 *
 	 * @return array
 	 */
-	public function ls($path = '', $delimiter = '/', $limit = -1, $next = null);
+	public function ls($path = '', $delimiter = '/', $limit = -1, $next = null, $recursive = false);
 
 	/**
 	 * Determines if the storage provider supports browsing

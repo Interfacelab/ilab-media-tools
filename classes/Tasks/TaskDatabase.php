@@ -19,7 +19,7 @@ use MediaCloud\Plugin\Utilities\Logging\Logger;
  * Interface for creating the required tables
  */
 final class TaskDatabase {
-	const DB_VERSION = '1.0.1';
+	const DB_VERSION = '1.0.2';
 
 	/**
 	 * Insures the additional database tables are installed
@@ -74,7 +74,7 @@ final class TaskDatabase {
 	currentItemID VARCHAR(512) NULL,
 	currentTitle VARCHAR(512) NULL,
 	currentFile VARCHAR(512) NULL,
-	currentThumb VARCHAR(512) NULL,
+	currentThumb VARCHAR(1024) NULL,
 	isIcon INT DEFAULT 0 NOT NULL,
 	errorMessage TEXT NULL,
 	options TEXT NULL,
