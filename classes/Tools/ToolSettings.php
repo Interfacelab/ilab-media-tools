@@ -46,7 +46,7 @@ abstract class ToolSettings {
 
 	/**
 	 * Returns the singleton instance of the settings
-	 * @return self
+	 * @return static
 	 */
 	public static function instance() {
 		if (isset(static::$instances[static::class])) {

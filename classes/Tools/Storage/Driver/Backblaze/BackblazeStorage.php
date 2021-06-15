@@ -161,6 +161,10 @@ class BackblazeStorage implements StorageInterface, AuthCacheInterface, Configur
 		return $valid;
 	}
 
+	public function settings() {
+		return $this->settings;
+	}
+
 	public function enabled() {
 		if(!($this->settings->key && $this->settings->accountId && $this->settings->bucket)) {
             $adminUrl = admin_url('admin.php?page=media-cloud-settings&tab=storage');

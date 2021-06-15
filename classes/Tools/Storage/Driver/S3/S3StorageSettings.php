@@ -19,6 +19,7 @@ namespace MediaCloud\Plugin\Tools\Storage\Driver\S3;
 use MediaCloud\Plugin\Tools\Storage\StorageInterface;
 use MediaCloud\Plugin\Tools\Storage\StorageToolSettings;
 use MediaCloud\Plugin\Tools\ToolSettings;
+use MediaCloud\Plugin\Tools\ToolsManager;
 use MediaCloud\Plugin\Utilities\Environment;
 use function MediaCloud\Plugin\Utilities\gen_uuid;
 

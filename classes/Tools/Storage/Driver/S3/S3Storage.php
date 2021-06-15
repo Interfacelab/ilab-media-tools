@@ -270,6 +270,10 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
     	return $this->settings->settingsError;
 	}
 
+	public function settings() {
+    	return $this->settings;
+	}
+
 	public function client() {
         if ($this->client == null) {
             $this->client = $this->getClient();

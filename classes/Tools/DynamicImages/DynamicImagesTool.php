@@ -16,6 +16,7 @@ namespace MediaCloud\Plugin\Tools\DynamicImages;
 use MediaCloud\Plugin\Tools\Storage\StorageTool;
 use MediaCloud\Plugin\Tools\Tool;
 use MediaCloud\Plugin\Tools\ToolsManager;
+use MediaCloud\Plugin\Utilities\Logging\Logger;
 use MediaCloud\Plugin\Utilities\NoticeManager;
 use MediaCloud\Plugin\Utilities\Tracker;
 use MediaCloud\Plugin\Utilities\View;
@@ -175,13 +176,25 @@ abstract class DynamicImagesTool extends Tool {
 		        return $metadata;
             }
 
+		    $metadataFile = arrayPath($metadata, 'file');
+		    $width = intval(arrayPath($metadata, 'width', 0));
+		    $height = intval(arrayPath($metadata, 'height', 0));
+
+		    if (empty($metadataFile) || empty($width) || empty($height)) {
+		        Logger::warning("Metadata for image $attachmentId with mimetype $mime missing info.  File: $metadataFile, width: $width, height: $height", [], __METHOD__, __LINE__);
+		        return $metadata;
+            }
+
+		    if (!isset($metadata['sizes'])) {
+			    Logger::warning("Metadata for image $attachmentId with mimetype $mime missing sizes.", [], __METHOD__, __LINE__);
+			    return $metadata;
+            }
+
 		    if ($this->allSizes == null) {
 			    $this->allSizes = ilab_get_image_sizes();
 		    }
 
-		    $filename = pathinfo($metadata['file'], PATHINFO_BASENAME);
-		    $width = intval($metadata['width']);
-		    $height = intval($metadata['height']);
+		    $filename = pathinfo($metadataFile, PATHINFO_BASENAME);
 
 		    $didChange = false;
 		    foreach($this->allSizes as $sizeKey => $sizeData) {

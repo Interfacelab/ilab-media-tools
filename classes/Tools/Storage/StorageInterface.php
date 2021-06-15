@@ -16,6 +16,7 @@
 
 namespace MediaCloud\Plugin\Tools\Storage;
 
+use MediaCloud\Plugin\Tools\ToolSettings;
 use MediaCloud\Plugin\Utilities\Logging\ErrorCollector;
 
 if (!defined('ABSPATH')) { header('Location: /'); die; }
@@ -114,6 +115,12 @@ interface StorageInterface {
 	 * @return bool
 	 */
 	public function settingsError();
+
+	/**
+	 * Settings for this instance
+	 * @return ToolSettings
+	 */
+	public function settings();
 
 	/**
 	 * Validates settings.

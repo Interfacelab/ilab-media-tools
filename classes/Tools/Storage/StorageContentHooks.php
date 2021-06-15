@@ -18,6 +18,7 @@ namespace MediaCloud\Plugin\Tools\Storage;
 
 use MediaCloud\Plugin\Tasks\TaskReporter;
 use MediaCloud\Plugin\Tools\Debugging\DebuggingToolSettings;
+use MediaCloud\Plugin\Tools\Storage\Driver\S3\S3StorageSettings;
 use MediaCloud\Plugin\Utilities\Environment;
 use MediaCloud\Plugin\Utilities\Logging\Logger;
 use function MediaCloud\Plugin\Utilities\anyEmpty;
@@ -61,6 +62,32 @@ class StorageContentHooks {
 			add_filter('the_editor_content', [$this, 'filterContent'], PHP_INT_MAX - 1, 2);
 			add_filter('wp_video_shortcode', [$this, 'filterVideoShortcode'], PHP_INT_MAX, 5);
 			add_filter('wp_audio_shortcode', [$this, 'filterAudioShortcode'], PHP_INT_MAX, 5);
+
+			add_filter('shortcode_atts_video', function($out, $pairs, $atts, $shortcode) {
+				$default_types = wp_get_video_extensions();
+				foreach($default_types as $type) {
+					if (!empty($out[$type])) {
+						if (strpos($out[$type], '?') !== false) {
+							$out[$type]  = preg_replace('/(\?.*)/', '', $out[$type]);
+						}
+					}
+				}
+
+				return $out;
+			}, PHP_INT_MAX, 4);
+
+			add_filter('shortcode_atts_audio', function($out, $pairs, $atts, $shortcode) {
+				$default_types = wp_get_audio_extensions();
+				foreach($default_types as $type) {
+					if (!empty($out[$type])) {
+						if (strpos($out[$type], '?') !== false) {
+							$out[$type]  = preg_replace('/(\?.*)/', '', $out[$type]);
+						}
+					}
+				}
+
+				return $out;
+			}, PHP_INT_MAX, 4);
 		}
 
 		// srcset
@@ -732,6 +759,13 @@ class StorageContentHooks {
 			return null;
 		}
 
+		// Remove bucket prefix
+		if (!in_array(StorageToolSettings::driver(), ['s3', 'google', 'backblaze']) && (strpos($this->settings->prefixFormat, $this->tool->client()->bucket()) !== 0)) {
+			if (strpos($baseFile, $this->tool->client()->bucket().'/') === 0) {
+				$baseFile = str_replace($this->tool->client()->bucket().'/', '', $baseFile);
+			}
+		}
+
 		global $wpdb;
 		$query = $wpdb->prepare("select post_id from {$wpdb->postmeta} where meta_key='_wp_attached_file' and meta_value = %s", $baseFile);
 		$postId = $wpdb->get_var($query);
@@ -1100,6 +1134,8 @@ class StorageContentHooks {
 			return [];
 		}
 
+		Logger::info('calculateSrcSet start: '.json_encode($sources, JSON_PRETTY_PRINT), [], __METHOD__, __LINE__);
+
 		$attachment_id = apply_filters('wpml_object_id', $attachment_id, 'attachment', true);
 
 		if (empty($this->allSizes)) {
@@ -1161,6 +1197,9 @@ class StorageContentHooks {
 				$newSources["{$imageWidth}"]['url'] = $url;
 			}
 		}
+
+		Logger::info('calculateSrcSet end: '.json_encode($newSources, JSON_PRETTY_PRINT), [], __METHOD__, __LINE__);
+
 
 		return $newSources;
 	}

@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 5.7.2
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.2.32
+Stable tag: 4.2.33
 Requires PHP: 7.1
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -104,6 +104,12 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 
 == Changelog ==
+
+= 4.2.33 =
+
+* Fix for video and audio short codes using Classic Editor when using a storage provider with a path style endpoint and pre-signed URLs.
+* New warning that you are using a path style endpoint with DigitalOcean when you don't need to.  The only time you'd need to do that is if your bucket contains a period, for example your bucket's name is `my.bucket.is.cool`.
+* Fix for php NOTICE warnings for imgix images with malformed metadata.
 
 = 4.2.32 =
 

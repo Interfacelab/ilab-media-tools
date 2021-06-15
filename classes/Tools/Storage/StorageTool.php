@@ -19,6 +19,7 @@ use  MediaCloud\Plugin\Tasks\TaskSchedule ;
 use  MediaCloud\Plugin\Tools\ImageSizes\ImageSizePrivacy ;
 use  MediaCloud\Plugin\Tools\Optimizer\OptimizerConsts ;
 use  MediaCloud\Plugin\Tools\Optimizer\OptimizerTool ;
+use  MediaCloud\Plugin\Tools\Storage\Driver\S3\S3StorageSettings ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\CleanUploadsTask ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\DeleteUploadsTask ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\FixMetadataTask ;
@@ -297,6 +298,18 @@ class StorageTool extends Tool
                         "You currently have the option <strong>Replace srcset on image tags</strong> enabled.  This setting is being deprecated and will be removed in the future.  You should disable it now in <a href='{$settingsUrl}'>Cloud Storage Settings</a>.  If you run into any issues, please let us know.",
                         true,
                         'mcloud-deprecated-replace-srcset',
+                        365
+                    );
+                }
+                
+                
+                if ( StorageToolSettings::driver() === 'do' && strpos( $this->client()->bucket(), '.' ) === false && !empty($this->client()->settings()->endPointPathStyle) ) {
+                    $settingsUrl = ilab_admin_url( 'admin.php?page=media-cloud-settings#provider-settings' );
+                    NoticeManager::instance()->displayAdminNotice(
+                        'info',
+                        "You currently have the option <strong>Path Style Endpoint</strong> enabled.  You do not need to have this setting enabled with DigitalOcean unless your bucket name contains a period.  It is enabled by default, but you can turn it off in <a href='{$settingsUrl}'>Cloud Storage Settings</a>.",
+                        true,
+                        'mcloud-do-path-endpoint-info',
                         365
                     );
                 }

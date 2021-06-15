@@ -242,6 +242,10 @@ class GoogleStorage implements StorageInterface, ConfiguresWizard {
 		return true;
 	}
 
+	public function settings() {
+		return $this->settings;
+	}
+
 	public function settingsError() {
 		return $this->settingsError;
 	}

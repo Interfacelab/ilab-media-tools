@@ -51,6 +51,9 @@ class SystemCompatibilityTool extends Tool {
 		'wp_handle_upload_prefilter',
 		'wp_handle_upload',
 		'wp_calculate_image_srcset',
+		'content_save_pre',
+		'wp_video_shortcode',
+		'the_content',
 	];
 
 
