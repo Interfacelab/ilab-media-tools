@@ -1,5 +1,14 @@
-<div class="ic-Super-toggle--on-off">
-    <input type="checkbox" id="{{$name}}" name='{{$name}}' class="ic-Super-toggle__input" {{(($value) ? 'checked' : '')}} {{(!$enabled) ? 'disabled' : ''}}>
+<?php
+$toggleClass = (isset($toggleClass)) ? $toggleClass : 'ic-Super-toggle--on-off';
+$dataAttrs = '';
+if (!empty($extraData)) {
+	foreach($extraData as $key => $dataValue) {
+		$dataAttrs .= " data-$key='$dataValue'";
+    }
+}
+?>
+<div class="{{$toggleClass}}">
+    <input type="checkbox" id="{{$name}}" name='{{$name}}' class="ic-Super-toggle__input" {{(($value) ? 'checked' : '')}} {{(!$enabled) ? 'disabled' : ''}}  {!! $dataAttrs !!}>
     <label class="ic-Super-toggle__label" for="{{$name}}">
         <div class="ic-Super-toggle__screenreader">{{$description}}</div>
         <div class="ic-Super-toggle__disabled-msg" data-checked="On" data-unchecked="Off" aria-hidden="true"></div>

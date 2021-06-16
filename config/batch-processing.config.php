@@ -66,11 +66,17 @@ return [
 						"min" => 2,
 						"max" => 60
 					],
+					"mcloud-tasks-disable-plugins" => [
+						"title" => "Disable Plugins and Themes During Background Processing",
+						"description" => "When this is enabled, themes and plugins will be disabled in the background processing thread when the background process runs.  This will have <strong>NO</strong> effect on your front-end or WordPress admin, the plugins and theme are disabled in the background processing thread <strong>ONLY</strong>.",
+						"type" => "checkbox",
+						"default" => false
+					],
 				]
 			],
 
-			"ilab-media-cloud-batch-settings" => [
-				"title" => "Batch Processing Settings",
+			"ilab-media-cloud-batch-network-settings" => [
+				"title" => "Batch Processing Network Settings",
 				"dynamic" => true,
 				"description" => "The following options control how tasks like importer, thumbnail regeneration and Rekognition work.  You should only change these settings if you are having issues or if the <a href='".admin_url('admin.php?page=media-tools-troubleshooter')."' target='_blank'>system compatibility tool</a> directed you to.",
 				"options" => [

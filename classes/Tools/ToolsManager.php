@@ -15,6 +15,7 @@ namespace MediaCloud\Plugin\Tools;
 use  MediaCloud\Plugin\Tasks\TaskManager ;
 use  MediaCloud\Plugin\Tools\Network\NetworkTool ;
 use  MediaCloud\Plugin\Tools\Storage\StorageToolSettings ;
+use  MediaCloud\Plugin\Tools\Tasks\TasksTool ;
 use  MediaCloud\Plugin\Utilities\Environment ;
 use  MediaCloud\Plugin\Utilities\LicensingManager ;
 use  MediaCloud\Plugin\Utilities\Logging\Logger ;
@@ -810,6 +811,7 @@ final class ToolsManager
         foreach ( static::instance()->tools as $key => $tool ) {
             $tool->deactivate();
         }
+        TasksTool::RemoveCompatibilityPlugin();
     }
     
     /**
@@ -1027,6 +1029,7 @@ final class ToolsManager
     
     public function renderMultisiteLanding()
     {
+        TasksTool::InstallCompatibilityPlugin();
         echo  View::render_view( 'base/multisite-landing', [
             'title'   => 'Media Cloud',
             'manager' => $this,

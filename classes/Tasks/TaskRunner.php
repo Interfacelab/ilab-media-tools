@@ -33,26 +33,12 @@ final class TaskRunner {
 	 */
 	private static $instance = null;
 
-//	private $verifySSL = 'default';
-//	private $connectTimeout = 0.01;
-//	private $timeout = 0.01;
-//	private $skipDNS = false;
-//	private $skipDNSHost = null;
-//	private $httpClientName = null;
-
 	//endregion
 
 	//region Constructor
 
 	private function __construct() {
 		$this->settings = TaskSettings::instance();
-		
-//		$this->settings->verifySSL = Environment::Option('mcloud-tasks-verify-ssl', null, 'no');
-//		$this->settings->connectTimeout = Environment::Option('mcloud-tasks-connect-timeout', null, 0.01);
-//		$this->settings->timeout = Environment::Option('mcloud-tasks-timeout', null, 0.01);
-//		$this->settings->skipDNS = Environment::Option('mcloud-tasks-skip-dns', null, false);
-//		$this->settings->skipDNSHost = Environment::Option('mcloud-tasks-skip-dns-host', null, 'ip');
-//		$this->settings->httpClientName = Environment::Option('mcloud-tasks-http-client', null, 'wordpress');
 
 		if (is_admin()) {
 			add_action('wp_ajax_task_runner_test', [$this, 'testTaskRunner']);
@@ -258,9 +244,9 @@ final class TaskRunner {
 			'nonce' => wp_create_nonce('mcloud_run_task')
 		];
 
-		if (isset($_COOKIE['XDEBUG_SESSION'])) {
-			$queryArgs['XDEBUG_SESSION'] = $_COOKIE['XDEBUG_SESSION'];
-		}
+//		if (isset($_COOKIE['XDEBUG_SESSION'])) {
+//			$queryArgs['XDEBUG_SESSION'] = $_COOKIE['XDEBUG_SESSION'];
+//		}
 
 		$url = add_query_arg($queryArgs, $url);
 
@@ -364,9 +350,9 @@ final class TaskRunner {
 			'nonce' => wp_create_nonce('task_runner_test')
 		];
 
-		if (isset($_COOKIE['XDEBUG_SESSION'])) {
-			$queryArgs['XDEBUG_SESSION'] = $_COOKIE['XDEBUG_SESSION'];
-		}
+//		if (isset($_COOKIE['XDEBUG_SESSION'])) {
+//			$queryArgs['XDEBUG_SESSION'] = $_COOKIE['XDEBUG_SESSION'];
+//		}
 
 		$url = add_query_arg($queryArgs, $url);
 

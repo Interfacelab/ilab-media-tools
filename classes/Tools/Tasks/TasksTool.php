@@ -21,6 +21,7 @@ use MediaCloud\Plugin\Tools\Storage\StorageToolSettings;
 use MediaCloud\Plugin\Tools\Tool;
 use MediaCloud\Plugin\Tools\ToolsManager;
 use MediaCloud\Plugin\Utilities\Environment;
+use MediaCloud\Plugin\Utilities\Logging\Logger;
 use MediaCloud\Plugin\Utilities\View;
 use function MediaCloud\Plugin\Utilities\arrayPath;
 
@@ -111,6 +112,8 @@ class TasksTool extends Tool {
 	 * Render the manager page
 	 */
 	public function renderTaskManager() {
+		static::InstallCompatibilityPlugin();
+
 		echo View::render_view('tasks.task-manager', ['title' => 'Task Manager', 'manager' => TaskManager::instance()]);
 	}
 
@@ -120,6 +123,8 @@ class TasksTool extends Tool {
 	 * @throws \Exception
 	 */
 	public function renderBatchTool() {
+		static::InstallCompatibilityPlugin();
+
 		$identifier = str_replace('mcloud-task-', '', arrayPath($_REQUEST, 'page', null));
 		if (empty($identifier)) {
 			wp_die("Not sure what happened here.");
@@ -129,6 +134,51 @@ class TasksTool extends Tool {
 		$runningTask = Task::currentRunningTask($identifier);
 
 		echo View::render_view('tasks.batch', ['title' => $taskClass::title(), 'task' => $runningTask, 'taskClass' => $taskClass, 'manager' => TaskManager::instance(), 'warning' => null]);
+	}
+
+	//endregion
+
+	//region Compatibility plugin install
+
+	public static function InstallCompatibilityPlugin() {
+		if (!defined('WPMU_PLUGIN_DIR')) {
+			return;
+		}
+
+		if (empty(Environment::Option('mcloud-tasks-disable-plugins', null, false))) {
+			static::RemoveCompatibilityPlugin();
+			return;
+		}
+
+		if (!is_dir(WPMU_PLUGIN_DIR)) {
+			if (!wp_mkdir_p(WPMU_PLUGIN_DIR)) {
+				Logger::warning("Could not create mu-plugin directory: ".WPMU_PLUGIN_DIR, [], __METHOD__, __LINE__);
+				return;
+			}
+		}
+
+		$dest = WPMU_PLUGIN_DIR.'/media-cloud-plugin-compatibility.php';
+		if (file_exists($dest)) {
+			return;
+		}
+
+		$source = ILAB_TOOLS_DIR.'/resources/media-cloud-plugin-compatibility.php';
+		if (file_exists($source)) {
+			if (!copy($source, $dest)) {
+				Logger::warning("Unable to copy $source to $dest", [], __METHOD__, __LINE__);
+			}
+		}
+	}
+
+	public static function RemoveCompatibilityPlugin() {
+		if (!defined('WPMU_PLUGIN_DIR') || !is_dir(WPMU_PLUGIN_DIR)) {
+			return;
+		}
+
+		$dest = WPMU_PLUGIN_DIR.'/media-cloud-plugin-compatibility.php';
+		if (file_exists($dest)) {
+			@unlink($dest);
+		}
 	}
 
 	//endregion

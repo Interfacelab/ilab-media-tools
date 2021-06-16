@@ -56,6 +56,11 @@ class DebuggingTool extends Tool {
 		            check_ajax_referer('mcloud-debug-clear-debug-log', 'nonce');
 		            $this->actionClearLog();
 	            });
+
+	            add_action('wp_ajax_mcloud-get-debug-log', function() {
+		            check_ajax_referer('mcloud-get-debug-log', 'nonce');
+	            	$this->actionGetDebugLog();
+	            });
             }
 
             $link = "<a href='".admin_url('admin.php?page=media-tools-top')."'>turn it off</a>";
@@ -90,6 +95,60 @@ class DebuggingTool extends Tool {
         echo View::render_view('debug/log-viewer.php', [
             'table' => $table
         ]);
+    }
+
+    private function actionGetDebugLog() {
+		if (!is_admin() || !current_user_can('manage_options')) {
+			die;
+		}
+
+	    $tableView = new DatabaseLogTable([
+	    	'screen' => 'ajax'
+	    ]);
+	    $tableView->prepare_items();
+
+	    ob_start();
+	    $tableView->display();
+	    $html = ob_get_clean();
+
+	    $doc = new \DOMDocument();
+	    libxml_use_internal_errors(true);
+	    $doc->loadHTML($html);
+
+	    /** @var \DOMNode $tableNavDiv */
+	    $tableNavDiv = null;
+	    $divs = $doc->getElementsByTagName('div');
+	    /** @var \DOMNode $div */
+	    foreach($divs as $div) {
+	    	$classAttr = $div->attributes->getNamedItem('class');
+	    	if (!empty($classAttr)) {
+			    if (strpos($classAttr->nodeValue, 'tablenav-pages') !== false) {
+				    $tableNavDiv = $div;
+				    break;
+			    }
+		    }
+	    }
+
+	    /** @var \DOMNode $logTable */
+	    $logTable = null;
+	    $tables = $doc->getElementsByTagName('table');
+	    /** @var \DOMNode $div */
+	    foreach($tables as $table) {
+		    $logTable = $table;
+		    break;
+	    }
+
+	    if (empty($tableNavDiv) || empty($logTable)) {
+	    	wp_send_json([
+	    		'status' => 'empty'
+		    ]);
+	    } else {
+	    	wp_send_json([
+			    'status' => 'ok',
+	    		'nav' => $doc->saveHTML($tableNavDiv),
+			    'table' => $doc->saveHTML($logTable)
+		    ]);
+	    }
     }
 
     private function actionDownloadLog() {

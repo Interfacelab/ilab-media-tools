@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 5.7.2
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.2.33
+Stable tag: 4.2.34
 Requires PHP: 7.1
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -105,20 +105,25 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 == Changelog ==
 
-= 4.2.33 =
+= 4.2.34 - 6/17/2021 =
+
+* Added a toggle to make the **Debug Log** display log entries in realtime.
+* Added a toggle to **Batch Processing** settings that allows you to disable your theme and any plugins when processing items in the background.  Turning this on will not effect your front-end or WordPress admin, it's only applied when Media Cloud is processing a task in the background.  If you are having issues running the migration or import task, try enabling this option.
+
+= 4.2.33 - 6/15/2021 =
 
 * Fix for video and audio short codes using Classic Editor when using a storage provider with a path style endpoint and pre-signed URLs.
 * New warning that you are using a path style endpoint with DigitalOcean when you don't need to.  The only time you'd need to do that is if your bucket contains a period, for example your bucket's name is `my.bucket.is.cool`.
 * Fix for php NOTICE warnings for imgix images with malformed metadata.
 
-= 4.2.32 =
+= 4.2.32 - 6/13/2021 =
 
 * Fix for **Import from Cloud** task where it would show an error that there was nothing to import.
 * Fix for tasks not updating the progress UI in certain instances.
 * Fix for errors with the `set_time_limit()` function on systems where that function is disabled.
 * Fix for error with Smart Slider integration.
 
-= 4.2.31 =
+= 4.2.31 - 6/8/2021  =
 
 * Fix for Imgix with BuddyPress avatars and cover images. (Premium)
 * Made the setting **Replace srcset on image tags** disabled by default.  Will be removed in future versions of Media Cloud.
@@ -127,7 +132,7 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 * Fix for custom defined image sizes in the **Image Size Manager** not showing up in the WordPress media selector. (Premium)
 
 
-= 4.2.30 =
+= 4.2.30 - 6/7/2021  =
 
 * Complete overhaul of BuddyPress and BuddyBoss integration. (Premium)
 * Added a new *Migrate BuddyPress Uploads* task which will migrate existing avatar and cover images to cloud storage.  Previously, Media Cloud would migrate these as they were requested on the front end.  (Premium)
@@ -140,34 +145,34 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 * Fixed the `mediacloud:storage replace` command to search all wordpress tables, including custom ones.  (Premium)
 * **Note:** if you are using rtMedia with BuddyPress, you will need to run the CLI command `mediacloud:storage replace` after running the *Migrate to Cloud* task.  You will only need to do this once.  (Premium)
 
-= 4.2.29 =
+= 4.2.29 - 5/25/2021  =
 
 * Fix for `x-amz-bucket-region` notices
 * Easy Digital Downloads now download as files instead of opening as images or videos in the browser. (Premium)
 
 
-= 4.2.28 =
+= 4.2.28 - 5/14/2021  =
 
 * Fix for NOTICE errors with srcset generation
 
-= 4.2.27 =
+= 4.2.27 - 5/8/2021 =
 
 * Fix for potential fatal crash with certain integrations
 
-= 4.2.26 =
+= 4.2.26 - 5/8/2021  =
 
 * Fix for compatibility with Root's Sage theme framework
 * HOT FIX: Fix for fatal error if Beaver Builder Pro is installed and Compatibility Manager is enabled.
 * Fix for EDD integration with variable product pricing
 * Added option to EDD integration that enables downloading the original unscaled image when the download is an image.
 
-= 4.2.23 =
+= 4.2.23 - 5/5/2021 =
 
 * More fixes for srcset generation.
 * Ability to turn off `ixlib` and `wpsize` query parameters for imgix image URLs.  To disable these query parameters, toggle *Remove Extra Query Variables* off in Imgix settings.
 * You can now specify the default cropping mode and crop origin for imgix images in the *Imgix Settings*.  This crop mode and origin will be overridden for manually cropped images or images that have had their crop mode set in the *Image Editor*.
 
-= 4.2.22 =
+= 4.2.22 - 5/3/2021  =
 
 * Fix for srcset generation with Imgix.
 * *System Check* has been renamed *System Test*
@@ -176,13 +181,13 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 * Cleaned up the *Debug Log* UI
 * The *System Test* now allows you to run a single specific test instead of having to run all tests every time.
 
-= 4.2.20 =
+= 4.2.20 - 4/17/2021  =
 
 * Added SFO3 region to DigitalOcean setup wizard
 * Added a new top level menu item to WordPress admin called *Cloud Tools* that contains all of Media Cloud's tools and tasks.  The main Media Cloud menu was getting way too large.  This only affects non-multisite WordPress sites.
 * You can turn off the *Cloud Tools* menu, reverting to previous behavior, in *Cloud Storage Settings* in the *Display Settings* section.
 
-= 4.2.18 =
+= 4.2.18 - 4/15/2021  =
 
 * New feature allows you to upload a new image file to replace an existing one. (Premium Only)
 * Added buttons to various media screens to regenerate thumbnails for the media being viewed. (Premium only)
@@ -194,29 +199,29 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 * Fixed placement of Storage Info popup in the Media Library grid mode.
 * Fixed a visual feedback bug where Direct Uploads appeared to not have finished uploading even though they had.
 
-= 4.2.11 =
+= 4.2.11 - 4/9/2021  =
 
 * Fix for Elementor Update task on unicode/utf-8 pages.
 * Debug log can now be filtered and searched
 * Insure logging is using appropriate logging levels
 
-= 4.2.10 =
+= 4.2.10 - 4/8/2021  =
 
 * Added test to system check to insure that required database tables are installed.
 
-= 4.2.9 =
+= 4.2.9 - 3/31/2021  =
 
 * Fix for potential performance issue on the front end for busy sites.
 * Fix for audio and video shortcodes for signed video URLs.
 * Fix for error when pushing js/css assets to cloud storage.
 
-= 4.2.8 =
+= 4.2.8 - 3/16/2021  =
 
 * **Critical Fix** - Fixes missing class file for the free version that was accidentally excluded by our build system.
   If you updated to 4.2.7, you must update to 4.2.8, otherwise uploads will fail.  If you are using the premium version,
   this does not affect you.
 
-= 4.2.7 =
+= 4.2.7 - 3/15/2021  =
 
 * You can specify different privacy levels to different image sizes defined in your theme using the Image Size Manager.
   This is useful if you are selling stock photos and want to make high-res variations private until sale.
@@ -231,7 +236,7 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 * Added `media-cloud/storage/sign-url` filter to disable pre-signing image URLs in the WordPress admin.  This is very edge
   case, so you should only use this if support directs you to, or you know what you are doing.
 
-= 4.2.6 =
+= 4.2.6 - 2/15/2021  =
 
 * Fixes for direct uploads for huge image files
 * Fix for hyperdb not storing null values
@@ -240,7 +245,7 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 * Updated to latest Freemius SDK
 
 
-= 4.2.5 =
+= 4.2.5 - 12/31/2020  =
 
 * Fixes for migration task
 * Fix redeclared function error when using as a composer dependency
@@ -295,7 +300,7 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 * Fix for settings sometimes not being saved when using Redis object caching
 * The Media Cloud heartbeat now only runs for administrators or users who have the `mcloud_heartbeat` capability
 
-= 4.1.14 =
+= 4.1.14 - 12/3/2020 =
 
 * Added missing instructions that caused errors on multisite installs.
 * Added `privacy` ACL to cloud storage uploads.  Since the first days of Media Cloud, we've been using the `authenticated-read`
@@ -318,14 +323,14 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 * Fixed URL replacements for video and audio shortcodes (videos inserted with classic editor or via the [video] shortcode).
 * Last day to use BLACKFRIDAY2020 for 33% off annual licenses, ends December 3rd!
 
-= 4.1.9 =
+= 4.1.9 - 11/30/2020 =
 
 * Fix for when using the ShortPixel plugin and have Media Cloud configured **NOT** to upload PDFs to cloud storage.
 * Fix for unlinking non-image files.
 * Unlink task now generates a report which you can find in your `WP_CONTENT/mcloud-reports` directory.
 * You still have 3 days to use BLACKFRIDAY2020 for 33% off annual licenses, good until December 2nd.  Get some!
 
-= 4.1.8 =
+= 4.1.8 - 11/26/2020 =
 
 * And we're back.  Thanks to everyone for the well wishes, truly appreciated!
 * Updated Freemius SDK to latest
@@ -340,7 +345,7 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 * Added two new people to our support staff, welcome to Quynh and welcome back to Charles!
 * Use BLACKFRIDAY2020 for 33% off annual licenses, good until December 2nd.
 
-= 4.1.6 =
+= 4.1.6 - 9/23/2020 =
 
 * When Debugging is enabled, a log file will be generated next to the CSV report.  This log file includes all the logging
   that would normally be in the Debug Log, but limited to the time period the task was running.  If you are running into
@@ -358,7 +363,7 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 * Added paging to the `syncLocal` and `verify` command line commands, ex: `wp mediacloud verify verify.csv --limit=100 --page=1`
 * Fixed Sync Local, Verify Library and Regenerate Thumbnails to work with Imgix enabled.
 
-= 4.1.4 =
+= 4.1.4 - 9/22/2020 =
 
 * Fix for Regenerate Thumbnails command, it will first attempt to download the original image, if that can't be found then
   it will use the "scaled" image that WordPress 5.5 generates.
@@ -373,11 +378,11 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
   media migrated successfully.   This will generate a report in the aforementioned reports directory.
 * The `migrateToCloud` wp-cli command now accepts a `--verify` flag to force verification.
 
-= 4.1.2 =
+= 4.1.2 - 9/21/2020 =
 
 * Fix for WooCommerce integration with files that have malformed metadata
 
-= 4.1.1 =
+= 4.1.1 - 9/20/2020 =
 
 * Fix for compatibility with Amp plugin and any other plugin using symfony polyfills.
 * Fix for edge case issue where the S3 library was closing a resource stream causing a fatal error.
@@ -387,7 +392,7 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 * Fix for front end uploads with some form plugins.
 
 
-= 4.1.0 =
+= 4.1.0 - 8/28/2020 =
 
 * All third party libraries Media Cloud is using have been re-namespaced to avoid errors and issues with any other plugins using the same libraries.
 * IMPORTANT: The old Backblaze driver is being deprecated, use the Backblaze S3 Compatible driver instead.  The old one will be removed in the next version.
@@ -406,7 +411,7 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 * Fixed Migrate to Mux task
 
 
-= 4.0.11 =
+= 4.0.11 - 8/21/2020 =
 
 * Fix for deprecated `whitelist_options` filter in WP 5.5.
 * Fix for uploads not occuring when using EWWW image optimizer and other image optimizers.
@@ -415,11 +420,11 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 * Added warning about Autoptimize compatibility
 * You can now track Media Cloud development on its public trello board: https://trello.com/b/O0iNw6GL/media-cloud-development
 
-= 4.0.10 =
+= 4.0.10 - 8/20/2020 =
 
 * Fix for attachment tasks when running from the command line (thanks @yanmorinokamca)
 
-= 4.0.9 =
+= 4.0.9 - 8/12/2020 =
 
 * Direct uploads are now much faster
 * Fix for "Add New" page for uploading media when direct uploads are enabled
@@ -429,7 +434,7 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 * Fix for memory error when direct uploading extremely large images without Imgix.
 
 
-= 4.0.8 =
+= 4.0.8 - 7/23/2020 =
 
 * Fix for BuddyPress compatibility
 * Fix for WordPress's crappy image editor not saving edited images to cloud storage.
@@ -438,16 +443,16 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 * Fix for small images not uploading, or not uploading when no image sizes are defined.
 * Fix for duplicated Imgix uploads when the image being uploaded has been resized because of WordPress's dumb big image size threshold "feature".
 
-= 4.0.5 =
+= 4.0.5 - 7/20/2020 =
 
 * Fix a bug with Imgix and SVGs where SVGs are being rendered as progressive JPEGs.
 * Added new option to Imgix to control SVG rendering.  When this new option is enabled, any image size other than 'full' will be rendered as a PNG.  When turned off, the SVG is delivered as is with no conversion.
 
-= 4.0.4 =
+= 4.0.4 - 7/19/2020 =
 
 * Fix for Ultimate Member uploads
 
-= 4.0.3 =
+= 4.0.3 - 7/18/2020 =
 
 * IMPORTANT: This plugin now requires PHP 7.1 or better
 * IMPORTANT: The Dynamic Images feature has been removed.  For all four of you that were using it, you will want to migrate to Imgix before updating.
