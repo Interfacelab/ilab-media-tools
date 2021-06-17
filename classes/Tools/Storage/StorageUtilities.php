@@ -13,6 +13,7 @@
 namespace MediaCloud\Plugin\Tools\Storage;
 
 use  MediaCloud\Plugin\Tools\ToolsManager ;
+use  MediaCloud\Plugin\Utilities\Environment ;
 use  MediaCloud\Plugin\Utilities\Logging\Logger ;
 use  MediaCloud\Plugin\Utilities\Tracker ;
 use  MediaCloud\Plugin\Utilities\View ;

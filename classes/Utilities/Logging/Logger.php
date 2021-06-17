@@ -180,7 +180,7 @@ class Logger {
         }
     }
 
-	private function prepMessage($message, $function = null, $line = null, &$context) {
+	private function prepMessage($message, $function, $line, &$context) {
 		if (!empty($function)) {
 
 			$functionParts = explode('\\', $function);

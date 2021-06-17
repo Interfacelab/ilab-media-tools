@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 5.7.2
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.2.34
+Stable tag: 4.2.35
 Requires PHP: 7.1
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -104,6 +104,15 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 
 == Changelog ==
+
+= 4.2.35 - 6/17/2021 =
+
+* Fixed Replace Image functionality which would fail to work on certain versions of MySQL due to an SQL query being used being not compatible.
+* Added a drop down to control how tags are managed when replacing an image.  Controls if they should be merged, replaced or do nothing.  Default is Replace.
+* Replacing an image now replaces the title of the attachment.
+* Removed option to delete media after migration because too many people were shooting themselves in the foot.  After a successful migration, it's important you check to make sure your media has been migrated successfully and then run a Clean Uploads task after to remove files from your server.
+* Removed `--delete-migrated` from `wp mediacloud:storage migrateToCloud` command.
+* Fixed a warning for `Logger.php`
 
 = 4.2.34 - 6/17/2021 =
 

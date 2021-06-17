@@ -84,9 +84,6 @@ class StorageCommands extends Command
      *
      * [--order-by=<string>]
      * : The field to sort the items to be imported by. Valid values are 'date', 'title' and 'filename'.
-     *
-     * [--delete-migrated]
-     * : Deletes migrated media from your local WordPress server.  Note: You must have Delete Uploads enabled in Cloud Storage for this setting to have any effect.  If you have Delete Uploads disabled, turning this on will have zero effect.
      * ---
      * options:
      *   - date
