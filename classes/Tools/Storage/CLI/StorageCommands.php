@@ -163,6 +163,12 @@ class StorageCommands extends Command
      *
      * ## OPTIONS
      *
+     * [--mode=<string>]
+     * : Controls which items are processed.  Pass the name of a specific image size to only process images missing that size.  Valid values are 'all', 'missing' or the name of a specific image size.  Default is 'missing'.
+     *
+     * [--regenerate=<string>]
+     * : Controls which sizes are regenerated.  Pass the name of a specific image size to only regenerate that size.  Valid values are 'all', 'missing' or the name of a specific image size.  Default is 'missing'.
+     *
      * [--limit=<number>]
      * : The maximum number of items to process, default is infinity.
      *

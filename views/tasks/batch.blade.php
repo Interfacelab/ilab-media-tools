@@ -4,6 +4,13 @@
 <?php /** @var string $warning */?>
 @extends('../templates/sub-page')
 
+@section('header')
+    <div class="header-actions">
+        <a type="button" class="button button-primary" style="margin-right: 5px" href="{{admin_url('admin.php?page=media-cloud-task-manager')}}">View Task Manager</a>
+        <a type="button" class="button button-primary" href="{{admin_url('admin.php?page=media-cloud-settings&tab=batch-processing')}}">Task Manager Settings</a>
+    </div>
+@endsection
+
 @section('main')
     <div id="task-batch" class="settings-body">
         <div class="task-info" style="display:none">
@@ -72,7 +79,8 @@
                     </div>
                 </div>
             </div>
-            <div class="buttons">
+            <div class="buttons" style="display:flex; align-items:center; justify-content: space-between">
+                <a href="{{admin_url('admin.php?page=media-cloud-task-manager')}}" class="button button-primary">View Task Manager</a>
                 <button class="button button-whoa button-cancel-task" title="Cancel">Cancel {{$taskClass::title()}}</button>
             </div>
         </div>

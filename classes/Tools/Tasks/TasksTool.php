@@ -48,15 +48,34 @@ class TasksTool extends Tool {
 		});
 
 		if (is_admin()) {
-			if ($this->settings->heartbeatEnabled && current_user_can('mcloud_heartbeat')) {
+			if ($this->settings->useWordPressHeartbeat) {
 				add_action('admin_enqueue_scripts', function() {
-					$script = View::render_view('base.heartbeat', [ 'heartbeatFrequency' => (int)$this->settings->heartbeatFrequency * 1000]);
-					wp_register_script('task-manager-heartbeat', '', ['jquery']);
-					wp_enqueue_script('task-manager-heartbeat');
-					wp_add_inline_script('task-manager-heartbeat', $script);
+					$heartbeatEnabled = wp_script_is('heartbeat', 'registered');
+
+					if (empty($heartbeatEnabled) && $this->settings->heartbeatEnabled && current_user_can('mcloud_heartbeat')) {
+						$this->enqueueMediaCloudHeartbeat();
+					}
+				}, PHP_INT_MAX);
+
+				add_filter('heartbeat_send', function($response, $screen_id) {
+					TaskManager::instance()->handleHeartbeat(false);
+					return $response;
+				}, 10, 2);
+			} else {
+				add_action('admin_enqueue_scripts', function() {
+					if($this->settings->heartbeatEnabled && current_user_can('mcloud_heartbeat')) {
+						$this->enqueueMediaCloudHeartbeat();
+					}
 				});
 			}
 		}
+	}
+
+	private function enqueueMediaCloudHeartbeat() {
+		$script = View::render_view('base.heartbeat', [ 'heartbeatFrequency' => (int)$this->settings->heartbeatFrequency * 1000]);
+		wp_register_script('task-manager-heartbeat', '', ['jquery']);
+		wp_enqueue_script('task-manager-heartbeat');
+		wp_add_inline_script('task-manager-heartbeat', $script);
 	}
 
 	public function registerMenu($top_menu_slug, $networkMode = false, $networkAdminMenu = false, $tool_menu_slug = null) {

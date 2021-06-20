@@ -127,6 +127,12 @@ class FixMetadataTask extends AttachmentTask {
 				"description" => "If you want to process just a small subset of items, click on 'Select Media'",
 				"type" => "media-select"
 			],
+			'skip-imported' => [
+				"title" => "Skip Imported",
+				"description" => "Skip items that have already been imported.",
+				"type" => "checkbox",
+				"default" => false
+			],
 		];
 	}
 
@@ -138,6 +144,36 @@ class FixMetadataTask extends AttachmentTask {
 	//region Data
 
 	protected function filterPostArgs($args) {
+		if (isset($this->options['skip-imported'])) {
+			$args['meta_query'] = [
+				'relation' => 'OR',
+				[
+					'relation' => 'AND',
+					[
+						'key'     => '_wp_attachment_metadata',
+						'value'   => '"s3"',
+						'compare' => 'NOT LIKE',
+						'type'    => 'CHAR',
+					],
+					[
+						'key'     => 'ilab_s3_info',
+						'compare' => 'NOT EXISTS',
+					],
+				],
+				[
+					'relation' => 'AND',
+					[
+						'key'     => '_wp_attachment_metadata',
+						'compare' => 'NOT EXISTS',
+					],
+					[
+						'key'     => 'ilab_s3_info',
+						'compare' => 'NOT EXISTS',
+					],
+				]
+			];
+		}
+
 		return $args;
 	}
 

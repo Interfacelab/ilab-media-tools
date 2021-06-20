@@ -68,7 +68,7 @@ class SyncLocalTask extends AttachmentTask {
 	 * @return string|null
 	 */
 	public static function bulkActionTitle() {
-		return null;
+		return "Download to Local Server";
 	}
 
 	/**
@@ -101,6 +101,12 @@ class SyncLocalTask extends AttachmentTask {
 	 */
 	public static function taskOptions() {
 		return [
+			'selected-items' => [
+				"title" => "Selected Media",
+				"description" => "If you want to process just a small subset of items, click on 'Select Media'",
+				"type" => "media-select",
+				"media-types" => ['image']
+			],
 		];
 	}
 

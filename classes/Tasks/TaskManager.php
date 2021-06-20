@@ -140,11 +140,23 @@ final class TaskManager {
 				if (in_array($action_name, array_keys(static::$registeredTasks))) {
 					$taskClass = static::$registeredTasks[$action_name];
 
-					$task = new $taskClass();
-					$task->prepare([], $post_ids);
-					$this->queueTask($task);
+					if ($this->settings->scheduleBulkActions) {
+						$task = TaskSchedule::nextScheduledTaskOfType($taskClass::identifier());
+						if (!empty($task)) {
+							$task->selection = array_merge($task->selection, $post_ids);
+							$task->save();
+						} else {
+							$taskClass::scheduleIn($this->settings->scheduleBulkActionsDelay, [], $post_ids);
+						}
 
-					$redirect_to = admin_url('admin.php?page=mcloud-task-'.$taskClass::identifier());
+						$redirect_to = admin_url('admin.php?page=media-cloud-task-manager');
+					} else {
+						$task = new $taskClass();
+						$task->prepare([], $post_ids);
+						$this->queueTask($task);
+
+						$redirect_to = admin_url('admin.php?page=mcloud-task-'.$taskClass::identifier());
+					}
 				}
 
 				return $redirect_to;
@@ -217,17 +229,20 @@ final class TaskManager {
 	/**
 	 * Handles heartbeat
 	 *
-	 * @param $response
-	 * @param $screen_id
+	 * @param bool $canDie
 	 *
 	 * @throws \Exception
 	 */
-	public function handleHeartbeat() {
+	public function handleHeartbeat($canDie = true) {
 		$freq = get_site_option('mcloud-tasks-heartbeat-frequency', 15);
 		$lastHeartbeat = get_site_option('mcloud_last_heartbeat', 0);
 		$delta = microtime(true) - $lastHeartbeat;
 		if (($lastHeartbeat > 0) && ($delta < $freq)) {
-			wp_die();
+			if ($canDie) {
+				wp_die();
+			} else {
+				return;
+			}
 		}
 
 		update_site_option('mcloud_last_heartbeat', microtime(true));

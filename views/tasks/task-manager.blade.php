@@ -1,6 +1,11 @@
 <?php /** @var \MediaCloud\Plugin\Tasks\TaskManager $manager */?>
 @extends('../templates/sub-page')
 
+@section('header')
+<div class="header-actions">
+    <a type="button" class="button button-primary" href="{{admin_url('admin.php?page=media-cloud-settings&tab=batch-processing')}}">Task Manager Settings</a>
+</div>
+@endsection
 @section('main')
     <div id="task-manager" class="settings-body" data-status-nonce="{{wp_create_nonce('mcloud_task_status')}}">
         <p>The Task Manager allows you to view all of your currently running tasks, tasks that have completed and any scheduled tasks about to happen.</p>

@@ -29,6 +29,9 @@ if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
  * @property bool $heartbeatEnabled
  * @property int $heartbeatFrequency
  * @property int $taskLimit
+ * @property bool $scheduleBulkActions
+ * @property int $scheduleBulkActionsDelay
+ * @property bool $useWordPressHeartbeat
  */
 class TaskSettings extends ToolSettings {
 	protected $settingsMap = [
@@ -42,5 +45,8 @@ class TaskSettings extends ToolSettings {
 		"heartbeatEnabled" => ['mcloud-tasks-heartbeat-enabled', null, true],
 		"heartbeatFrequency" => ['mcloud-tasks-heartbeat-frequency', null, 15],
 		"taskLimit" => ['mcloud-tasks-task-limit', null, 2],
+		"scheduleBulkActions" => ['mcloud-tasks-schedule-bulk', null, false],
+		"scheduleBulkActionsDelay" => ['mcloud-tasks-schedule-delay', null, 60],
+		"useWordPressHeartbeat" => ['mcloud-tasks-use-wordpress-heartbeat', null, false],
 	];
 }

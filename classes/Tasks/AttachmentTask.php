@@ -52,13 +52,22 @@ abstract class AttachmentTask extends Task {
 	/**
 	 * Add any additional \WP_Query post arguments to the query
 	 *
-	 * @param $args
 	 * @param array $args
 	 *
 	 * @return array
 	 */
 	protected function filterPostArgs($args) {
 		return $args;
+	}
+
+	/**
+	 * @param array $item
+	 * @param array $options
+	 *
+	 * @return array
+	 */
+	protected function filterItem($item, $options) {
+		return $item;
 	}
 
 	/**
@@ -78,7 +87,7 @@ abstract class AttachmentTask extends Task {
 
 		if (!empty($selectedItems) && is_array($selectedItems)) {
 			foreach($selectedItems as $postId) {
-				$this->addItem(['id' => $postId]);
+				$this->addItem($this->filterItem(['id' => $postId], $options));
 			}
 		} else {
 			$args = [
@@ -122,7 +131,7 @@ abstract class AttachmentTask extends Task {
 			}
 
 			foreach($postIds as $postId) {
-				$this->addItem(['id' => $postId]);
+				$this->addItem($this->filterItem(['id' => $postId], $options));
 			}
 		}
 

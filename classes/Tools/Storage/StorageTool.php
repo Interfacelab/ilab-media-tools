@@ -773,7 +773,36 @@ class StorageTool extends Tool
         if ( $shouldSkip ) {
             return $data;
         }
-        return $this->updateAttachmentMetadata( $data, $id, $this->preserveFilePaths );
+        $data = $this->updateAttachmentMetadata( $data, $id, $this->preserveFilePaths );
+        $fixedSizes = [];
+        $sizesToFix = arrayPath( $data, 'sizes', [] );
+        
+        if ( count( $sizesToFix ) > 0 ) {
+            foreach ( $sizesToFix as $sizeName => $sizeData ) {
+                $key = arrayPath( $sizeData, 's3/key' );
+                
+                if ( !empty($key) ) {
+                    $fname = basename( $key );
+                    if ( arrayPath( $sizeData, 'file', null ) !== $fname ) {
+                        $sizeData['file'] = $fname;
+                    }
+                }
+                
+                $fixedSizes[$sizeName] = $sizeData;
+            }
+            $data['sizes'] = $fixedSizes;
+        }
+        
+        $key = arrayPath( $data, 's3/key', null );
+        if ( !empty($key) ) {
+            
+            if ( arrayPath( $data, 'file', null ) !== $key ) {
+                $data['file'] = $key;
+                update_post_meta( $id, '_wp_attached_file', $key );
+            }
+        
+        }
+        return $data;
     }
     
     /**
@@ -2047,12 +2076,14 @@ class StorageTool extends Tool
     {
         
         if ( !file_exists( $upload_path . '/' . $filename ) ) {
-            Logger::error(
-                "\tFile {$filename} is missing.",
-                [],
-                __METHOD__,
-                __LINE__
-            );
+            if ( !empty(apply_filters( 'media-cloud/storage/report-missing-files', true )) ) {
+                Logger::error(
+                    "\tFile {$filename} is missing.",
+                    [],
+                    __METHOD__,
+                    __LINE__
+                );
+            }
             return $data;
         }
         
@@ -2182,6 +2213,17 @@ class StorageTool extends Tool
                 $skipUpload = false;
                 
                 if ( !$skipUpload ) {
+                    
+                    if ( is_dir( $upload_path . '/' . $filename ) ) {
+                        Logger::error(
+                            "File is a directory: {$upload_path}/{$filename}",
+                            [],
+                            __METHOD__,
+                            __LINE__
+                        );
+                        return $data;
+                    }
+                    
                     Logger::info(
                         "\tUploading {$filename} to S3.",
                         [],
@@ -3149,9 +3191,10 @@ TEMPLATE;
      * Regenerates an image's thumbnails and re-uploads them to the storage service.
      *
      * @param $postId
+     * @param bool $existingSizes
      * @return bool|string
      */
-    public function regenerateFile( $postId )
+    public function regenerateFile( $postId, $existingSizes = false )
     {
         add_filter( 'wp_image_editors', function ( $editors ) {
             array_unshift( $editors, '\\MediaCloud\\Plugin\\Tools\\Storage\\StorageImageEditor' );
@@ -3160,13 +3203,17 @@ TEMPLATE;
         ilab_set_time_limit( 0 );
         $originalImagePath = $fullsizepath = wp_get_original_image_path( $postId, true );
         $originalImageBasePath = pathinfo( $originalImagePath, PATHINFO_DIRNAME );
-        @mkdir( $originalImageBasePath, 0755, true );
+        if ( !file_exists( $originalImageBasePath ) ) {
+            @mkdir( $originalImageBasePath, 0755, true );
+        }
         $hasOriginalImage = !empty($fullsizepath);
         
         if ( empty($fullsizepath) || !file_exists( $fullsizepath ) ) {
             $scaledImagePath = $fullsizepath = get_attached_file( $postId, true );
             $scaledImageBasePath = pathinfo( $originalImagePath, PATHINFO_DIRNAME );
-            @mkdir( $scaledImageBasePath, 0755, true );
+            if ( !file_exists( $scaledImageBasePath ) ) {
+                @mkdir( $scaledImageBasePath, 0755, true );
+            }
         }
         
         $mimeType = get_post_mime_type( $postId );
@@ -3267,6 +3314,9 @@ TEMPLATE;
             __LINE__
         );
         $metadata = wp_generate_attachment_metadata( $postId, $fullsizepath );
+        if ( $existingSizes !== false && is_array( $existingSizes ) && !empty($existingSizes) ) {
+            $metadata['sizes'] = array_merge( $existingSizes, arrayPath( $metadata, 'sizes', [] ) );
+        }
         Logger::endTiming(
             'Regenerating metadata ...',
             [
@@ -3275,6 +3325,15 @@ TEMPLATE;
             __METHOD__,
             __LINE__
         );
+        $newSizes = [];
+        $sizes = arrayPath( $metadata, 'sizes', [] );
+        foreach ( $sizes as $sizeName => $size ) {
+            if ( !isset( $size['file'] ) || empty($size['file']) ) {
+                continue;
+            }
+            $newSizes[$sizeName] = $size;
+        }
+        $metadata['sizes'] = $newSizes;
         wp_update_attachment_metadata( $postId, $metadata );
         $this->preserveFilePaths = $shouldPreserve;
         return true;
@@ -5426,10 +5485,47 @@ MIGRATED;
         
         }
         
+        $updateMeta = false;
+        $fixedSizes = [];
+        $sizesToFix = arrayPath( $meta, 'sizes', [] );
+        
+        if ( count( $sizesToFix ) > 0 ) {
+            foreach ( $sizesToFix as $sizeName => $sizeData ) {
+                $key = arrayPath( $sizeData, 's3/key' );
+                
+                if ( !empty($key) ) {
+                    $fname = basename( $key );
+                    
+                    if ( arrayPath( $sizeData, 'file', null ) !== $fname ) {
+                        $sizeData['file'] = $fname;
+                        $updateMeta = true;
+                    }
+                
+                }
+                
+                $fixedSizes[$sizeName] = $sizeData;
+            }
+            $meta['sizes'] = $fixedSizes;
+        }
+        
         
         if ( empty($provider) && $providerWorked >= 1 ) {
             $reportLine[] = 'Fixed missing provider.';
             $meta['s3']['provider'] = StorageToolSettings::driver();
+            $updateMeta = true;
+        }
+        
+        $key = arrayPath( $meta, 's3/key', null );
+        if ( !empty($key) ) {
+            
+            if ( arrayPath( $meta, 'file', null ) !== $key ) {
+                $meta['file'] = $key;
+                $updateMeta = true;
+                update_post_meta( $postId, '_wp_attached_file', $key );
+            }
+        
+        }
+        if ( $updateMeta ) {
             
             if ( $metaFromAttachment ) {
                 update_post_meta( $postId, '_wp_attachment_metadata', $meta );
@@ -5438,7 +5534,6 @@ MIGRATED;
             }
         
         }
-        
         $reporter->add( $reportLine );
     }
 
