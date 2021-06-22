@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 5.7.2
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.2.36
+Stable tag: 4.2.37
 Requires PHP: 7.1
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -105,6 +105,11 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 == Changelog ==
 
+= 4.2.37 - 6/22/2021 =
+
+* Fixed an issue when running tasks that contained no data.
+* Fixes for Google Web Stories integration (Premium).
+
 = 4.2.36 - 6/20/2021 =
 
 * Added new options to Rebuild Thumbnails task.  You can now specify which media items get rebuilt; either all of them, only those that are missing sizes or those that are missing specific sizes.
@@ -116,6 +121,7 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 * The Media Cloud task heartbeat will now only be sent one time per user per browser regardless of the number of open tabs or windows.  Previously, if an administrator had 15 tabs open in the same browser, it would send 15 heartbeats.  Now only 1 tab will send a heartbeat and when that tab is closed, another open tab will take over sending the heartbeat.  Note that heartbeats are only sent by administrator level users or users with the `mcloud_heartbeat` permission.
 * Fixed a javascript error with the real time debug log viewer.
 * Rebuild thumbnails will now correctly rebuild thumbnails when Imgix is enabled.
+* Minor UI tweaks.
 
 = 4.2.35 - 6/17/2021 =
 

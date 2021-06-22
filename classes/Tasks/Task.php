@@ -691,7 +691,9 @@ abstract class Task extends Model implements \JsonSerializable {
 	 * Called when the task has finished processing for a cycle
 	 */
 	public function didFinish() {
-		$this->reporter()->close();
+		if (!empty($this->reporter())) {
+			$this->reporter()->close();
+		}
 	}
 
 	/**

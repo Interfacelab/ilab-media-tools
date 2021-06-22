@@ -859,8 +859,9 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
      * @throws \MediaCloud\Plugin\Tools\Storage\StorageException
      */
 	public function getAttachmentURL($url, $post_id) {
+        $mimeType = get_post_mime_type($post_id);
+
 	    if ($this->settings->skipGifs) {
-	        $mimeType = get_post_mime_type($post_id);
 	        if ($mimeType == 'image/gif') {
                 /** @var StorageTool $storageTool */
                 $storageTool = ToolsManager::instance()->tools['storage'];
@@ -869,6 +870,12 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
                 return $gifURL;
             }
         }
+
+	    if (strpos($mimeType, 'image') !== 0) {
+		    if (empty(apply_filters('media-cloud/imgix/allow-non-images', false, $mimeType, $url, $post_id))) {
+		    	return $url;
+		    }
+	    }
 
         return parent::getAttachmentURL($url, $post_id);
 	}
