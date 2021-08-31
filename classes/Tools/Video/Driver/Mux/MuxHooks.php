@@ -622,11 +622,10 @@ class MuxHooks
             'url' => $url,
         ] );
         $policy = PlaybackPolicy::PUBLIC_PLAYBACK_POLICY;
-        $mp4Support = 'none';
         $req = new CreateAssetRequest( [
             'input'            => $input,
             'playback_policy'  => $policy,
-            'mp4_support'      => $mp4Support,
+            'mp4_support'      => ( !empty($this->settings->mp4Support) ? 'standard' : 'none' ),
             'normalize_audio'  => ( !empty($this->settings->normalizeAudio) ? true : false ),
             'per_title_encode' => ( !empty($this->settings->perTitleEncoding) ? true : false ),
             'test'             => ( !empty($this->settings->testMode) ? true : false ),

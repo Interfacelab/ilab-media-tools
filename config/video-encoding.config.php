@@ -74,6 +74,12 @@ return [
 				"title" => "Encoding Settings",
 				"doc_link" => 'https://support.mediacloud.press/articles/documentation/video-encoding/mux-encoding-settings',
 				"options" => [
+					"media-cloud-mux-mp4-support" => [
+						"title" => "MP4 Support",
+						"description" => "Enabling MP4 Support on Mux Assets",
+						"type" => "checkbox",
+						"default" => false
+					],					
 					"media-cloud-mux-normalize-audio" => [
 						"title" => "Normalize Audio",
 						"description" => "Normalize the audio track loudness level.",

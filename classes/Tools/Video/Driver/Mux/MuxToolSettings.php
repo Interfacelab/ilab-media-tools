@@ -40,6 +40,7 @@ class MuxToolSettings extends ToolSettings {
 		'webhookSecret' => ['media-cloud-mux-webhook-secret', null, null],
 		'processUploads' => ['media-cloud-mux-process-uploads', null, true],
 		'deleteFromMux' => ['media-cloud-mux-delete-uploads', null, true],
+		'mp4Support' => ['media-cloud-mux-mp4-support', null, false],
 		'normalizeAudio' => ['media-cloud-mux-normalize-audio', null, false],
 		'perTitleEncoding' => ['media-cloud-mux-per-title-encoding', null, false],
 		'testMode' => ['media-cloud-mux-test-mode', null, false],
