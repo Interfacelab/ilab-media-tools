@@ -205,7 +205,7 @@ class MuxTool extends Tool
             ] );
         } );
         add_filter(
-            'block_categories',
+            'block_categories_all',
             function ( $categories, $post ) {
             foreach ( $categories as $category ) {
                 if ( $category['slug'] === 'mediacloud' ) {
