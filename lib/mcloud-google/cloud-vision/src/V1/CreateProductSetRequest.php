@@ -91,11 +91,21 @@ class CreateProductSetRequest extends \MediaCloud\Vendor\Google\Protobuf\Interna
      * Required. The ProductSet to create.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.ProductSet product_set = 2 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ProductSet
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ProductSet|null
      */
     public function getProductSet()
     {
         return $this->product_set;
+    }
+
+    public function hasProductSet()
+    {
+        return isset($this->product_set);
+    }
+
+    public function clearProductSet()
+    {
+        unset($this->product_set);
     }
 
     /**

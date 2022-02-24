@@ -164,6 +164,8 @@ use MediaCloud\Vendor\Aws\AwsClient;
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise resendConfirmationCodeAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result respondToAuthChallenge(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise respondToAuthChallengeAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result revokeToken(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise revokeTokenAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result setRiskConfiguration(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise setRiskConfigurationAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result setUICustomization(array $args = [])

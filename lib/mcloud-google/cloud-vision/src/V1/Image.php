@@ -18,6 +18,8 @@ class Image extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      * Image content, represented as a stream of bytes.
      * Note: As with all `bytes` fields, protobuffers use a pure binary
      * representation, whereas JSON representations use base64.
+     * Currently, this field only works for BatchAnnotateImages requests. It does
+     * not work for AsyncBatchAnnotateImages requests.
      *
      * Generated from protobuf field <code>bytes content = 1;</code>
      */
@@ -41,6 +43,8 @@ class Image extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      *           Image content, represented as a stream of bytes.
      *           Note: As with all `bytes` fields, protobuffers use a pure binary
      *           representation, whereas JSON representations use base64.
+     *           Currently, this field only works for BatchAnnotateImages requests. It does
+     *           not work for AsyncBatchAnnotateImages requests.
      *     @type \MediaCloud\Vendor\Google\Cloud\Vision\V1\ImageSource $source
      *           Google Cloud Storage image location, or publicly-accessible image
      *           URL. If both `content` and `source` are provided for an image, `content`
@@ -55,6 +59,8 @@ class Image extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      * Image content, represented as a stream of bytes.
      * Note: As with all `bytes` fields, protobuffers use a pure binary
      * representation, whereas JSON representations use base64.
+     * Currently, this field only works for BatchAnnotateImages requests. It does
+     * not work for AsyncBatchAnnotateImages requests.
      *
      * Generated from protobuf field <code>bytes content = 1;</code>
      * @return string
@@ -68,6 +74,8 @@ class Image extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      * Image content, represented as a stream of bytes.
      * Note: As with all `bytes` fields, protobuffers use a pure binary
      * representation, whereas JSON representations use base64.
+     * Currently, this field only works for BatchAnnotateImages requests. It does
+     * not work for AsyncBatchAnnotateImages requests.
      *
      * Generated from protobuf field <code>bytes content = 1;</code>
      * @param string $var
@@ -87,11 +95,21 @@ class Image extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      * takes precedence and is used to perform the image annotation request.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.ImageSource source = 2;</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ImageSource
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ImageSource|null
      */
     public function getSource()
     {
         return $this->source;
+    }
+
+    public function hasSource()
+    {
+        return isset($this->source);
+    }
+
+    public function clearSource()
+    {
+        unset($this->source);
     }
 
     /**

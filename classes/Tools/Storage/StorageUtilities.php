@@ -333,7 +333,7 @@ class StorageUtilities
     
     //endregion
     //region Fix Metadata
-    public function fixMetadata( $postId )
+    public function fixMetadata( $postId, $additionalSizes = array() )
     {
         disableHooks( [
             'get_attached_file',
@@ -526,6 +526,17 @@ class StorageUtilities
                 continue;
             }
         }
+        
+        if ( count( $additionalSizes ) > 0 ) {
+            $sizeKeys = array_keys( arrayPath( $meta, 'sizes', [] ) );
+            $diff = array_diff( array_keys( $additionalSizes ), $sizeKeys );
+            if ( count( $diff ) > 0 ) {
+                foreach ( $diff as $addedSizeName ) {
+                    $meta['sizes'][$addedSizeName] = $additionalSizes[$addedSizeName];
+                }
+            }
+        }
+        
         update_post_meta( $postId, '_wp_attachment_metadata', $meta );
         return true;
     }

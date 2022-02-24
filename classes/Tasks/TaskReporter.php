@@ -25,6 +25,7 @@ class TaskReporter implements ITaskReporter {
 	private $reportCSV = null;
 	private $taskFileName = null;
 	private $alwaysGenerate = false;
+	private $suffix = null;
 
 	protected $headerFields = [];
 
@@ -34,8 +35,10 @@ class TaskReporter implements ITaskReporter {
 	 * @param Task|string $taskOrFileName
 	 * @param array $headerFields
 	 */
-	public function __construct($taskOrFileName, array $headerFields, bool $alwaysGenerate = false) {
+	public function __construct($taskOrFileName, array $headerFields, bool $alwaysGenerate = false, $suffix = null) {
 		$this->headerFields = $headerFields;
+		$this->suffix = empty($suffix) ? '' : "-{$suffix}";
+
 
 		if ($taskOrFileName instanceof Task) {
 			$this->task = $taskOrFileName;
@@ -105,7 +108,7 @@ class TaskReporter implements ITaskReporter {
 
 				$reportFile = $this->taskFileName;
 			} else {
-				$reportFile = trailingslashit($reportDir)."{$this->task::identifier()}-{$this->task->tuid}.csv";
+				$reportFile = trailingslashit($reportDir)."{$this->task::identifier()}-{$this->task->tuid}{$this->suffix}.csv";
 			}
 
 			$exists = file_exists($reportFile);

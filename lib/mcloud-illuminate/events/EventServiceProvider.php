@@ -1,8 +1,8 @@
 <?php
 
 namespace MediaCloud\Vendor\Illuminate\Events;
-use MediaCloud\Vendor\Illuminate\Support\ServiceProvider;
 use MediaCloud\Vendor\Illuminate\Contracts\Queue\Factory as QueueFactoryContract;
+use MediaCloud\Vendor\Illuminate\Support\ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
 {

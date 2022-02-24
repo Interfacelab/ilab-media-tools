@@ -23,4 +23,7 @@ return [
 		"\\MediaCloud\\Plugin\\Tools\\Tasks\\CLI\\TasksCommands"
 	],
 	"env" => "ILAB_MEDIA_TASKS_ENABLED",  // this is always enabled btw
+	"settings" => [
+		"options-group" => "media-cloud-options-group-tasks",
+	]
 ];

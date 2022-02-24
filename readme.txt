@@ -2,11 +2,11 @@
 Contributors: mediacloud, interfacelab, freemius
 Tags: offload, amazon, s3, imgix, uploads, video, video encoding, google cloud storage, digital ocean spaces, wasabi, media, cdn, rekognition, cloudfront, images, crop, image editing, image editor, optimize, image optimization, media library, offload, offload s3, filepicker, smush, imagify, shortpixel
 Requires at least: 4.9
-Tested up to: 5.7.2
+Tested up to: 5.9.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.2.37
-Requires PHP: 7.1
+Stable tag: 4.3.1
+Requires PHP: 7.4
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
 
@@ -104,6 +104,40 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 
 == Changelog ==
+
+= 4.3.1 - 2/24/2022 =
+
+* **NOW REQUIRES PHP 7.4**  Installing on PHP < 7.4 will not work and result in errors.
+* Sign up to be notified about our new product for WordPress coming in April 2022: [Preflight for WordPress](https://preflight.ju.mp)
+* Fixed compatibility with BuddyPress 6.x
+* Fixed compatibility with BuddyBoss 1.8.x including video.  **Note:** Mux encoding does not work with BuddyBoss and it's impossible to make it work.  You can have it enabled and Mux will encode videos but the videos that are played on the front end will be the uploaded MP4 source.  It's best to turn Mux off if you are using it with BuddyBoss.
+* Added new Wasabi and S3 regions.
+* All third party libraries have been updated to the latest versions.
+* Fixed MUX gutenberg block registration
+* Filmstrip generation with Mux now warns you if GD is not installed
+* Media Cloud now makes **EWWW Image Optimizer** run during the upload process which fixes a lot of issues with other plugins like Elementor.  You can disable this in **Cloud Storage Settings** if your uploads have become unbearably slow.
+* Fixed compatibility with **EWWW Image Optimizer** bulk optimizer.
+* Generated `.webp` file names are stored in S3 metadata.
+* `.webp` files are deleted from cloud storage when deleting an upload.
+* When queueing deletes, you can now specify the delay in minutes before items in the queue get processed.
+* Built-in image optimizer now properly queues deletes if that setting is enabled.
+* For the free version, if you are using Elementor with an image optimizer that isn't **EWWW Image Optimizer**, you are going to have problems and that configuration isn't supported.  You should consider a switch to EWWW or upgrading to the premium version.
+* For the premium version, if you are using Elementor with an image optimizer that isn't **EWWW Image Optimizer**, make sure to turn on **Queue Deletes** in **Cloud Storage Settings** and **Auto Update Elementor** in **Integration Settings**.
+* Fix for images specified in the customizer when using the Astra theme.
+* PDF thumbnails generated with the ImageMagick extension are now uploaded to cloud storage properly.
+* Fixed an error with PDF uploads and ImageMagick that would prevent the PDF from being uploaded to cloud storage in certain circumstances.
+* Fixed the Render PDF functionality of imgix to now properly render PDFs.
+* Large PDF uploads would cause a fatal memory error on some systems.  Now, you can now upload PDFs of any size without issues (subject to WordPress and web server limitations).
+* PDF upload speed should be greatly improved.  If you don't care about generating PDF preview images, you can improve it even more by turning off **Extract PDF Page Size** in the **Image and PDF Upload Handling** section of **Cloud Storage Settings**.
+* Added a new setting **Background Only When Using the Media Library** that, when enabled, limits image optimizations to only run in the background when using the WordPress Media Library pages in the admin, otherwise the image optimizations will run during the upload.  Enabling this could improve compatibility with some plugins.
+* Image Optimizations that fail would prevent the upload from being transferred to cloud storage.  That has been fixed.
+* Updated the Imagify Image Optimization driver.
+* Background optimizations now start a lot a sooner.
+* Added **Update URLs** task to search and replace URLs in the WordPress database.
+* Added a switch to the **Migrate to Cloud** task that will do a search and replace for migrated URLs during the migration process.
+* When files are deleted from the server, everything about the deletion is now logged when debugging is enabled.
+* Fixed issues with WordPress 5.8 and 5.9
+* Fixed compatibility with PHP 7.4 and 8.0
 
 = 4.2.37 - 6/22/2021 =
 

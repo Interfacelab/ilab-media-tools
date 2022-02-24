@@ -63,11 +63,21 @@ class OutputConfig extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      * The Google Cloud Storage location to write the output(s) to.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.GcsDestination gcs_destination = 1;</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\GcsDestination
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\GcsDestination|null
      */
     public function getGcsDestination()
     {
         return $this->gcs_destination;
+    }
+
+    public function hasGcsDestination()
+    {
+        return isset($this->gcs_destination);
+    }
+
+    public function clearGcsDestination()
+    {
+        unset($this->gcs_destination);
     }
 
     /**

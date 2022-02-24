@@ -30,9 +30,9 @@ class MonthField extends AbstractField
     /**
      * {@inheritdoc}
      */
-    public function isSatisfiedBy(DateTimeInterface $date, $value): bool
+    public function isSatisfiedBy(DateTimeInterface $date, $value, bool $invert): bool
     {
-        if ($value == '?') {
+        if ($value === '?') {
             return true;
         }
 
@@ -44,14 +44,16 @@ class MonthField extends AbstractField
     /**
      * @inheritDoc
      *
-     * @param \DateTime|\DateTimeImmutable &$date
+     * @param \DateTime|\DateTimeImmutable $date
      */
-    public function increment(DateTimeInterface &$date, $invert = false): FieldInterface
+    public function increment(DateTimeInterface &$date, $invert = false, $parts = null): FieldInterface
     {
-        if ($invert) {
-            $date = $date->modify('last day of previous month')->setTime(23, 59);
+        if (! $invert) {
+            $date = $date->modify('first day of next month');
+            $date = $date->setTime(0, 0);
         } else {
-            $date = $date->modify('first day of next month')->setTime(0, 0);
+            $date = $date->modify('last day of previous month');
+            $date = $date->setTime(23, 59);
         }
 
         return $this;

@@ -6,7 +6,6 @@ use MediaCloud\Vendor\Aws\CacheInterface;
 use MediaCloud\Vendor\Aws\ConfigurationProviderInterface;
 use MediaCloud\Vendor\Aws\S3\UseArnRegion\Exception\ConfigurationException;
 use MediaCloud\Vendor\GuzzleHttp\Promise;
-use function MediaCloud\Vendor\Aws\safe_is_readable;
 
 /**
  * A configuration provider is a function that returns a promise that is
@@ -104,7 +103,7 @@ class ConfigurationProvider extends AbstractConfigurationProvider
             // Use config from environment variables, if available
             $useArnRegion = getenv(self::ENV_USE_ARN_REGION);
             if (!empty($useArnRegion)) {
-                return Promise\promise_for(
+                return Promise\Create::promiseFor(
                     new Configuration($useArnRegion)
                 );
             }
@@ -132,9 +131,9 @@ class ConfigurationProvider extends AbstractConfigurationProvider
         $profile = $profile ?: (getenv(self::ENV_PROFILE) ?: 'default');
 
         return function () use ($profile, $filename) {
-            if (!safe_is_readable($filename)) {
-                return self::reject("Cannot read configuration from $filename");
-            }
+//            if (!@is_readable($filename)) {
+            return self::reject("Cannot read configuration from $filename");
+//            }
 
             // Use INI_SCANNER_NORMAL instead of INI_SCANNER_TYPED for PHP 5.5 compatibility
             $data = \MediaCloud\Vendor\Aws\parse_ini_file($filename, true, INI_SCANNER_NORMAL);
@@ -154,7 +153,7 @@ class ConfigurationProvider extends AbstractConfigurationProvider
                 $data[$profile][self::INI_USE_ARN_REGION] = false;
             }
 
-            return Promise\promise_for(
+            return Promise\Create::promiseFor(
                 new Configuration($data[$profile][self::INI_USE_ARN_REGION])
             );
         };
@@ -168,7 +167,7 @@ class ConfigurationProvider extends AbstractConfigurationProvider
     public static function fallback()
     {
         return function () {
-            return Promise\promise_for(
+            return Promise\Create::promiseFor(
                 new Configuration(self::DEFAULT_USE_ARN_REGION)
             );
         };

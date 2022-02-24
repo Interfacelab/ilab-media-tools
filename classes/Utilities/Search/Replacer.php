@@ -85,7 +85,8 @@ class Replacer {
 				}
 			}
 
-			$unserialized = @unserialize($data);
+			$unserialized = (!is_serialized($data)) ? false : @unserialize($data);
+
 			if(is_string($data) && false !== $unserialized) {
 				$data = $this->run_recursively($from, $to, $unserialized, true, $recursion_level + 1);
 			} elseif(is_array($data)) {

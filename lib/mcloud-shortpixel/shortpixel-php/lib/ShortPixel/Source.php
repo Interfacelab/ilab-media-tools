@@ -24,6 +24,7 @@ class Source {
         $files = array();
         foreach($paths as $path) {
             if (!file_exists($path)) throw new ClientException("File not found: " . $path);
+            if (is_dir($path)) throw new ClientException("For folders use fromFolder: " . $path);
             $files[] = $path;
         }
         $data       = array(
@@ -54,6 +55,8 @@ class Source {
      * @throws PersistException
      */
     public function folderInfo($path, $recurse = true, $fileList = false, $exclude = array(), $persistPath = false, $recurseDepth = PHP_INT_MAX, $retrySkipped = false){
+        $path = rtrim($path, '/\\');
+        $persistPath = $persistPath ? rtrim($persistPath, '/\\') : false;
         $persister = ShortPixel::getPersister($path);
         if(!$persister) {
             throw new PersistException("Persist is not enabled in options, needed for fetching folder info");
@@ -79,10 +82,12 @@ class Source {
         }
         //sanitize
         $maxFiles = max(1, min(ShortPixel::MAX_ALLOWED_FILES_PER_CALL, intval($maxFiles)));
+        $path = rtrim($path, '/\\');
+        $persistFolder = $persistFolder ? rtrim($persistFolder, '/\\') : false;
 
         $persister = ShortPixel::getPersister($path);
         if(!$persister) {
-            throw new PersistException("Persist is not enabled in options, needed for folder optimization");
+            throw new PersistException("Persist_type is not enabled in options, needed for folder optimization");
         }
         $paths = $persister->getTodo($path, $maxFiles, $exclude, $persistFolder, $maxTotalFileSize, $recurseDepth);
         if($paths) {
@@ -108,15 +113,21 @@ class Source {
 
         $path = rtrim($path, '/');
         $webPath = rtrim($webPath, '/');
-        $paths = ShortPixel::getPersister()->getTodo($path, ShortPixel::MAX_ALLOWED_FILES_PER_WEB_CALL, $exclude, $persistFolder, $recurseDepth);
-        $repl = (object)array("path" => $path, "web" => $webPath);
-        if(count($paths->files)) {
+        $persister = ShortPixel::getPersister();
+        if($persister === null) {
+            //cannot optimize from folder without persister.
+            throw new PersistException("Persist_type is not enabled in options, needed for folder optimization");
+        }
+        $paths = $persister->getTodo($path, ShortPixel::MAX_ALLOWED_FILES_PER_WEB_CALL, $exclude, $persistFolder, $recurseDepth);
+        $repl = (object)array("path" => $path . '/', "web" => $webPath . '/');
+        if($paths && count($paths->files)) {
             $items = array_merge($paths->files, array_values($paths->filesPending)); //not impossible to have filesPending - for example optimized partially without webPath then added it
             array_walk(
                 $items,
                 function(&$item, $key, $repl){
-                    $item = implode('/', array_map('rawurlencode', explode('/', str_replace($repl->path, '', $item))));
-                    $item = $repl->web . $item;
+                    $relPath = str_replace($repl->path, '', $item);
+                    $item = implode('/', array_map('rawurlencode', explode('/', $relPath)));
+                    $item = $repl->web . Source::filter($item);
                 }, $repl);
             ShortPixel::setOptions(array("base_url" => $webPath, "base_source_path" => $path));
 
@@ -157,5 +168,18 @@ class Source {
         );
 
         return new Commander($data, $this);
+    }
+    
+    protected static function filter($item) {
+        if(ShortPixel::opt('url_filter') == 'encode') {
+            //TODO apply base64 or crypt on $item, whichone makes for a shorter string.
+            $extPos = strripos($item,".");
+            $extension = substr($item,$extPos + 1);
+            $item = substr($item, 0, $extPos);
+            //$ExtensionContentType = ( $extension == "jpg" ) ? "jpeg" : $extension;
+            $item = base64_encode($item).'.'.$extension;
+            SPLog::Get(SPLog::PRODUCER_SOURCE)->log(SPLog::PRODUCER_SOURCE, "ENCODED URL PART: " . $item);
+        }
+        return $item;
     }
 }

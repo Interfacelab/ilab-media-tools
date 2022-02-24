@@ -25,18 +25,22 @@ use MediaCloud\Vendor\GuzzleHttp\Psr7\Request;
  */
 class KeyManager
 {
+    const DEFAULT_LOCATION = 'us-west1';
+
     private $keyFile;
     private $serviceAccountEmail;
     private $projectId;
     private $requestWrapper;
+    private $location;
 
-    public function __construct(array $keyFile, $serviceAccountEmail = null, $projectId = null)
+    public function __construct(array $keyFile, $serviceAccountEmail = null, $projectId = null, $location = null)
     {
         $this->keyFile = $keyFile;
         $this->serviceAccountEmail = $serviceAccountEmail
             ?: $keyFile['client_email'];
         $this->projectId = $projectId
             ?: $keyFile['project_id'];
+        $this->setLocation($location ?: self::DEFAULT_LOCATION);
 
         $this->requestWrapper = new RequestWrapper([
             'keyFile' => $this->keyFile,
@@ -52,6 +56,18 @@ class KeyManager
     public function setServiceAccountEmail($serviceAccountEmail)
     {
         $this->serviceAccountEmail = $serviceAccountEmail;
+    }
+
+    /**
+     * Set keyring location.
+     *
+     * Location name may be in upper or lower case.
+     *
+     * @param string $location
+     */
+    public function setLocation($location)
+    {
+        $this->location = strtolower($location);
     }
 
     /**
@@ -109,8 +125,9 @@ class KeyManager
                 new Request(
                     'POST',
                     sprintf(
-                        'https://cloudkms.googleapis.com/v1/projects/%s/locations/us-west1/keyRings?keyRingId=%s',
+                        'https://cloudkms.googleapis.com/v1/projects/%s/locations/%s/keyRings?keyRingId=%s',
                         $this->projectId,
+                        $this->location,
                         $keyRingId
                     )
                 )
@@ -132,8 +149,7 @@ class KeyManager
         $name = null;
 
         try {
-            $uri = 'https://cloudkms.googleapis.com/v1/projects/%s/' .
-                'locations/us-west1/keyRings/%s/cryptoKeys?cryptoKeyId=%s';
+            $uri = 'https://cloudkms.googleapis.com/v1/projects/%s/locations/%s/keyRings/%s/cryptoKeys?cryptoKeyId=%s';
 
             $response = $this->requestWrapper->send(
                 new Request(
@@ -141,6 +157,7 @@ class KeyManager
                     sprintf(
                         $uri,
                         $this->projectId,
+                        $this->location,
                         $keyRingId,
                         $cryptoKeyId
                     ),
@@ -152,8 +169,9 @@ class KeyManager
             $name = json_decode((string) $response->getBody(), true)['name'];
         } catch (ConflictException $ex) {
             $name = sprintf(
-                'projects/%s/locations/us-west1/keyRings/%s/cryptoKeys/%s' ,
+                'projects/%s/locations/%s/keyRings/%s/cryptoKeys/%s' ,
                 $this->projectId,
+                $this->location,
                 $keyRingId,
                 $cryptoKeyId
             );
@@ -173,13 +191,14 @@ class KeyManager
         ];
 
         $uri = 'https://cloudkms.googleapis.com/v1/projects/%s/locations/' .
-            'us-west1/keyRings/%s/cryptoKeys/%s:setIamPolicy';
+            '%s/keyRings/%s/cryptoKeys/%s:setIamPolicy';
         $this->requestWrapper->send(
             new Request(
                 'POST',
                 sprintf(
                     $uri,
                     $this->projectId,
+                    $this->location,
                     $keyRingId,
                     $cryptoKeyId
                 ),

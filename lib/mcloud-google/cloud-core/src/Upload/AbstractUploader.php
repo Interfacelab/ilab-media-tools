@@ -18,7 +18,7 @@
 namespace MediaCloud\Vendor\Google\Cloud\Core\Upload;
 use MediaCloud\Vendor\Google\Cloud\Core\RequestWrapper;
 use MediaCloud\Vendor\Google\Cloud\Core\UriTrait;
-use MediaCloud\Vendor\GuzzleHttp\Psr7;
+use MediaCloud\Vendor\GuzzleHttp\Psr7\Utils;
 use MediaCloud\Vendor\Psr\Http\Message\StreamInterface;
 
 /**
@@ -95,7 +95,7 @@ abstract class AbstractUploader
         array $options = []
     ) {
         $this->requestWrapper = $requestWrapper;
-        $this->data = Psr7\stream_for($data);
+        $this->data = Utils::streamFor($data);
         $this->uri = $uri;
         $this->metadata = isset($options['metadata']) ? $options['metadata'] : [];
         $this->chunkSize = isset($options['chunkSize']) ? $options['chunkSize'] : null;

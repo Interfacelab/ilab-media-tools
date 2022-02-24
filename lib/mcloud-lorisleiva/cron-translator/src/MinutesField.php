@@ -4,29 +4,36 @@ namespace MediaCloud\Vendor\Lorisleiva\CronTranslator;
 
 class MinutesField extends Field
 {
-    public $position = 0;
+    public int $position = 0;
 
     public function translateEvery()
     {
-        return 'every minute';
+        return $this->lang('minutes.every');
     }
 
     public function translateIncrement()
     {
-        if ($this->count > 1) {
-            return $this->times($this->count) . " every {$this->increment} minutes";
+        if ($this->getCount() > 1) {
+            return $this->lang('minutes.times_per_increment', [
+                'times' => $this->getTimes(),
+                'increment' => $this->getIncrement(),
+            ]);
         }
 
-        return "every {$this->increment} minutes";
+        return $this->lang('minutes.increment', [
+            'increment' => $this->getIncrement(),
+        ]);
     }
 
     public function translateMultiple()
     {
-        return $this->times($this->count) . " an hour";
+        return $this->lang('minutes.multiple', [
+            'times' => $this->getTimes(),
+        ]);
     }
 
-    public function format()
-    {   
-        return ($this->value < 10 ? '0' : '') . $this->value;
+    public function format(): string
+    {
+        return ($this->getValue() < 10 ? '0' : '') . $this->getValue();
     }
 }

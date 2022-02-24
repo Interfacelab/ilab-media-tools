@@ -78,6 +78,8 @@ use MediaCloud\Vendor\Aws\AwsClient;
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise putKeyPolicyAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result reEncrypt(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise reEncryptAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result replicateKey(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise replicateKeyAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result retireGrant(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise retireGrantAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result revokeGrant(array $args = [])
@@ -96,6 +98,8 @@ use MediaCloud\Vendor\Aws\AwsClient;
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise updateCustomKeyStoreAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result updateKeyDescription(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise updateKeyDescriptionAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result updatePrimaryRegion(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise updatePrimaryRegionAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result verify(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise verifyAsync(array $args = [])
  */

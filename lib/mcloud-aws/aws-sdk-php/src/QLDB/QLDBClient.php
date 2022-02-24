@@ -43,5 +43,7 @@ use MediaCloud\Vendor\Aws\AwsClient;
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise untagResourceAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result updateLedger(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise updateLedgerAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result updateLedgerPermissionsMode(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise updateLedgerPermissionsModeAsync(array $args = [])
  */
 class QLDBClient extends AwsClient {}

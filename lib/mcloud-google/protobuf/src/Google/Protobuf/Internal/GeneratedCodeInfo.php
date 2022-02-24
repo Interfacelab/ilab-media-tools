@@ -25,7 +25,6 @@ class GeneratedCodeInfo extends \MediaCloud\Vendor\Google\Protobuf\Internal\Mess
      * Generated from protobuf field <code>repeated .google.protobuf.GeneratedCodeInfo.Annotation annotation = 1;</code>
      */
     private $annotation;
-    private $has_annotation = false;
 
     /**
      * Constructor.
@@ -66,14 +65,8 @@ class GeneratedCodeInfo extends \MediaCloud\Vendor\Google\Protobuf\Internal\Mess
     {
         $arr = GPBUtil::checkRepeatedField($var, \MediaCloud\Vendor\Google\Protobuf\Internal\GPBType::MESSAGE, \MediaCloud\Vendor\Google\Protobuf\Internal\GeneratedCodeInfo\Annotation::class);
         $this->annotation = $arr;
-        $this->has_annotation = true;
 
         return $this;
-    }
-
-    public function hasAnnotation()
-    {
-        return $this->has_annotation;
     }
 
 }

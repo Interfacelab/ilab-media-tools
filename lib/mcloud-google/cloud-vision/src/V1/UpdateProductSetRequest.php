@@ -53,11 +53,21 @@ class UpdateProductSetRequest extends \MediaCloud\Vendor\Google\Protobuf\Interna
      * Required. The ProductSet resource which replaces the one on the server.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.ProductSet product_set = 1 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ProductSet
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ProductSet|null
      */
     public function getProductSet()
     {
         return $this->product_set;
+    }
+
+    public function hasProductSet()
+    {
+        return isset($this->product_set);
+    }
+
+    public function clearProductSet()
+    {
+        unset($this->product_set);
     }
 
     /**
@@ -82,11 +92,21 @@ class UpdateProductSetRequest extends \MediaCloud\Vendor\Google\Protobuf\Interna
      * Valid mask path is `display_name`.
      *
      * Generated from protobuf field <code>.google.protobuf.FieldMask update_mask = 2;</code>
-     * @return \MediaCloud\Vendor\Google\Protobuf\FieldMask
+     * @return \MediaCloud\Vendor\Google\Protobuf\FieldMask|null
      */
     public function getUpdateMask()
     {
         return $this->update_mask;
+    }
+
+    public function hasUpdateMask()
+    {
+        return isset($this->update_mask);
+    }
+
+    public function clearUpdateMask()
+    {
+        unset($this->update_mask);
     }
 
     /**

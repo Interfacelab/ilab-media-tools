@@ -20,7 +20,7 @@ class BytesValue extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>bytes value = 1;</code>
      */
-    private $value = '';
+    protected $value = '';
 
     /**
      * Constructor.

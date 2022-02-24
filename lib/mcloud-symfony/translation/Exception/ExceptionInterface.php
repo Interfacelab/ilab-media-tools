@@ -16,6 +16,6 @@ namespace MediaCloud\Vendor\Symfony\Component\Translation\Exception;
  *
  * @author Fabien Potencier <fabien@symfony.com>
  */
-interface ExceptionInterface
+interface ExceptionInterface extends \Throwable
 {
 }

@@ -25,8 +25,8 @@ use MediaCloud\Vendor\Firebase\JWT\SignatureInvalidException;
 use MediaCloud\Vendor\Google\Auth\Cache\MemoryCacheItemPool;
 use MediaCloud\Vendor\Google\Auth\HttpHandler\HttpClientCache;
 use MediaCloud\Vendor\Google\Auth\HttpHandler\HttpHandlerFactory;
-use MediaCloud\Vendor\GuzzleHttp\Psr7;
 use MediaCloud\Vendor\GuzzleHttp\Psr7\Request;
+use MediaCloud\Vendor\GuzzleHttp\Psr7\Utils;
 use InvalidArgumentException;
 use MediaCloud\Vendor\phpseclib\Crypt\RSA;
 use MediaCloud\Vendor\phpseclib\Math\BigInteger;
@@ -300,7 +300,7 @@ class AccessToken
             }
         }
 
-        $body = Psr7\stream_for(http_build_query(['token' => $token]));
+        $body = Utils::streamFor(http_build_query(['token' => $token]));
         $request = new Request('POST', self::OAUTH2_REVOKE_URI, [
             'Cache-Control' => 'no-store',
             'Content-Type'  => 'application/x-www-form-urlencoded',

@@ -63,11 +63,21 @@ class AsyncAnnotateFileRequest extends \MediaCloud\Vendor\Google\Protobuf\Intern
      * Required. Information about the input file.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.InputConfig input_config = 1;</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\InputConfig
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\InputConfig|null
      */
     public function getInputConfig()
     {
         return $this->input_config;
+    }
+
+    public function hasInputConfig()
+    {
+        return isset($this->input_config);
+    }
+
+    public function clearInputConfig()
+    {
+        unset($this->input_config);
     }
 
     /**
@@ -115,11 +125,21 @@ class AsyncAnnotateFileRequest extends \MediaCloud\Vendor\Google\Protobuf\Intern
      * Additional context that may accompany the image(s) in the file.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.ImageContext image_context = 3;</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ImageContext
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ImageContext|null
      */
     public function getImageContext()
     {
         return $this->image_context;
+    }
+
+    public function hasImageContext()
+    {
+        return isset($this->image_context);
+    }
+
+    public function clearImageContext()
+    {
+        unset($this->image_context);
     }
 
     /**
@@ -141,11 +161,21 @@ class AsyncAnnotateFileRequest extends \MediaCloud\Vendor\Google\Protobuf\Intern
      * Required. The desired output location and metadata (e.g. format).
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.OutputConfig output_config = 4;</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\OutputConfig
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\OutputConfig|null
      */
     public function getOutputConfig()
     {
         return $this->output_config;
+    }
+
+    public function hasOutputConfig()
+    {
+        return isset($this->output_config);
+    }
+
+    public function clearOutputConfig()
+    {
+        unset($this->output_config);
     }
 
     /**

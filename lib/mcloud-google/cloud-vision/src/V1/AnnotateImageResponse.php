@@ -318,11 +318,21 @@ class AnnotateImageResponse extends \MediaCloud\Vendor\Google\Protobuf\Internal\
      * text.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.TextAnnotation full_text_annotation = 12;</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\TextAnnotation
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\TextAnnotation|null
      */
     public function getFullTextAnnotation()
     {
         return $this->full_text_annotation;
+    }
+
+    public function hasFullTextAnnotation()
+    {
+        return isset($this->full_text_annotation);
+    }
+
+    public function clearFullTextAnnotation()
+    {
+        unset($this->full_text_annotation);
     }
 
     /**
@@ -347,11 +357,21 @@ class AnnotateImageResponse extends \MediaCloud\Vendor\Google\Protobuf\Internal\
      * If present, safe-search annotation has completed successfully.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.SafeSearchAnnotation safe_search_annotation = 6;</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\SafeSearchAnnotation
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\SafeSearchAnnotation|null
      */
     public function getSafeSearchAnnotation()
     {
         return $this->safe_search_annotation;
+    }
+
+    public function hasSafeSearchAnnotation()
+    {
+        return isset($this->safe_search_annotation);
+    }
+
+    public function clearSafeSearchAnnotation()
+    {
+        unset($this->safe_search_annotation);
     }
 
     /**
@@ -373,11 +393,21 @@ class AnnotateImageResponse extends \MediaCloud\Vendor\Google\Protobuf\Internal\
      * If present, image properties were extracted successfully.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.ImageProperties image_properties_annotation = 8;</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ImageProperties
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ImageProperties|null
      */
     public function getImagePropertiesAnnotation()
     {
         return $this->image_properties_annotation;
+    }
+
+    public function hasImagePropertiesAnnotation()
+    {
+        return isset($this->image_properties_annotation);
+    }
+
+    public function clearImagePropertiesAnnotation()
+    {
+        unset($this->image_properties_annotation);
     }
 
     /**
@@ -399,11 +429,21 @@ class AnnotateImageResponse extends \MediaCloud\Vendor\Google\Protobuf\Internal\
      * If present, crop hints have completed successfully.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.CropHintsAnnotation crop_hints_annotation = 11;</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\CropHintsAnnotation
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\CropHintsAnnotation|null
      */
     public function getCropHintsAnnotation()
     {
         return $this->crop_hints_annotation;
+    }
+
+    public function hasCropHintsAnnotation()
+    {
+        return isset($this->crop_hints_annotation);
+    }
+
+    public function clearCropHintsAnnotation()
+    {
+        unset($this->crop_hints_annotation);
     }
 
     /**
@@ -425,11 +465,21 @@ class AnnotateImageResponse extends \MediaCloud\Vendor\Google\Protobuf\Internal\
      * If present, web detection has completed successfully.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.WebDetection web_detection = 13;</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\WebDetection
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\WebDetection|null
      */
     public function getWebDetection()
     {
         return $this->web_detection;
+    }
+
+    public function hasWebDetection()
+    {
+        return isset($this->web_detection);
+    }
+
+    public function clearWebDetection()
+    {
+        unset($this->web_detection);
     }
 
     /**
@@ -451,11 +501,21 @@ class AnnotateImageResponse extends \MediaCloud\Vendor\Google\Protobuf\Internal\
      * If present, product search has completed successfully.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.ProductSearchResults product_search_results = 14;</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ProductSearchResults
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ProductSearchResults|null
      */
     public function getProductSearchResults()
     {
         return $this->product_search_results;
+    }
+
+    public function hasProductSearchResults()
+    {
+        return isset($this->product_search_results);
+    }
+
+    public function clearProductSearchResults()
+    {
+        unset($this->product_search_results);
     }
 
     /**
@@ -479,11 +539,21 @@ class AnnotateImageResponse extends \MediaCloud\Vendor\Google\Protobuf\Internal\
      * correct, even when `error` is set.
      *
      * Generated from protobuf field <code>.google.rpc.Status error = 9;</code>
-     * @return \MediaCloud\Vendor\Google\Rpc\Status
+     * @return \MediaCloud\Vendor\Google\Rpc\Status|null
      */
     public function getError()
     {
         return $this->error;
+    }
+
+    public function hasError()
+    {
+        return isset($this->error);
+    }
+
+    public function clearError()
+    {
+        unset($this->error);
     }
 
     /**
@@ -508,11 +578,21 @@ class AnnotateImageResponse extends \MediaCloud\Vendor\Google\Protobuf\Internal\
      * comes from.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.ImageAnnotationContext context = 21;</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ImageAnnotationContext
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ImageAnnotationContext|null
      */
     public function getContext()
     {
         return $this->context;
+    }
+
+    public function hasContext()
+    {
+        return isset($this->context);
+    }
+
+    public function clearContext()
+    {
+        unset($this->context);
     }
 
     /**

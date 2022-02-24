@@ -4,51 +4,53 @@ namespace MediaCloud\Vendor\Lorisleiva\CronTranslator;
 
 class DaysOfWeekField extends Field
 {
-    public $position = 4;
+    public int $position = 4;
 
     public function translateEvery()
     {
-        return 'every year';
+        return $this->lang('years.every');
     }
 
     public function translateIncrement()
     {
-        if ($this->count > 1) {
-            return "{$this->count} days of the week out of {$this->increment}";
+        if ($this->getCount() > 1) {
+            return $this->lang('days_of_week.multiple_per_increment', [
+                'count' => $this->getCount(),
+                'increment' => $this->getIncrement(),
+            ]);
         }
 
-        return "every {$this->increment} days of the week";
+        return $this->lang('days_of_week.increment', [
+            'increment' => $this->getIncrement(),
+        ]);
     }
-    
+
     public function translateMultiple()
     {
-        return "{$this->count} days a week";
+        return $this->lang('days_of_week.multiple_days_a_week', [
+            'count' => $this->getCount(),
+        ]);
     }
-    
-    public function translateOnce($fields)
+
+    public function translateOnce()
     {
-        if ($fields->day->hasType('Every') && ! $fields->day->dropped) {
+        if ($this->expression->day->hasType('Every') && ! $this->expression->day->dropped) {
             return; // DaysOfMonthField adapts to "Every Sunday".
         }
 
-        return "on {$this->format()}s";
+        return $this->lang('days_of_week.once_on_day', [
+            'day' => $this->format()
+        ]);
     }
 
-    public function format()
+    public function format(): string
     {
-        if ($this->value < 0 || $this->value > 7) {
-            throw new \Exception();
+        $weekday = $this->getValue() === 0 ? 7 : $this->getValue();
+
+        if ($weekday < 1 || $weekday > 7) {
+            throw new CronParsingException($this->expression->raw);
         }
 
-        return [
-            0 => 'Sunday',
-            1 => 'Monday',
-            2 => 'Tuesday',
-            3 => 'Wednesday',
-            4 => 'Thursday',
-            5 => 'Friday',
-            6 => 'Saturday',
-            7 => 'Sunday',
-        ][$this->value];
+        return $this->langCountable('days', $weekday);
     }
 }

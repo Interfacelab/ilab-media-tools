@@ -28,12 +28,16 @@ use MediaCloud\Vendor\Google\Cloud\Storage\Connection\ConnectionInterface;
  * notification contains information describing both the event that triggered it
  * and the object that changed.
  *
+ * To utilize this class and see more examples, please see the relevant
+ * notifications based methods exposed on {@see MediaCloud\Vendor\Google\Cloud\Storage\Bucket}.
+ *
  * Example:
  * ```
  * use MediaCloud\Vendor\Google\Cloud\Storage\StorageClient;
  *
  * $storage = new StorageClient();
  *
+ * // Fetch an existing notification by ID.
  * $bucket = $storage->bucket('my-bucket');
  * $notification = $bucket->notification('2482');
  * ```

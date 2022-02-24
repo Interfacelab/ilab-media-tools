@@ -4,7 +4,7 @@ namespace MediaCloud\Vendor\ShortPixel;
 
 class ShortPixel {
     const LIBRARY_CODE = "sp-sdk";
-    const VERSION = "1.6.4";
+    const VERSION = "1.8.7";
     const DEBUG_LOG = false;
 
     const MAX_ALLOWED_FILES_PER_CALL = 10;
@@ -28,7 +28,7 @@ class ShortPixel {
         "resize_width" => null, // in pixels. null means no resize
         "resize_height" => null, // in pixels. null means no resize
         "cmyk2rgb" => 1, // convert CMYK to RGB: 1 yes, 0 no
-        "convertto" => "", // if '+webp' then also the WebP version will be generated
+        "convertto" => "", // if '+webp' then also the WebP version will be generated, if +avif then also the AVIF version will be generated. Specify both with +webp|+avif
         "user" => "", //set the user needed for HTTP AUTH of the base_url
         "pass" => "", //se the pass needed for HTTP AUTH of the base_url
         // **** return options ****
@@ -37,6 +37,7 @@ class ShortPixel {
         // **** local options ****
         "total_wait" => 30, //seconds
         "base_url" => null, // base url of the images - used to generate the path for toFile by extracting from original URL and using the remaining path as relative path to base_path
+        "url_filter" => false, //the URL filter will be applied on the full inside base_url. Current available URL filters: encode (for base64_encode)
         "base_source_path" => "", // base path of the local files
         "base_path" => false, // base path to save the files
         "backup_path" => false, // backup path, relative to the optimization folder (base_source_path)
@@ -44,7 +45,7 @@ class ShortPixel {
         "persist_type" => null, // null - don't persist, otherwise "text" (.shortpixel text file in each folder), "exif" (mark in the EXIF that the image has been optimized) or "mysql" (to be implemented)
         "persist_name" => ".shortpixel",
         "notify_progress" => false,
-            "cache_time" => 0 // number of seconds to cache the folder results - the *Persister classes will cache the getTodo results and retrieve them from memcache if it's available.
+        "cache_time" => 0 // number of seconds to cache the folder results - the *Persister classes will cache the getTodo results and retrieve them from memcache if it's available.
         //"persist_user" => "user", // only for mysql
         //"persist_pass" => "pass" // only for mysql
         // "" => null,
@@ -70,7 +71,8 @@ class ShortPixel {
         "resize_width" => null, // in pixels. null means no resize
         "resize_height" => null,
         "cmyk2rgb" => 1,
-        "notify_me" => null, // should contain full URL of of notification script (notify.php)
+        "convertto" => "", // if '+webp' then also the WebP version will be generated, if +avif then also the AVIF version will be generated. Specify both with +webp|+avif
+        "notify_me" => null, // should contain full URL of of notification script (notify.php)- TO BE IMPLEMENTED
         "wait" => 30,
         //local options
         "total_wait" => 30,
@@ -338,7 +340,7 @@ function MB_basename($Path, $suffix = false){
     if(!$qqPath) { //this is not an UTF8 string!!
         $pathElements = explode('/', $Path);
         $fileName = end($pathElements);
-        $pos = strpos($fileName, $suffix);
+        $pos = gettype($suffix) == 'string' ? strpos($fileName, $suffix) : false;
         if($pos !== false) {
             return substr($fileName, 0, $pos);
         }
@@ -374,9 +376,19 @@ function spdbgd($var, $msg) {
 }
 
 function normalizePath($path) {
-    $patterns = array('~/{2,}~', '~/(\./)+~', '~([^/\.]+/(?R)*\.{2,}/)~', '~\.\./~');
-    $replacements = array('/', '/', '', '');
-    return preg_replace($patterns, $replacements, $path);
+    $abs = ($path[0] === '/') ? '/' : '';
+    $path = str_replace(array('/', '\\'), '/', $path);
+    $parts = array_filter(explode('/', $path), 'strlen');
+    $absolutes = array();
+    foreach ($parts as $part) {
+        if ('.' == $part) continue;
+        if ('..' == $part) {
+            array_pop($absolutes);
+        } else {
+            $absolutes[] = $part;
+        }
+    }
+    return $abs . implode('/', $absolutes);
 }
 
 function getMemcache() {

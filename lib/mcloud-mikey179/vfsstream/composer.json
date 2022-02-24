@@ -27,8 +27,11 @@
             "MediaCloud\\Vendor\\org\\bovigo\\vfs\\": "src/main/php"
         }
     },
+    "scripts": {
+        "test": "phpunit"
+    },
     "extra": {
         "branch-alias": []
     },
-    "version": "v1.6.8"
+    "version": "v1.6.10"
 }

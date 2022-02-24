@@ -7,7 +7,6 @@ use MediaCloud\Vendor\Aws\ClientSideMonitoring\Exception\ConfigurationException;
 use MediaCloud\Vendor\Aws\ConfigurationProviderInterface;
 use MediaCloud\Vendor\GuzzleHttp\Promise;
 use MediaCloud\Vendor\GuzzleHttp\Promise\PromiseInterface;
-use function MediaCloud\Vendor\Aws\safe_is_readable;
 
 /**
  * A configuration provider is a function that accepts no arguments and returns
@@ -109,7 +108,7 @@ class ConfigurationProvider extends AbstractConfigurationProvider
             // Use credentials from environment variables, if available
             $enabled = getenv(self::ENV_ENABLED);
             if ($enabled !== false) {
-                return Promise\promise_for(
+                return Promise\Create::promiseFor(
                     new Configuration(
                         $enabled,
                         getenv(self::ENV_HOST) ?: self::DEFAULT_HOST,
@@ -133,7 +132,7 @@ class ConfigurationProvider extends AbstractConfigurationProvider
     public static function fallback()
     {
         return function() {
-            return Promise\promise_for(
+            return Promise\Create::promiseFor(
                 new Configuration(
                     self::DEFAULT_ENABLED,
                     self::DEFAULT_HOST,
@@ -162,7 +161,7 @@ class ConfigurationProvider extends AbstractConfigurationProvider
         $profile = $profile ?: (getenv(self::ENV_PROFILE) ?: 'aws_csm');
 
         return function () use ($profile, $filename) {
-            if (!safe_is_readable($filename)) {
+            if (!@is_readable($filename)) {
                 return self::reject("Cannot read CSM config from $filename");
             }
             $data = \MediaCloud\Vendor\Aws\parse_ini_file($filename, true);
@@ -192,7 +191,7 @@ class ConfigurationProvider extends AbstractConfigurationProvider
                 $data[$profile]['csm_client_id'] = self::DEFAULT_CLIENT_ID;
             }
 
-            return Promise\promise_for(
+            return Promise\Create::promiseFor(
                 new Configuration(
                     $data[$profile]['csm_enabled'],
                     $data[$profile]['csm_host'],

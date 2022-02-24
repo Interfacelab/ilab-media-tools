@@ -637,5 +637,40 @@ namespace MediaCloud\Plugin\Utilities {
 			@set_time_limit( $limit ); // @codingStandardsIgnoreLine
 		}
 	}
+
+	/**
+	 * Safely finds an executable
+	 *
+	 * @param $executableName
+	 * @param string $versionSwitch
+	 *
+	 * @return false|mixed|string
+	 */
+	function ilab_find_executable($executableName, $versionSwitch = '') {
+		if (!function_exists( 'shell_exec') || (false !== strpos(ini_get( 'disable_functions' ), 'shell_exec')) || ini_get('safe_mode')) {
+			return false;
+		}
+
+		$allowed = ini_get('open_basedir');
+		$allowedDirs = explode(':', $allowed);
+		$foundExe = false;
+		foreach($allowedDirs as $allowedDir) {
+			$exe = trailingslashit($allowedDir).$executableName;
+			if (file_exists($exe)) {
+				$foundExe = $exe;
+				break;
+			}
+		}
+
+		if ($foundExe === false) {
+			$testExe = trim("$executableName $versionSwitch");
+			$result = shell_exec('/usr/local/bin/'.$testExe);
+			if (!empty($result)) {
+				$foundExe = '/usr/local/bin/'.$executableName;
+			}
+		}
+
+		return $foundExe;
+	}
 }
 

@@ -1,0 +1,53 @@
+<?php
+
+namespace MediaCloud\Vendor\Aws\Appflow;
+use MediaCloud\Vendor\Aws\AwsClient;
+
+/**
+ * This client is used to interact with the **Amazon Appflow** service.
+ * @method \MediaCloud\Vendor\Aws\Result createConnectorProfile(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise createConnectorProfileAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result createFlow(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise createFlowAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result deleteConnectorProfile(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteConnectorProfileAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result deleteFlow(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteFlowAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result describeConnector(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise describeConnectorAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result describeConnectorEntity(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise describeConnectorEntityAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result describeConnectorProfiles(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise describeConnectorProfilesAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result describeConnectors(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise describeConnectorsAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result describeFlow(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise describeFlowAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result describeFlowExecutionRecords(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise describeFlowExecutionRecordsAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listConnectorEntities(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listConnectorEntitiesAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listConnectors(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listConnectorsAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listFlows(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listFlowsAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listTagsForResource(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listTagsForResourceAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result registerConnector(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise registerConnectorAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result startFlow(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise startFlowAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result stopFlow(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise stopFlowAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result tagResource(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise tagResourceAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result unregisterConnector(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise unregisterConnectorAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result untagResource(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise untagResourceAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result updateConnectorProfile(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise updateConnectorProfileAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result updateFlow(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise updateFlowAsync(array $args = [])
+ */
+class AppflowClient extends AwsClient {}

@@ -22,7 +22,6 @@ namespace MediaCloud\Vendor\Grpc;
 /**
  * CallInvoker is used to pass the self defined channel into the stub,
  * while intercept each RPC with the channel accessible.
- * THIS IS AN EXPERIMENTAL API.
  */
 interface CallInvoker
 {

@@ -65,5 +65,7 @@ use MediaCloud\Vendor\Aws\AwsClient;
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise updateRegistryAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result updateSchema(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise updateSchemaAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result exportSchema(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise exportSchemaAsync(array $args = [])
  */
 class SchemasClient extends AwsClient {}

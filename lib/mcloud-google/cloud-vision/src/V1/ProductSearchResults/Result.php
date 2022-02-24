@@ -59,11 +59,21 @@ class Result extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      * The Product.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.Product product = 1;</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\Product
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\Product|null
      */
     public function getProduct()
     {
         return $this->product;
+    }
+
+    public function hasProduct()
+    {
+        return isset($this->product);
+    }
+
+    public function clearProduct()
+    {
+        unset($this->product);
     }
 
     /**

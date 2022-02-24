@@ -5,9 +5,16 @@ namespace MediaCloud\Vendor\ParagonIE\EasyRSA;
 use \MediaCloud\Vendor\phpseclib\Crypt\RSA;
 use \MediaCloud\Vendor\ParagonIE\EasyRSA\Exception\InvalidKeyException;
 
+/**
+ * Class KeyPair
+ * @package ParagonIE\EasyRSA
+ */
 class KeyPair
 {
+    /** @var PrivateKey $privateKey */
     private $privateKey;
+
+    /** @var PublicKey $publicKey */
     protected $publicKey;
 
     public function __construct(PrivateKey $privateKey, PublicKey $publicKey = null)
@@ -34,6 +41,7 @@ class KeyPair
             throw new InvalidKeyException('Key size must be at least 2048 bits.');
         }
         $rsa = new RSA();
+        /** @var array{privatekey: string, publickey: string} $keypair */
         $keypair = $rsa->createKey($size);
         return new KeyPair(
             new PrivateKey($keypair['privatekey']),

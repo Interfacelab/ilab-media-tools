@@ -340,7 +340,11 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
 		$params = $this->buildImgixParams($params, $mimetype);
 		$params = apply_filters('media-cloud/dynamic-images/filter-parameters', $params, $size, $id, $meta);
 
-		$imageFile = (isset($meta['s3'])) ? $meta['s3']['key'] : $meta['file'];
+		if (($mimetype === 'application/pdf') && (!empty(arrayPath($meta, 'sizes/full/s3')))) {
+			$imageFile = arrayPath($meta, 'sizes/full/s3/key');
+		} else {
+			$imageFile = (isset($meta['s3'])) ? $meta['s3']['key'] : $meta['file'];
+		}
 
 		$result = [
 			$imgix->createURL(str_replace(['%2F', '%2540', '%40'], ['/', '@', '@'], urlencode($imageFile)), $params),
@@ -410,13 +414,13 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
 
 		$mimetype = get_post_mime_type($id);
 
-		if (!$this->settings->renderPDF && ($mimetype == 'image/svg+xml')) {
+		if (!$this->settings->renderSVG && ($mimetype == 'image/svg+xml')) {
 			return false;
 		}
 
-		if (!$this->settings->renderSVG && ($mimetype == 'application/pdf')) {
-			return false;
-		}
+//		if (!$this->settings->renderPDF && ($mimetype == 'application/pdf')) {
+//			return false;
+//		}
 
 		$meta = wp_get_attachment_metadata($id);
 		if(!$meta || empty($meta)) {
@@ -452,6 +456,13 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
 			$imgix->setIncludeLibraryParam(false);
 		}
 
+		if (($mimetype === 'application/pdf') && (!empty(arrayPath($meta, 'sizes/full/s3')))) {
+			if(!isset($meta['width']) || !isset($meta['height'])) {
+				$meta['width'] = isset($meta['width']) ? $meta['width'] : arrayPath($meta, 'sizes/full/width');
+				$meta['height'] = isset($meta['height']) ? $meta['height'] : arrayPath($meta, 'sizes/full/height');
+			}
+		}
+
 		if($size == 'full' && !$newSize) {
 			if(!isset($meta['width']) || !isset($meta['height'])) {
 				return false;
@@ -480,7 +491,11 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
 
 				update_post_meta($id, '_wp_attachment_metadata', $meta);
 			} else {
-				$imageFile = (isset($meta['s3']['key'])) ? $meta['s3']['key'] : $meta['file'];
+				if (($mimetype === 'application/pdf') && (!empty(arrayPath($meta, 'sizes/full/s3')))) {
+					$imageFile = arrayPath($meta, 'sizes/full/s3/key');
+				} else {
+					$imageFile = (isset($meta['s3']['key'])) ? $meta['s3']['key'] : $meta['file'];
+				}
 			}
 
 
@@ -709,7 +724,11 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
 
 			update_post_meta($id, '_wp_attachment_metadata', $meta);
 		} else {
-			$imageFile = (isset($meta['s3']['key'])) ? $meta['s3']['key'] : $meta['file'];
+			if (($mimetype === 'application/pdf') && (!empty(arrayPath($meta, 'sizes/full/s3')))) {
+				$imageFile = arrayPath($meta, 'sizes/full/s3/key');
+			} else {
+				$imageFile = (isset($meta['s3']['key'])) ? $meta['s3']['key'] : $meta['file'];
+			}
 		}
 
 		$result = [

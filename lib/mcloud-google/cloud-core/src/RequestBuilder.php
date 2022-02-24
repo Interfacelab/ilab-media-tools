@@ -16,7 +16,6 @@
  */
 
 namespace MediaCloud\Vendor\Google\Cloud\Core;
-use MediaCloud\Vendor\GuzzleHttp\Psr7;
 use MediaCloud\Vendor\GuzzleHttp\Psr7\Request;
 use MediaCloud\Vendor\GuzzleHttp\Psr7\Uri;
 use MediaCloud\Vendor\Psr\Http\Message\RequestInterface;

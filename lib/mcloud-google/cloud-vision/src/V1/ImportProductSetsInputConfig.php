@@ -36,11 +36,16 @@ class ImportProductSetsInputConfig extends \MediaCloud\Vendor\Google\Protobuf\In
      * of ImportProductSetRequests in each line.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.ImportProductSetsGcsSource gcs_source = 1;</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ImportProductSetsGcsSource
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ImportProductSetsGcsSource|null
      */
     public function getGcsSource()
     {
         return $this->readOneof(1);
+    }
+
+    public function hasGcsSource()
+    {
+        return $this->hasOneof(1);
     }
 
     /**

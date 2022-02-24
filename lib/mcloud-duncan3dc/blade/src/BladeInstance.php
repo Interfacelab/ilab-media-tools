@@ -11,7 +11,9 @@ use MediaCloud\Vendor\Illuminate\View\Engines\FileEngine;
 use MediaCloud\Vendor\Illuminate\View\Engines\PhpEngine;
 use MediaCloud\Vendor\Illuminate\View\Factory;
 use MediaCloud\Vendor\Illuminate\View\FileViewFinder;
+
 use function is_dir;
+use function method_exists;
 use function mkdir;
 
 /**
@@ -60,6 +62,7 @@ class BladeInstance implements BladeInterface
      *
      * @param string $path The default path for views
      * @param string $cache The default path for cached php
+     * @param DirectivesInterface $directives
      */
     public function __construct(string $path, string $cache, DirectivesInterface $directives = null)
     {
@@ -197,6 +200,36 @@ class BladeInstance implements BladeInterface
         $this
             ->getCompiler()
             ->directive($name, $handler);
+
+        return $this;
+    }
+
+
+    /** @inheritDoc */
+    public function aliasComponent(string $path, string $alias = null): BladeInterface
+    {
+        $compiler = $this->getCompiler();
+        if (method_exists($compiler, "aliasComponent")) {
+            $compiler->aliasComponent($path, $alias);
+        } else {
+            $compiler->component($path, $alias);
+        }
+
+        return $this;
+    }
+
+
+    /**
+     * @deprecated Use aliasComponent()
+     */
+    public function component(string $path, string $alias = null): BladeInterface
+    {
+        $compiler = $this->getCompiler();
+        if (method_exists($compiler, "aliasComponent")) {
+            $compiler->aliasComponent($path, $alias);
+        } else {
+            $compiler->component($path, $alias);
+        }
 
         return $this;
     }

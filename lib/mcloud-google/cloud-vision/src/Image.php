@@ -17,7 +17,7 @@
 
 namespace MediaCloud\Vendor\Google\Cloud\Vision;
 use MediaCloud\Vendor\Google\Cloud\Storage\StorageObject;
-use MediaCloud\Vendor\GuzzleHttp\Psr7;
+use MediaCloud\Vendor\GuzzleHttp\Psr7\Utils;
 use InvalidArgumentException;
 
 /**
@@ -248,7 +248,7 @@ class Image
             $this->image = $image->gcsUri();
         } elseif (is_resource($image)) {
             $this->type = self::TYPE_BYTES;
-            $this->image = Psr7\stream_for($image);
+            $this->image = Utils::streamFor($image);
         } else {
             throw new InvalidArgumentException(
                 'Given image is not valid. ' .

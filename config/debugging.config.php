@@ -53,6 +53,12 @@ return [
 						"max" => 1000000,
                         "default" => 1000
 					],
+					"mcloud-debug-use-ray" => [
+						"title" => "Use Spatie Ray",
+						"description" => "If enabled, and <a href='https://spatie.be/products/ray' target='_blank'>Spatie's Ray</a> is installed in your project either through their WordPress plugin or via composer, Media Cloud's logger will send log entries to their Ray app.",
+						"type" => "checkbox",
+						"default" => true,
+					],
 					"mcloud-debug-remote-url" => [
 						"title" => "Log Target Host",
 						"description" => "The remote log target to send logs to, this will be supplied by Media Cloud support.",

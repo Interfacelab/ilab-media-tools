@@ -24,7 +24,7 @@ use MediaCloud\Vendor\Google\Cloud\Core\SysvTrait;
  * @codeCoverageIgnore
  *
  * The system test is responsible for testing this class.
- * {@see \Google\Cloud\Tests\System\Core\Batch}
+ * {@see \MediaCloud\Vendor\Google\Cloud\Tests\System\Core\Batch}
  *
  * @experimental The experimental flag means that while we believe this method
  *      or class is ready for use, it may change before release in backwards-
@@ -144,6 +144,7 @@ class BatchDaemon
             }
             // Reload the config
             $this->runner->loadConfig();
+            gc_collect_cycles();
         }
     }
 

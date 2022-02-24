@@ -10,8 +10,8 @@ use MediaCloud\Vendor\Google\Protobuf\Internal\GPBUtil;
 /**
  * `Value` represents a dynamically typed value which can be either
  * null, a number, a string, a boolean, a recursive struct value, or a
- * list of values. A producer of value is expected to set one of that
- * variants, absence of any variant indicates an error.
+ * list of values. A producer of value is expected to set one of these
+ * variants. Absence of any variant indicates an error.
  * The JSON representation for `Value` is JSON value.
  *
  * Generated from protobuf message <code>google.protobuf.Value</code>
@@ -55,6 +55,11 @@ class Value extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
         return $this->readOneof(1);
     }
 
+    public function hasNullValue()
+    {
+        return $this->hasOneof(1);
+    }
+
     /**
      * Represents a null value.
      *
@@ -79,6 +84,11 @@ class Value extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
     public function getNumberValue()
     {
         return $this->readOneof(2);
+    }
+
+    public function hasNumberValue()
+    {
+        return $this->hasOneof(2);
     }
 
     /**
@@ -107,6 +117,11 @@ class Value extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
         return $this->readOneof(3);
     }
 
+    public function hasStringValue()
+    {
+        return $this->hasOneof(3);
+    }
+
     /**
      * Represents a string value.
      *
@@ -133,6 +148,11 @@ class Value extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
         return $this->readOneof(4);
     }
 
+    public function hasBoolValue()
+    {
+        return $this->hasOneof(4);
+    }
+
     /**
      * Represents a boolean value.
      *
@@ -152,11 +172,16 @@ class Value extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      * Represents a structured value.
      *
      * Generated from protobuf field <code>.google.protobuf.Struct struct_value = 5;</code>
-     * @return \MediaCloud\Vendor\Google\Protobuf\Struct
+     * @return \MediaCloud\Vendor\Google\Protobuf\Struct|null
      */
     public function getStructValue()
     {
         return $this->readOneof(5);
+    }
+
+    public function hasStructValue()
+    {
+        return $this->hasOneof(5);
     }
 
     /**
@@ -178,11 +203,16 @@ class Value extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      * Represents a repeated `Value`.
      *
      * Generated from protobuf field <code>.google.protobuf.ListValue list_value = 6;</code>
-     * @return \MediaCloud\Vendor\Google\Protobuf\ListValue
+     * @return \MediaCloud\Vendor\Google\Protobuf\ListValue|null
      */
     public function getListValue()
     {
         return $this->readOneof(6);
+    }
+
+    public function hasListValue()
+    {
+        return $this->hasOneof(6);
     }
 
     /**

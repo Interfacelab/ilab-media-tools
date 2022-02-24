@@ -67,11 +67,21 @@ class ProductSearchResults extends \MediaCloud\Vendor\Google\Protobuf\Internal\M
      * not reflected in the current results.
      *
      * Generated from protobuf field <code>.google.protobuf.Timestamp index_time = 2;</code>
-     * @return \MediaCloud\Vendor\Google\Protobuf\Timestamp
+     * @return \MediaCloud\Vendor\Google\Protobuf\Timestamp|null
      */
     public function getIndexTime()
     {
         return $this->index_time;
+    }
+
+    public function hasIndexTime()
+    {
+        return isset($this->index_time);
+    }
+
+    public function clearIndexTime()
+    {
+        unset($this->index_time);
     }
 
     /**

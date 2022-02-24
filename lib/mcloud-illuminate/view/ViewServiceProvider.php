@@ -1,12 +1,12 @@
 <?php
 
 namespace MediaCloud\Vendor\Illuminate\View;
-use MediaCloud\Vendor\Illuminate\View\Engines\PhpEngine;
 use MediaCloud\Vendor\Illuminate\Support\ServiceProvider;
-use MediaCloud\Vendor\Illuminate\View\Engines\FileEngine;
+use MediaCloud\Vendor\Illuminate\View\Compilers\BladeCompiler;
 use MediaCloud\Vendor\Illuminate\View\Engines\CompilerEngine;
 use MediaCloud\Vendor\Illuminate\View\Engines\EngineResolver;
-use MediaCloud\Vendor\Illuminate\View\Compilers\BladeCompiler;
+use MediaCloud\Vendor\Illuminate\View\Engines\FileEngine;
+use MediaCloud\Vendor\Illuminate\View\Engines\PhpEngine;
 
 class ViewServiceProvider extends ServiceProvider
 {
@@ -20,6 +20,8 @@ class ViewServiceProvider extends ServiceProvider
         $this->registerFactory();
 
         $this->registerViewFinder();
+
+        $this->registerBladeCompiler();
 
         $this->registerEngineResolver();
     }
@@ -78,6 +80,18 @@ class ViewServiceProvider extends ServiceProvider
     }
 
     /**
+     * Register the Blade compiler implementation.
+     *
+     * @return void
+     */
+    public function registerBladeCompiler()
+    {
+        $this->app->singleton('blade.compiler', function ($app) {
+            return new BladeCompiler($app['files'], $app['config']['view.compiled']);
+        });
+    }
+
+    /**
      * Register the engine resolver instance.
      *
      * @return void
@@ -132,15 +146,6 @@ class ViewServiceProvider extends ServiceProvider
      */
     public function registerBladeEngine($resolver)
     {
-        // The Compiler engine requires an instance of the CompilerInterface, which in
-        // this case will be the Blade compiler, so we'll first create the compiler
-        // instance to pass into the engine so it can compile the views properly.
-        $this->app->singleton('blade.compiler', function () {
-            return new BladeCompiler(
-                $this->app['files'], $this->app['config']['view.compiled']
-            );
-        });
-
         $resolver->register('blade', function () {
             return new CompilerEngine($this->app['blade.compiler']);
         });

@@ -84,7 +84,7 @@ class WrappedHttpHandler
                 . ' receiver to MediaCloud\Vendor\Aws\WrappedHttpHandler is not supported.');
         }
 
-        return Promise\promise_for($fn($request, $options))
+        return Promise\Create::promiseFor($fn($request, $options))
             ->then(
                 function (
                     ResponseInterface $res

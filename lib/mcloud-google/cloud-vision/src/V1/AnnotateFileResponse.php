@@ -68,11 +68,21 @@ class AnnotateFileResponse extends \MediaCloud\Vendor\Google\Protobuf\Internal\M
      * Information about the file for which this response is generated.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.InputConfig input_config = 1;</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\InputConfig
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\InputConfig|null
      */
     public function getInputConfig()
     {
         return $this->input_config;
+    }
+
+    public function hasInputConfig()
+    {
+        return isset($this->input_config);
+    }
+
+    public function clearInputConfig()
+    {
+        unset($this->input_config);
     }
 
     /**
@@ -149,11 +159,21 @@ class AnnotateFileResponse extends \MediaCloud\Vendor\Google\Protobuf\Internal\M
      * `responses` field will not be set in this case.
      *
      * Generated from protobuf field <code>.google.rpc.Status error = 4;</code>
-     * @return \MediaCloud\Vendor\Google\Rpc\Status
+     * @return \MediaCloud\Vendor\Google\Rpc\Status|null
      */
     public function getError()
     {
         return $this->error;
+    }
+
+    public function hasError()
+    {
+        return isset($this->error);
+    }
+
+    public function clearError()
+    {
+        unset($this->error);
     }
 
     /**

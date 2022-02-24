@@ -227,7 +227,10 @@ final class Core
      */
     public static function ensureConstantExists($name)
     {
-        Core::ensureTrue(\defined($name));
+        Core::ensureTrue(
+            \defined($name),
+            'Constant '.$name.' does not exists'
+        );
     }
 
     /**
@@ -240,7 +243,10 @@ final class Core
      */
     public static function ensureFunctionExists($name)
     {
-        Core::ensureTrue(\function_exists($name));
+        Core::ensureTrue(
+            \function_exists($name),
+            'function '.$name.' does not exists'
+        );
     }
 
     /**
@@ -433,6 +439,9 @@ final class Core
             $last = $xorsum = \hash_hmac($algorithm, $last, $password, true);
             // perform the other $count - 1 iterations
             for ($j = 1; $j < $count; $j++) {
+                /**
+                 * @psalm-suppress InvalidOperand
+                 */
                 $xorsum ^= ($last = \hash_hmac($algorithm, $last, $password, true));
             }
             $output .= $xorsum;

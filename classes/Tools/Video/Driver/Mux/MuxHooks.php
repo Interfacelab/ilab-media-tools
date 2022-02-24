@@ -328,6 +328,18 @@ class MuxHooks
      */
     protected function generateFilmstripForAttachment( $asset )
     {
+        Logger::info(
+            'Mux: generateFilmstripForAttachment',
+            [],
+            __METHOD__,
+            __LINE__
+        );
+        Logger::warning(
+            'Mux: generateFilmstripForAttachment could not be run, not premium',
+            [],
+            __METHOD__,
+            __LINE__
+        );
     }
     
     public function handleStaticRenditionsReady( $jsonData )

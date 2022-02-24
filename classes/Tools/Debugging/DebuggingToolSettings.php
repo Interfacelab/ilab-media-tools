@@ -15,6 +15,7 @@ use MediaCloud\Plugin\Utilities\Environment;
  * @property string $debugRemoteUrl
  * @property int $debugRemotePort
  * @property string[] $debugRegexFilters
+ * @property bool $useRay
  */
 class DebuggingToolSettings extends ToolSettings {
 	private $_debugRegexFilters = null;
@@ -25,6 +26,7 @@ class DebuggingToolSettings extends ToolSettings {
 		"maxDatabaseEntries" => ['mcloud-debug-max-database-entries', null, 1000],
 		"debugRemoteUrl" => ['mcloud-debug-remote-url', null, null],
 		"debugRemotePort" => ['mcloud-debug-remote-url-port', null, true],
+		"useRay" => ['mcloud-debug-use-ray', null, true],
 	];
 
 	public function __get($name) {

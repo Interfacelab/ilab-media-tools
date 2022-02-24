@@ -5,6 +5,7 @@ use MediaCloud\Vendor\Aws\Exception\AwsException;
 use MediaCloud\Vendor\GuzzleHttp\Promise;
 use MediaCloud\Vendor\GuzzleHttp\Promise\RejectedPromise;
 use MediaCloud\Vendor\Psr\Http\Message\RequestInterface;
+use Exception;
 
 /**
  * Returns promises that are rejected or fulfilled using a queue of
@@ -48,12 +49,12 @@ class MockHandler implements \Countable
     {
         foreach (func_get_args() as $value) {
             if ($value instanceof ResultInterface
-                || $value instanceof AwsException
+                || $value instanceof Exception
                 || is_callable($value)
             ) {
                 $this->queue[] = $value;
             } else {
-                throw new \InvalidArgumentException('Expected an MediaCloud\Vendor\Aws\ResultInterface or MediaCloud\Vendor\Aws\Exception\AwsException.');
+                throw new \InvalidArgumentException('Expected an MediaCloud\Vendor\Aws\ResultInterface or Exception.');
             }
         }
     }
@@ -105,7 +106,7 @@ class MockHandler implements \Countable
                 $meta['statusCode'] = 200;
             }
             $result['@metadata'] = $meta;
-            $result = Promise\promise_for($result);
+            $result = Promise\Create::promiseFor($result);
         }
 
         $result->then($this->onFulfilled, $this->onRejected);
@@ -138,6 +139,7 @@ class MockHandler implements \Countable
      *
      * @return int
      */
+    #[\ReturnTypeWillChange]
     public function count()
     {
         return count($this->queue);

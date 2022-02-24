@@ -3,9 +3,9 @@
 return [
     'interfaces' => [
         'google.cloud.vision.v1.ImageAnnotator' => [
-            'AsyncBatchAnnotateImages' => [
+            'AsyncBatchAnnotateFiles' => [
                 'longRunning' => [
-                    'operationReturnType' => '\MediaCloud\Vendor\Google\Cloud\Vision\V1\AsyncBatchAnnotateImagesResponse',
+                    'operationReturnType' => '\MediaCloud\Vendor\Google\Cloud\Vision\V1\AsyncBatchAnnotateFilesResponse',
                     'metadataReturnType' => '\MediaCloud\Vendor\Google\Cloud\Vision\V1\OperationMetadata',
                     'initialPollDelayMillis' => '20000',
                     'pollDelayMultiplier' => '1.5',
@@ -13,9 +13,9 @@ return [
                     'totalPollTimeoutMillis' => '86400000',
                 ],
             ],
-            'AsyncBatchAnnotateFiles' => [
+            'AsyncBatchAnnotateImages' => [
                 'longRunning' => [
-                    'operationReturnType' => '\MediaCloud\Vendor\Google\Cloud\Vision\V1\AsyncBatchAnnotateFilesResponse',
+                    'operationReturnType' => '\MediaCloud\Vendor\Google\Cloud\Vision\V1\AsyncBatchAnnotateImagesResponse',
                     'metadataReturnType' => '\MediaCloud\Vendor\Google\Cloud\Vision\V1\OperationMetadata',
                     'initialPollDelayMillis' => '20000',
                     'pollDelayMultiplier' => '1.5',

@@ -26,6 +26,8 @@ use MediaCloud\Vendor\Aws\AwsClient;
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise disableStageTransitionAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result enableStageTransition(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise enableStageTransitionAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result getActionType(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise getActionTypeAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result getJobDetails(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise getJobDetailsAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result getPipeline(array $args = [])
@@ -78,6 +80,8 @@ use MediaCloud\Vendor\Aws\AwsClient;
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise tagResourceAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result untagResource(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise untagResourceAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result updateActionType(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise updateActionTypeAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result updatePipeline(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise updatePipelineAsync(array $args = [])
  */

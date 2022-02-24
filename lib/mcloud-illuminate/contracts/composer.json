@@ -14,8 +14,8 @@
         }
     ],
     "require": {
-        "php": ">=7.0",
-        "mcloud-psr/container": "1.0.0",
+        "php": "^7.2.5|^8.0",
+        "mcloud-psr/container": "1.1.2",
         "mcloud-psr/simple-cache": "1.0.1"
     },
     "autoload": {
@@ -30,5 +30,5 @@
         "sort-packages": true
     },
     "minimum-stability": "dev",
-    "version": "v5.5.44"
+    "version": "v7.30.6"
 }

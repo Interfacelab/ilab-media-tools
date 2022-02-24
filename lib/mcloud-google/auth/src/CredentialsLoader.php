@@ -20,18 +20,23 @@ use MediaCloud\Vendor\Google\Auth\Credentials\InsecureCredentials;
 use MediaCloud\Vendor\Google\Auth\Credentials\ServiceAccountCredentials;
 use MediaCloud\Vendor\Google\Auth\Credentials\UserRefreshCredentials;
 use MediaCloud\Vendor\GuzzleHttp\ClientInterface;
+use RuntimeException;
+use UnexpectedValueException;
 
 /**
  * CredentialsLoader contains the behaviour used to locate and find default
  * credentials files on the file system.
  */
-abstract class CredentialsLoader implements FetchAuthTokenInterface
+abstract class CredentialsLoader implements
+    FetchAuthTokenInterface,
+    UpdateMetadataInterface
 {
     const TOKEN_CREDENTIAL_URI = 'https://oauth2.googleapis.com/token';
     const ENV_VAR = 'GOOGLE_APPLICATION_CREDENTIALS';
     const WELL_KNOWN_PATH = 'gcloud/application_default_credentials.json';
     const NON_WINDOWS_WELL_KNOWN_PATH_BASE = '.config';
-    const AUTH_METADATA_KEY = 'authorization';
+    const MTLS_WELL_KNOWN_PATH = '.secureConnect/context_aware_metadata.json';
+    const MTLS_CERT_ENV_VAR = 'GOOGLE_API_USE_CLIENT_CERTIFICATE';
 
     /**
      * @param string $cause
@@ -129,20 +134,29 @@ abstract class CredentialsLoader implements FetchAuthTokenInterface
      * @param string|array $scope the scope of the access request, expressed
      *        either as an Array or as a space-delimited String.
      * @param array $jsonKey the JSON credentials.
+     * @param string|array $defaultScope The default scope to use if no
+     *   user-defined scopes exist, expressed either as an Array or as a
+     *   space-delimited string.
+     *
      * @return ServiceAccountCredentials|UserRefreshCredentials
      */
-    public static function makeCredentials($scope, array $jsonKey)
-    {
+    public static function makeCredentials(
+        $scope,
+        array $jsonKey,
+        $defaultScope = null
+    ) {
         if (!array_key_exists('type', $jsonKey)) {
             throw new \InvalidArgumentException('json key is missing the type field');
         }
 
         if ($jsonKey['type'] == 'service_account') {
+            // Do not pass $defaultScope to ServiceAccountCredentials
             return new ServiceAccountCredentials($scope, $jsonKey);
         }
 
         if ($jsonKey['type'] == 'authorized_user') {
-            return new UserRefreshCredentials($scope, $jsonKey);
+            $anyScope = $scope ?: $defaultScope;
+            return new UserRefreshCredentials($anyScope, $jsonKey);
         }
 
         throw new \InvalidArgumentException('invalid value in the type field');
@@ -203,6 +217,7 @@ abstract class CredentialsLoader implements FetchAuthTokenInterface
      * export a callback function which updates runtime metadata.
      *
      * @return array updateMetadata function
+     * @deprecated
      */
     public function getUpdateMetadataFunc()
     {
@@ -222,6 +237,10 @@ abstract class CredentialsLoader implements FetchAuthTokenInterface
         $authUri = null,
         callable $httpHandler = null
     ) {
+        if (isset($metadata[self::AUTH_METADATA_KEY])) {
+            // Auth metadata has already been set
+            return $metadata;
+        }
         $result = $this->fetchAuthToken($httpHandler);
         if (!isset($result['access_token'])) {
             return $metadata;
@@ -230,5 +249,66 @@ abstract class CredentialsLoader implements FetchAuthTokenInterface
         $metadata_copy[self::AUTH_METADATA_KEY] = array('Bearer ' . $result['access_token']);
 
         return $metadata_copy;
+    }
+
+    /**
+     * Gets a callable which returns the default device certification.
+     *
+     * @throws UnexpectedValueException
+     * @return callable|null
+     */
+    public static function getDefaultClientCertSource()
+    {
+        if (!$clientCertSourceJson = self::loadDefaultClientCertSourceFile()) {
+            return null;
+        }
+        $clientCertSourceCmd = $clientCertSourceJson['cert_provider_command'];
+
+        return function () use ($clientCertSourceCmd) {
+            $cmd = array_map('escapeshellarg', $clientCertSourceCmd);
+            exec(implode(' ', $cmd), $output, $returnVar);
+
+            if (0 === $returnVar) {
+                return implode(PHP_EOL, $output);
+            }
+            throw new RuntimeException(
+                '"cert_provider_command" failed with a nonzero exit code'
+            );
+        };
+    }
+
+    /**
+     * Determines whether or not the default device certificate should be loaded.
+     *
+     * @return bool
+     */
+    public static function shouldLoadClientCertSource()
+    {
+        return filter_var(getenv(self::MTLS_CERT_ENV_VAR), FILTER_VALIDATE_BOOLEAN);
+    }
+
+    private static function loadDefaultClientCertSourceFile()
+    {
+        $rootEnv = self::isOnWindows() ? 'APPDATA' : 'HOME';
+        $path = sprintf('%s/%s', getenv($rootEnv), self::MTLS_WELL_KNOWN_PATH);
+        if (!file_exists($path)) {
+            return null;
+        }
+        $jsonKey = file_get_contents($path);
+        $clientCertSourceJson = json_decode($jsonKey, true);
+        if (!$clientCertSourceJson) {
+            throw new UnexpectedValueException('Invalid client cert source JSON');
+        }
+        if (!isset($clientCertSourceJson['cert_provider_command'])) {
+            throw new UnexpectedValueException(
+                'cert source requires "cert_provider_command"'
+            );
+        }
+        if (!is_array($clientCertSourceJson['cert_provider_command'])) {
+            throw new UnexpectedValueException(
+                'cert source expects "cert_provider_command" to be an array'
+            );
+        }
+        return $clientCertSourceJson;
     }
 }

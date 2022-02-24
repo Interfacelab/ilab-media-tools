@@ -13,8 +13,8 @@ $_OAUTH_SCOPE = 'https://www.googleapis.com/auth/cloud-platform';
 $_FIRESTORE_TARGET = 'firestore.googleapis.com:443';
 $_SPANNER_TARGET = 'spanner.googleapis.com:443';
 use MediaCloud\Vendor\Google\Auth\ApplicationDefaultCredentials;
-use Google\Cloud\Firestore\V1beta1\FirestoreGrpcClient;
-use Google\Cloud\Spanner\V1\SpannerGrpcClient;
+use MediaCloud\Vendor\Google\Cloud\Firestore\V1beta1\FirestoreGrpcClient;
+use MediaCloud\Vendor\Google\Cloud\Spanner\V1\SpannerGrpcClient;
 
 function getArgs(){
 	$options = getopt('',['api:','extension:']);

@@ -19,48 +19,39 @@ class DescriptorProto extends \MediaCloud\Vendor\Google\Protobuf\Internal\Messag
     /**
      * Generated from protobuf field <code>optional string name = 1;</code>
      */
-    protected $name = '';
-    private $has_name = false;
+    protected $name = null;
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.FieldDescriptorProto field = 2;</code>
      */
     private $field;
-    private $has_field = false;
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.FieldDescriptorProto extension = 6;</code>
      */
     private $extension;
-    private $has_extension = false;
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.DescriptorProto nested_type = 3;</code>
      */
     private $nested_type;
-    private $has_nested_type = false;
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.EnumDescriptorProto enum_type = 4;</code>
      */
     private $enum_type;
-    private $has_enum_type = false;
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.DescriptorProto.ExtensionRange extension_range = 5;</code>
      */
     private $extension_range;
-    private $has_extension_range = false;
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.OneofDescriptorProto oneof_decl = 8;</code>
      */
     private $oneof_decl;
-    private $has_oneof_decl = false;
     /**
      * Generated from protobuf field <code>optional .google.protobuf.MessageOptions options = 7;</code>
      */
     protected $options = null;
-    private $has_options = false;
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.DescriptorProto.ReservedRange reserved_range = 9;</code>
      */
     private $reserved_range;
-    private $has_reserved_range = false;
     /**
      * Reserved field names, which may not be used by fields in the same message.
      * A given name may only be reserved once.
@@ -68,7 +59,6 @@ class DescriptorProto extends \MediaCloud\Vendor\Google\Protobuf\Internal\Messag
      * Generated from protobuf field <code>repeated string reserved_name = 10;</code>
      */
     private $reserved_name;
-    private $has_reserved_name = false;
 
     /**
      * Constructor.
@@ -100,7 +90,17 @@ class DescriptorProto extends \MediaCloud\Vendor\Google\Protobuf\Internal\Messag
      */
     public function getName()
     {
-        return $this->name;
+        return isset($this->name) ? $this->name : '';
+    }
+
+    public function hasName()
+    {
+        return isset($this->name);
+    }
+
+    public function clearName()
+    {
+        unset($this->name);
     }
 
     /**
@@ -112,14 +112,8 @@ class DescriptorProto extends \MediaCloud\Vendor\Google\Protobuf\Internal\Messag
     {
         GPBUtil::checkString($var, True);
         $this->name = $var;
-        $this->has_name = true;
 
         return $this;
-    }
-
-    public function hasName()
-    {
-        return $this->has_name;
     }
 
     /**
@@ -140,14 +134,8 @@ class DescriptorProto extends \MediaCloud\Vendor\Google\Protobuf\Internal\Messag
     {
         $arr = GPBUtil::checkRepeatedField($var, \MediaCloud\Vendor\Google\Protobuf\Internal\GPBType::MESSAGE, \MediaCloud\Vendor\Google\Protobuf\Internal\FieldDescriptorProto::class);
         $this->field = $arr;
-        $this->has_field = true;
 
         return $this;
-    }
-
-    public function hasField()
-    {
-        return $this->has_field;
     }
 
     /**
@@ -168,14 +156,8 @@ class DescriptorProto extends \MediaCloud\Vendor\Google\Protobuf\Internal\Messag
     {
         $arr = GPBUtil::checkRepeatedField($var, \MediaCloud\Vendor\Google\Protobuf\Internal\GPBType::MESSAGE, \MediaCloud\Vendor\Google\Protobuf\Internal\FieldDescriptorProto::class);
         $this->extension = $arr;
-        $this->has_extension = true;
 
         return $this;
-    }
-
-    public function hasExtension()
-    {
-        return $this->has_extension;
     }
 
     /**
@@ -196,14 +178,8 @@ class DescriptorProto extends \MediaCloud\Vendor\Google\Protobuf\Internal\Messag
     {
         $arr = GPBUtil::checkRepeatedField($var, \MediaCloud\Vendor\Google\Protobuf\Internal\GPBType::MESSAGE, \MediaCloud\Vendor\Google\Protobuf\Internal\DescriptorProto::class);
         $this->nested_type = $arr;
-        $this->has_nested_type = true;
 
         return $this;
-    }
-
-    public function hasNestedType()
-    {
-        return $this->has_nested_type;
     }
 
     /**
@@ -224,14 +200,8 @@ class DescriptorProto extends \MediaCloud\Vendor\Google\Protobuf\Internal\Messag
     {
         $arr = GPBUtil::checkRepeatedField($var, \MediaCloud\Vendor\Google\Protobuf\Internal\GPBType::MESSAGE, \MediaCloud\Vendor\Google\Protobuf\Internal\EnumDescriptorProto::class);
         $this->enum_type = $arr;
-        $this->has_enum_type = true;
 
         return $this;
-    }
-
-    public function hasEnumType()
-    {
-        return $this->has_enum_type;
     }
 
     /**
@@ -252,14 +222,8 @@ class DescriptorProto extends \MediaCloud\Vendor\Google\Protobuf\Internal\Messag
     {
         $arr = GPBUtil::checkRepeatedField($var, \MediaCloud\Vendor\Google\Protobuf\Internal\GPBType::MESSAGE, \MediaCloud\Vendor\Google\Protobuf\Internal\DescriptorProto\ExtensionRange::class);
         $this->extension_range = $arr;
-        $this->has_extension_range = true;
 
         return $this;
-    }
-
-    public function hasExtensionRange()
-    {
-        return $this->has_extension_range;
     }
 
     /**
@@ -280,23 +244,27 @@ class DescriptorProto extends \MediaCloud\Vendor\Google\Protobuf\Internal\Messag
     {
         $arr = GPBUtil::checkRepeatedField($var, \MediaCloud\Vendor\Google\Protobuf\Internal\GPBType::MESSAGE, \MediaCloud\Vendor\Google\Protobuf\Internal\OneofDescriptorProto::class);
         $this->oneof_decl = $arr;
-        $this->has_oneof_decl = true;
 
         return $this;
     }
 
-    public function hasOneofDecl()
-    {
-        return $this->has_oneof_decl;
-    }
-
     /**
      * Generated from protobuf field <code>optional .google.protobuf.MessageOptions options = 7;</code>
-     * @return \MediaCloud\Vendor\Google\Protobuf\Internal\MessageOptions
+     * @return \MediaCloud\Vendor\Google\Protobuf\Internal\MessageOptions|null
      */
     public function getOptions()
     {
         return $this->options;
+    }
+
+    public function hasOptions()
+    {
+        return isset($this->options);
+    }
+
+    public function clearOptions()
+    {
+        unset($this->options);
     }
 
     /**
@@ -308,14 +276,8 @@ class DescriptorProto extends \MediaCloud\Vendor\Google\Protobuf\Internal\Messag
     {
         GPBUtil::checkMessage($var, \MediaCloud\Vendor\Google\Protobuf\Internal\MessageOptions::class);
         $this->options = $var;
-        $this->has_options = true;
 
         return $this;
-    }
-
-    public function hasOptions()
-    {
-        return $this->has_options;
     }
 
     /**
@@ -336,14 +298,8 @@ class DescriptorProto extends \MediaCloud\Vendor\Google\Protobuf\Internal\Messag
     {
         $arr = GPBUtil::checkRepeatedField($var, \MediaCloud\Vendor\Google\Protobuf\Internal\GPBType::MESSAGE, \MediaCloud\Vendor\Google\Protobuf\Internal\DescriptorProto\ReservedRange::class);
         $this->reserved_range = $arr;
-        $this->has_reserved_range = true;
 
         return $this;
-    }
-
-    public function hasReservedRange()
-    {
-        return $this->has_reserved_range;
     }
 
     /**
@@ -370,14 +326,8 @@ class DescriptorProto extends \MediaCloud\Vendor\Google\Protobuf\Internal\Messag
     {
         $arr = GPBUtil::checkRepeatedField($var, \MediaCloud\Vendor\Google\Protobuf\Internal\GPBType::STRING);
         $this->reserved_name = $arr;
-        $this->has_reserved_name = true;
 
         return $this;
-    }
-
-    public function hasReservedName()
-    {
-        return $this->has_reserved_name;
     }
 
 }

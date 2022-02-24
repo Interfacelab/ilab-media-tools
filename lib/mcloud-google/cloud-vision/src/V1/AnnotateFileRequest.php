@@ -81,11 +81,21 @@ class AnnotateFileRequest extends \MediaCloud\Vendor\Google\Protobuf\Internal\Me
      * Required. Information about the input file.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.InputConfig input_config = 1;</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\InputConfig
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\InputConfig|null
      */
     public function getInputConfig()
     {
         return $this->input_config;
+    }
+
+    public function hasInputConfig()
+    {
+        return isset($this->input_config);
+    }
+
+    public function clearInputConfig()
+    {
+        unset($this->input_config);
     }
 
     /**
@@ -133,11 +143,21 @@ class AnnotateFileRequest extends \MediaCloud\Vendor\Google\Protobuf\Internal\Me
      * Additional context that may accompany the image(s) in the file.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.ImageContext image_context = 3;</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ImageContext
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ImageContext|null
      */
     public function getImageContext()
     {
         return $this->image_context;
+    }
+
+    public function hasImageContext()
+    {
+        return isset($this->image_context);
+    }
+
+    public function clearImageContext()
+    {
+        unset($this->image_context);
     }
 
     /**

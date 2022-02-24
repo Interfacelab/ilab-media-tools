@@ -6,3 +6,4 @@ public/js/*.map
 cropper.css
 rest-api.php
 package-lock.json
+.idea

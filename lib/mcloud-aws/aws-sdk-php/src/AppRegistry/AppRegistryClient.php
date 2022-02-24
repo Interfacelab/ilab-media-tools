@@ -1,0 +1,51 @@
+<?php
+
+namespace MediaCloud\Vendor\Aws\AppRegistry;
+use MediaCloud\Vendor\Aws\AwsClient;
+
+/**
+ * This client is used to interact with the **AWS Service Catalog App Registry** service.
+ * @method \MediaCloud\Vendor\Aws\Result associateAttributeGroup(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise associateAttributeGroupAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result associateResource(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise associateResourceAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result createApplication(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise createApplicationAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result createAttributeGroup(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise createAttributeGroupAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result deleteApplication(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteApplicationAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result deleteAttributeGroup(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteAttributeGroupAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result disassociateAttributeGroup(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise disassociateAttributeGroupAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result disassociateResource(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise disassociateResourceAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result getApplication(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise getApplicationAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result getAssociatedResource(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise getAssociatedResourceAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result getAttributeGroup(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise getAttributeGroupAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listApplications(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listApplicationsAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listAssociatedAttributeGroups(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listAssociatedAttributeGroupsAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listAssociatedResources(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listAssociatedResourcesAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listAttributeGroups(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listAttributeGroupsAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listTagsForResource(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listTagsForResourceAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result syncResource(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise syncResourceAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result tagResource(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise tagResourceAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result untagResource(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise untagResourceAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result updateApplication(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise updateApplicationAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result updateAttributeGroup(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise updateAttributeGroupAsync(array $args = [])
+ */
+class AppRegistryClient extends AwsClient {}

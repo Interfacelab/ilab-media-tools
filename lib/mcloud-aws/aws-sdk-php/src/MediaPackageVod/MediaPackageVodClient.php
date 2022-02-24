@@ -5,6 +5,8 @@ use MediaCloud\Vendor\Aws\AwsClient;
 
 /**
  * This client is used to interact with the **AWS Elemental MediaPackage VOD** service.
+ * @method \MediaCloud\Vendor\Aws\Result configureLogs(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise configureLogsAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result createAsset(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise createAssetAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result createPackagingConfiguration(array $args = [])

@@ -1,8 +1,8 @@
 <?php
 
 namespace MediaCloud\Vendor\Illuminate\Support\Traits;
-use MediaCloud\Vendor\Illuminate\Support\Fluent;
 use MediaCloud\Vendor\Illuminate\Contracts\Container\Container;
+use MediaCloud\Vendor\Illuminate\Support\Fluent;
 
 trait CapsuleManagerTrait
 {

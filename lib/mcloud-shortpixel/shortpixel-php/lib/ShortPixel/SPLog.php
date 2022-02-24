@@ -18,6 +18,9 @@ class SPLog {
     const PRODUCER_CLIENT = 8;      //0b00001000;
     const PRODUCER_RESULT = 16;     //0b00010000;
     const PRODUCER_WEB = 32;        //0b00100000;
+    const PRODUCER_CTRL = 64;       //0b01000000;
+    const PRODUCER_SOURCE = 128;    //0b10000000;
+    const PRODUCER_CACHE = 256;    //0b100000000;
 
     const FLAG_NONE = 0;
     const FLAG_MEMORY = 1;
@@ -61,8 +64,8 @@ class SPLog {
 
     /**
      * Log the message if the logger is configured to log from this producer
-     * @param $producer the source of logging ( one of the SPLog::PRODUCER_* values )
-     * @param $msg the actual message
+     * @param $producer SPLog::PRODUCER_* - the source of logging ( one of the SPLog::PRODUCER_* values )
+     * @param $msg $string the actual message
      * @param bool $object
      */
     public function log($producer, $msg, $object = false) {
@@ -110,6 +113,8 @@ class SPLog {
                 echo($msg);
                 break;
             case self::TARGET_FILE:
+                $ret = file_put_contents($this->targetName, $msg, FILE_APPEND);
+                break;
                 
         }
     }
@@ -150,5 +155,17 @@ class SPLog {
             return self::$dummy;
         }
         return self::$instance;
+    }
+
+    /**
+     * set the target - useful to change the target, for example in order to start logging in a file if a number of retries has been surpassed.
+     * @param $target
+     * @param false $targetName
+     */
+    public function setTarget($target, $targetName = false) {
+        $this->target = $target;
+        if($targetName) {
+            $this->targetName = $targetName;
+        }
     }
 }

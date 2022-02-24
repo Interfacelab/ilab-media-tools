@@ -16,7 +16,7 @@
  */
 
 namespace MediaCloud\Vendor\Google\Cloud\Core;
-use MediaCloud\Vendor\GuzzleHttp\Psr7;
+use MediaCloud\Vendor\GuzzleHttp\Psr7\Utils;
 use MediaCloud\Vendor\Psr\Http\Message\StreamInterface;
 
 /**
@@ -51,7 +51,7 @@ class Blob
      */
     public function __construct($value)
     {
-        $this->value = Psr7\stream_for($value);
+        $this->value = Utils::streamFor($value);
     }
 
     /**

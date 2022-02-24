@@ -183,11 +183,21 @@ class LocalizedObjectAnnotation extends \MediaCloud\Vendor\Google\Protobuf\Inter
      * Image region to which this object belongs. This must be populated.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.BoundingPoly bounding_poly = 5;</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\BoundingPoly
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\BoundingPoly|null
      */
     public function getBoundingPoly()
     {
         return $this->bounding_poly;
+    }
+
+    public function hasBoundingPoly()
+    {
+        return isset($this->bounding_poly);
+    }
+
+    public function clearBoundingPoly()
+    {
+        unset($this->bounding_poly);
     }
 
     /**

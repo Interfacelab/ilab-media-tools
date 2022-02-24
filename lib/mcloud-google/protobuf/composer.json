@@ -22,5 +22,5 @@
             "MediaCloud\\Vendor\\GPBMetadata\\Google\\Protobuf\\": "src/GPBMetadata/Google/Protobuf"
         }
     },
-    "version": "v3.13.0"
+    "version": "v3.19.4"
 }

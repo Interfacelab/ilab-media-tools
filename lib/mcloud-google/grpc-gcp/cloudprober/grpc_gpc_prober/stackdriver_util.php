@@ -1,11 +1,10 @@
 <?php
 
 require('../vendor/autoload.php');
-
-use Google\Cloud\ErrorReporting\V1beta1\ReportErrorsServiceClient;
-use Google\Cloud\ErrorReporting\V1beta1\ErrorContext;
-use Google\Cloud\ErrorReporting\V1beta1\ReportedErrorEvent;
-use Google\Cloud\ErrorReporting\V1beta1\SourceLocation;
+use MediaCloud\Vendor\Google\Cloud\ErrorReporting\V1beta1\ReportErrorsServiceClient;
+use MediaCloud\Vendor\Google\Cloud\ErrorReporting\V1beta1\ErrorContext;
+use MediaCloud\Vendor\Google\Cloud\ErrorReporting\V1beta1\ReportedErrorEvent;
+use MediaCloud\Vendor\Google\Cloud\ErrorReporting\V1beta1\SourceLocation;
 
 class StackdriverUtil{
 	function __construct($api){

@@ -56,11 +56,21 @@ class GroupedResult extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      * The bounding polygon around the product detected in the query image.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.BoundingPoly bounding_poly = 1;</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\BoundingPoly
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\BoundingPoly|null
      */
     public function getBoundingPoly()
     {
         return $this->bounding_poly;
+    }
+
+    public function hasBoundingPoly()
+    {
+        return isset($this->bounding_poly);
+    }
+
+    public function clearBoundingPoly()
+    {
+        unset($this->bounding_poly);
     }
 
     /**

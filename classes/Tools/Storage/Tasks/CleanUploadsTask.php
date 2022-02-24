@@ -110,6 +110,18 @@ class CleanUploadsTask extends AttachmentTask {
 		];
 	}
 
+	public static function warnOption() {
+		return 'clean-uploads-task-warning-seen';
+	}
+
+	public static function warnConfirmationAnswer() {
+		return 'DELETE MY FILES';
+	}
+
+	public static function warnConfirmationText() {
+		return "This task will delete your media files!  This is not something you can undo, so make sure this is really what you want to do.  To continue, please type 'DELETE MY FILES' to confirm.";
+	}
+
 	//endregion
 
 	//region Data
@@ -257,12 +269,23 @@ class CleanUploadsTask extends AttachmentTask {
 
 		foreach($filesToDelete as $file) {
 			if (file_exists($file)) {
-				Logger::info("Deleting $file", [], __METHOD__, __LINE__);
-				@unlink($file);
+				if (@unlink($file)) {
+					Logger::info("Deleted $file", [], __METHOD__, __LINE__);
+				} else {
+					Logger::info("Error deleting $file", [], __METHOD__, __LINE__);
+				}
+
 				$this->reporter()->add([
 					$post_id,
 					$file,
 					file_exists($file) ? 'Could not delete' : 'Deleted'
+				]);
+			} else {
+				Logger::info("Skipping missing file: $file", [], __METHOD__, __LINE__);
+				$this->reporter()->add([
+					$post_id,
+					$file,
+					'Missing'
 				]);
 			}
 		}

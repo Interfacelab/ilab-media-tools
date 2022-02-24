@@ -17,6 +17,7 @@ use MediaCloud\Plugin\Tools\Storage\StorageToolSettings;
 use MediaCloud\Plugin\Tools\Storage\StorageTool;
 use MediaCloud\Plugin\Tools\Tool;
 use MediaCloud\Plugin\Tools\ToolsManager;
+use MediaCloud\Plugin\Utilities\Logging\Logger;
 use MediaCloud\Plugin\Utilities\Tracker;
 use MediaCloud\Plugin\Utilities\View;
 use function MediaCloud\Plugin\Utilities\gen_uuid;
@@ -547,9 +548,15 @@ class CropTool extends Tool  {
 			$canDelete = apply_filters('media-cloud/storage/delete_uploads', true);
 			if(!empty($canDelete) && StorageToolSettings::deleteOnUpload() && !StorageToolSettings::queuedDeletes()) {
                 $toDelete = trailingslashit($save_path).$filename;
-                if (file_exists($toDelete)) {
-                    @unlink($toDelete);
-                }
+				if (file_exists($toDelete)) {
+					if (@unlink($toDelete)) {
+						Logger::info("Deleted $toDelete", [], __METHOD__, __LINE__);
+					} else {
+						Logger::info("Error deleting $toDelete", [], __METHOD__, __LINE__);
+					}
+				} else {
+					Logger::info("Skipping missing file: $toDelete", [], __METHOD__, __LINE__);
+				}
 			}
 		}
 

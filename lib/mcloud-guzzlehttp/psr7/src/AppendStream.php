@@ -7,6 +7,8 @@ use MediaCloud\Vendor\Psr\Http\Message\StreamInterface;
  * Reads from multiple streams, one after the other.
  *
  * This is a read-only stream decorator.
+ *
+ * @final
  */
 class AppendStream implements StreamInterface
 {
@@ -61,7 +63,7 @@ class AppendStream implements StreamInterface
 
     public function getContents()
     {
-        return copy_to_string($this);
+        return Utils::copyToString($this);
     }
 
     /**
@@ -98,6 +100,8 @@ class AppendStream implements StreamInterface
         }
 
         $this->streams = [];
+
+        return null;
     }
 
     public function tell()

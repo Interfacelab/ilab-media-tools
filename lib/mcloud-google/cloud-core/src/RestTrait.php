@@ -81,6 +81,9 @@ trait RestTrait
      */
     public function send($resource, $method, array $options = [], $whitelisted = false)
     {
+        $options += [
+            'prettyPrint' => false,
+        ];
         $requestOptions = $this->pluckArray([
             'restOptions',
             'retries',

@@ -7,7 +7,6 @@ use MediaCloud\Vendor\Aws\ConfigurationProviderInterface;
 use MediaCloud\Vendor\Aws\Retry\Exception\ConfigurationException;
 use MediaCloud\Vendor\GuzzleHttp\Promise;
 use MediaCloud\Vendor\GuzzleHttp\Promise\PromiseInterface;
-use function MediaCloud\Vendor\Aws\safe_is_readable;
 
 /**
  * A configuration provider is a function that returns a promise that is
@@ -112,7 +111,7 @@ class ConfigurationProvider extends AbstractConfigurationProvider
                 ? getenv(self::ENV_MAX_ATTEMPTS)
                 : self::DEFAULT_MAX_ATTEMPTS;
             if (!empty($mode)) {
-                return Promise\promise_for(
+                return Promise\Create::promiseFor(
                     new Configuration($mode, $maxAttempts)
                 );
             }
@@ -130,7 +129,7 @@ class ConfigurationProvider extends AbstractConfigurationProvider
     public static function fallback()
     {
         return function () {
-            return Promise\promise_for(
+            return Promise\Create::promiseFor(
                 new Configuration(self::DEFAULT_MODE, self::DEFAULT_MAX_ATTEMPTS)
             );
         };
@@ -156,9 +155,9 @@ class ConfigurationProvider extends AbstractConfigurationProvider
         $profile = $profile ?: (getenv(self::ENV_PROFILE) ?: 'default');
 
         return function () use ($profile, $filename) {
-            if (!safe_is_readable($filename)) {
-                return self::reject("Cannot read configuration from $filename");
-            }
+//            if (!@is_readable($filename)) {
+            return self::reject("Cannot read configuration from $filename");
+//            }
             $data = \MediaCloud\Vendor\Aws\parse_ini_file($filename, true);
             if ($data === false) {
                 return self::reject("Invalid config file: $filename");
@@ -175,7 +174,7 @@ class ConfigurationProvider extends AbstractConfigurationProvider
                 ? $data[$profile][self::INI_MAX_ATTEMPTS]
                 : self::DEFAULT_MAX_ATTEMPTS;
 
-            return Promise\promise_for(
+            return Promise\Create::promiseFor(
                 new Configuration(
                     $data[$profile][self::INI_MODE],
                     $maxAttempts

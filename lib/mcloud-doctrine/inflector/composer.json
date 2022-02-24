@@ -1,14 +1,20 @@
 {
     "name": "mcloud-doctrine/inflector",
     "type": "library",
-    "description": "Common String Manipulations with regard to casing and singular/plural rules.",
+    "description": "PHP Doctrine Inflector is a small library that can perform string manipulations with regard to upper/lowercase and singular/plural forms of words.",
     "keywords": [
-        "string",
+        "php",
+        "strings",
+        "words",
+        "manipulation",
+        "inflector",
         "inflection",
-        "singularize",
-        "pluralize"
+        "uppercase",
+        "lowercase",
+        "singular",
+        "plural"
     ],
-    "homepage": "http://www.doctrine-project.org",
+    "homepage": "https://www.doctrine-project.org/projects/inflector.html",
     "license": "MIT",
     "authors": [
         {
@@ -33,23 +39,25 @@
         }
     ],
     "require": {
-        "php": "^7.1"
+        "php": "^7.2 || ^8.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^6.2"
+        "doctrine/coding-standard": "^8.2",
+        "phpstan/phpstan": "^0.12",
+        "phpstan/phpstan-phpunit": "^0.12",
+        "phpstan/phpstan-strict-rules": "^0.12",
+        "phpunit/phpunit": "^7.0 || ^8.0 || ^9.0",
+        "vimeo/psalm": "^4.10"
     },
     "autoload": {
         "psr-4": {
-            "MediaCloud\\Vendor\\Doctrine\\Common\\Inflector\\": "lib/Doctrine/Common/Inflector"
+            "MediaCloud\\Vendor\\Doctrine\\Inflector\\": "lib/Doctrine/Inflector"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Doctrine\\Tests\\Common\\Inflector\\": "tests/Doctrine/Tests/Common/Inflector"
+            "Doctrine\\Tests\\Inflector\\": "tests/Doctrine/Tests/Inflector"
         }
     },
-    "extra": {
-        "branch-alias": []
-    },
-    "version": "1.3.1"
+    "version": "2.0.4"
 }

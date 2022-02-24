@@ -14,10 +14,10 @@
         }
     ],
     "require": {
-        "php": ">=7.0",
-        "mcloud-illuminate/container": "v5.5.44",
-        "mcloud-illuminate/contracts": "v5.5.44",
-        "mcloud-illuminate/support": "v5.5.44"
+        "php": "^7.2.5|^8.0",
+        "mcloud-illuminate/container": "v7.30.6",
+        "mcloud-illuminate/contracts": "v7.30.6",
+        "mcloud-illuminate/support": "v7.30.6"
     },
     "autoload": {
         "psr-4": {
@@ -31,5 +31,5 @@
         "sort-packages": true
     },
     "minimum-stability": "dev",
-    "version": "v5.5.44"
+    "version": "v7.30.6"
 }

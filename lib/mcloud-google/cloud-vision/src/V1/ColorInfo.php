@@ -58,11 +58,21 @@ class ColorInfo extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      * RGB components of the color.
      *
      * Generated from protobuf field <code>.google.type.Color color = 1;</code>
-     * @return \MediaCloud\Vendor\Google\Type\Color
+     * @return \MediaCloud\Vendor\Google\Type\Color|null
      */
     public function getColor()
     {
         return $this->color;
+    }
+
+    public function hasColor()
+    {
+        return isset($this->color);
+    }
+
+    public function clearColor()
+    {
+        unset($this->color);
     }
 
     /**

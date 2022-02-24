@@ -35,6 +35,7 @@ namespace MediaCloud\Vendor\Google\ApiCore;
 use Exception;
 use MediaCloud\Vendor\Google\Protobuf\Internal\RepeatedField;
 use MediaCloud\Vendor\Google\Rpc\Status;
+use MediaCloud\Vendor\GuzzleHttp\Exception\RequestException;
 
 /**
  * Represents an exception thrown during an RPC.
@@ -116,6 +117,30 @@ class ApiException extends Exception
     }
 
     /**
+     * For REST-based responses, the metadata does not need to be decoded.
+     *
+     * @param string $basicMessage
+     * @param int $rpcCode
+     * @param array|null $metadata
+     * @param \Exception $previous
+     * @return ApiException
+     */
+    public static function createFromRestApiResponse(
+        $basicMessage,
+        $rpcCode,
+        array $metadata = null,
+        \Exception $previous = null
+    ) {
+        return self::create(
+            $basicMessage,
+            $rpcCode,
+            $metadata,
+            is_null($metadata) ? [] : $metadata,
+            $previous
+        );
+    }
+
+    /**
      * Construct an ApiException with a useful message, including decoded metadata.
      *
      * @param string $basicMessage
@@ -137,6 +162,10 @@ class ApiException extends Exception
 
         $message = json_encode($messageData, JSON_PRETTY_PRINT);
 
+        if ($metadata instanceof RepeatedField) {
+            $metadata = iterator_to_array($metadata);
+        }
+
         return new ApiException($message, $rpcCode, $rpcStatus, [
             'previous' => $previous,
             'metadata' => $metadata,
@@ -156,6 +185,39 @@ class ApiException extends Exception
             $status->getDetails(),
             Serializer::decodeAnyMessages($status->getDetails())
         );
+    }
+
+    /**
+     * Creates an ApiException from a GuzzleHttp RequestException.
+     *
+     * @param RequestException $ex
+     * @param boolean $isStream
+     * @return ApiException
+     * @throws ValidationException
+     */
+    public static function createFromRequestException(RequestException $ex, $isStream = false)
+    {
+        $res = $ex->getResponse();
+        $body = (string) $res->getBody();
+        $decoded = json_decode($body, true);
+        
+        // A streaming response body will return one error in an array. Parse
+        // that first (and only) error message, if provided.
+        if ($isStream && isset($decoded[0])) {
+            $decoded = $decoded[0];
+        }
+
+        if ($error = $decoded['error']) {
+            $basicMessage = $error['message'];
+            $code = isset($error['status'])
+                ? ApiStatus::rpcCodeFromStatus($error['status'])
+                : $ex->getCode();
+            $metadata = isset($error['details']) ? $error['details'] : null;
+            return static::createFromRestApiResponse($basicMessage, $code, $metadata);
+        }
+        // Use the RPC code instead of the HTTP Status Code.
+        $code = ApiStatus::rpcCodeFromHttpStatusCode($res->getStatusCode());
+        return static::createFromApiResponse($body, $code);
     }
 
     /**

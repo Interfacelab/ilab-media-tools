@@ -27,7 +27,7 @@ class Api extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>string name = 1;</code>
      */
-    private $name = '';
+    protected $name = '';
     /**
      * The methods of this interface, in unspecified order.
      *
@@ -61,14 +61,14 @@ class Api extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>string version = 4;</code>
      */
-    private $version = '';
+    protected $version = '';
     /**
      * Source context for the protocol buffer service represented by this
      * message.
      *
      * Generated from protobuf field <code>.google.protobuf.SourceContext source_context = 5;</code>
      */
-    private $source_context = null;
+    protected $source_context = null;
     /**
      * Included interfaces. See [Mixin][].
      *
@@ -80,7 +80,7 @@ class Api extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>.google.protobuf.Syntax syntax = 7;</code>
      */
-    private $syntax = 0;
+    protected $syntax = 0;
 
     /**
      * Constructor.
@@ -269,11 +269,21 @@ class Api extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      * message.
      *
      * Generated from protobuf field <code>.google.protobuf.SourceContext source_context = 5;</code>
-     * @return \MediaCloud\Vendor\Google\Protobuf\SourceContext
+     * @return \MediaCloud\Vendor\Google\Protobuf\SourceContext|null
      */
     public function getSourceContext()
     {
         return $this->source_context;
+    }
+
+    public function hasSourceContext()
+    {
+        return isset($this->source_context);
+    }
+
+    public function clearSourceContext()
+    {
+        unset($this->source_context);
     }
 
     /**

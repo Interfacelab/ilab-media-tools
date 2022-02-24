@@ -21,7 +21,7 @@ class ResourceInfo extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>string resource_type = 1;</code>
      */
-    private $resource_type = '';
+    protected $resource_type = '';
     /**
      * The name of the resource being accessed.  For example, a shared calendar
      * name: "example.com_4fghdhgsrgh&#64;group.calendar.google.com", if the current
@@ -29,7 +29,7 @@ class ResourceInfo extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>string resource_name = 2;</code>
      */
-    private $resource_name = '';
+    protected $resource_name = '';
     /**
      * The owner of the resource (optional).
      * For example, "user:<owner email>" or "project:<Google developer project
@@ -37,7 +37,7 @@ class ResourceInfo extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>string owner = 3;</code>
      */
-    private $owner = '';
+    protected $owner = '';
     /**
      * Describes what error is encountered when accessing this resource.
      * For example, updating a cloud project may require the `writer` permission
@@ -45,7 +45,7 @@ class ResourceInfo extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>string description = 4;</code>
      */
-    private $description = '';
+    protected $description = '';
 
     /**
      * Constructor.

@@ -37,22 +37,18 @@ use MediaCloud\Vendor\Smalot\PdfParser\Document;
 class ElementHexa extends ElementString
 {
     /**
-     * @param string   $content
-     * @param Document $document
-     * @param int      $offset
-     *
      * @return bool|ElementHexa|ElementDate
      */
-    public static function parse($content, Document $document = null, &$offset = 0)
+    public static function parse(string $content, ?Document $document = null, int &$offset = 0)
     {
         if (preg_match('/^\s*\<(?P<name>[A-F0-9]+)\>/is', $content, $match)) {
             $name = $match['name'];
             $offset += strpos($content, '<'.$name) + \strlen($name) + 2; // 1 for '>'
             // repackage string as standard
-            $name = '('.self::decode($name, $document).')';
-            $element = false;
+            $name = '('.self::decode($name).')';
+            $element = ElementDate::parse($name, $document);
 
-            if (!($element = ElementDate::parse($name, $document))) {
+            if (!$element) {
                 $element = ElementString::parse($name, $document);
             }
 
@@ -62,11 +58,7 @@ class ElementHexa extends ElementString
         return false;
     }
 
-    /**
-     * @param string   $value
-     * @param Document $document
-     */
-    public static function decode($value, Document $document = null)
+    public static function decode(string $value): string
     {
         $text = '';
         $length = \strlen($value);
@@ -74,7 +66,7 @@ class ElementHexa extends ElementString
         if ('00' === substr($value, 0, 2)) {
             for ($i = 0; $i < $length; $i += 4) {
                 $hex = substr($value, $i, 4);
-                $text .= '&#'.str_pad(hexdec($hex), 4, '0', STR_PAD_LEFT).';';
+                $text .= '&#'.str_pad(hexdec($hex), 4, '0', \STR_PAD_LEFT).';';
             }
         } else {
             for ($i = 0; $i < $length; $i += 2) {
@@ -83,7 +75,7 @@ class ElementHexa extends ElementString
             }
         }
 
-        $text = html_entity_decode($text, ENT_NOQUOTES, 'UTF-8');
+        $text = html_entity_decode($text, \ENT_NOQUOTES, 'UTF-8');
 
         return $text;
     }

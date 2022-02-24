@@ -25,7 +25,7 @@ class DebugInfo extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>string detail = 2;</code>
      */
-    private $detail = '';
+    protected $detail = '';
 
     /**
      * Constructor.

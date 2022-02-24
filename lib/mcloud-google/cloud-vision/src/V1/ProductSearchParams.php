@@ -16,7 +16,7 @@ class ProductSearchParams extends \MediaCloud\Vendor\Google\Protobuf\Internal\Me
 {
     /**
      * The bounding polygon around the area of interest in the image.
-     * Optional. If it is not specified, system discretion will be applied.
+     * If it is not specified, system discretion will be applied.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.BoundingPoly bounding_poly = 9;</code>
      */
@@ -62,7 +62,7 @@ class ProductSearchParams extends \MediaCloud\Vendor\Google\Protobuf\Internal\Me
      *
      *     @type \MediaCloud\Vendor\Google\Cloud\Vision\V1\BoundingPoly $bounding_poly
      *           The bounding polygon around the area of interest in the image.
-     *           Optional. If it is not specified, system discretion will be applied.
+     *           If it is not specified, system discretion will be applied.
      *     @type string $product_set
      *           The resource name of a [ProductSet][google.cloud.vision.v1.ProductSet] to be searched for similar images.
      *           Format is:
@@ -91,19 +91,29 @@ class ProductSearchParams extends \MediaCloud\Vendor\Google\Protobuf\Internal\Me
 
     /**
      * The bounding polygon around the area of interest in the image.
-     * Optional. If it is not specified, system discretion will be applied.
+     * If it is not specified, system discretion will be applied.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.BoundingPoly bounding_poly = 9;</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\BoundingPoly
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\BoundingPoly|null
      */
     public function getBoundingPoly()
     {
         return $this->bounding_poly;
     }
 
+    public function hasBoundingPoly()
+    {
+        return isset($this->bounding_poly);
+    }
+
+    public function clearBoundingPoly()
+    {
+        unset($this->bounding_poly);
+    }
+
     /**
      * The bounding polygon around the area of interest in the image.
-     * Optional. If it is not specified, system discretion will be applied.
+     * If it is not specified, system discretion will be applied.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.BoundingPoly bounding_poly = 9;</code>
      * @param \MediaCloud\Vendor\Google\Cloud\Vision\V1\BoundingPoly $var

@@ -95,11 +95,21 @@ class CreateProductRequest extends \MediaCloud\Vendor\Google\Protobuf\Internal\M
      * Required. The product to create.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.Product product = 2 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\Product
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\Product|null
      */
     public function getProduct()
     {
         return $this->product;
+    }
+
+    public function hasProduct()
+    {
+        return isset($this->product);
+    }
+
+    public function clearProduct()
+    {
+        unset($this->product);
     }
 
     /**

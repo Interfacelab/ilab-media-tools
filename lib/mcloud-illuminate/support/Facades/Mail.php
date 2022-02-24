@@ -4,18 +4,39 @@ namespace MediaCloud\Vendor\Illuminate\Support\Facades;
 use MediaCloud\Vendor\Illuminate\Support\Testing\Fakes\MailFake;
 
 /**
+ * @method static \Illuminate\Mail\PendingMail bcc($users)
+ * @method static \Illuminate\Mail\PendingMail to($users)
+ * @method static \MediaCloud\Vendor\Illuminate\Support\Collection queued(string $mailable, \Closure|string $callback = null)
+ * @method static \MediaCloud\Vendor\Illuminate\Support\Collection sent(string $mailable, \Closure|string $callback = null)
+ * @method static array failures()
+ * @method static bool hasQueued(string $mailable)
+ * @method static bool hasSent(string $mailable)
+ * @method static mixed later(\DateTimeInterface|\DateInterval|int $delay, \MediaCloud\Vendor\Illuminate\Contracts\Mail\Mailable|string|array $view, string $queue = null)
+ * @method static mixed queue(\MediaCloud\Vendor\Illuminate\Contracts\Mail\Mailable|string|array $view, string $queue = null)
+ * @method static void assertNotQueued(string $mailable, callable $callback = null)
+ * @method static void assertNotSent(string $mailable, callable|int $callback = null)
+ * @method static void assertNothingQueued()
+ * @method static void assertNothingSent()
+ * @method static void assertQueued(string $mailable, callable|int $callback = null)
+ * @method static void assertSent(string $mailable, callable|int $callback = null)
+ * @method static void raw(string $text, $callback)
+ * @method static void send(\MediaCloud\Vendor\Illuminate\Contracts\Mail\Mailable|string|array $view, array $data = [], \Closure|string $callback = null)
+ *
  * @see \Illuminate\Mail\Mailer
+ * @see \MediaCloud\Vendor\Illuminate\Support\Testing\Fakes\MailFake
  */
 class Mail extends Facade
 {
     /**
      * Replace the bound instance with a fake.
      *
-     * @return void
+     * @return \MediaCloud\Vendor\Illuminate\Support\Testing\Fakes\MailFake
      */
     public static function fake()
     {
-        static::swap(new MailFake);
+        static::swap($fake = new MailFake);
+
+        return $fake;
     }
 
     /**
@@ -25,6 +46,6 @@ class Mail extends Facade
      */
     protected static function getFacadeAccessor()
     {
-        return 'mailer';
+        return 'mail.manager';
     }
 }

@@ -4,44 +4,60 @@ namespace MediaCloud\Vendor\Lorisleiva\CronTranslator;
 
 abstract class Field
 {
-    public $expression;
-    public $type;
-    public $value;
-    public $count;
-    public $increment;
-    public $dropped = false;
-    public $position;
+    public CronExpression $expression;
+    public string $rawField;
+    public CronType $type;
+    public bool $dropped = false;
+    public int $position;
 
-    public function __construct($expression)
+    public function __construct(CronExpression $expression, string $rawField)
     {
         $this->expression = $expression;
-        $cronType = CronType::parse($expression);
-        $this->type = $cronType->type;
-        $this->value = $cronType->value;
-        $this->count = $cronType->count;
-        $this->increment = $cronType->increment;
+        $this->rawField = $rawField;
+        $this->type = CronType::parse($rawField);
     }
 
-    public function translate($fields)
+    public function translate()
     {
-        foreach (CronType::TYPES as $type) {
-            if ($this->hasType($type) && method_exists($this, "translate{$type}")) {
-                return $this->{"translate{$type}"}($fields);
-            }
+        $method = 'translate' . $this->type->type;
+
+        if (method_exists($this, $method)) {
+            return $this->{$method}();
         }
     }
 
-    public function hasType()
+    public function hasType(): bool
     {
-        return in_array($this->type, func_get_args());
+        return $this->type->hasType(...func_get_args());
     }
 
-    public function times($count)
+    public function getValue(): ?int
     {
-        switch ($count) {
-            case 1: return 'once';
-            case 2: return 'twice';
-            default: return "{$count} times";
-        }
+        return $this->type->value;
+    }
+
+    public function getCount(): ?int
+    {
+        return $this->type->count;
+    }
+
+    public function getIncrement(): ?int
+    {
+        return $this->type->increment;
+    }
+
+    public function getTimes()
+    {
+        return $this->langCountable('times', $this->getCount());
+    }
+
+    protected function langCountable(string $key, int $value)
+    {
+        return $this->expression->langCountable($key, $value);
+    }
+
+    protected function lang(string $key, array $replacements = [])
+    {
+        return $this->expression->lang($key, $replacements);
     }
 }

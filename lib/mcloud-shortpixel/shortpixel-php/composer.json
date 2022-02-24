@@ -8,6 +8,9 @@
         "images",
         "api"
     ],
+    "bin": [
+        "bin/shortpixel"
+    ],
     "homepage": "https://shortpixel.com/api",
     "license": "MIT",
     "support": {
@@ -38,5 +41,5 @@
             "MediaCloud\\Vendor\\ShortPixel\\": "lib/ShortPixel/"
         }
     },
-    "version": "v1.6.4"
+    "version": "v1.8.7"
 }

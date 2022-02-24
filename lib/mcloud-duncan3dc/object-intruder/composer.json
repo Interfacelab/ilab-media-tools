@@ -19,16 +19,35 @@
         }
     ],
     "require": {
-        "php": "^5.6|^7.0"
+        "php": "^7.4 || ^8.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^5.6"
+        "infection/infection": "^0.20.2",
+        "maglnet/composer-require-checker": "^2.0",
+        "phpstan/phpstan": "^0.12.59",
+        "squizlabs/php_codesniffer": "^3.5",
+        "phpunit/phpunit": "^9.5"
     },
     "autoload": {
         "psr-4": {
-            "MediaCloud\\Vendor\\duncan3dc\\ObjectIntruder\\": "src/",
-            "MediaCloud\\Vendor\\duncan3dc\\ObjectIntruderTests\\": "tests/"
+            "MediaCloud\\Vendor\\duncan3dc\\ObjectIntruder\\": "src/"
         }
     },
-    "version": "0.3.0"
+    "autoload-dev": {
+        "psr-4": {
+            "duncan3dc\\ObjectIntruderTests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": [
+            "vendor/bin/phpunit",
+            "vendor/bin/composer-require-checker",
+            "vendor/bin/phpstan analyse --level=max --configuration=phpstan-src.neon src",
+            "vendor/bin/phpstan analyse --level=max --configuration=phpstan-tests.neon tests",
+            "vendor/bin/phpcs --standard=phpcs.xml src tests",
+            "vendor/bin/infection --min-covered-msi=100",
+            "@composer validate --strict"
+        ]
+    },
+    "version": "1.1.0"
 }

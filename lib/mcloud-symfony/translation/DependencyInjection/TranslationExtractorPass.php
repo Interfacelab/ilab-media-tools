@@ -24,8 +24,12 @@ class TranslationExtractorPass implements CompilerPassInterface
     private $extractorServiceId;
     private $extractorTag;
 
-    public function __construct($extractorServiceId = 'translation.extractor', $extractorTag = 'translation.extractor')
+    public function __construct(string $extractorServiceId = 'translation.extractor', string $extractorTag = 'translation.extractor')
     {
+        if (0 < \func_num_args()) {
+            trigger_deprecation('symfony/translation', '5.3', 'Configuring "%s" is deprecated.', __CLASS__);
+        }
+
         $this->extractorServiceId = $extractorServiceId;
         $this->extractorTag = $extractorTag;
     }

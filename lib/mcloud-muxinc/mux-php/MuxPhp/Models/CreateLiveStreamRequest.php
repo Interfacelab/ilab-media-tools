@@ -38,7 +38,8 @@ class CreateLiveStreamRequest implements ModelInterface, ArrayAccess
         'reconnect_window' => 'float',
         'passthrough' => 'string',
         'reduced_latency' => 'bool',
-        'test' => 'bool'
+        'test' => 'bool',
+        'simulcast_targets' => '\MediaCloud\Vendor\MuxPhp\Models\CreateSimulcastTargetRequest[]'
     ];
 
     /**
@@ -52,7 +53,8 @@ class CreateLiveStreamRequest implements ModelInterface, ArrayAccess
         'reconnect_window' => 'float',
         'passthrough' => null,
         'reduced_latency' => 'boolean',
-        'test' => 'boolean'
+        'test' => 'boolean',
+        'simulcast_targets' => null
     ];
 
     /**
@@ -87,7 +89,8 @@ class CreateLiveStreamRequest implements ModelInterface, ArrayAccess
         'reconnect_window' => 'reconnect_window',
         'passthrough' => 'passthrough',
         'reduced_latency' => 'reduced_latency',
-        'test' => 'test'
+        'test' => 'test',
+        'simulcast_targets' => 'simulcast_targets'
     ];
 
     /**
@@ -101,7 +104,8 @@ class CreateLiveStreamRequest implements ModelInterface, ArrayAccess
         'reconnect_window' => 'setReconnectWindow',
         'passthrough' => 'setPassthrough',
         'reduced_latency' => 'setReducedLatency',
-        'test' => 'setTest'
+        'test' => 'setTest',
+        'simulcast_targets' => 'setSimulcastTargets'
     ];
 
     /**
@@ -115,7 +119,8 @@ class CreateLiveStreamRequest implements ModelInterface, ArrayAccess
         'reconnect_window' => 'getReconnectWindow',
         'passthrough' => 'getPassthrough',
         'reduced_latency' => 'getReducedLatency',
-        'test' => 'getTest'
+        'test' => 'getTest',
+        'simulcast_targets' => 'getSimulcastTargets'
     ];
 
     /**
@@ -184,6 +189,7 @@ class CreateLiveStreamRequest implements ModelInterface, ArrayAccess
         $this->container['passthrough'] = isset($data['passthrough']) ? $data['passthrough'] : null;
         $this->container['reduced_latency'] = isset($data['reduced_latency']) ? $data['reduced_latency'] : null;
         $this->container['test'] = isset($data['test']) ? $data['test'] : null;
+        $this->container['simulcast_targets'] = isset($data['simulcast_targets']) ? $data['simulcast_targets'] : null;
     }
 
     /**
@@ -366,6 +372,30 @@ class CreateLiveStreamRequest implements ModelInterface, ArrayAccess
     public function setTest($test)
     {
         $this->container['test'] = $test;
+
+        return $this;
+    }
+
+    /**
+     * Gets simulcast_targets
+     *
+     * @return \MediaCloud\Vendor\MuxPhp\Models\CreateSimulcastTargetRequest[]|null
+     */
+    public function getSimulcastTargets()
+    {
+        return $this->container['simulcast_targets'];
+    }
+
+    /**
+     * Sets simulcast_targets
+     *
+     * @param \MediaCloud\Vendor\MuxPhp\Models\CreateSimulcastTargetRequest[]|null $simulcast_targets simulcast_targets
+     *
+     * @return $this
+     */
+    public function setSimulcastTargets($simulcast_targets)
+    {
+        $this->container['simulcast_targets'] = $simulcast_targets;
 
         return $this;
     }

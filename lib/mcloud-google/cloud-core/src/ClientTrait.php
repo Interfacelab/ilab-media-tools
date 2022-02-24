@@ -18,10 +18,8 @@
 namespace MediaCloud\Vendor\Google\Cloud\Core;
 use MediaCloud\Vendor\Google\Auth\CredentialsLoader;
 use MediaCloud\Vendor\Google\Auth\Credentials\GCECredentials;
-use MediaCloud\Vendor\Google\Auth\HttpHandler\HttpHandlerFactory;
 use MediaCloud\Vendor\Google\Cloud\Core\Compute\Metadata;
 use MediaCloud\Vendor\Google\Cloud\Core\Exception\GoogleException;
-use MediaCloud\Vendor\GuzzleHttp\Psr7;
 
 /**
  * Provides functionality common to each service client.

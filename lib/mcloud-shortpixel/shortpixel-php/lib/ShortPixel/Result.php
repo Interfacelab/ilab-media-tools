@@ -8,11 +8,12 @@ use MediaCloud\Vendor\ShortPixel\notify\ProgressNotifier;
  * @package ShortPixel
  */
 class Result {
-    protected $commander, $ctx;
+    protected $commander, $ctx, $logger;
 
     public function __construct($commander, $context) {
         $this->commander = $commander;
         $this->ctx = $context;
+        $this->logger = SPLog::Get(SPLog::PRODUCER_RESULT);
     }
 
     /**
@@ -36,22 +37,22 @@ class Result {
      * @throws ClientException
      */
     public function toFiles($path = null, $fileName = null, $bkPath = null) {
-
 //        echo(" PATH: $path BkPath: $bkPath");
 //        spdbgd($this->ctx, 'context');
         $thisDir = str_replace(DIRECTORY_SEPARATOR, '/', (getcwd() ? getcwd() : __DIR__));
 
         if($path) {
-            if(   (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' && preg_match('/^[a-zA-Z]:\//', $path) === 0) //it's Windows and no drive letter X:
+            $path = rtrim($path, '/\\');
+            if(   (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' && preg_match('/^[a-zA-Z]:(\/|\\\)/', $path) === 0) //it's Windows and no drive letter X:
                || (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN' && substr($path, 0, 1) !== '/')) { //it's not Windows and doesn't start with a /
-                $path = (ShortPixel::opt("base_path") ?: $thisDir) . '/' . $path;
+                $path = SPTools::trailingslashit(ShortPixel::opt("base_path") ?: $thisDir) . $path;
             }
         }
         if(!$bkPath && ShortPixel::opt("backup_path")) {
             $bkPath = ShortPixel::opt("backup_path");
         }
         if($bkPath && strpos($bkPath,'/') !== 0) { //it's a relative path
-            $bkPath = normalizePath(rtrim($path, '/') . '/' . $bkPath);
+            $bkPath = normalizePath($path . '/' . $bkPath);
         }
         $i = 0;
         $succeeded = $pending = $failed = $same = array();
@@ -73,10 +74,12 @@ class Result {
             foreach($items as $item) {
 
                 $targetPath = $path; $originalPath = $baseUrl = false;
+                $this->logger->log(SPLog::PRODUCER_RESULT, "RESULT toFiles while CTX:", $this->ctx->fileMappings);
 
                 if($this->ctx->fileMappings && count($this->ctx->fileMappings)) { // it was optimized from a local file, fileMappings contains the mappings from the local files to the internal ShortPixel URLs
                     $originalPath = isset($this->ctx->fileMappings[$item->OriginalURL]) ? $this->ctx->fileMappings[$item->OriginalURL] : false;
                     //
+                    $this->logger->log(SPLog::PRODUCER_RESULT, "ORIGINAL PATH:" . $originalPath);
                     if(ShortPixel::opt("base_source_path") && $originalPath) {
                         $origPathParts = explode('/', str_replace(ShortPixel::opt("base_source_path"). "/", "", $originalPath));
                         $origFileName = $origPathParts[count($origPathParts) - 1];
@@ -90,7 +93,7 @@ class Result {
                         $origFileName = $item->OriginalFileName;
                         $relativePath = "";
                     } else {
-                        throw new ClientException("Cannot determine a filename to save to.");
+                        throw new ClientException("Cannot determine a filename to save to." . $item->OriginalURL . " CTX: " . json_encode($this->ctx->fileMappings));
                     }
                 } elseif(isset($item->OriginalURL)) {  // it was optimized from a URL
                     $baseUrl = ShortPixel::opt("base_url");
@@ -104,14 +107,20 @@ class Result {
                         $origFileName = $origURLParts[count($origURLParts) - 1];
                         $relativePath = "";
                     }
-                    $originalPath = ShortPixel::opt("base_source_path") . '/' . (strlen($relativePath) ? $relativePath . '/' : '') . $origFileName;
+                    if(ShortPixel::opt('url_filter') == 'encode') {
+                        $extPos = strrpos($origFileName, ".");
+                        $ext = substr($origFileName,$extPos + 1);
+                        $origFileName = substr($origFileName, 0, $extPos);
+                        $origFileName = urldecode(base64_decode($origFileName)) . '.' . $ext;
+                    }
+                    $originalPath = SPTools::trailingslashit(ShortPixel::opt("base_source_path")) . (strlen($relativePath) ? $relativePath . '/' : '') . $origFileName;
                 } else { // something is wrong
                     throw(new ClientException("Malformed response. Please contact support."));
                 }
                 if(!$targetPath) { //se pare ca trebuie oricum
-                    $targetPath = (ShortPixel::opt("base_path") ?: $thisDir) . '/' . $relativePath;
+                    $targetPath = SPTools::trailingslashit(ShortPixel::opt("base_path") ?: $thisDir) . $relativePath;
                 } elseif(ShortPixel::opt("base_source_path") && strlen($relativePath)) {
-                    $targetPath .= '/' . $relativePath;
+                    $targetPath = SPTools::trailingslashit($targetPath) . $relativePath;
                 }
 
                 if($fileName) {
@@ -144,7 +153,9 @@ class Result {
                 if(    $item->Status->Code == 2
                     && (   $item->LossySize == 0  && $item->LoselessSize == 0
                         || $item->WebPLossyURL != 'NA' && ($item->WebPLossySize == 'NA' || !$item->WebPLossySize )
-                        || $item->WebPLosslessURL != 'NA' && ($item->WebPLoselessSize == 'NA' || !$item->WebPLoselessSize))) {
+                        || $item->WebPLosslessURL != 'NA' && ($item->WebPLosslessSize == 'NA' || !$item->WebPLosslessSize)
+                        || $item->AVIFLossyURL != 'NA' && ($item->AVIFLossySize == 'NA' || !$item->AVIFLossySize )
+                        || $item->AVIFLosslessURL != 'NA' && ($item->AVIFLosslessSize == 'NA' || !$item->AVIFLosslessSize))) {
                     $item->Status->Code = 1;
                 }
 
@@ -157,7 +168,7 @@ class Result {
                     } else {
                         $pending[$found]->Retries += 1;
                     }
-
+                    $this->logger->log(SPLog::PRODUCER_RESULT, "PENDING, RETRIES:", $pending[$found]->Retries);
                     continue;
                 }
                 elseif ($item->Status->Code != 2) {
@@ -188,6 +199,7 @@ class Result {
                         $this->commander->isDone($item);
                         $this->removeItem($item, $pending, "OriginalURL");
                     }
+                    $this->logger->log(SPLog::PRODUCER_RESULT, "FAILED WITH CODE:", $item->Status->Code);
                     continue;
                 }
                 //IF file is locally accessible, the source file size should be the same as the size downloaded by (or posted to) ShortPixel servers
@@ -202,6 +214,7 @@ class Result {
                         $this->commander->isDone($item);
                         $this->removeItem($item, $pending, "OriginalURL");
                     }
+                    $this->logger->log(SPLog::PRODUCER_RESULT, "ERROR:", $item->Status->Message);
                     continue;
                 }
                 elseif($item->PercentImprovement == 0) {
@@ -219,10 +232,12 @@ class Result {
                         }
                     }
                     $this->checkSaveWebP($item, $target, $cmds);
+                    $this->checkSaveAVIF($item, $target, $cmds);
                     $same[] = $item;
                     $this->removeItem($item, $pending, "OriginalURL");
                     $this->persist($item, $cmds);
                     $this->commander->isDone($item);
+                    $this->logger->log(SPLog::PRODUCER_RESULT, "IMPROVEMENT 0");
                     continue;
                 }
 
@@ -282,14 +297,17 @@ class Result {
                             $this->commander->isDone($item);
                             $this->removeItem($item, $pending, "OriginalURL");
                         }
+                        $this->logger->log(SPLog::PRODUCER_RESULT, "DOWNLOAD NOK? " . $downloadOK . " URL: " . $optURL, $item->Status->Message);
                         continue;
                     }
                     $this->checkSaveWebP($item, $target, $cmds);
+                    $this->checkSaveAVIF($item, $target, $cmds);
                 }
                 catch(ClientException $e) {
                     $failed[] = $item;
                     $item->Status->Message = $e->getMessage();
                     $this->persist($item, $cmds, 'error');
+                    $this->logger->log(SPLog::PRODUCER_RESULT, "CLIENT EXCEPTION:", $e->getMessage());
                     continue;
                 }
 
@@ -310,6 +328,7 @@ class Result {
                         $pend = false;
                     }
                 }
+                $this->logger->log(SPLog::PRODUCER_RESULT, "RELAUNCH");
                 $this->ctx = $this->commander->relaunch((object)array("body" => $pending, "headers" => $this->ctx->headers, "fileMappings" => $this->ctx->fileMappings));
             } else {
                 break;
@@ -345,6 +364,16 @@ class Result {
             $optWebPURL = $cmds["lossy"] > 0 ? $item->WebPLossyURL : $item->WebPLosslessURL;
             ShortPixel::getClient()->download($optWebPURL, $webpTarget);
             $item->WebPSavedFile = $webpTarget;
+        }
+    }
+
+    private function checkSaveAVIF($item, $target, $cmds)
+    {
+        if (isset($item->AVIFLossyURL) && $item->AVIFLossyURL !== 'NA') { //an AVIF image was generated as per the options, download and save it too
+            $avifTarget = $targetAVIFFile = dirname($target) . '/' . MB_basename($target, '.' . pathinfo($target, PATHINFO_EXTENSION)) . ".avif";
+            $optAVIFURL = $cmds["lossy"] > 0 ? $item->AVIFLossyURL : $item->AVIFLosslessURL;
+            ShortPixel::getClient()->download($optAVIFURL, $avifTarget);
+            $item->AVIFSavedFile = $avifTarget;
         }
     }
 

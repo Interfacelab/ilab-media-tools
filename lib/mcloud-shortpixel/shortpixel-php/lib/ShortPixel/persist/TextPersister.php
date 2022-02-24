@@ -7,7 +7,10 @@
 
 namespace MediaCloud\Vendor\ShortPixel\persist;
 use MediaCloud\Vendor\ShortPixel\ClientException;
+use MediaCloud\Vendor\ShortPixel\Lock;
+use MediaCloud\Vendor\ShortPixel\notify\ProgressNotifierFileQ;
 use \MediaCloud\Vendor\ShortPixel\Persister;
+use MediaCloud\Vendor\ShortPixel\Settings;
 use \MediaCloud\Vendor\ShortPixel\ShortPixel;
 use \MediaCloud\Vendor\ShortPixel\Client;
 use \MediaCloud\Vendor\ShortPixel\SPCache;
@@ -19,23 +22,22 @@ use MediaCloud\Vendor\ShortPixel\SPLog;
  */
 class TextPersister implements Persister {
 
-    private $fp;
     private $options;
     private $logger;
     private $cache;
-    private STATIC $ALLOWED_STATUSES = array('pending', 'success', 'skip', 'deleted');
-    private STATIC $ALLOWED_TYPES = array('I', 'D');
+
+    const FLAG_WEBP = 2;//second bit set like in "10"
+    const FLAG_AVIF = 32;//6th bit set like in "100000"
 
     function __construct($options)
     {
         $this->options = $options;
-        $this->fp = array();
         $this->logger = SPLog::Get(SPLog::PRODUCER_PERSISTER);
         $this->cache = SPCache::Get();
     }
 
     public static function IGNORED_BY_DEFAULT() {
-        return array('.','..','.shortpixel','.sp-options','.sp-lock','.sp-progress','ShortPixelBackups');
+        return array('.','..',ShortPixel::opt('persist_name'),Settings::FOLDER_INI_NAME,Lock::FOLDER_LOCK_FILE,ProgressNotifierFileQ::PROGRESS_FILE_NAME,'ShortPixelBackups');
     }
 
     function isOptimized($path)
@@ -43,24 +45,39 @@ class TextPersister implements Persister {
         if(!file_exists($path)) {
             return false;
         }
-        $fp = $this->openMetaFile(dirname($path), 'read');
-        if(!$fp) {
+        try {
+            $toClose = !TextMetaFile::IsOpen(dirname($path), 'read');
+            $metaFile = TextMetaFile::Get(dirname($path));
+            $metaData = TextMetaFile::find($path);
+            if($toClose) {
+                $metaFile->close();
+            }
+            return isset($metaData->file);
+        } catch(ClientException $cx) {
             return false;
         }
-
-        while (($line = fgets($fp)) !== FALSE) {
-            $data = $this->parse($line);
-            if($data->file === \MediaCloud\Vendor\ShortPixel\MB_basename($path) && $data->status == 'success' ) {
-                return true;
-            }
-        }
-        fclose($fp);
 
         return false;
     }
 
     protected function ignored($exclude) {
-        return array_values(array_merge(self::IGNORED_BY_DEFAULT(), is_array($exclude) ? $exclude : array()));
+        $optExclude = isset($this->options['exclude']) && $this->options['exclude']
+            ? (is_array($this->options['exclude'])
+                ? $this->options['exclude']
+                : (is_string($this->options['exclude']) ? explode(',', $this->options['exclude']) : array()))
+            : array();
+        $optExclude = array_map('trim', $optExclude);
+        return array_values(array_merge(self::IGNORED_BY_DEFAULT(), is_array($exclude) ? $exclude : arrray(), $optExclude));
+    }
+
+    static function sanitize($filename) {
+        //print_r($filename);die();
+        // our list of "unsafe characters", add/remove characters if necessary
+        $dangerousCharacters = array("\n", "\r", "\\", "\b");
+        // every forbidden character is replaced by a space
+        $safe_filename = str_replace($dangerousCharacters, ' ', $filename, $count);
+
+        return $safe_filename;
     }
 
     /**
@@ -83,13 +100,14 @@ class TextPersister implements Persister {
 
         try {
             if(is_dir($path)) {
+
                 try {
                     $persistFolder = $persistPath;
-                    $toClose = $this->openMetaFileIfNeeded($persistFolder);
-                    $fp = $this->getMetaFile($persistPath);
-                    $dataArr = $this->readMetaFile($fp);
+                    $toClose = !TextMetaFile::IsOpen($persistPath);
+                    $metaFile = TextMetaFile::Get($persistPath);
+                    $dataArr = $metaFile->readAll();
                 } catch(ClientException $e) {
-                    if(is_dir($persistPath) && file_exists($persistPath . '/' . ShortPixel::opt("persist_name"))) {
+                    if(!isset($metaFile) || is_null($metaFile) && is_dir($persistPath) && file_exists($persistPath . '/' . ShortPixel::opt("persist_name"))) {
                         throw $e; //rethrow, there's a problem with the meta file.
                     }
                     $dataArr = array(); //there's no problem if the metadata file is missing and cannot be created, for the info call
@@ -124,6 +142,7 @@ class TextPersister implements Persister {
                         $info->totalOptimizedSize += $subInfo->totalOptimizedSize;
                     }
                     else {
+                        rename($path . '/' . $file, $path . '/' . self::sanitize($file));
                         $info->total++;
                         if(!isset($dataArr[$file]) || $dataArr[$file]->status == 'pending') {
                             $info->pending++;
@@ -132,14 +151,17 @@ class TextPersister implements Persister {
                         elseif(   $dataArr[$file]->status == 'success' && $this->isChanged($dataArr[$file], $file, $persistPath, $path)
                             // || ($dataArr[$file]->status == 'skip' &&  ($dataArr[$file]->retries <= ShortPixel::MAX_RETRIES || $retrySkipped))) {
                                || ($dataArr[$file]->status == 'skip' && $retrySkipped)) {
-                            //file changed since last optimized, mark it as pending
-                            $dataArr[$file]->status = 'pending';
                             if($dataArr[$file]->status == 'skip' && $retrySkipped) {
                                 $dataArr[$file]->retries = 0;
-                            } else {
-                                $this->logger->log(SPLog::PRODUCER_PERSISTER, "TextPersister->info - CHANGED - REVERT TO PENDING: $path/$file");
+                            } elseif($persistPath !== $path) {
+                                //ORIGINAL image size is changed, also update the size
+                                $this->logger->log(SPLog::PRODUCER_PERSISTER, "TextPersister->info - CHANGED ("
+                                    . ($dataArr[$file]->originalSize > 0 ? " original size: " . filesize($path . '/' . $file) . ", persisted size: " . $dataArr[$file]->originalSize : '') . ") - REVERT TO PENDING: $path/$file");
+                                $dataArr[$file]->originalSize = filesize($path . '/' . $file);
                             }
-                            $this->updateMeta($dataArr[$file], $fp);
+                            //file changed since last optimized, mark it as pending
+                            $dataArr[$file]->status = 'pending';
+                            $metaFile->update($dataArr[$file]);
                             $info->pending++;
                         }
                         elseif($dataArr[$file]->status == 'success') {
@@ -162,7 +184,7 @@ class TextPersister implements Persister {
                     $info->status = 'success';
                 }
                 if($info->status !== 'error') {
-                    $info->todo = $this->getTodoInternal($files, $dataArr, $fp, $path, 1, $exclude, $persistPath, ShortPixel::CLIENT_MAX_BODY_SIZE, $recurseDepth);
+                    $info->todo = $this->getTodoInternal($files, $dataArr, $metaFile, $path, 1, $exclude, $persistPath, ShortPixel::CLIENT_MAX_BODY_SIZE, $recurseDepth);
                 }
             }
             else {
@@ -172,8 +194,8 @@ class TextPersister implements Persister {
                 $persistFolder = dirname($persistPath);
                 $meta = $toClose = false;
                 try {
-                    $toClose = $this->openMetaFileIfNeeded($persistFolder);
-                    $meta = $this->findMeta($persistPath);
+                    $toClose = !TextMetaFile::IsOpen($persistFolder, 'read');
+                    $meta = TextMetaFile::find($persistPath);
                 } catch(ClientException $e) {
                     if(is_dir($persistFolder) && file_exists($persistFolder . '/' . ShortPixel::opt("persist_name"))) {
                         throw $e;
@@ -197,8 +219,8 @@ class TextPersister implements Persister {
             }
             throw $e;
         }
-        if($toClose) {
-            $this->closeMetaFile($persistFolder);
+        if($toClose && !is_null($metaFile)) {
+            $metaFile->close();
         }
         return $info;
     }
@@ -211,15 +233,17 @@ class TextPersister implements Persister {
         }
         if(!$persistPath) {$persistPath = $path;}
 
-        $toClose = $this->openMetaFileIfNeeded($persistPath);
-        $fp = $this->getMetaFile($persistPath);
+        $toClose = !TextMetaFile::IsOpen($persistPath);
+        $metaFile = TextMetaFile::Get($persistPath);
 
         $files = scandir($path);
-        $dataArr = $this->readMetaFile($fp);
+        $dataArr = $metaFile->readAll();
 
-        $ret = $this->getTodoInternal($files, $dataArr, $fp, $path, $count, $exclude, $persistPath, $maxTotalFileSizeMb, $recurseDepth);
+        $ret = $this->getTodoInternal($files, $dataArr, $metaFile, $path, $count, $exclude, $persistPath, $maxTotalFileSizeMb, $recurseDepth);
 
-        if($toClose) { $this->closeMetaFile($persistPath); }
+        if($toClose) {
+            $metaFile->close();
+        }
 
         if(count($ret->files) + count($ret->filesPending) + $ret->filesWaiting == 0) {
             $this->logger->logFirst($path, SPLog::PRODUCER_PERSISTER, "TextPersister->getTodo - FOR $path RETURN NONE");
@@ -231,7 +255,19 @@ class TextPersister implements Persister {
     }
 
 
-    protected function getTodoInternal(&$files, &$dataArr, $fp, $path, $count, $exclude, $persistPath, $maxTotalFileSizeMb, $recurseDepth)
+    /**
+     * @param $files
+     * @param $dataArr
+     * @param TextMetaFile $metaFile
+     * @param $path
+     * @param $count
+     * @param $exclude
+     * @param $persistPath
+     * @param $maxTotalFileSizeMb
+     * @param $recurseDepth
+     * @return object
+     */
+    protected function getTodoInternal(&$files, &$dataArr, $metaFile, $path, $count, $exclude, $persistPath, $maxTotalFileSizeMb, $recurseDepth)
     {
         $results = array();
         $pendingURLs = array();
@@ -240,6 +276,7 @@ class TextPersister implements Persister {
         $maxTotalFileSize = $maxTotalFileSizeMb * pow(1024, 2);
         $totalFileSize = 0;
         $filesWaiting = 0;
+
         foreach($files as $file) {
             $filePath = $path . '/' . $file;
             $targetPath = $persistPath . '/' . $file;
@@ -249,15 +286,29 @@ class TextPersister implements Persister {
             if(!file_exists($filePath)) {
                 continue; // strange but found this for a client..., on windows: HS ID 711715228 
             }
-            if(   (!ShortPixel::isProcessable($file) && !is_dir($filePath))
-                || isset($dataArr[$file]) && $dataArr[$file]->status == 'deleted'
-                || isset($dataArr[$file])
-                && (  $dataArr[$file]->status == 'success' && !$this->isChanged($dataArr[$file], $file, $persistPath, $path)
-                    || $dataArr[$file]->status == 'skip') ) {
-                if(!isset($dataArr[$file]) || $dataArr[$file]->status !== 'success')
+            if(  !is_dir($filePath) //never skip folders whatever reason as they can have changes inside them
+               //that's a file:
+               &&(   !ShortPixel::isProcessable($file) //either the file is not processable
+                  || isset($dataArr[$file]) && $dataArr[$file]->status == 'deleted' //or it's deleted
+                  || isset($dataArr[$file])
+                     && (  $dataArr[$file]->status == 'success' && !$this->isChanged($dataArr[$file], $file, $persistPath, $path) //or changed
+                        || $dataArr[$file]->status == 'skip') ) ) //or skipped
+            {
+                if(!isset($dataArr[$file]) || $dataArr[$file]->status !== 'success') {
                     $this->logger->logFirst($filePath, SPLog::PRODUCER_PERSISTER, "TextPersister->getTodo - SKIPPING $path/$file - status " . (isset($dataArr[$file]) ? $dataArr[$file]->status : "not processable"));
+                }
                 continue;
             }
+
+            if(isset($dataArr[$file]) && $this->isChanged($dataArr[$file], $file, $persistPath, $path)) {
+                //This means the image was externally changed, revert it to pending state and update the size.
+                $currentSize = filesize($path . '/' . $file);
+                $this->logger->log( SPLog::PRODUCER_PERSISTER, "FILE OPTIMIZED BUT CHANGED AFTERWARDS: $file - initial size: " . $dataArr[$file]->originalSize . " current: " . $currentSize);
+                $dataArr[$file]->status = 'pending';
+                $dataArr[$file]->originalSize =  $currentSize;
+                $metaFile->update($dataArr[$file]);
+            }
+
             //if retried too many times recently {
             if(isset($dataArr[$file]) && $dataArr[$file]->status == 'pending') {
                 $retries = $dataArr[$file]->retries;
@@ -272,8 +323,8 @@ class TextPersister implements Persister {
             if(is_dir($filePath)) {
                 if($recurseDepth <= 0) continue;
                 if(!isset($dataArr[$file])) {
-                    $dataArr[$file] = $this->newMeta($filePath);
-                    $dataArr[$file]->filePos = $this->appendMeta($dataArr[$file], $fp);
+                    $dataArr[$file] = TextMetaFile::newEntry($filePath, $this->options);
+                    $dataArr[$file]->filePos = $metaFile->append($dataArr[$file]);
                 }
                 $resultsSubfolder = $this->cache->fetch($filePath);
                 if(!$resultsSubfolder) {
@@ -290,7 +341,7 @@ class TextPersister implements Persister {
                     return $resultsSubfolder;
                 }  elseif($dataArr[$file]->status != 'success' && !$resultsSubfolder->filesWaiting) {//otherwise ignore the folder but mark it as succeeded;
                     $dataArr[$file]->status = 'success';
-                    $this->updateMeta($dataArr[$file], $fp);
+                    $metaFile->update($dataArr[$file]);
                 }
             } else {
                 $toUpdate = false; //will defer updating the record only if we finally add the image (if the image is too large for this set will not add it in the end
@@ -304,14 +355,14 @@ class TextPersister implements Persister {
                         $dataArr[$file]->changeDate = time();
                         $toUpdate = true;
                         if(time() - strtotime($dataArr[$file]->changeDate) < 1800) { //need to refresh the file processing on the server
-                            $this->updateMeta($dataArr[$file], $fp);
+                            $metaFile->update($dataArr[$file]);
                             return (object)array('files' => array($filePath), 'filesPending' => array(), 'filesWaiting' => 0, 'refresh' => true);
                         }
                     }
                     elseif($dataArr[$file]->status == 'error') {
                         if($dataArr[$file]->retries >= ShortPixel::MAX_RETRIES) {
                             $dataArr[$file]->status = 'skip';
-                            $this->updateMeta($dataArr[$file], $fp);
+                            $metaFile->update($dataArr[$file]);
                             continue;
                         } else {
                             $dataArr[$file]->retries += 1;
@@ -327,24 +378,28 @@ class TextPersister implements Persister {
                     }
                 }
                 elseif(!isset($dataArr[$file])) {
-                    $dataArr[$file] = $this->newMeta($filePath);
-                    $dataArr[$file]->filePos = $this->appendMeta($dataArr[$file], $fp);
+                    $dataArr[$file] = TextMetaFile::newEntry($filePath, $this->options);
+                    $dataArr[$file]->filePos = $metaFile->append($dataArr[$file]);
                 }
 
                 clearstatcache(true, $filePath);
-                if(filesize($filePath) + $totalFileSize > $maxTotalFileSize){
-                    if(filesize($filePath) > $maxTotalFileSize) { //skip this as it won't ever be selected with current settings
+                $fsz = filesize($filePath);
+                if($fsz + $totalFileSize > $maxTotalFileSize){
+                    if($fsz > $maxTotalFileSize) { //skip this as it won't ever be selected with current settings
                         $dataArr[$file]->status = 'skip';
                         if(filesize($filePath) > ShortPixel::CLIENT_MAX_BODY_SIZE * pow(1024, 2)) {
                             $dataArr[$file]->retries = 99;
                         }
                         $dataArr[$file]->message = 'File larger than the set limit of ' . $maxTotalFileSizeMb . 'MBytes';
-                        $this->updateMeta($dataArr[$file], $fp); //this one is too big, we skipped it, just continue with next.
+                        $this->logger->log(SPLog::PRODUCER_PERSISTER, "TextPersister->getTodo - File too large: $path/$file - size: " . $fsz . "MBytes");
+                        $metaFile->update($dataArr[$file]); //this one is too big, we skipped it, just continue with next.
+                    } else {
+                        //$this->logger->log(SPLog::PRODUCER_PERSISTER, "TextPersister->getTodo - File won't fit this round: $path/$file - size: " . $fsz . "MBytes");
                     }
                     continue; //the total file size would exceed the limit so leave this image out for now. If it's not too large by itself, will take it in the next pass.
                 }
                 if($toUpdate) {
-                    $this->updateMeta($dataArr[$file], $fp);
+                    $metaFile->update($dataArr[$file]);
                 }
                 $results[] = $filePath;
                 $totalFileSize += filesize($filePath);
@@ -367,8 +422,9 @@ class TextPersister implements Persister {
      */
     protected function isChanged($data, $file, $persistPath, $sourcePath ) {
         clearstatcache(true, $sourcePath);
-        return $persistPath === $sourcePath && filesize($sourcePath . '/' . $file) != $data->optimizedSize
-            || $persistPath !== $sourcePath && $data->originalSize > 0 && filesize($sourcePath . '/' . $file) != $data->originalSize;
+        $fileSize = filesize($sourcePath . '/' . $file);
+        return $persistPath === $sourcePath && $data->optimizedSize > 0 && $fileSize != $data->optimizedSize
+            || $persistPath !== $sourcePath && $data->originalSize > 0  && $fileSize != $data->originalSize;
     }
 
     function getNextTodo($path, $count)
@@ -403,217 +459,29 @@ class TextPersister implements Persister {
     }
 
     protected function setStatus($path, $optData, $status) {
-        $toClose = $this->openMetaFileIfNeeded(dirname($path));
-        $fp = $this->getMetaFile(dirname($path));
+        $folder = dirname($path);
+        $toClose = !TextMetaFile::IsOpen($folder);
+        $meta = TextMetaFile::Get($folder);
 
-        $meta = $this->findMeta($path);
-        if($meta) {
-            $meta->retries++;
-            $meta->changeDate = time();
+        $metaData = TextMetaFile::find($path, 'update');
+        if($metaData) {
+            $metaData->retries++;
+            $metaData->changeDate = time();
         } else {
-            $meta = $this->newMeta($path);
+            $metaData = TextMetaFile::newEntry($path, $this->options);
         }
-        $meta->status = $status == 'error' ? $meta->retries > ShortPixel::MAX_RETRIES ? 'skip' : 'pending' : $status;
-        $metaArr = array_merge((array)$meta, $optData);
-        if(isset($meta->filePos)) {
-            $this->updateMeta((object)$metaArr, $fp, false);
+        $metaData->status = $status == 'error' ? $metaData->retries > ShortPixel::MAX_RETRIES ? 'skip' : 'pending' : $status;
+        $metaArr = array_merge((array)$metaData, $optData);
+        if(isset($metaData->filePos)) {
+            $meta->update((object)$metaArr, false);
         } else {
-            $this->appendMeta((object)$metaArr, $fp, false);
+            $meta->append((object)$metaArr, false);
         }
 
         if($toClose) {
-            $this->closeMetaFile(dirname($path));
+            $meta->close();
         }
-        return $meta->status;
+        return $metaData->status;
     }
 
-    protected function openMetaFileIfNeeded($path) {
-        if(isset($this->fp[$path])) {
-            fseek($this->fp[$path], 0);
-            return false;
-        }
-        $fp = $this->openMetaFile($path);
-        if(!$fp) {
-            throw new \Exception("Could not open meta file in folder " . $path . ". Please check permissions.", -14);
-        }
-        $this->fp[$path] = $fp;
-        return true;
-    }
-
-    protected function getMetaFile($path) {
-        return $this->fp[$path];
-    }
-
-    protected function closeMetaFile($path) {
-        if(isset($this->fp[$path])) {
-            $fp = $this->fp[$path];
-            unset($this->fp[$path]);
-            fclose($fp);
-        }
-    }
-
-    protected function readMetaFile($fp) {
-        $dataArr = array(); $err = false;
-        for ($i = 0; ($line = fgets($fp)) !== FALSE; $i++) {
-            $data = $this->parse($line);
-            if($data) {
-                $data->filePos = $i;
-                if(isset($dataArr[$data->file])) {
-                    $err = true; //found situations where a line was duplicated, will rewrite but take only the first
-                } else {
-                    $dataArr[$data->file] = $data;
-                }
-            } else {
-                $err = true;
-            }
-        }
-        if($err) { //at least one error found in the .shortpixel file, rewrite it
-            fseek($fp, 0);
-            ftruncate($fp, 0);
-            foreach($dataArr as $meta) {
-                fwrite($fp, $this->assemble($meta));
-                fwrite($fp, $line . "\r\n");
-            }
-        }
-        return $dataArr;
-    }
-
-    protected function openMetaFile($path, $type = 'update') {
-        $metaFile = $path . '/' . ShortPixel::opt("persist_name");
-        if(!is_dir($path) && !@mkdir($path, 0777, true)) { //create the folder
-            throw new ClientException("The metadata destination path cannot be found. Please check rights", -17);
-        }
-        $fp = @fopen($metaFile, $type == 'update' ? 'c+' : 'r');
-        if(!$fp) {
-            if(is_dir($metaFile)) { //saw this for a client
-                throw new ClientException("Could not open persistence file $metaFile. There's already a directory with this name.", -16);
-            } else {
-                throw new ClientException("Could not open persistence file $metaFile. Please check rights.", -16);
-            }
-        }
-        return $fp;
-    }
-
-    protected function findMeta($path) {
-        $fp = $this->openMetaFile(dirname($path));
-        fseek($fp, 0);
-        for ($i = 0; ($line = fgets($fp)) !== FALSE; $i++) {
-            $data = $this->parse($line);
-            if($data->file === \MediaCloud\Vendor\ShortPixel\MB_basename($path)) {
-                $data->filePos = $i;
-                return $data;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * @param $meta
-     * @param bool|false $returnPointer - set this to true if need to have the file pointer back afterwards, such as when updating while reading the file line by line
-     */
-    protected function updateMeta($meta, $fp, $returnPointer = false) {
-        if($returnPointer) {
-            $crt = ftell($fp);
-        }
-        fseek($fp, self::LINE_LENGTH * $meta->filePos); // +2 for the \r\n
-        fwrite($fp, $this->assemble($meta));
-        fflush($fp);
-        if($returnPointer) {
-            fseek($fp, $crt);
-        }
-    }
-
-    /**
-     * @param $meta
-     * @param bool|false $returnPointer - set this to true if need to have the file pointer back afterwards, such as when updating while reading the file line by line
-     */
-    protected function appendMeta($meta, $fp, $returnPointer = false) {
-        if($returnPointer) {
-            $crt = ftell($fp);
-        }
-        $fstat = fstat($fp);
-        fseek($fp, 0, SEEK_END);
-        $line = $this->assemble($meta);
-        //$ob = $this->parse($line);
-        fwrite($fp, $line . "\r\n");
-        fflush($fp);
-        if($returnPointer) {
-            fseek($fp, $crt);
-        }
-        return $fstat['size'] / self::LINE_LENGTH;
-    }
-
-    protected function newMeta($file) {
-        //$this->logger->log(SPLog::PRODUCER_PERSISTER, "newMeta: file $file exists? " . (file_exists($file) ? "Yes" : "No"));
-        return (object) array(
-            "type" => is_dir($file) ? 'D' : 'I',
-            "status" => 'pending',
-            "retries" => 0,
-            "compressionType" => $this->options['lossy'] == 1 ? 'lossy' : ($this->options['lossy'] == 2 ? 'glossy' : 'lossless'),
-            "keepExif" => $this->options['keep_exif'],
-            "cmyk2rgb" => $this->options['cmyk2rgb'],
-            "resize" => $this->options['resize_width'] ? 1 : 0,
-            "resizeWidth" => 0 + $this->options['resize_width'],
-            "resizeHeight" => 0 + $this->options['resize_height'],
-            "convertto" => $this->options['convertto'],
-            "percent" => null,
-            "optimizedSize" => null,
-            "changeDate" => time(),
-            "file" => \MediaCloud\Vendor\ShortPixel\MB_basename($file),
-            "message" => '',
-            //file does not exist if source is a WebFolder and the optimized images are saved to a different target
-            "originalSize" => is_dir($file) || !file_exists($file) ? 0 : filesize($file));
-    }
-
-    const LINE_LENGTH = 465; //including the \r\n at the end
-
-    protected function parse($line) {
-        if(strlen(rtrim($line, "\r\n")) != (self::LINE_LENGTH - 2)) return false;
-        $percent = trim(substr($line, 52, 6));
-        $optimizedSize = trim(substr($line, 58, 9));
-        $originalSize = trim(substr($line, 454, 9));
-        $ret = (object) array(
-            "type" => trim(substr($line, 0, 2)),
-            "status" => trim(substr($line, 2, 11)),
-            "retries" => trim(substr($line, 13, 2)),
-            "compressionType" => trim(substr($line, 15, 9)),
-            "keepExif" => trim(substr($line, 24, 2)),
-            "cmyk2rgb" => trim(substr($line, 26, 2)),
-            "resize" => trim(substr($line, 28, 2)),
-            "resizeWidth" => trim(substr($line, 30, 6)),
-            "resizeHeight" => trim(substr($line, 36, 6)),
-            "convertto" => trim(substr($line, 42, 10)),
-            "percent" => is_numeric($percent) ? floatval($percent) : 0.0,
-            "optimizedSize" => is_numeric($optimizedSize) ? intval($optimizedSize) : 0,
-            "changeDate" => strtotime(trim(substr($line, 67, 20))),
-            "file" => rtrim(substr($line, 87, 256)), //rtrim because there could be file names starting with a blank!! (had that)
-            "message" => trim(substr($line, 343, 111)),
-            "originalSize" => is_numeric($originalSize) ? intval($originalSize) : 0,
-        );
-        if(!in_array($ret->status, self::$ALLOWED_STATUSES) || !$ret->changeDate) {
-            return false;
-        }
-        return $ret;
-    }
-
-    protected function assemble($data) {
-        return sprintf("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
-            str_pad($data->type, 2),
-            str_pad($data->status, 11),
-            str_pad($data->retries % 100, 2), // for folders, retries can be > 100 so do a sanity check here - we're not actually interested in folder retries
-            str_pad($data->compressionType, 9),
-            str_pad($data->keepExif, 2),
-            str_pad($data->cmyk2rgb, 2),
-            str_pad($data->resize, 2),
-            str_pad(substr($data->resizeWidth, 0 , 5), 6),
-            str_pad(substr($data->resizeHeight, 0 , 5), 6),
-            str_pad($data->convertto, 10),
-            str_pad(substr(number_format($data->percent, 2, ".",""),0 , 5), 6),
-            str_pad(substr(number_format($data->optimizedSize, 0, ".", ""),0 , 8), 9),
-            str_pad(date("Y-m-d H:i:s", $data->changeDate), 20),
-            str_pad(substr($data->file, 0, 255), 256),
-            str_pad(substr($data->message, 0, 110), 111),
-            str_pad(substr(number_format($data->originalSize, 0, ".", ""),0 , 8), 9)
-        );
-    }
 }

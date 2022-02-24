@@ -37,6 +37,8 @@
 
                     $.post( ajaxurl, {
                         action: 'fs_toggle_debug_mode',
+                        // As such we don't need to use `wp_json_encode` method but using it to follow wp.org guideline.
+                        _wpnonce   : <?php echo wp_json_encode( wp_create_nonce( 'fs_toggle_debug_mode' ) ); ?>,
                         is_on : ($(this).hasClass( 'fs-on' ) ? 1 : 0)
                     }, function ( response ) {
                         if ( 1 == response ) {
@@ -77,6 +79,16 @@
                 <button class="button"><?php fs_esc_html_echo_inline( 'Clear Updates Transients' ) ?></button>
             </form>
         </td>
+        <?php if ( Freemius::is_deactivation_snoozed() ) : ?>
+        <td>
+            <!-- Reset Deactivation Snoozing -->
+            <form action="" method="POST">
+                <input type="hidden" name="fs_action" value="reset_deactivation_snoozing">
+                <?php wp_nonce_field( 'reset_deactivation_snoozing' ) ?>
+                <button class="button"><?php fs_esc_html_echo_inline( 'Reset Deactivation Snoozing' ) ?> (Expires in <?php echo ( Freemius::deactivation_snooze_expires_at() - time() ) ?> sec)</button>
+            </form>
+        </td>
+        <?php endif ?>
         <td>
             <!-- Sync Data with Server -->
             <form action="" method="POST">
@@ -111,7 +123,8 @@
             if (optionName) {
                 $.post(ajaxurl, {
                     action     : 'fs_get_db_option',
-                    _wpnonce   : '<?php echo wp_create_nonce( 'fs_get_db_option' ) ?>',
+                    // As such we don't need to use `wp_json_encode` method but using it to follow wp.org guideline.
+                    _wpnonce   : <?php echo wp_json_encode( wp_create_nonce( 'fs_get_db_option' ) ); ?>,
                     option_name: optionName
                 }, function (response) {
                     if (response.data.value)
@@ -131,7 +144,8 @@
                 if (optionValue) {
                     $.post(ajaxurl, {
                         action      : 'fs_set_db_option',
-                        _wpnonce   : '<?php echo wp_create_nonce( 'fs_set_db_option' ) ?>',
+                        // As such we don't need to use `wp_json_encode` method but using it to follow wp.org guideline.
+                        _wpnonce    : <?php echo wp_json_encode( wp_create_nonce( 'fs_set_db_option' ) ); ?>,
                         option_name : optionName,
                         option_value: optionValue
                     }, function () {
@@ -376,9 +390,6 @@
             </thead>
             <tbody>
             <?php foreach ( $sites_map as $slug => $sites ) : ?>
-                <?php if ( ! is_array( $sites ) ) {
-                    $sites = array( $sites );
-                } ?>
                 <?php foreach ( $sites as $site ) : ?>
                     <tr>
                         <td><?php echo $site->id ?></td>
@@ -480,7 +491,14 @@
      * @var FS_User[] $users
      */
     $users                              = $VARS['users'];
+    $user_ids_map                       = array();
     $users_with_developer_license_by_id = array();
+
+    if ( is_array( $users ) && ! empty( $users ) ) {
+        foreach ( $users as $user ) {
+            $user_ids_map[ $user->id ] = true;
+        }
+    }
 
     foreach ( $module_types as $module_type ) {
         /**
@@ -574,7 +592,7 @@
                     <td><?php echo $license->is_block_features ? 'Blocking' : 'Flexible' ?></td>
                     <td><?php echo $license->is_whitelabeled ? 'Whitelabeled' : 'Normal' ?></td>
                     <td><?php
-                            echo $license->is_whitelabeled ?
+                            echo ( $license->is_whitelabeled || ! isset( $user_ids_map[ $license->user_id ] ) ) ?
                                 $license->get_html_escaped_masked_secret_key() :
                                 esc_html( $license->secret_key );
                     ?></td>
@@ -724,6 +742,8 @@
 
                 $.post(ajaxurl, {
                     action : 'fs_get_debug_log',
+                    // As such we don't need to use `wp_json_encode` method but using it to follow wp.org guideline.
+                    _wpnonce : <?php echo wp_json_encode( wp_create_nonce( 'fs_get_debug_log' ) ); ?>,
                     filters: filters,
                     offset : offset,
                     limit  : limit

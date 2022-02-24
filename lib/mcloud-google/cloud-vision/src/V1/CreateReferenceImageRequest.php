@@ -98,11 +98,21 @@ class CreateReferenceImageRequest extends \MediaCloud\Vendor\Google\Protobuf\Int
      * If an image ID is specified, it is ignored.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.ReferenceImage reference_image = 2 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ReferenceImage
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ReferenceImage|null
      */
     public function getReferenceImage()
     {
         return $this->reference_image;
+    }
+
+    public function hasReferenceImage()
+    {
+        return isset($this->reference_image);
+    }
+
+    public function clearReferenceImage()
+    {
+        unset($this->reference_image);
     }
 
     /**

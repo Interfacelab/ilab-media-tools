@@ -55,7 +55,7 @@ class FilenameTestCase extends \BC_PHPUnit_Framework_TestCase
     /**
      * @test
      * @expectedException  UnexpectedValueException
-     * @expectedExceptionMessage  failed to open dir
+     * @expectedExceptionMessage  ailed to open dir
      */
     public function doesNotWorkWithInvalidName()
     {

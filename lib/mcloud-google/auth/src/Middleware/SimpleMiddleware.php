@@ -16,7 +16,7 @@
  */
 
 namespace MediaCloud\Vendor\Google\Auth\Middleware;
-use MediaCloud\Vendor\GuzzleHttp\Psr7;
+use MediaCloud\Vendor\GuzzleHttp\Psr7\Query;
 use MediaCloud\Vendor\Psr\Http\Message\RequestInterface;
 
 /**
@@ -80,9 +80,9 @@ class SimpleMiddleware
                 return $handler($request, $options);
             }
 
-            $query = Psr7\parse_query($request->getUri()->getQuery());
+            $query = Query::parse($request->getUri()->getQuery());
             $params = array_merge($query, $this->config);
-            $uri = $request->getUri()->withQuery(Psr7\build_query($params));
+            $uri = $request->getUri()->withQuery(Query::build($params));
             $request = $request->withUri($uri);
 
             return $handler($request, $options);

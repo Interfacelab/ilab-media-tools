@@ -22,15 +22,13 @@ class ServiceOptions extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool deprecated = 33 [default = false];</code>
      */
-    protected $deprecated = false;
-    private $has_deprecated = false;
+    protected $deprecated = null;
     /**
      * The parser stores options it doesn't recognize here. See above.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
      */
     private $uninterpreted_option;
-    private $has_uninterpreted_option = false;
 
     /**
      * Constructor.
@@ -62,7 +60,17 @@ class ServiceOptions extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      */
     public function getDeprecated()
     {
-        return $this->deprecated;
+        return isset($this->deprecated) ? $this->deprecated : false;
+    }
+
+    public function hasDeprecated()
+    {
+        return isset($this->deprecated);
+    }
+
+    public function clearDeprecated()
+    {
+        unset($this->deprecated);
     }
 
     /**
@@ -79,14 +87,8 @@ class ServiceOptions extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
     {
         GPBUtil::checkBool($var);
         $this->deprecated = $var;
-        $this->has_deprecated = true;
 
         return $this;
-    }
-
-    public function hasDeprecated()
-    {
-        return $this->has_deprecated;
     }
 
     /**
@@ -111,14 +113,8 @@ class ServiceOptions extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
     {
         $arr = GPBUtil::checkRepeatedField($var, \MediaCloud\Vendor\Google\Protobuf\Internal\GPBType::MESSAGE, \MediaCloud\Vendor\Google\Protobuf\Internal\UninterpretedOption::class);
         $this->uninterpreted_option = $arr;
-        $this->has_uninterpreted_option = true;
 
         return $this;
-    }
-
-    public function hasUninterpretedOption()
-    {
-        return $this->has_uninterpreted_option;
     }
 
 }

@@ -14,13 +14,15 @@
         }
     ],
     "require": {
-        "php": ">=7.0",
+        "php": "^7.2.5|^8.0",
+        "ext-json": "*",
         "ext-mbstring": "*",
-        "mcloud-doctrine/inflector": "1.3.1",
-        "mcloud-illuminate/contracts": "v5.5.44",
-        "mcloud-nesbot/carbon": "1.39.1"
+        "mcloud-doctrine/inflector": "2.0.4",
+        "mcloud-illuminate/contracts": "v7.30.6",
+        "mcloud-nesbot/carbon": "2.57.0",
+        "mcloud-voku/portable-ascii": "1.6.1"
     },
-    "replace": {
+    "conflict": {
         "tightenco/collect": "<5.5.33"
     },
     "autoload": {
@@ -35,13 +37,16 @@
         "branch-alias": []
     },
     "suggest": {
-        "illuminate/filesystem": "Required to use the composer class (5.5.*).",
-        "symfony/process": "Required to use the composer class (~3.3).",
-        "symfony/var-dumper": "Required to use the dd function (~3.3)."
+        "illuminate/filesystem": "Required to use the composer class (^7.0).",
+        "moontoast/math": "Required to use ordered UUIDs (^1.1).",
+        "ramsey/uuid": "Required to use Str::uuid() (^3.7|^4.0).",
+        "symfony/process": "Required to use the composer class (^5.0).",
+        "symfony/var-dumper": "Required to use the dd function (^5.0).",
+        "vlucas/phpdotenv": "Required to use the Env class and env helper (^4.0)."
     },
     "config": {
         "sort-packages": true
     },
     "minimum-stability": "dev",
-    "version": "v5.5.44"
+    "version": "v7.30.6"
 }

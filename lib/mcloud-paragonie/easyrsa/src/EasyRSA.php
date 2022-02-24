@@ -4,26 +4,32 @@ namespace MediaCloud\Vendor\ParagonIE\EasyRSA;
 
 // PHPSecLib:
 use MediaCloud\Vendor\ParagonIE\EasyRSA\Exception\InvalidKeyException;
-use \MediaCloud\Vendor\phpseclib\Crypt\RSA;
+use MediaCloud\Vendor\phpseclib\Crypt\RSA;
 // defuse/php-encryption:
-use \MediaCloud\Vendor\ParagonIE\ConstantTime\Base64;
-use \MediaCloud\Vendor\Defuse\Crypto\Key;
-use \MediaCloud\Vendor\Defuse\Crypto\Crypto;
+use MediaCloud\Vendor\ParagonIE\ConstantTime\Base64;
+use MediaCloud\Vendor\Defuse\Crypto\Key;
+use MediaCloud\Vendor\Defuse\Crypto\Crypto;
 // Typed Exceptions:
-use \MediaCloud\Vendor\ParagonIE\EasyRSA\Exception\InvalidChecksumException;
-use \MediaCloud\Vendor\ParagonIE\EasyRSA\Exception\InvalidCiphertextException;
+use MediaCloud\Vendor\ParagonIE\EasyRSA\Exception\InvalidChecksumException;
+use MediaCloud\Vendor\ParagonIE\EasyRSA\Exception\InvalidCiphertextException;
 
+/**
+ * Class EasyRSA
+ * @package ParagonIE\EasyRSA
+ */
 class EasyRSA implements EasyRSAInterface
 {
     const SEPARATOR = '$';
     const VERSION_TAG = "EzR2";
 
+    /** @var ?RSA $rsa */
     static private $rsa;
 
     /**
      * Set RSA to use in between calls
      *
      * @param RSA|null $rsa
+     * @return void
      */
     public static function setRsa(RSA $rsa = null)
     {
@@ -39,7 +45,8 @@ class EasyRSA implements EasyRSAInterface
      */
     public static function getRsa($mode)
     {
-        if (self::$rsa) {
+        /** @var RSA $rsa */
+        if (!\is_null(self::$rsa)) {
             $rsa = self::$rsa;
         } else {
             $rsa = new RSA();
@@ -226,7 +233,7 @@ class EasyRSA implements EasyRSAInterface
         }
 
         $return = @$rsa->decrypt($ciphertext);
-        if ($return === false) {
+        if (!\is_string($return)) {
             throw new InvalidCiphertextException('Decryption failed');
         }
         return $return;

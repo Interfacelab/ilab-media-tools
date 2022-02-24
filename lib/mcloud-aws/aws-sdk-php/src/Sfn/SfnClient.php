@@ -41,6 +41,8 @@ use MediaCloud\Vendor\Aws\AwsClient;
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise sendTaskSuccessAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result startExecution(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise startExecutionAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result startSyncExecution(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise startSyncExecutionAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result stopExecution(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise stopExecutionAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result tagResource(array $args = [])

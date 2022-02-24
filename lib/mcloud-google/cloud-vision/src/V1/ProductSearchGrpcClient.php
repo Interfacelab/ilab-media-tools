@@ -2,7 +2,7 @@
 // GENERATED CODE -- DO NOT EDIT!
 
 // Original file comments:
-// Copyright 2019 Google LLC.
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 //
 
 namespace MediaCloud\Vendor\Google\Cloud\Vision\V1;
@@ -57,7 +56,7 @@ class ProductSearchGrpcClient extends \MediaCloud\Vendor\Grpc\BaseStub {
      * @param \MediaCloud\Vendor\Google\Cloud\Vision\V1\CreateProductSetRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ProductSet
+     * @return \MediaCloud\Vendor\Grpc\UnaryCall
      */
     public function CreateProductSet(\MediaCloud\Vendor\Google\Cloud\Vision\V1\CreateProductSetRequest $argument,
       $metadata = [], $options = []) {
@@ -77,7 +76,7 @@ class ProductSearchGrpcClient extends \MediaCloud\Vendor\Grpc\BaseStub {
      * @param \MediaCloud\Vendor\Google\Cloud\Vision\V1\ListProductSetsRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ListProductSetsResponse
+     * @return \MediaCloud\Vendor\Grpc\UnaryCall
      */
     public function ListProductSets(\MediaCloud\Vendor\Google\Cloud\Vision\V1\ListProductSetsRequest $argument,
       $metadata = [], $options = []) {
@@ -96,7 +95,7 @@ class ProductSearchGrpcClient extends \MediaCloud\Vendor\Grpc\BaseStub {
      * @param \MediaCloud\Vendor\Google\Cloud\Vision\V1\GetProductSetRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ProductSet
+     * @return \MediaCloud\Vendor\Grpc\UnaryCall
      */
     public function GetProductSet(\MediaCloud\Vendor\Google\Cloud\Vision\V1\GetProductSetRequest $argument,
       $metadata = [], $options = []) {
@@ -118,7 +117,7 @@ class ProductSearchGrpcClient extends \MediaCloud\Vendor\Grpc\BaseStub {
      * @param \MediaCloud\Vendor\Google\Cloud\Vision\V1\UpdateProductSetRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ProductSet
+     * @return \MediaCloud\Vendor\Grpc\UnaryCall
      */
     public function UpdateProductSet(\MediaCloud\Vendor\Google\Cloud\Vision\V1\UpdateProductSetRequest $argument,
       $metadata = [], $options = []) {
@@ -136,7 +135,7 @@ class ProductSearchGrpcClient extends \MediaCloud\Vendor\Grpc\BaseStub {
      * @param \MediaCloud\Vendor\Google\Cloud\Vision\V1\DeleteProductSetRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \MediaCloud\Vendor\Google\Protobuf\GPBEmpty
+     * @return \MediaCloud\Vendor\Grpc\UnaryCall
      */
     public function DeleteProductSet(\MediaCloud\Vendor\Google\Cloud\Vision\V1\DeleteProductSetRequest $argument,
       $metadata = [], $options = []) {
@@ -158,7 +157,7 @@ class ProductSearchGrpcClient extends \MediaCloud\Vendor\Grpc\BaseStub {
      * @param \MediaCloud\Vendor\Google\Cloud\Vision\V1\CreateProductRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\Product
+     * @return \MediaCloud\Vendor\Grpc\UnaryCall
      */
     public function CreateProduct(\MediaCloud\Vendor\Google\Cloud\Vision\V1\CreateProductRequest $argument,
       $metadata = [], $options = []) {
@@ -177,7 +176,7 @@ class ProductSearchGrpcClient extends \MediaCloud\Vendor\Grpc\BaseStub {
      * @param \MediaCloud\Vendor\Google\Cloud\Vision\V1\ListProductsRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ListProductsResponse
+     * @return \MediaCloud\Vendor\Grpc\UnaryCall
      */
     public function ListProducts(\MediaCloud\Vendor\Google\Cloud\Vision\V1\ListProductsRequest $argument,
       $metadata = [], $options = []) {
@@ -196,7 +195,7 @@ class ProductSearchGrpcClient extends \MediaCloud\Vendor\Grpc\BaseStub {
      * @param \MediaCloud\Vendor\Google\Cloud\Vision\V1\GetProductRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\Product
+     * @return \MediaCloud\Vendor\Grpc\UnaryCall
      */
     public function GetProduct(\MediaCloud\Vendor\Google\Cloud\Vision\V1\GetProductRequest $argument,
       $metadata = [], $options = []) {
@@ -225,7 +224,7 @@ class ProductSearchGrpcClient extends \MediaCloud\Vendor\Grpc\BaseStub {
      * @param \MediaCloud\Vendor\Google\Cloud\Vision\V1\UpdateProductRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\Product
+     * @return \MediaCloud\Vendor\Grpc\UnaryCall
      */
     public function UpdateProduct(\MediaCloud\Vendor\Google\Cloud\Vision\V1\UpdateProductRequest $argument,
       $metadata = [], $options = []) {
@@ -244,7 +243,7 @@ class ProductSearchGrpcClient extends \MediaCloud\Vendor\Grpc\BaseStub {
      * @param \MediaCloud\Vendor\Google\Cloud\Vision\V1\DeleteProductRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \MediaCloud\Vendor\Google\Protobuf\GPBEmpty
+     * @return \MediaCloud\Vendor\Grpc\UnaryCall
      */
     public function DeleteProduct(\MediaCloud\Vendor\Google\Cloud\Vision\V1\DeleteProductRequest $argument,
       $metadata = [], $options = []) {
@@ -277,7 +276,7 @@ class ProductSearchGrpcClient extends \MediaCloud\Vendor\Grpc\BaseStub {
      * @param \MediaCloud\Vendor\Google\Cloud\Vision\V1\CreateReferenceImageRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ReferenceImage
+     * @return \MediaCloud\Vendor\Grpc\UnaryCall
      */
     public function CreateReferenceImage(\MediaCloud\Vendor\Google\Cloud\Vision\V1\CreateReferenceImageRequest $argument,
       $metadata = [], $options = []) {
@@ -298,7 +297,7 @@ class ProductSearchGrpcClient extends \MediaCloud\Vendor\Grpc\BaseStub {
      * @param \MediaCloud\Vendor\Google\Cloud\Vision\V1\DeleteReferenceImageRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \MediaCloud\Vendor\Google\Protobuf\GPBEmpty
+     * @return \MediaCloud\Vendor\Grpc\UnaryCall
      */
     public function DeleteReferenceImage(\MediaCloud\Vendor\Google\Cloud\Vision\V1\DeleteReferenceImageRequest $argument,
       $metadata = [], $options = []) {
@@ -319,7 +318,7 @@ class ProductSearchGrpcClient extends \MediaCloud\Vendor\Grpc\BaseStub {
      * @param \MediaCloud\Vendor\Google\Cloud\Vision\V1\ListReferenceImagesRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ListReferenceImagesResponse
+     * @return \MediaCloud\Vendor\Grpc\UnaryCall
      */
     public function ListReferenceImages(\MediaCloud\Vendor\Google\Cloud\Vision\V1\ListReferenceImagesRequest $argument,
       $metadata = [], $options = []) {
@@ -338,7 +337,7 @@ class ProductSearchGrpcClient extends \MediaCloud\Vendor\Grpc\BaseStub {
      * @param \MediaCloud\Vendor\Google\Cloud\Vision\V1\GetReferenceImageRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ReferenceImage
+     * @return \MediaCloud\Vendor\Grpc\UnaryCall
      */
     public function GetReferenceImage(\MediaCloud\Vendor\Google\Cloud\Vision\V1\GetReferenceImageRequest $argument,
       $metadata = [], $options = []) {
@@ -360,7 +359,7 @@ class ProductSearchGrpcClient extends \MediaCloud\Vendor\Grpc\BaseStub {
      * @param \MediaCloud\Vendor\Google\Cloud\Vision\V1\AddProductToProductSetRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \MediaCloud\Vendor\Google\Protobuf\GPBEmpty
+     * @return \MediaCloud\Vendor\Grpc\UnaryCall
      */
     public function AddProductToProductSet(\MediaCloud\Vendor\Google\Cloud\Vision\V1\AddProductToProductSetRequest $argument,
       $metadata = [], $options = []) {
@@ -375,7 +374,7 @@ class ProductSearchGrpcClient extends \MediaCloud\Vendor\Grpc\BaseStub {
      * @param \MediaCloud\Vendor\Google\Cloud\Vision\V1\RemoveProductFromProductSetRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \MediaCloud\Vendor\Google\Protobuf\GPBEmpty
+     * @return \MediaCloud\Vendor\Grpc\UnaryCall
      */
     public function RemoveProductFromProductSet(\MediaCloud\Vendor\Google\Cloud\Vision\V1\RemoveProductFromProductSetRequest $argument,
       $metadata = [], $options = []) {
@@ -396,7 +395,7 @@ class ProductSearchGrpcClient extends \MediaCloud\Vendor\Grpc\BaseStub {
      * @param \MediaCloud\Vendor\Google\Cloud\Vision\V1\ListProductsInProductSetRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ListProductsInProductSetResponse
+     * @return \MediaCloud\Vendor\Grpc\UnaryCall
      */
     public function ListProductsInProductSet(\MediaCloud\Vendor\Google\Cloud\Vision\V1\ListProductsInProductSetRequest $argument,
       $metadata = [], $options = []) {
@@ -421,7 +420,7 @@ class ProductSearchGrpcClient extends \MediaCloud\Vendor\Grpc\BaseStub {
      * @param \MediaCloud\Vendor\Google\Cloud\Vision\V1\ImportProductSetsRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \MediaCloud\Vendor\Google\LongRunning\Operation
+     * @return \MediaCloud\Vendor\Grpc\UnaryCall
      */
     public function ImportProductSets(\MediaCloud\Vendor\Google\Cloud\Vision\V1\ImportProductSetsRequest $argument,
       $metadata = [], $options = []) {
@@ -459,7 +458,7 @@ class ProductSearchGrpcClient extends \MediaCloud\Vendor\Grpc\BaseStub {
      * @param \MediaCloud\Vendor\Google\Cloud\Vision\V1\PurgeProductsRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \MediaCloud\Vendor\Google\LongRunning\Operation
+     * @return \MediaCloud\Vendor\Grpc\UnaryCall
      */
     public function PurgeProducts(\MediaCloud\Vendor\Google\Cloud\Vision\V1\PurgeProductsRequest $argument,
       $metadata = [], $options = []) {

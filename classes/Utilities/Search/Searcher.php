@@ -3,11 +3,10 @@
 
 namespace MediaCloud\Plugin\Utilities\Search;
 
-
-
 use MediaCloud\Plugin\Tasks\TaskReporter;
 use MediaCloud\Plugin\Tools\Imgix\ImgixTool;
 use MediaCloud\Plugin\Tools\ToolsManager;
+use MediaCloud\Plugin\Utilities\Logging\Logger;
 
 class Searcher {
 	private $dryRun;
@@ -272,6 +271,25 @@ class Searcher {
 			remove_filter('media-cloud/dynamic-images/skip-url-generation', '__return_true', PHP_INT_MAX);
 		}
 
+		if (apply_filters('media-cloud/imgix/enabled', false)) {
+			// cloud => current
+			{
+				add_filter('media-cloud/dynamic-images/skip-url-generation', '__return_true', PHP_INT_MAX);
+				add_filter('media-cloud/storage/ignore-cdn', '__return_true', PHP_INT_MAX);
+
+				$result = $callback();
+
+				if (!empty($result) && ($result != $attachmentUrl)) {
+					$urlMap[$result] = $attachmentUrl;
+
+					$results[] = $result;
+				}
+
+				remove_filter('media-cloud/storage/ignore-cdn', '__return_true', PHP_INT_MAX);
+				remove_filter('media-cloud/dynamic-images/skip-url-generation', '__return_true', PHP_INT_MAX);
+			}
+		}
+
 		// imgix => current
 		if ($this->forceImgix) {
 			add_filter('media-cloud/storage/ignore-cdn', '__return_true', PHP_INT_MAX);
@@ -416,6 +434,7 @@ class Searcher {
 			}
 		}
 
+		Logger::info("Replacing $old with $new $total times.", [], __METHOD__, __LINE__);
 		return $total;
 	}
 
@@ -435,6 +454,16 @@ class Searcher {
 						return wp_get_attachment_image_url($postId, $sizeKey);
 					});
 				}
+			}
+
+			$attachmentUrl = $this->getAttachmentUrl(function() use ($postId) {
+				return wp_get_attachment_url($postId);
+			});
+
+			if (!empty($attachmentUrl)) {
+				$this->getUntreatedUrl($urlMap, $attachmentUrl, function() use ($postId) {
+					return wp_get_attachment_url($postId);
+				});
 			}
 
 			$originalImage = $this->getAttachmentUrl(function() use ($postId) {
@@ -463,7 +492,9 @@ class Searcher {
 		$totalChanges = 0;
 		foreach($urlMap as $old => $new) {
 			$result = $this->searchAndReplace($old, $new);
+			$totalChanges += intval($result);
 
+			$result = $this->searchAndReplace(str_replace('/', '\/', $old), str_replace('/', '\/', $new));
 			$totalChanges += intval($result);
 
 			$reporter->add([

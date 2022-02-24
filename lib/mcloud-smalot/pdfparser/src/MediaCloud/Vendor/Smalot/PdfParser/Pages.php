@@ -29,6 +29,7 @@
  */
 
 namespace MediaCloud\Vendor\Smalot\PdfParser;
+use MediaCloud\Vendor\Smalot\PdfParser\Element\ElementArray;
 
 /**
  * Class Pages
@@ -36,27 +37,30 @@ namespace MediaCloud\Vendor\Smalot\PdfParser;
 class Pages extends PDFObject
 {
     /**
-     * @param bool $deep
+     * @todo Objects other than Pages or Page might need to be treated specifically in order to get Page objects out of them,
      *
-     * @return array
+     * @see https://github.com/smalot/pdfparser/issues/331
      */
-    public function getPages($deep = false)
+    public function getPages(bool $deep = false): array
     {
         if (!$this->has('Kids')) {
             return [];
         }
 
+        /** @var ElementArray $kidsElement */
+        $kidsElement = $this->get('Kids');
+
         if (!$deep) {
-            return $this->get('Kids')->getContent();
+            return $kidsElement->getContent();
         }
 
-        $kids = $this->get('Kids')->getContent();
+        $kids = $kidsElement->getContent();
         $pages = [];
 
         foreach ($kids as $kid) {
             if ($kid instanceof self) {
                 $pages = array_merge($pages, $kid->getPages(true));
-            } else {
+            } elseif ($kid instanceof Page) {
                 $pages[] = $kid;
             }
         }

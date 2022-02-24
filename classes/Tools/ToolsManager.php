@@ -196,6 +196,13 @@ final class ToolsManager
                 'mcloud-no-mbstring'
             );
         }
+        NoticeManager::instance()->displayAdminNotice(
+            'info',
+            "The team behind Media Cloud is launching a new product in April 2022 that's going to change the way you work with media in WordPress.  <a href='https://preflight.ju.mp/' target='_blank'>Sign up</a> to be notified when <a href='https://preflight.ju.mp/' target='_blank'><strong>Preflight for WordPress</strong></a> is released.",
+            true,
+            'mcloud-preflight-beta-sales-pitch',
+            10 * 365
+        );
         add_action( 'admin_enqueue_scripts', function () {
             wp_enqueue_script(
                 'mcloud-admin-js',
@@ -695,7 +702,7 @@ final class ToolsManager
             'Documentation',
             'Documentation',
             'manage_options',
-            'https://support.mediacloud.press/'
+            'https://docs.mediacloud.press/'
         );
         if ( media_cloud_licensing()->is_plan( 'pro' ) ) {
             add_submenu_page(
@@ -703,9 +710,16 @@ final class ToolsManager
                 'Submit Issue',
                 'Submit Issue',
                 'manage_options',
-                'https://support.mediacloud.press/submit-issue/'
+                'https://support.mediacloud.press/'
             );
         }
+        add_submenu_page(
+            'media-cloud',
+            'Preflight Beta',
+            'Preflight Beta',
+            'manage_options',
+            'https://preflight.ju.mp'
+        );
         foreach ( $this->tools as $key => $tool ) {
             $tool->registerHelpMenu( 'media-cloud', $networkMode, $networkAdminMenu );
         }

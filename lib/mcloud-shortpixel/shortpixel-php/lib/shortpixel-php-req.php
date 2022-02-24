@@ -20,10 +20,12 @@ require_once("ShortPixel/Settings.php");
 require_once("ShortPixel/Lock.php");
 require_once("ShortPixel/SPLog.php");
 require_once("ShortPixel/SPCache.php");
+require_once("ShortPixel/SPTools.php");
 
 require_once("ShortPixel/Persister.php");
 require_once("ShortPixel/persist/TextPersister.php");
 require_once("ShortPixel/persist/ExifPersister.php");
+require_once("ShortPixel/persist/TextMetaFile.php");
 require_once("ShortPixel/persist/PNGMetadataExtractor.php");
 require_once("ShortPixel/persist/PNGReader.php");
 

@@ -15,7 +15,7 @@ Probes to test ListDocuments grpc call from Firestore stub.
 function document($client, &$metrics){
 	global $_PARENT_RESOURCE;
 	
-	$list_document_request = new Google\Cloud\Firestore\V1beta1\ListDocumentsRequest();
+	$list_document_request = new \MediaCloud\Vendor\Google\Cloud\Firestore\V1beta1\ListDocumentsRequest();
 	$list_document_request->setParent($_PARENT_RESOURCE);
 	$time_start = microtime_float();
 

@@ -42,7 +42,7 @@ Probes to test session related grpc call from Spanner stub.
 function sessionManagement($client, &$metrics){
 	global $_DATABASE;
 
-	$createSessionRequest = new Google\Cloud\Spanner\V1\CreateSessionRequest();
+	$createSessionRequest = new \MediaCloud\Vendor\Google\Cloud\Spanner\V1\CreateSessionRequest();
 	$createSessionRequest->setDatabase($_DATABASE);
 	#Create Session test
 	#Create
@@ -56,7 +56,7 @@ function sessionManagement($client, &$metrics){
 	$metrics['create_session_latency_ms'] = $lantency;
 
 	#Get Session
-	$getSessionRequest = new Google\Cloud\Spanner\V1\GetSessionRequest();
+	$getSessionRequest = new \MediaCloud\Vendor\Google\Cloud\Spanner\V1\GetSessionRequest();
 	$getSessionRequest->setName($session->getName());
 	$time_start = microtime_float();
 	$response = $client->GetSession($getSessionRequest);
@@ -65,7 +65,7 @@ function sessionManagement($client, &$metrics){
 	$metrics['get_session_latency_ms'] = $lantency;
 
 	#List session
-	$listSessionsRequest = new Google\Cloud\Spanner\V1\ListSessionsRequest();
+	$listSessionsRequest = new \MediaCloud\Vendor\Google\Cloud\Spanner\V1\ListSessionsRequest();
 	$listSessionsRequest->setDatabase($_DATABASE);
 	$time_start = microtime_float();
 	$response = $client->ListSessions($listSessionsRequest);
@@ -73,7 +73,7 @@ function sessionManagement($client, &$metrics){
 	$metrics['list_sessions_latency_ms'] = $lantency;
 
 	#Delete session
-	$deleteSessionRequest = new Google\Cloud\Spanner\V1\DeleteSessionRequest();
+	$deleteSessionRequest = new \MediaCloud\Vendor\Google\Cloud\Spanner\V1\DeleteSessionRequest();
 	$deleteSessionRequest->setName($session->getName());
 	$time_start = microtime_float();
 	$client->deleteSession($deleteSessionRequest);
@@ -93,7 +93,7 @@ Probes to test ExecuteSql and ExecuteStreamingSql call from Spanner stub.
 function executeSql($client, &$metrics){
 	global $_DATABASE;
 
-	$createSessionRequest = new Google\Cloud\Spanner\V1\CreateSessionRequest();
+	$createSessionRequest = new \MediaCloud\Vendor\Google\Cloud\Spanner\V1\CreateSessionRequest();
 	$createSessionRequest->setDatabase($_DATABASE);
 	list($session, $status) = $client->CreateSession($createSessionRequest)->wait();
 
@@ -102,7 +102,7 @@ function executeSql($client, &$metrics){
 
 	# Probing ExecuteSql call
 	$time_start = microtime_float();
-	$executeSqlRequest = new Google\Cloud\Spanner\V1\ExecuteSqlRequest();
+	$executeSqlRequest = new \MediaCloud\Vendor\Google\Cloud\Spanner\V1\ExecuteSqlRequest();
 	$executeSqlRequest->setSession($session->getName());
 	$executeSqlRequest->setSql('select * FROM users');
 	$result_set = $client->ExecuteSql($executeSqlRequest);
@@ -121,7 +121,7 @@ function executeSql($client, &$metrics){
 
 	// TODO: Error Check for sreaming sql first result
 	
-	$deleteSessionRequest = new Google\Cloud\Spanner\V1\DeleteSessionRequest();
+	$deleteSessionRequest = new \MediaCloud\Vendor\Google\Cloud\Spanner\V1\DeleteSessionRequest();
 	$deleteSessionRequest->setName($session->getName());
 	$client->deleteSession($deleteSessionRequest);
 }
@@ -137,7 +137,7 @@ Probe to test Read and StreamingRead grpc call from Spanner stub.
 function read($client, &$metrics){
 	global $_DATABASE;
 
-	$createSessionRequest = new Google\Cloud\Spanner\V1\CreateSessionRequest();
+	$createSessionRequest = new \MediaCloud\Vendor\Google\Cloud\Spanner\V1\CreateSessionRequest();
 	$createSessionRequest->setDatabase($_DATABASE);
 	list($session, $status) = $client->CreateSession($createSessionRequest)->wait();
 
@@ -146,11 +146,11 @@ function read($client, &$metrics){
 
 	# Probing Read call
 	$time_start = microtime_float();
-	$readRequest = new Google\Cloud\Spanner\V1\ReadRequest();
+	$readRequest = new \MediaCloud\Vendor\Google\Cloud\Spanner\V1\ReadRequest();
 	$readRequest->setSession($session->getName());
 	$readRequest->setTable('users');
 	$readRequest->setColumns(['username', 'firstname', 'lastname']);
-	$keyset = new Google\Cloud\Spanner\V1\KeySet();
+	$keyset = new \MediaCloud\Vendor\Google\Cloud\Spanner\V1\KeySet();
 	$keyset->setAll(True);
 	$readRequest->setKeySet($keyset);
 	$result_set = $client->Read($readRequest);
@@ -168,7 +168,7 @@ function read($client, &$metrics){
 
 	//TODO: Error Check for streaming read first result
 
-	$deleteSessionRequest = new Google\Cloud\Spanner\V1\DeleteSessionRequest();
+	$deleteSessionRequest = new \MediaCloud\Vendor\Google\Cloud\Spanner\V1\DeleteSessionRequest();
 	$deleteSessionRequest->setName($session->getName());
 	$client->deleteSession($deleteSessionRequest);
 }
@@ -184,17 +184,17 @@ Probe to test BeginTransaction, Commit and Rollback grpc from Spanner stub.
 function transaction($client, &$metrics){
 	global $_DATABASE;
 
-	$createSessionRequest = new Google\Cloud\Spanner\V1\CreateSessionRequest();
+	$createSessionRequest = new \MediaCloud\Vendor\Google\Cloud\Spanner\V1\CreateSessionRequest();
 	$createSessionRequest->setDatabase($_DATABASE);
 	list($session, $status) = $client->CreateSession($createSessionRequest)->wait();
 
 	hardAssertIfStatusOk($status);
 	hardAssert($session !== null, 'Call completed with a null response');
 
-	$txn_options = new Google\Cloud\Spanner\V1\TransactionOptions();
-	$rw = new Google\Cloud\Spanner\V1\TransactionOptions\ReadWrite();
+	$txn_options = new \MediaCloud\Vendor\Google\Cloud\Spanner\V1\TransactionOptions();
+	$rw = new \MediaCloud\Vendor\Google\Cloud\Spanner\V1\TransactionOptions\ReadWrite();
 	$txn_options->setReadWrite($rw);
-	$txn_request = new Google\Cloud\Spanner\V1\BeginTransactionRequest();
+	$txn_request = new \MediaCloud\Vendor\Google\Cloud\Spanner\V1\BeginTransactionRequest();
 	$txn_request->setSession($session->getName());
 	$txn_request->setOptions($txn_options);
 
@@ -208,7 +208,7 @@ function transaction($client, &$metrics){
 	hardAssert($txn !== null, 'Call completed with a null response');
 
 	# Probing Commit Call
-	$commit_request = new Google\Cloud\Spanner\V1\CommitRequest();
+	$commit_request = new \MediaCloud\Vendor\Google\Cloud\Spanner\V1\CommitRequest();
 	$commit_request->setSession($session->getName());
 	$commit_request->setTransactionId($txn->getId());
 
@@ -219,7 +219,7 @@ function transaction($client, &$metrics){
 
 	# Probing Rollback call
 	list($txn, $status) = $client->BeginTransaction($txn_request)->wait();
-	$rollback_request = new Google\Cloud\Spanner\V1\RollbackRequest();
+	$rollback_request = new \MediaCloud\Vendor\Google\Cloud\Spanner\V1\RollbackRequest();
 	$rollback_request->setSession($session->getName());
 	$rollback_request->setTransactionId($txn->getId());
 
@@ -231,7 +231,7 @@ function transaction($client, &$metrics){
 	$latency =  (microtime_float() - $time_start) * 1000;
 	$metrics['rollback_latency_ms'] = $latency;
 
-	$deleteSessionRequest = new Google\Cloud\Spanner\V1\DeleteSessionRequest();
+	$deleteSessionRequest = new \MediaCloud\Vendor\Google\Cloud\Spanner\V1\DeleteSessionRequest();
 	$deleteSessionRequest->setName($session->getName());
 	$client->deleteSession($deleteSessionRequest); 
 }
@@ -248,21 +248,21 @@ function partition($client, &$metrics){
 	global $_DATABASE;
 	global $_TEST_USERNAME;
 
-	$createSessionRequest = new Google\Cloud\Spanner\V1\CreateSessionRequest();
+	$createSessionRequest = new \MediaCloud\Vendor\Google\Cloud\Spanner\V1\CreateSessionRequest();
 	$createSessionRequest->setDatabase($_DATABASE);
 	list($session, $status) = $client->CreateSession($createSessionRequest)->wait();
 
 	hardAssertIfStatusOk($status);
 	hardAssert($session !== null, 'Call completed with a null response');
 
-	$txn_options = new Google\Cloud\Spanner\V1\TransactionOptions();
-	$ro = new Google\Cloud\Spanner\V1\TransactionOptions\ReadOnly();
+	$txn_options = new \MediaCloud\Vendor\Google\Cloud\Spanner\V1\TransactionOptions();
+	$ro = new \MediaCloud\Vendor\Google\Cloud\Spanner\V1\TransactionOptions\ReadOnly();
 	$txn_options->setReadOnly($ro);
-	$txn_selector = new Google\Cloud\Spanner\V1\TransactionSelector();
+	$txn_selector = new \MediaCloud\Vendor\Google\Cloud\Spanner\V1\TransactionSelector();
 	$txn_selector->setBegin($txn_options);
 
 	#Probing PartitionQuery call
-	$ptn_query_request = new Google\Cloud\Spanner\V1\PartitionQueryRequest();
+	$ptn_query_request = new \MediaCloud\Vendor\Google\Cloud\Spanner\V1\PartitionQueryRequest();
 	$ptn_query_request->setSession($session->getName());
 	$ptn_query_request->setSql('select * FROM users');
 	$ptn_query_request->setTransaction($txn_selector);
@@ -273,11 +273,11 @@ function partition($client, &$metrics){
 	$metrics['partition_query_latency_ms'] = $lantency;
 
 	#Probing PartitionRead call
-	$ptn_read_request = new Google\Cloud\Spanner\V1\PartitionReadRequest();
+	$ptn_read_request = new \MediaCloud\Vendor\Google\Cloud\Spanner\V1\PartitionReadRequest();
 	$ptn_read_request->setSession($session->getName());
 	$ptn_read_request->setTable('users');
 	$ptn_read_request->setTransaction($txn_selector);
-	$keyset = new Google\Cloud\Spanner\V1\KeySet();
+	$keyset = new \MediaCloud\Vendor\Google\Cloud\Spanner\V1\KeySet();
 	$keyset->setAll(True);
 	$ptn_read_request->setKeySet($keyset);
 	$ptn_read_request->setColumns(['username', 'firstname', 'lastname']);
@@ -288,7 +288,7 @@ function partition($client, &$metrics){
 	$metrics['partition_read_latency_ms'] = $latency;
 
 	# Delete Session
-	$deleteSessionRequest = new Google\Cloud\Spanner\V1\DeleteSessionRequest();
+	$deleteSessionRequest = new \MediaCloud\Vendor\Google\Cloud\Spanner\V1\DeleteSessionRequest();
 	$deleteSessionRequest->setName($session->getName());
 	$client->deleteSession($deleteSessionRequest); 
 }

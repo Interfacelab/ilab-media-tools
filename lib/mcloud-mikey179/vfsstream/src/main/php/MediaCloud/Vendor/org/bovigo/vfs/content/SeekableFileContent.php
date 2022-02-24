@@ -70,7 +70,7 @@ abstract class SeekableFileContent implements FileContent
             default:
                 return false;
         }
-        
+
         if ($newOffset<0) {
             return false;
         }
@@ -92,7 +92,7 @@ abstract class SeekableFileContent implements FileContent
      * writes an amount of data
      *
      * @param   string  $data
-     * @return  amount of written bytes
+     * @return  int amount of written bytes
      */
     public function write($data)
     {

@@ -79,7 +79,7 @@ class Feature extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      */
     public function setType($var)
     {
-        GPBUtil::checkEnum($var, \MediaCloud\Vendor\Google\Cloud\Vision\V1\Feature_Type::class);
+        GPBUtil::checkEnum($var, \MediaCloud\Vendor\Google\Cloud\Vision\V1\Feature\Type::class);
         $this->type = $var;
 
         return $this;

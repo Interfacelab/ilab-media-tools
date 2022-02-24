@@ -22,8 +22,7 @@ class FieldOptions extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional .google.protobuf.FieldOptions.CType ctype = 1 [default = STRING];</code>
      */
-    protected $ctype = 0;
-    private $has_ctype = false;
+    protected $ctype = null;
     /**
      * The packed option can be enabled for repeated primitive fields to enable
      * a more efficient representation on the wire. Rather than repeatedly
@@ -33,8 +32,7 @@ class FieldOptions extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool packed = 2;</code>
      */
-    protected $packed = false;
-    private $has_packed = false;
+    protected $packed = null;
     /**
      * The jstype option determines the JavaScript type used for values of the
      * field.  The option is permitted only for 64 bit integral and fixed types
@@ -49,8 +47,7 @@ class FieldOptions extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];</code>
      */
-    protected $jstype = 0;
-    private $has_jstype = false;
+    protected $jstype = null;
     /**
      * Should this field be parsed lazily?  Lazy applies only to message-type
      * fields.  It means that when the outer message is initially parsed, the
@@ -79,8 +76,7 @@ class FieldOptions extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool lazy = 5 [default = false];</code>
      */
-    protected $lazy = false;
-    private $has_lazy = false;
+    protected $lazy = null;
     /**
      * Is this field deprecated?
      * Depending on the target platform, this can emit Deprecated annotations
@@ -89,22 +85,19 @@ class FieldOptions extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool deprecated = 3 [default = false];</code>
      */
-    protected $deprecated = false;
-    private $has_deprecated = false;
+    protected $deprecated = null;
     /**
      * For Google-internal migration only. Do not use.
      *
      * Generated from protobuf field <code>optional bool weak = 10 [default = false];</code>
      */
-    protected $weak = false;
-    private $has_weak = false;
+    protected $weak = null;
     /**
      * The parser stores options it doesn't recognize here. See above.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
      */
     private $uninterpreted_option;
-    private $has_uninterpreted_option = false;
 
     /**
      * Constructor.
@@ -185,7 +178,17 @@ class FieldOptions extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      */
     public function getCtype()
     {
-        return $this->ctype;
+        return isset($this->ctype) ? $this->ctype : 0;
+    }
+
+    public function hasCtype()
+    {
+        return isset($this->ctype);
+    }
+
+    public function clearCtype()
+    {
+        unset($this->ctype);
     }
 
     /**
@@ -200,16 +203,10 @@ class FieldOptions extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      */
     public function setCtype($var)
     {
-        GPBUtil::checkEnum($var, \MediaCloud\Vendor\Google\Protobuf\Internal\FieldOptions_CType::class);
+        GPBUtil::checkEnum($var, \MediaCloud\Vendor\Google\Protobuf\Internal\FieldOptions\CType::class);
         $this->ctype = $var;
-        $this->has_ctype = true;
 
         return $this;
-    }
-
-    public function hasCtype()
-    {
-        return $this->has_ctype;
     }
 
     /**
@@ -224,7 +221,17 @@ class FieldOptions extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      */
     public function getPacked()
     {
-        return $this->packed;
+        return isset($this->packed) ? $this->packed : false;
+    }
+
+    public function hasPacked()
+    {
+        return isset($this->packed);
+    }
+
+    public function clearPacked()
+    {
+        unset($this->packed);
     }
 
     /**
@@ -242,14 +249,8 @@ class FieldOptions extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
     {
         GPBUtil::checkBool($var);
         $this->packed = $var;
-        $this->has_packed = true;
 
         return $this;
-    }
-
-    public function hasPacked()
-    {
-        return $this->has_packed;
     }
 
     /**
@@ -269,7 +270,17 @@ class FieldOptions extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      */
     public function getJstype()
     {
-        return $this->jstype;
+        return isset($this->jstype) ? $this->jstype : 0;
+    }
+
+    public function hasJstype()
+    {
+        return isset($this->jstype);
+    }
+
+    public function clearJstype()
+    {
+        unset($this->jstype);
     }
 
     /**
@@ -290,16 +301,10 @@ class FieldOptions extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      */
     public function setJstype($var)
     {
-        GPBUtil::checkEnum($var, \MediaCloud\Vendor\Google\Protobuf\Internal\FieldOptions_JSType::class);
+        GPBUtil::checkEnum($var, \MediaCloud\Vendor\Google\Protobuf\Internal\FieldOptions\JSType::class);
         $this->jstype = $var;
-        $this->has_jstype = true;
 
         return $this;
-    }
-
-    public function hasJstype()
-    {
-        return $this->has_jstype;
     }
 
     /**
@@ -333,7 +338,17 @@ class FieldOptions extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      */
     public function getLazy()
     {
-        return $this->lazy;
+        return isset($this->lazy) ? $this->lazy : false;
+    }
+
+    public function hasLazy()
+    {
+        return isset($this->lazy);
+    }
+
+    public function clearLazy()
+    {
+        unset($this->lazy);
     }
 
     /**
@@ -370,14 +385,8 @@ class FieldOptions extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
     {
         GPBUtil::checkBool($var);
         $this->lazy = $var;
-        $this->has_lazy = true;
 
         return $this;
-    }
-
-    public function hasLazy()
-    {
-        return $this->has_lazy;
     }
 
     /**
@@ -391,7 +400,17 @@ class FieldOptions extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      */
     public function getDeprecated()
     {
-        return $this->deprecated;
+        return isset($this->deprecated) ? $this->deprecated : false;
+    }
+
+    public function hasDeprecated()
+    {
+        return isset($this->deprecated);
+    }
+
+    public function clearDeprecated()
+    {
+        unset($this->deprecated);
     }
 
     /**
@@ -408,14 +427,8 @@ class FieldOptions extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
     {
         GPBUtil::checkBool($var);
         $this->deprecated = $var;
-        $this->has_deprecated = true;
 
         return $this;
-    }
-
-    public function hasDeprecated()
-    {
-        return $this->has_deprecated;
     }
 
     /**
@@ -426,7 +439,17 @@ class FieldOptions extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      */
     public function getWeak()
     {
-        return $this->weak;
+        return isset($this->weak) ? $this->weak : false;
+    }
+
+    public function hasWeak()
+    {
+        return isset($this->weak);
+    }
+
+    public function clearWeak()
+    {
+        unset($this->weak);
     }
 
     /**
@@ -440,14 +463,8 @@ class FieldOptions extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
     {
         GPBUtil::checkBool($var);
         $this->weak = $var;
-        $this->has_weak = true;
 
         return $this;
-    }
-
-    public function hasWeak()
-    {
-        return $this->has_weak;
     }
 
     /**
@@ -472,14 +489,8 @@ class FieldOptions extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
     {
         $arr = GPBUtil::checkRepeatedField($var, \MediaCloud\Vendor\Google\Protobuf\Internal\GPBType::MESSAGE, \MediaCloud\Vendor\Google\Protobuf\Internal\UninterpretedOption::class);
         $this->uninterpreted_option = $arr;
-        $this->has_uninterpreted_option = true;
 
         return $this;
-    }
-
-    public function hasUninterpretedOption()
-    {
-        return $this->has_uninterpreted_option;
     }
 
 }

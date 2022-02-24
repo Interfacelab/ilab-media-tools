@@ -32,7 +32,7 @@ namespace MediaCloud\Vendor\Google\Cloud\Core\Iam;
  * // In this example, we'll use PubSub topics to demonstrate
  * // how IAM policies are managed.
  *
- * use Google\Cloud\PubSub\PubSubClient;
+ * use MediaCloud\Vendor\Google\Cloud\PubSub\PubSubClient;
  *
  * $pubsub = new PubSubClient();
  * $topic = $pubsub->topic('my-new-topic');

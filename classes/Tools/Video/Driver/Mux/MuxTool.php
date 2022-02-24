@@ -22,6 +22,7 @@ use  MediaCloud\Plugin\Tools\Video\Driver\Mux\Tasks\MigrateToMuxTask ;
 use  MediaCloud\Plugin\Tools\Tool ;
 use  MediaCloud\Plugin\Tools\ToolsManager ;
 use  MediaCloud\Plugin\Utilities\Logging\Logger ;
+use  MediaCloud\Plugin\Utilities\NoticeManager ;
 use  MediaCloud\Plugin\Utilities\View ;
 use function  MediaCloud\Plugin\Utilities\anyEmpty ;
 use function  MediaCloud\Plugin\Utilities\arrayPath ;
@@ -205,8 +206,8 @@ class MuxTool extends Tool
             ] );
         } );
         add_filter(
-            'block_categories',
-            function ( $categories, $post ) {
+            'block_categories_all',
+            function ( $categories, $editorContext ) {
             foreach ( $categories as $category ) {
                 if ( $category['slug'] === 'mediacloud' ) {
                     return $categories;

@@ -34,6 +34,11 @@ class StorageImageEditor extends \WP_Image_Editor {
     private $croppedS3Info = null;
 
     public function __construct($file) {
+    	if (empty(parse_url($file, PHP_URL_SCHEME)) && !file_exists($file)) {
+    	    $dir = wp_get_upload_dir();
+    	    $file = trailingslashit($dir['basedir']).$file;
+	    }
+
         parent::__construct($file);
 
         Logger::info("Creating StorageImageEditor for $file", [], __METHOD__, __LINE__);
@@ -98,7 +103,12 @@ class StorageImageEditor extends \WP_Image_Editor {
      * @return bool|WP_Error True if loaded; WP_Error on failure.
      */
     public function load() {
-        return $this->imageEditor->load();
+    	$result = $this->imageEditor->load();
+    	if (is_wp_error($result)) {
+    		Logger::error("Unable to load in image editor: ".$result->get_error_message(), [], __METHOD__, __LINE__);
+	    }
+
+        return $result;
     }
 
     public static function test( $args = array() ) {
@@ -272,6 +282,11 @@ class StorageImageEditor extends \WP_Image_Editor {
             add_filter('wp_header_image_attachment_metadata', [$this, 'ajaxCroppedMetadata']);
 
         } else {
+	        $dir = wp_get_upload_dir();
+	        if (strpos($destfilename, $dir['basedir']) !== 0) {
+		        $destfilename = trailingslashit($dir['basedir']).$destfilename;
+	        }
+
             $result = $this->imageEditor->save($destfilename, $mime_type);
             if (!is_wp_error($result)) {
             	$this->file = $this->imageEditor->file;

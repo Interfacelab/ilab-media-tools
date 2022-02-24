@@ -43,6 +43,7 @@ if (!defined('ABSPATH')) { header('Location: /'); die; }
  * @property bool $uploadDocuments
  * @property bool $deleteOnUpload
  * @property-read bool $queuedDeletes
+ * @property int $queuedDeletesDelay
  * @property bool $deleteFromStorage
  * @property int $expireMinutes
  * @property-read string|null $expires
@@ -66,6 +67,8 @@ if (!defined('ABSPATH')) { header('Location: /'); die; }
  * @property bool $useCompatibilityManager
  * @property bool $replaceSrcSet
  * @property bool $disableSrcSet
+ * @property bool $disableEWWWBackgroundProcessing
+ * @property bool $extractPDFPageSize
  *
  */
 class StorageToolSettings extends ToolSettings {
@@ -109,6 +112,9 @@ class StorageToolSettings extends ToolSettings {
 		"useToolMenu" => ["mcloud-storage-display-tool-menu", null, true],
 		"useCompatibilityManager" => ["mcloud-storage-enable-compatibility-manager", null, false],
 		"disableSrcSet" => ["mcloud-storage-disable-srcset", null, false],
+		"disableEWWWBackgroundProcessing" => ["mcloud-storage-disable-eww-background-processing", null, true],
+		'queuedDeletesDelay' => ["mcloud-storage-queue-deletes-delay", null, 2],
+		'extractPDFPageSize' => ["mcloud-storage-extract-pdf-page-size", null, false],
 	];
 
 
@@ -544,6 +550,13 @@ class StorageToolSettings extends ToolSettings {
 	 */
 	public static function queuedDeletes() {
 		return static::instance()->queuedDeletes;
+	}
+
+	/**
+	 * @return int
+	 */
+	public static function queuedDeletesDelay() {
+		return static::instance()->queuedDeletesDelay;
 	}
 
 	/**

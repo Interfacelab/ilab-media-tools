@@ -22,7 +22,6 @@ use MediaCloud\Vendor\Google\Cloud\Core\Exception\UploadException;
 use MediaCloud\Vendor\Google\Cloud\Core\JsonTrait;
 use MediaCloud\Vendor\Google\Cloud\Core\RequestWrapper;
 use MediaCloud\Vendor\GuzzleHttp\Promise\PromiseInterface;
-use MediaCloud\Vendor\GuzzleHttp\Psr7;
 use MediaCloud\Vendor\GuzzleHttp\Psr7\LimitStream;
 use MediaCloud\Vendor\GuzzleHttp\Psr7\Request;
 use MediaCloud\Vendor\Psr\Http\Message\ResponseInterface;

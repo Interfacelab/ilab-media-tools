@@ -19,21 +19,21 @@
         }
     ],
     "require": {
-        "php": "^7.1",
-        "mcloud-illuminate/contracts": "v5.5.44",
-        "mcloud-illuminate/events": "v5.5.44",
-        "mcloud-illuminate/filesystem": "v5.5.44",
-        "mcloud-illuminate/view": "v5.5.44"
+        "php": "^7.3 || ^8.0",
+        "mcloud-illuminate/contracts": "v7.30.6",
+        "mcloud-illuminate/events": "v7.30.6",
+        "mcloud-illuminate/filesystem": "v7.30.6",
+        "mcloud-illuminate/view": "v7.30.6"
     },
     "require-dev": {
-        "duncan3dc/object-intruder": "^0.3.0",
-        "maglnet/composer-require-checker": "^2.0",
-        "mockery/mockery": "^1.2",
-        "phpstan/phpstan": "^0.11",
-        "phpstan/phpstan-mockery": "^0.11",
-        "phpstan/phpstan-phpunit": "^0.11",
-        "squizlabs/php_codesniffer": "^3.4",
-        "phpunit/phpunit": "^7.3"
+        "duncan3dc/object-intruder": "^0.3.0 || ^1.0",
+        "maglnet/composer-require-checker": "^2.0 || ^3.0",
+        "mockery/mockery": "^1.4",
+        "phpstan/phpstan": "^0.12.40",
+        "phpstan/phpstan-mockery": "^0.12.5",
+        "phpstan/phpstan-phpunit": "^0.12.11",
+        "squizlabs/php_codesniffer": "^3.6",
+        "phpunit/phpunit": "^8.3"
     },
     "autoload": {
         "psr-4": {
@@ -49,10 +49,10 @@
         "test": [
             "vendor/bin/phpunit",
             "vendor/bin/composer-require-checker",
-            "vendor/bin/phpstan analyse --level=max src",
+            "vendor/bin/phpstan analyse --level=max --configuration=phpstan-src.neon src",
             "vendor/bin/phpstan analyse --level=max --configuration=phpstan-tests.neon tests",
             "vendor/bin/phpcs --standard=phpcs.xml"
         ]
     },
-    "version": "4.6.0"
+    "version": "4.11.0"
 }

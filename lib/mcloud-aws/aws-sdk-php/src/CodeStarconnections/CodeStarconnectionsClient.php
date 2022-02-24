@@ -27,5 +27,7 @@ use MediaCloud\Vendor\Aws\AwsClient;
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise tagResourceAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result untagResource(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise untagResourceAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result updateHost(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise updateHostAsync(array $args = [])
  */
 class CodeStarconnectionsClient extends AwsClient {}
