@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 5.9.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.3.1
+Stable tag: 4.3.2
 Requires PHP: 7.4
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -105,9 +105,10 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 == Changelog ==
 
-= 4.3.1 - 2/24/2022 =
+= 4.3.2 - 2/26/2022 =
 
 * **NOW REQUIRES PHP 7.4**  Installing on PHP < 7.4 will not work and result in errors.
+* Fixed an issue that would prevent certain tasks from running
 * Sign up to be notified about our new product for WordPress coming in April 2022: [Preflight for WordPress](https://preflight.ju.mp)
 * Fixed compatibility with BuddyPress 6.x
 * Fixed compatibility with BuddyBoss 1.8.x including video.  **Note:** Mux encoding does not work with BuddyBoss and it's impossible to make it work.  You can have it enabled and Mux will encode videos but the videos that are played on the front end will be the uploaded MP4 source.  It's best to turn Mux off if you are using it with BuddyBoss.

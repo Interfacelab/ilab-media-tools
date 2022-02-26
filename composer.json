@@ -14,11 +14,11 @@
   ],
   "config": {
     "platform": {
-      "php": "7.4"
+      "php": "7.1"
     }
   },
   "require" : {
-    "php": ">=7.4",
+    "php": ">=7.1",
     "yuloh/bccomp-polyfill": "dev-master"
   },
   "autoload": {

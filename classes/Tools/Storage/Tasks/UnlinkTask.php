@@ -120,7 +120,7 @@ class UnlinkTask extends AttachmentTask {
 		if (empty($this->reportHeaders)) {
 			$allSizes = ilab_get_image_sizes();
 			$sizeKeys = array_keys($allSizes);
-			$sizeKeys = array_sort($sizeKeys);
+			sort($sizeKeys);
 
 			$this->reportHeaders = [
 				'Post ID',

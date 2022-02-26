@@ -5159,7 +5159,7 @@ MIGRATED;
         $client = new Client();
         $allSizes = ilab_get_image_sizes();
         $sizeKeys = array_keys( $allSizes );
-        $sizeKeys = array_sort( $sizeKeys );
+        sort( $sizeKeys );
         $sizesData = [];
         foreach ( $sizeKeys as $key ) {
             if ( $includeLocal ) {
@@ -5476,7 +5476,7 @@ MIGRATED;
         $client = new Client();
         $allSizes = ilab_get_image_sizes();
         $sizeKeys = array_keys( $allSizes );
-        $sizeKeys = array_sort( $sizeKeys );
+        sort( $sizeKeys );
         $sizesData = [];
         foreach ( $sizeKeys as $key ) {
             $sizesData[$key] = null;
