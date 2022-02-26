@@ -120,7 +120,11 @@ class Searcher {
 		$wp_tables = [];
 		$foundTables = $wpdb->get_results("SHOW TABLES FROM {$wpdb->dbname}", ARRAY_A);
 		foreach($foundTables as $foundTable) {
-			$table = array_first($foundTable);
+			if (empty($foundTable)) {
+				continue;
+			}
+
+			$table = array_values($foundTable)[0];
 			if (strpos($table, $wpdb->prefix) !== 0) {
 				continue;
 			}
