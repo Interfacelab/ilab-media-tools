@@ -10,19 +10,19 @@
 		exit;
 	}
 
-    /**
-     * @var array $VARS
-     * @var Freemius $fs
-     */
-    $fs = freemius( $VARS['id'] );
-
-    /**
-     * @var FS_Payment[] $payments
-     */
-    $payments = $VARS['payments'];
+	/**
+	 * @var array $VARS
+	 * @var Freemius $fs
+	 */
+	$fs = freemius( $VARS['id'] );
 
 	$slug = $fs->get_slug();
 
+	$payments = $fs->_fetch_payments();
+
+	$show_payments = ( is_array( $payments ) && 0 < count( $payments ) );
+
+	if ( $show_payments ) :
 ?>
 <div class="postbox">
 	<div id="fs_payments">
@@ -56,3 +56,4 @@
 	</div>
 </div>
 <?php
+	endif;

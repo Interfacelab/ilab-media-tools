@@ -45,9 +45,6 @@
 			case 'promotion':
 				echo 'updated promotion';
 				break;
-			case 'warn':
-			    echo 'notice notice-warning';
-			    break;
 			case 'update':
 //			echo 'update-nag update';
 //			break;
@@ -67,7 +64,7 @@
 	} ?>"><?php if ( ! empty( $VARS['plugin'] ) ) : ?>
 		<label class="fs-plugin-title"><?php echo $VARS['plugin'] ?></label>
 	<?php endif ?>
-	<?php if ( ! empty( $VARS['sticky'] ) && ( ! isset( $VARS['dismissible'] ) || false !== $VARS['dismissible'] ) ) : ?>
+	<?php if ( ! empty( $VARS['sticky'] ) ) : ?>
 		<div class="fs-close"><i class="dashicons dashicons-no"
 		                         title="<?php echo esc_attr( $dismiss_text ) ?>"></i> <span><?php echo esc_html( $dismiss_text ) ?></span>
 		</div>
