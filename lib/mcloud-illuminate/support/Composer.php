@@ -2,8 +2,8 @@
 
 namespace MediaCloud\Vendor\Illuminate\Support;
 use MediaCloud\Vendor\Illuminate\Filesystem\Filesystem;
-use Symfony\Component\Process\PhpExecutableFinder;
-use Symfony\Component\Process\Process;
+use MediaCloud\Vendor\Symfony\Component\Process\PhpExecutableFinder;
+use MediaCloud\Vendor\Symfony\Component\Process\Process;
 
 class Composer
 {
@@ -87,7 +87,7 @@ class Composer
      * Get a new Symfony process instance.
      *
      * @param  array  $command
-     * @return \Symfony\Component\Process\Process
+     * @return \MediaCloud\Vendor\Symfony\Component\Process\Process
      */
     protected function getProcess(array $command)
     {

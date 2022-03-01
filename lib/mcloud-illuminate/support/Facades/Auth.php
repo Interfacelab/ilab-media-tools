@@ -12,7 +12,7 @@ use RuntimeException;
  * @method static \MediaCloud\Vendor\Illuminate\Contracts\Auth\Authenticatable|null user()
  * @method static \MediaCloud\Vendor\Illuminate\Contracts\Auth\Guard|\Illuminate\Contracts\Auth\StatefulGuard guard(string|null $name = null)
  * @method static \MediaCloud\Vendor\Illuminate\Contracts\Auth\UserProvider|null createUserProvider(string $provider = null)
- * @method static \Symfony\Component\HttpFoundation\Response|null onceBasic(string $field = 'email',array $extraConditions = [])
+ * @method static \MediaCloud\Vendor\Symfony\Component\HttpFoundation\Response|null onceBasic(string $field = 'email',array $extraConditions = [])
  * @method static bool attempt(array $credentials = [], bool $remember = false)
  * @method static bool check()
  * @method static bool guest()

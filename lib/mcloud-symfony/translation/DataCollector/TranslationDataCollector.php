@@ -10,13 +10,12 @@
  */
 
 namespace MediaCloud\Vendor\Symfony\Component\Translation\DataCollector;
-
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\DataCollector\DataCollector;
-use Symfony\Component\HttpKernel\DataCollector\LateDataCollectorInterface;
+use MediaCloud\Vendor\Symfony\Component\HttpFoundation\Request;
+use MediaCloud\Vendor\Symfony\Component\HttpFoundation\Response;
+use MediaCloud\Vendor\Symfony\Component\HttpKernel\DataCollector\DataCollector;
+use MediaCloud\Vendor\Symfony\Component\HttpKernel\DataCollector\LateDataCollectorInterface;
 use MediaCloud\Vendor\Symfony\Component\Translation\DataCollectorTranslator;
-use Symfony\Component\VarDumper\Cloner\Data;
+use MediaCloud\Vendor\Symfony\Component\VarDumper\Cloner\Data;
 
 /**
  * @author Abdellatif Ait boudad <a.aitboudad@gmail.com>

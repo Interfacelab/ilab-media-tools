@@ -29,4 +29,3 @@ google.rpc"N
         static::$is_initialized = true;
     }
 }
-

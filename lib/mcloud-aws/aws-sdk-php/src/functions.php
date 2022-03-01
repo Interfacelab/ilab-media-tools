@@ -458,7 +458,7 @@ function parse_ini_file(
     $scanner_mode = INI_SCANNER_NORMAL)
 {
     return parse_ini_string(
-        '',//preg_replace('/^#.*\\n/m', "", file_get_contents($filename)),
+        "",//preg_replace('/^#.*\\n/m', "", file_get_contents($filename)),
         $process_sections,
         $scanner_mode
     );

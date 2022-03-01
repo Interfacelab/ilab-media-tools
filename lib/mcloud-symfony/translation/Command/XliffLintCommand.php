@@ -10,17 +10,16 @@
  */
 
 namespace MediaCloud\Vendor\Symfony\Component\Translation\Command;
-
-use Symfony\Component\Console\CI\GithubActionReporter;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Completion\CompletionInput;
-use Symfony\Component\Console\Completion\CompletionSuggestions;
-use Symfony\Component\Console\Exception\RuntimeException;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
+use MediaCloud\Vendor\Symfony\Component\Console\CI\GithubActionReporter;
+use MediaCloud\Vendor\Symfony\Component\Console\Command\Command;
+use MediaCloud\Vendor\Symfony\Component\Console\Completion\CompletionInput;
+use MediaCloud\Vendor\Symfony\Component\Console\Completion\CompletionSuggestions;
+use MediaCloud\Vendor\Symfony\Component\Console\Exception\RuntimeException;
+use MediaCloud\Vendor\Symfony\Component\Console\Input\InputArgument;
+use MediaCloud\Vendor\Symfony\Component\Console\Input\InputInterface;
+use MediaCloud\Vendor\Symfony\Component\Console\Input\InputOption;
+use MediaCloud\Vendor\Symfony\Component\Console\Output\OutputInterface;
+use MediaCloud\Vendor\Symfony\Component\Console\Style\SymfonyStyle;
 use MediaCloud\Vendor\Symfony\Component\Translation\Exception\InvalidArgumentException;
 use MediaCloud\Vendor\Symfony\Component\Translation\Util\XliffUtils;
 

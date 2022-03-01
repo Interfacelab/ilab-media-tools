@@ -13,14 +13,14 @@ namespace MediaCloud\Vendor\Symfony\Component\Translation\Test;
 
 use PHPUnit\Framework\TestCase;
 use MediaCloud\Vendor\Psr\Log\LoggerInterface;
-use Symfony\Component\HttpClient\MockHttpClient;
+use MediaCloud\Vendor\Symfony\Component\HttpClient\MockHttpClient;
 use MediaCloud\Vendor\Symfony\Component\Translation\Dumper\XliffFileDumper;
 use MediaCloud\Vendor\Symfony\Component\Translation\Exception\IncompleteDsnException;
 use MediaCloud\Vendor\Symfony\Component\Translation\Exception\UnsupportedSchemeException;
 use MediaCloud\Vendor\Symfony\Component\Translation\Loader\LoaderInterface;
 use MediaCloud\Vendor\Symfony\Component\Translation\Provider\Dsn;
 use MediaCloud\Vendor\Symfony\Component\Translation\Provider\ProviderFactoryInterface;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
+use MediaCloud\Vendor\Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * A test case to ease testing a translation provider factory.

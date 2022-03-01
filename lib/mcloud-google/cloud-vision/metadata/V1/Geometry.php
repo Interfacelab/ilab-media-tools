@@ -31,10 +31,10 @@ class Geometry
 x (	
 y (	
 z (Bu
-com.google.cloud.vision.v1BGeometryProtoPZ<google.golang.org/genproto/googleapis/cloud/vision/v1;visionø¢GCVNbproto3'
+com.google.cloud.vision.v1B
+GeometryProtoPZ<google.golang.org/genproto/googleapis/cloud/vision/v1;visionø¢GCVNbproto3'
         , true);
 
         static::$is_initialized = true;
     }
 }
-

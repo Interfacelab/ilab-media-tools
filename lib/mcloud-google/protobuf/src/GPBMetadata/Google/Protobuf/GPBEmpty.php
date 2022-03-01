@@ -26,4 +26,3 @@ EmptyProtoPZ.google.golang.org/protobuf/types/known/emptypbø¢GPBªGoogle.P
         static::$is_initialized = true;
     }
 }
-

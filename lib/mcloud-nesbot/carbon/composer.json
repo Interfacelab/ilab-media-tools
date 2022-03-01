@@ -25,7 +25,7 @@
         "ext-json": "*",
         "mcloud-symfony/polyfill-mbstring": "v1.24.0",
         "mcloud-symfony/polyfill-php80": "v1.24.0",
-        "mcloud-symfony/translation": "v5.4.3"
+        "mcloud-symfony/translation": "v5.4.5"
     },
     "require-dev": {
         "doctrine/dbal": "^2.0 || ^3.0",

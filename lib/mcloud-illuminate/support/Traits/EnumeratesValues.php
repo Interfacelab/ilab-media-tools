@@ -13,7 +13,7 @@ use MediaCloud\Vendor\Illuminate\Support\Enumerable;
 use MediaCloud\Vendor\Illuminate\Support\HigherOrderCollectionProxy;
 use MediaCloud\Vendor\Illuminate\Support\HigherOrderWhenProxy;
 use JsonSerializable;
-use Symfony\Component\VarDumper\VarDumper;
+use MediaCloud\Vendor\Symfony\Component\VarDumper\VarDumper;
 use Traversable;
 
 /**

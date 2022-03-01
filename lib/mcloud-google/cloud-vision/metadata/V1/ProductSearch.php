@@ -19,7 +19,7 @@ class ProductSearch
 ¬	
 +google/cloud/vision/v1/product_search.protogoogle.cloud.vision.v1%google/cloud/vision/v1/geometry.proto3google/cloud/vision/v1/product_search_service.protogoogle/protobuf/timestamp.protogoogle/api/annotations.proto"º
 ProductSearchParams;
-bounding_poly	 (2$.google.cloud.vision.v1.BoundingPoly:
+bounding_poly	 (2$.google.cloud.vision.v1.BoundingPoly:
 product_set (	B%úA"
  vision.googleapis.com/ProductSet
 product_categories (	
@@ -35,11 +35,11 @@ index_time (2.google.protobuf.TimestampD
 image (	S
 ObjectAnnotation
 mid (	
-language_code (	
+language_code (	
 name (	
 score (í
-GroupedResult;
-bounding_poly (2$.google.cloud.vision.v1.BoundingPolyD
+GroupedResult;
+bounding_poly (2$.google.cloud.vision.v1.BoundingPolyD
 results (23.google.cloud.vision.v1.ProductSearchResults.ResultY
 object_annotations (2=.google.cloud.vision.v1.ProductSearchResults.ObjectAnnotationBz
 com.google.cloud.vision.v1BProductSearchProtoPZ<google.golang.org/genproto/googleapis/cloud/vision/v1;visionø¢GCVNbproto3'
@@ -48,4 +48,3 @@ index_time (2.google.protobuf.TimestampD
         static::$is_initialized = true;
     }
 }
-

@@ -10,10 +10,9 @@
  */
 
 namespace MediaCloud\Vendor\Symfony\Component\Translation\DependencyInjection;
-
-use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Reference;
+use MediaCloud\Vendor\Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
+use MediaCloud\Vendor\Symfony\Component\DependencyInjection\ContainerBuilder;
+use MediaCloud\Vendor\Symfony\Component\DependencyInjection\Reference;
 
 /**
  * Adds tagged translation.formatter services to translation writer.

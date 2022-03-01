@@ -27,4 +27,3 @@ class Timestamp
         static::$is_initialized = true;
     }
 }
-

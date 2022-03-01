@@ -8,7 +8,7 @@ use MediaCloud\Vendor\Illuminate\Contracts\Filesystem\FileNotFoundException;
 use MediaCloud\Vendor\Illuminate\Support\Traits\Macroable;
 use RuntimeException;
 use MediaCloud\Vendor\Symfony\Component\Finder\Finder;
-use Symfony\Component\Mime\MimeTypes;
+use MediaCloud\Vendor\Symfony\Component\Mime\MimeTypes;
 
 class Filesystem
 {

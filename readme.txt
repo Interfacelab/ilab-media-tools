@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 5.9.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.3.4
+Stable tag: 4.3.6
 Requires PHP: 7.4
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -104,6 +104,10 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 
 == Changelog ==
+
+= 4.3.6 - 3/1/2022 =
+
+* Critical fix for some libraries that were not being imported correctly.  On some systems this would cause a fatal error depending on what other plugins you had installed.
 
 = 4.3.4 - 2/28/2022 =
 

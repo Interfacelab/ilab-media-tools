@@ -12,9 +12,9 @@
 namespace MediaCloud\Vendor\Symfony\Component\Translation\Loader;
 use MediaCloud\Vendor\Symfony\Component\Translation\Exception\InvalidResourceException;
 use MediaCloud\Vendor\Symfony\Component\Translation\Exception\LogicException;
-use Symfony\Component\Yaml\Exception\ParseException;
-use Symfony\Component\Yaml\Parser as YamlParser;
-use Symfony\Component\Yaml\Yaml;
+use MediaCloud\Vendor\Symfony\Component\Yaml\Exception\ParseException;
+use MediaCloud\Vendor\Symfony\Component\Yaml\Parser as YamlParser;
+use MediaCloud\Vendor\Symfony\Component\Yaml\Yaml;
 
 /**
  * YamlFileLoader loads translations from Yaml files.
@@ -31,7 +31,7 @@ class YamlFileLoader extends FileLoader
     protected function loadResource(string $resource)
     {
         if (null === $this->yamlParser) {
-            if (!class_exists(\Symfony\Component\Yaml\Parser::class)) {
+            if (!class_exists(\MediaCloud\Vendor\Symfony\Component\Yaml\Parser::class)) {
                 throw new LogicException('Loading translations from the YAML format requires the Symfony Yaml component.');
             }
 

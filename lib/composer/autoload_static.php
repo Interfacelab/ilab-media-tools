@@ -4,24 +4,30 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit868ac61c52bf5ca2e1d7a019b4946e71
+class ComposerStaticInitcc5fac38d3672a2b5984f56aef960912
 {
     public static $files = array (
+        '114dab6f172bbf5af490493649fded0c' => __DIR__ . '/..' . '/mcloud-symfony/polyfill-php80/bootstrap.php',
+        '983110474953227f90e21971ef01ad31' => __DIR__ . '/..' . '/mcloud-symfony/deprecation-contracts/function.php',
+        'f97f2b1d7d2aabb74a40f340324ba960' => __DIR__ . '/..' . '/mcloud-symfony/polyfill-mbstring/bootstrap.php',
         '0db59a7ab4e1b1877ed1ac0f4e182c8b' => __DIR__ . '/..' . '/mcloud-ralouphie/getallheaders/src/getallheaders.php',
         'd88973a1115798bc39c4d3727916968a' => __DIR__ . '/..' . '/mcloud-guzzlehttp/psr7/src/functions_include.php',
-        '114dab6f172bbf5af490493649fded0c' => __DIR__ . '/..' . '/mcloud-symfony/polyfill-php80/bootstrap.php',
-        'f97f2b1d7d2aabb74a40f340324ba960' => __DIR__ . '/..' . '/mcloud-symfony/polyfill-mbstring/bootstrap.php',
         '01de2132fd8582aacc732f7c29139a18' => __DIR__ . '/..' . '/mcloud-guzzlehttp/promises/src/functions_include.php',
-        '983110474953227f90e21971ef01ad31' => __DIR__ . '/..' . '/mcloud-symfony/deprecation-contracts/function.php',
-        'd422443df2624afbc6952ec7fb6ae634' => __DIR__ . '/..' . '/mcloud-symfony/polyfill-php72/bootstrap.php',
         'f0504baa95d824eeaf99227876df27f7' => __DIR__ . '/..' . '/mcloud-symfony/polyfill-intl-normalizer/bootstrap.php',
+        'd422443df2624afbc6952ec7fb6ae634' => __DIR__ . '/..' . '/mcloud-symfony/polyfill-php72/bootstrap.php',
         'b4b9893dfe15105f15e12291558da729' => __DIR__ . '/..' . '/mcloud-symfony/polyfill-intl-idn/bootstrap.php',
         '6c6a6a5ff3cffa18b0cf722f4bb1b17b' => __DIR__ . '/..' . '/mcloud-guzzlehttp/guzzle/src/functions_include.php',
+        '64c0eba5695d184c3c825e328e1b7ad9' => __DIR__ . '/..' . '/mcloud-symfony/polyfill-ctype/bootstrap.php',
         'ab35ce9ff66afae3fc838f4509ea9225' => __DIR__ . '/..' . '/mcloud-symfony/translation/Resources/functions.php',
         'e344b20b2f4ebbb4fd6dae4c198affe0' => __DIR__ . '/..' . '/mcloud-illuminate/support/helpers.php',
-        '64c0eba5695d184c3c825e328e1b7ad9' => __DIR__ . '/..' . '/mcloud-symfony/polyfill-ctype/bootstrap.php',
+        '476b2dda946cb1af0028436b07bf4208' => __DIR__ . '/..' . '/mcloud-symfony/polyfill-php73/bootstrap.php',
+        '421dacd1d489d4de6d80fc4c8523e484' => __DIR__ . '/..' . '/mcloud-symfony/polyfill-php81/bootstrap.php',
+        '6bd384d9e935ba451c67b2a15f251df7' => __DIR__ . '/..' . '/mcloud-symfony/polyfill-intl-grapheme/bootstrap.php',
+        '9451219aa3c11d0f838a21067b63e2a3' => __DIR__ . '/..' . '/mcloud-symfony/string/Resources/functions.php',
+        '72f148e19c0f168e9880cbde66dd82d0' => __DIR__ . '/..' . '/mcloud-symfony/var-dumper/Resources/functions/dump.php',
         '6cc7d496718761842feb37ed4e738a03' => __DIR__ . '/..' . '/mcloud-mtdowling/jmespath.php/src/JmesPath.php',
         '2d599bd2d501e6eeb1c2bbac9d683be6' => __DIR__ . '/..' . '/mcloud-phpseclib/phpseclib/phpseclib/bootstrap.php',
+        '8ca6db37e5b936531ce262871313eb12' => __DIR__ . '/..' . '/mcloud-symfony/polyfill-uuid/bootstrap.php',
         '99b0d9cafd1485474252d47b5d381e4e' => __DIR__ . '/..' . '/mcloud-aws/aws-sdk-php/src/functions.php',
         '947893983ac3b26acf98ee5e7f8019a8' => __DIR__ . '/..' . '/mcloud-ivopetkov/html5-dom-document-php/autoload.php',
         '6fd68b34e727d9b0914fadd5751988fb' => __DIR__ . '/..' . '/mcloud-shortpixel/shortpixel-php/lib/ShortPixel.php',
@@ -42,20 +48,62 @@ class ComposerStaticInit868ac61c52bf5ca2e1d7a019b4946e71
             'MediaCloud\\Vendor\\WillWashburn\\' => 31,
             'MediaCloud\\Vendor\\Webmozart\\Assert\\' => 35,
             'MediaCloud\\Vendor\\Tinify\\' => 25,
+            'MediaCloud\\Vendor\\Symfony\\Polyfill\\Uuid\\' => 40,
+            'MediaCloud\\Vendor\\Symfony\\Polyfill\\Php81\\' => 41,
             'MediaCloud\\Vendor\\Symfony\\Polyfill\\Php80\\' => 41,
+            'MediaCloud\\Vendor\\Symfony\\Polyfill\\Php73\\' => 41,
             'MediaCloud\\Vendor\\Symfony\\Polyfill\\Php72\\' => 41,
             'MediaCloud\\Vendor\\Symfony\\Polyfill\\Mbstring\\' => 44,
             'MediaCloud\\Vendor\\Symfony\\Polyfill\\Intl\\Normalizer\\' => 51,
             'MediaCloud\\Vendor\\Symfony\\Polyfill\\Intl\\Idn\\' => 44,
+            'MediaCloud\\Vendor\\Symfony\\Polyfill\\Intl\\Grapheme\\' => 49,
             'MediaCloud\\Vendor\\Symfony\\Polyfill\\Ctype\\' => 41,
             'MediaCloud\\Vendor\\Symfony\\Contracts\\Translation\\' => 48,
+            'MediaCloud\\Vendor\\Symfony\\Contracts\\Service\\' => 44,
+            'MediaCloud\\Vendor\\Symfony\\Contracts\\HttpClient\\' => 47,
+            'MediaCloud\\Vendor\\Symfony\\Contracts\\EventDispatcher\\' => 52,
+            'MediaCloud\\Vendor\\Symfony\\Contracts\\Cache\\' => 42,
+            'MediaCloud\\Vendor\\Symfony\\Component\\Yaml\\' => 41,
+            'MediaCloud\\Vendor\\Symfony\\Component\\VarExporter\\' => 48,
+            'MediaCloud\\Vendor\\Symfony\\Component\\VarDumper\\' => 46,
+            'MediaCloud\\Vendor\\Symfony\\Component\\Validator\\' => 46,
+            'MediaCloud\\Vendor\\Symfony\\Component\\Uid\\' => 40,
             'MediaCloud\\Vendor\\Symfony\\Component\\Translation\\' => 48,
+            'MediaCloud\\Vendor\\Symfony\\Component\\String\\' => 43,
+            'MediaCloud\\Vendor\\Symfony\\Component\\Stopwatch\\' => 46,
+            'MediaCloud\\Vendor\\Symfony\\Component\\Serializer\\' => 47,
+            'MediaCloud\\Vendor\\Symfony\\Component\\Routing\\' => 44,
+            'MediaCloud\\Vendor\\Symfony\\Component\\RateLimiter\\' => 48,
+            'MediaCloud\\Vendor\\Symfony\\Component\\PropertyInfo\\' => 49,
+            'MediaCloud\\Vendor\\Symfony\\Component\\Process\\' => 44,
+            'MediaCloud\\Vendor\\Symfony\\Component\\OptionsResolver\\' => 52,
+            'MediaCloud\\Vendor\\Symfony\\Component\\Mime\\' => 41,
+            'MediaCloud\\Vendor\\Symfony\\Component\\Messenger\\Bridge\\Redis\\' => 59,
+            'MediaCloud\\Vendor\\Symfony\\Component\\Messenger\\Bridge\\Doctrine\\' => 62,
+            'MediaCloud\\Vendor\\Symfony\\Component\\Messenger\\Bridge\\Amqp\\' => 58,
+            'MediaCloud\\Vendor\\Symfony\\Component\\Messenger\\' => 46,
+            'MediaCloud\\Vendor\\Symfony\\Component\\Lock\\' => 41,
+            'MediaCloud\\Vendor\\Symfony\\Component\\HttpKernel\\' => 47,
+            'MediaCloud\\Vendor\\Symfony\\Component\\HttpFoundation\\' => 51,
+            'MediaCloud\\Vendor\\Symfony\\Component\\HttpClient\\' => 47,
             'MediaCloud\\Vendor\\Symfony\\Component\\Finder\\' => 43,
+            'MediaCloud\\Vendor\\Symfony\\Component\\Filesystem\\' => 47,
+            'MediaCloud\\Vendor\\Symfony\\Component\\ExpressionLanguage\\' => 55,
+            'MediaCloud\\Vendor\\Symfony\\Component\\EventDispatcher\\' => 52,
+            'MediaCloud\\Vendor\\Symfony\\Component\\ErrorHandler\\' => 49,
+            'MediaCloud\\Vendor\\Symfony\\Component\\DomCrawler\\' => 47,
+            'MediaCloud\\Vendor\\Symfony\\Component\\DependencyInjection\\' => 56,
+            'MediaCloud\\Vendor\\Symfony\\Component\\Debug\\' => 42,
+            'MediaCloud\\Vendor\\Symfony\\Component\\Console\\' => 44,
+            'MediaCloud\\Vendor\\Symfony\\Component\\Config\\' => 43,
+            'MediaCloud\\Vendor\\Symfony\\Component\\Cache\\' => 42,
+            'MediaCloud\\Vendor\\Symfony\\Component\\BrowserKit\\' => 47,
             'MediaCloud\\Vendor\\ShortPixel\\' => 29,
             'MediaCloud\\Vendor\\Rize\\' => 23,
             'MediaCloud\\Vendor\\Psr\\SimpleCache\\' => 34,
             'MediaCloud\\Vendor\\Psr\\Log\\' => 26,
             'MediaCloud\\Vendor\\Psr\\Http\\Message\\' => 35,
+            'MediaCloud\\Vendor\\Psr\\EventDispatcher\\' => 38,
             'MediaCloud\\Vendor\\Psr\\Container\\' => 32,
             'MediaCloud\\Vendor\\Psr\\Cache\\' => 28,
             'MediaCloud\\Vendor\\Probe\\' => 24,
@@ -136,9 +184,21 @@ class ComposerStaticInit868ac61c52bf5ca2e1d7a019b4946e71
         array (
             0 => __DIR__ . '/..' . '/mcloud-tinify/tinify/lib/Tinify',
         ),
+        'MediaCloud\\Vendor\\Symfony\\Polyfill\\Uuid\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/polyfill-uuid',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Polyfill\\Php81\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/polyfill-php81',
+        ),
         'MediaCloud\\Vendor\\Symfony\\Polyfill\\Php80\\' => 
         array (
             0 => __DIR__ . '/..' . '/mcloud-symfony/polyfill-php80',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Polyfill\\Php73\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/polyfill-php73',
         ),
         'MediaCloud\\Vendor\\Symfony\\Polyfill\\Php72\\' => 
         array (
@@ -156,6 +216,10 @@ class ComposerStaticInit868ac61c52bf5ca2e1d7a019b4946e71
         array (
             0 => __DIR__ . '/..' . '/mcloud-symfony/polyfill-intl-idn',
         ),
+        'MediaCloud\\Vendor\\Symfony\\Polyfill\\Intl\\Grapheme\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/polyfill-intl-grapheme',
+        ),
         'MediaCloud\\Vendor\\Symfony\\Polyfill\\Ctype\\' => 
         array (
             0 => __DIR__ . '/..' . '/mcloud-symfony/polyfill-ctype',
@@ -164,13 +228,161 @@ class ComposerStaticInit868ac61c52bf5ca2e1d7a019b4946e71
         array (
             0 => __DIR__ . '/..' . '/mcloud-symfony/translation-contracts',
         ),
+        'MediaCloud\\Vendor\\Symfony\\Contracts\\Service\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/service-contracts',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Contracts\\HttpClient\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/http-client-contracts',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Contracts\\EventDispatcher\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/event-dispatcher-contracts',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Contracts\\Cache\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/cache-contracts',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Component\\Yaml\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/yaml',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Component\\VarExporter\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/var-exporter',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Component\\VarDumper\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/var-dumper',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Component\\Validator\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/validator',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Component\\Uid\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/uid',
+        ),
         'MediaCloud\\Vendor\\Symfony\\Component\\Translation\\' => 
         array (
             0 => __DIR__ . '/..' . '/mcloud-symfony/translation',
         ),
+        'MediaCloud\\Vendor\\Symfony\\Component\\String\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/string',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Component\\Stopwatch\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/stopwatch',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Component\\Serializer\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/serializer',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Component\\Routing\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/routing',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Component\\RateLimiter\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/rate-limiter',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Component\\PropertyInfo\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/property-info',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Component\\Process\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/process',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Component\\OptionsResolver\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/options-resolver',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Component\\Mime\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/mime',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Component\\Messenger\\Bridge\\Redis\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/redis-messenger',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Component\\Messenger\\Bridge\\Doctrine\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/doctrine-messenger',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Component\\Messenger\\Bridge\\Amqp\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/amqp-messenger',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Component\\Messenger\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/messenger',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Component\\Lock\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/lock',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Component\\HttpKernel\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/http-kernel',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Component\\HttpFoundation\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/http-foundation',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Component\\HttpClient\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/http-client',
+        ),
         'MediaCloud\\Vendor\\Symfony\\Component\\Finder\\' => 
         array (
             0 => __DIR__ . '/..' . '/mcloud-symfony/finder',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Component\\Filesystem\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/filesystem',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Component\\ExpressionLanguage\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/expression-language',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Component\\EventDispatcher\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/event-dispatcher',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Component\\ErrorHandler\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/error-handler',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Component\\DomCrawler\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/dom-crawler',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Component\\DependencyInjection\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/dependency-injection',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Component\\Debug\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/debug',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Component\\Console\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/console',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Component\\Config\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/config',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Component\\Cache\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/cache',
+        ),
+        'MediaCloud\\Vendor\\Symfony\\Component\\BrowserKit\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-symfony/browser-kit',
         ),
         'MediaCloud\\Vendor\\ShortPixel\\' => 
         array (
@@ -191,6 +403,10 @@ class ComposerStaticInit868ac61c52bf5ca2e1d7a019b4946e71
         'MediaCloud\\Vendor\\Psr\\Http\\Message\\' => 
         array (
             0 => __DIR__ . '/..' . '/mcloud-psr/http-message/src',
+        ),
+        'MediaCloud\\Vendor\\Psr\\EventDispatcher\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-psr/event-dispatcher/src',
         ),
         'MediaCloud\\Vendor\\Psr\\Container\\' => 
         array (
@@ -379,6 +595,7 @@ class ComposerStaticInit868ac61c52bf5ca2e1d7a019b4946e71
     public static $classMap = array (
         'Attribute' => __DIR__ . '/..' . '/mcloud-symfony/polyfill-php80/Resources/stubs/Attribute.php',
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
+        'JsonException' => __DIR__ . '/..' . '/mcloud-symfony/polyfill-php73/Resources/stubs/JsonException.php',
         'MediaCloud\\Vendor\\AWS\\CRT\\Auth\\AwsCredentials' => __DIR__ . '/..' . '/mcloud-aws/aws-crt-php/src/AWS/CRT/Auth/AwsCredentials.php',
         'MediaCloud\\Vendor\\AWS\\CRT\\Auth\\CredentialsProvider' => __DIR__ . '/..' . '/mcloud-aws/aws-crt-php/src/AWS/CRT/Auth/CredentialsProvider.php',
         'MediaCloud\\Vendor\\AWS\\CRT\\Auth\\Signable' => __DIR__ . '/..' . '/mcloud-aws/aws-crt-php/src/AWS/CRT/Auth/Signable.php',
@@ -414,6 +631,7 @@ class ComposerStaticInit868ac61c52bf5ca2e1d7a019b4946e71
         'MediaCloud\\Vendor\\Grpc\\Gcp\\MethodConfig' => __DIR__ . '/..' . '/mcloud-google/grpc-gcp/src/generated/Grpc/Gcp/MethodConfig.php',
         'MediaCloud\\Vendor\\Imagify\\Optimizer' => __DIR__ . '/..' . '/mcloud-wp-media/imagify-php/class-imagify.php',
         'Normalizer' => __DIR__ . '/..' . '/mcloud-symfony/polyfill-intl-normalizer/Resources/stubs/Normalizer.php',
+        'ReturnTypeWillChange' => __DIR__ . '/..' . '/mcloud-symfony/polyfill-php81/Resources/stubs/ReturnTypeWillChange.php',
         'Stringable' => __DIR__ . '/..' . '/mcloud-symfony/polyfill-php80/Resources/stubs/Stringable.php',
         'UnhandledMatchError' => __DIR__ . '/..' . '/mcloud-symfony/polyfill-php80/Resources/stubs/UnhandledMatchError.php',
         'ValueError' => __DIR__ . '/..' . '/mcloud-symfony/polyfill-php80/Resources/stubs/ValueError.php',
@@ -422,10 +640,10 @@ class ComposerStaticInit868ac61c52bf5ca2e1d7a019b4946e71
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit868ac61c52bf5ca2e1d7a019b4946e71::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit868ac61c52bf5ca2e1d7a019b4946e71::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInit868ac61c52bf5ca2e1d7a019b4946e71::$prefixesPsr0;
-            $loader->classMap = ComposerStaticInit868ac61c52bf5ca2e1d7a019b4946e71::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitcc5fac38d3672a2b5984f56aef960912::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitcc5fac38d3672a2b5984f56aef960912::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInitcc5fac38d3672a2b5984f56aef960912::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInitcc5fac38d3672a2b5984f56aef960912::$classMap;
 
         }, null, ClassLoader::class);
     }

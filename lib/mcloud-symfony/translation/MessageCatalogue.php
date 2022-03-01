@@ -10,8 +10,7 @@
  */
 
 namespace MediaCloud\Vendor\Symfony\Component\Translation;
-
-use Symfony\Component\Config\Resource\ResourceInterface;
+use MediaCloud\Vendor\Symfony\Component\Config\Resource\ResourceInterface;
 use MediaCloud\Vendor\Symfony\Component\Translation\Exception\LogicException;
 
 /**

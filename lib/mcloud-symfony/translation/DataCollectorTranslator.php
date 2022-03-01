@@ -10,8 +10,7 @@
  */
 
 namespace MediaCloud\Vendor\Symfony\Component\Translation;
-
-use Symfony\Component\HttpKernel\CacheWarmer\WarmableInterface;
+use MediaCloud\Vendor\Symfony\Component\HttpKernel\CacheWarmer\WarmableInterface;
 use MediaCloud\Vendor\Symfony\Component\Translation\Exception\InvalidArgumentException;
 use MediaCloud\Vendor\Symfony\Contracts\Translation\LocaleAwareInterface;
 use MediaCloud\Vendor\Symfony\Contracts\Translation\TranslatorInterface;

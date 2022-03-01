@@ -40,5 +40,5 @@
     "scripts": {
         "regenerate-test-protos": "dev/sh/regenerate-test-protos.sh"
     },
-    "version": "v1.11.4"
+    "version": "v1.12.0"
 }

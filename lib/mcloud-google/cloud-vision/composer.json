@@ -5,7 +5,7 @@
     "minimum-stability": "stable",
     "require": {
         "mcloud-google/cloud-core": "v1.44.0",
-        "mcloud-google/gax": "v1.11.4"
+        "mcloud-google/gax": "v1.12.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^4.8|^5.0",

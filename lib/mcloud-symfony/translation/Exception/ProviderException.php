@@ -10,8 +10,7 @@
  */
 
 namespace MediaCloud\Vendor\Symfony\Component\Translation\Exception;
-
-use Symfony\Contracts\HttpClient\ResponseInterface;
+use MediaCloud\Vendor\Symfony\Contracts\HttpClient\ResponseInterface;
 
 /**
  * @author Fabien Potencier <fabien@symfony.com>

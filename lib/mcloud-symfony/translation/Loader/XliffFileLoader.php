@@ -10,11 +10,10 @@
  */
 
 namespace MediaCloud\Vendor\Symfony\Component\Translation\Loader;
-
-use Symfony\Component\Config\Resource\FileResource;
-use Symfony\Component\Config\Util\Exception\InvalidXmlException;
-use Symfony\Component\Config\Util\Exception\XmlParsingException;
-use Symfony\Component\Config\Util\XmlUtils;
+use MediaCloud\Vendor\Symfony\Component\Config\Resource\FileResource;
+use MediaCloud\Vendor\Symfony\Component\Config\Util\Exception\InvalidXmlException;
+use MediaCloud\Vendor\Symfony\Component\Config\Util\Exception\XmlParsingException;
+use MediaCloud\Vendor\Symfony\Component\Config\Util\XmlUtils;
 use MediaCloud\Vendor\Symfony\Component\Translation\Exception\InvalidResourceException;
 use MediaCloud\Vendor\Symfony\Component\Translation\Exception\NotFoundResourceException;
 use MediaCloud\Vendor\Symfony\Component\Translation\Exception\RuntimeException;

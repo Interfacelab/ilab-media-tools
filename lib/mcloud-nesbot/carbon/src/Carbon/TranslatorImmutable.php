@@ -11,7 +11,7 @@
 
 namespace MediaCloud\Vendor\Carbon;
 use MediaCloud\Vendor\Carbon\Exceptions\ImmutableException;
-use Symfony\Component\Config\ConfigCacheFactoryInterface;
+use MediaCloud\Vendor\Symfony\Component\Config\ConfigCacheFactoryInterface;
 use MediaCloud\Vendor\Symfony\Component\Translation\Formatter\MessageFormatterInterface;
 
 class TranslatorImmutable extends Translator

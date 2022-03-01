@@ -13,7 +13,7 @@ namespace MediaCloud\Vendor\Symfony\Component\Translation\Dumper;
 use MediaCloud\Vendor\Symfony\Component\Translation\Exception\LogicException;
 use MediaCloud\Vendor\Symfony\Component\Translation\MessageCatalogue;
 use MediaCloud\Vendor\Symfony\Component\Translation\Util\ArrayConverter;
-use Symfony\Component\Yaml\Yaml;
+use MediaCloud\Vendor\Symfony\Component\Yaml\Yaml;
 
 /**
  * YamlFileDumper generates yaml files from a message catalogue.

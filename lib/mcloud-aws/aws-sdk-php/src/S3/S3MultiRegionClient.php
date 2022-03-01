@@ -104,6 +104,8 @@ use MediaCloud\Vendor\GuzzleHttp\Promise;
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise getObjectAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result getObjectAcl(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise getObjectAclAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result getObjectAttributes(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise getObjectAttributesAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result getObjectLegalHold(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise getObjectLegalHoldAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result getObjectLockConfiguration(array $args = [])

@@ -4,7 +4,7 @@ namespace MediaCloud\Vendor\Illuminate\Support;
 
 use Closure;
 use MediaCloud\Vendor\Illuminate\Support\Traits\Macroable;
-use Symfony\Component\VarDumper\VarDumper;
+use MediaCloud\Vendor\Symfony\Component\VarDumper\VarDumper;
 
 class Stringable
 {

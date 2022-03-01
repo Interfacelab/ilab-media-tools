@@ -10,10 +10,9 @@
  */
 
 namespace MediaCloud\Vendor\Symfony\Component\Translation;
-
-use Symfony\Component\Config\ConfigCacheFactory;
-use Symfony\Component\Config\ConfigCacheFactoryInterface;
-use Symfony\Component\Config\ConfigCacheInterface;
+use MediaCloud\Vendor\Symfony\Component\Config\ConfigCacheFactory;
+use MediaCloud\Vendor\Symfony\Component\Config\ConfigCacheFactoryInterface;
+use MediaCloud\Vendor\Symfony\Component\Config\ConfigCacheInterface;
 use MediaCloud\Vendor\Symfony\Component\Translation\Exception\InvalidArgumentException;
 use MediaCloud\Vendor\Symfony\Component\Translation\Exception\NotFoundResourceException;
 use MediaCloud\Vendor\Symfony\Component\Translation\Exception\RuntimeException;

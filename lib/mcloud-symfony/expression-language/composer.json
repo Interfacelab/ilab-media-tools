@@ -1,0 +1,33 @@
+{
+    "name": "mcloud-symfony/expression-language",
+    "type": "library",
+    "description": "Provides an engine that can compile and evaluate expressions",
+    "keywords": [],
+    "homepage": "https://symfony.com",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Fabien Potencier",
+            "email": "fabien@symfony.com"
+        },
+        {
+            "name": "Symfony Community",
+            "homepage": "https://symfony.com/contributors"
+        }
+    ],
+    "require": {
+        "php": ">=7.2.5",
+        "mcloud-symfony/cache": "v5.4.5",
+        "mcloud-symfony/service-contracts": "v2.5.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "MediaCloud\\Vendor\\Symfony\\Component\\ExpressionLanguage\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
+    },
+    "minimum-stability": "dev",
+    "version": "v5.4.3"
+}

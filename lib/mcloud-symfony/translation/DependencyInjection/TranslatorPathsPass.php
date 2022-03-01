@@ -10,12 +10,11 @@
  */
 
 namespace MediaCloud\Vendor\Symfony\Component\Translation\DependencyInjection;
-
-use Symfony\Component\DependencyInjection\Compiler\AbstractRecursivePass;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Definition;
-use Symfony\Component\DependencyInjection\Reference;
-use Symfony\Component\DependencyInjection\ServiceLocator;
+use MediaCloud\Vendor\Symfony\Component\DependencyInjection\Compiler\AbstractRecursivePass;
+use MediaCloud\Vendor\Symfony\Component\DependencyInjection\ContainerBuilder;
+use MediaCloud\Vendor\Symfony\Component\DependencyInjection\Definition;
+use MediaCloud\Vendor\Symfony\Component\DependencyInjection\Reference;
+use MediaCloud\Vendor\Symfony\Component\DependencyInjection\ServiceLocator;
 
 /**
  * @author Yonel Ceruto <yonelceruto@gmail.com>

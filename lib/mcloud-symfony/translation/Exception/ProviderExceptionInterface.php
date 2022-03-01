@@ -17,7 +17,7 @@ namespace MediaCloud\Vendor\Symfony\Component\Translation\Exception;
 interface ProviderExceptionInterface extends ExceptionInterface
 {
     /*
-     * Returns debug info coming from the Symfony\Contracts\HttpClient\ResponseInterface
+     * Returns debug info coming from the MediaCloud\Vendor\Symfony\Contracts\HttpClient\ResponseInterface
      */
     public function getDebug(): string;
 }

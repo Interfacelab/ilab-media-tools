@@ -26,4 +26,3 @@ class FieldMask
         static::$is_initialized = true;
     }
 }
-

@@ -1,0 +1,60 @@
+{
+    "name": "mcloud-symfony/messenger",
+    "type": "library",
+    "description": "Helps applications send and receive messages to/from other applications or via message queues",
+    "keywords": [],
+    "homepage": "https://symfony.com",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Samuel Roze",
+            "email": "samuel.roze@gmail.com"
+        },
+        {
+            "name": "Symfony Community",
+            "homepage": "https://symfony.com/contributors"
+        }
+    ],
+    "require": {
+        "php": ">=7.2.5",
+        "mcloud-psr/log": "1.1.4",
+        "mcloud-symfony/amqp-messenger": "v5.4.5",
+        "mcloud-symfony/deprecation-contracts": "v2.5.0",
+        "mcloud-symfony/doctrine-messenger": "v5.4.3",
+        "mcloud-symfony/polyfill-php80": "v1.24.0",
+        "mcloud-symfony/redis-messenger": "v5.4.5"
+    },
+    "require-dev": {
+        "psr/cache": "^1.0|^2.0|^3.0",
+        "symfony/console": "^5.4|^6.0",
+        "symfony/dependency-injection": "^5.3|^6.0",
+        "symfony/event-dispatcher": "^4.4|^5.0|^6.0",
+        "symfony/http-kernel": "^4.4|^5.0|^6.0",
+        "symfony/process": "^4.4|^5.0|^6.0",
+        "symfony/property-access": "^4.4|^5.0|^6.0",
+        "symfony/routing": "^4.4|^5.0|^6.0",
+        "symfony/serializer": "^5.0|^6.0",
+        "symfony/service-contracts": "^1.1|^2|^3",
+        "symfony/stopwatch": "^4.4|^5.0|^6.0",
+        "symfony/validator": "^4.4|^5.0|^6.0"
+    },
+    "conflict": {
+        "symfony/event-dispatcher": "<4.4",
+        "symfony/framework-bundle": "<4.4",
+        "symfony/http-kernel": "<4.4",
+        "symfony/serializer": "<5.0"
+    },
+    "suggest": {
+        "enqueue/messenger-adapter": "For using the php-enqueue library as a transport."
+    },
+    "autoload": {
+        "psr-4": {
+            "MediaCloud\\Vendor\\Symfony\\Component\\Messenger\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
+    },
+    "minimum-stability": "dev",
+    "version": "v5.4.3"
+}

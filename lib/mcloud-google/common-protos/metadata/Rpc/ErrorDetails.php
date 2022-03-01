@@ -22,7 +22,7 @@ google.rpc";
 	RetryInfo.
 retry_delay (2.google.protobuf.Duration"2
 	DebugInfo
-stack_entries (	
+stack_entries (	
 detail (	"y
 QuotaFailure6
 
@@ -34,7 +34,7 @@ violations (2".google.rpc.QuotaFailure.Violation1
 reason (	
 domain (	5
 metadata (2#.google.rpc.ErrorInfo.MetadataEntry/
-MetadataEntry
+MetadataEntry
 key (	
 value (	:8"•
 PreconditionFailure=
@@ -55,8 +55,8 @@ BadRequest?
 request_id (	
 serving_data (	"`
 ResourceInfo
-resource_type (	
-resource_name (	
+resource_type (	
+resource_name (	
 owner (	
 description (	"V
 Help$
@@ -73,4 +73,3 @@ request_id (	
         static::$is_initialized = true;
     }
 }
-

@@ -41,11 +41,10 @@ page_title (	K
 partial_matching_images (2-.google.cloud.vision.v1.WebDetection.WebImage0
 WebLabel
 label (	
-language_code (	By
+language_code (	By
 com.google.cloud.vision.v1BWebDetectionProtoPZ<google.golang.org/genproto/googleapis/cloud/vision/v1;visionø¢GCVNbproto3'
         , true);
 
         static::$is_initialized = true;
     }
 }
-

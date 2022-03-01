@@ -22,7 +22,7 @@ use League\Flysystem\FilesystemInterface;
 use PHPUnit\Framework\Assert as PHPUnit;
 use MediaCloud\Vendor\Psr\Http\Message\StreamInterface;
 use RuntimeException;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use MediaCloud\Vendor\Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * @mixin \League\Flysystem\FilesystemInterface
@@ -148,7 +148,7 @@ class FilesystemAdapter implements CloudFilesystemContract
      * @param  string|null  $name
      * @param  array|null  $headers
      * @param  string|null  $disposition
-     * @return \Symfony\Component\HttpFoundation\StreamedResponse
+     * @return \MediaCloud\Vendor\Symfony\Component\HttpFoundation\StreamedResponse
      */
     public function response($path, $name = null, array $headers = [], $disposition = 'inline')
     {
@@ -181,7 +181,7 @@ class FilesystemAdapter implements CloudFilesystemContract
      * @param  string  $path
      * @param  string|null  $name
      * @param  array|null  $headers
-     * @return \Symfony\Component\HttpFoundation\StreamedResponse
+     * @return \MediaCloud\Vendor\Symfony\Component\HttpFoundation\StreamedResponse
      */
     public function download($path, $name = null, array $headers = [])
     {

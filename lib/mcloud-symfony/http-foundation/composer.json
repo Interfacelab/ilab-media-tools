@@ -1,0 +1,43 @@
+{
+    "name": "mcloud-symfony/http-foundation",
+    "type": "library",
+    "description": "Defines an object-oriented layer for the HTTP specification",
+    "keywords": [],
+    "homepage": "https://symfony.com",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Fabien Potencier",
+            "email": "fabien@symfony.com"
+        },
+        {
+            "name": "Symfony Community",
+            "homepage": "https://symfony.com/contributors"
+        }
+    ],
+    "require": {
+        "php": ">=7.2.5",
+        "mcloud-symfony/deprecation-contracts": "v2.5.0",
+        "mcloud-symfony/polyfill-mbstring": "v1.24.0",
+        "mcloud-symfony/polyfill-php80": "v1.24.0"
+    },
+    "require-dev": {
+        "predis/predis": "~1.0",
+        "symfony/cache": "^4.4|^5.0|^6.0",
+        "symfony/mime": "^4.4|^5.0|^6.0",
+        "symfony/expression-language": "^4.4|^5.0|^6.0"
+    },
+    "suggest": {
+        "symfony/mime": "To use the file extension guesser"
+    },
+    "autoload": {
+        "psr-4": {
+            "MediaCloud\\Vendor\\Symfony\\Component\\HttpFoundation\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
+    },
+    "minimum-stability": "dev",
+    "version": "v5.4.5"
+}

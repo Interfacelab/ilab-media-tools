@@ -27,4 +27,3 @@ class Any
         static::$is_initialized = true;
     }
 }
-

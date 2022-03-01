@@ -8,6 +8,7 @@ $baseDir = dirname($vendorDir);
 return array(
     'Attribute' => $vendorDir . '/mcloud-symfony/polyfill-php80/Resources/stubs/Attribute.php',
     'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
+    'JsonException' => $vendorDir . '/mcloud-symfony/polyfill-php73/Resources/stubs/JsonException.php',
     'MediaCloud\\Vendor\\AWS\\CRT\\Auth\\AwsCredentials' => $vendorDir . '/mcloud-aws/aws-crt-php/src/AWS/CRT/Auth/AwsCredentials.php',
     'MediaCloud\\Vendor\\AWS\\CRT\\Auth\\CredentialsProvider' => $vendorDir . '/mcloud-aws/aws-crt-php/src/AWS/CRT/Auth/CredentialsProvider.php',
     'MediaCloud\\Vendor\\AWS\\CRT\\Auth\\Signable' => $vendorDir . '/mcloud-aws/aws-crt-php/src/AWS/CRT/Auth/Signable.php',
@@ -43,6 +44,7 @@ return array(
     'MediaCloud\\Vendor\\Grpc\\Gcp\\MethodConfig' => $vendorDir . '/mcloud-google/grpc-gcp/src/generated/Grpc/Gcp/MethodConfig.php',
     'MediaCloud\\Vendor\\Imagify\\Optimizer' => $vendorDir . '/mcloud-wp-media/imagify-php/class-imagify.php',
     'Normalizer' => $vendorDir . '/mcloud-symfony/polyfill-intl-normalizer/Resources/stubs/Normalizer.php',
+    'ReturnTypeWillChange' => $vendorDir . '/mcloud-symfony/polyfill-php81/Resources/stubs/ReturnTypeWillChange.php',
     'Stringable' => $vendorDir . '/mcloud-symfony/polyfill-php80/Resources/stubs/Stringable.php',
     'UnhandledMatchError' => $vendorDir . '/mcloud-symfony/polyfill-php80/Resources/stubs/UnhandledMatchError.php',
     'ValueError' => $vendorDir . '/mcloud-symfony/polyfill-php80/Resources/stubs/ValueError.php',

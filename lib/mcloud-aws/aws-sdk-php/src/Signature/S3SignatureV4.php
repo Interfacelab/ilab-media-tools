@@ -8,9 +8,7 @@ use MediaCloud\Vendor\AWS\CRT\Auth\SigningAlgorithm;
 use MediaCloud\Vendor\AWS\CRT\Auth\SigningConfigAWS;
 use MediaCloud\Vendor\AWS\CRT\Auth\StaticCredentialsProvider;
 use MediaCloud\Vendor\AWS\CRT\HTTP\Request;
-use MediaCloud\Vendor\AWS\CRT\IO\InputStream;
 use MediaCloud\Vendor\AWS\CRT\Auth\Signable;
-use MediaCloud\Vendor\Aws\Exception\AwsException;
 use MediaCloud\Vendor\Aws\Exception\CommonRuntimeException;
 use MediaCloud\Vendor\Psr\Http\Message\RequestInterface;
 
