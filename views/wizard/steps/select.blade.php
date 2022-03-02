@@ -27,7 +27,7 @@
                             @if(!empty($option->icon()))
                                 <img src="{{ILAB_PUB_IMG_URL.'/'.$option->icon()}}">
                             @else
-                                {{$option->title()}}
+                               {{$option->title()}}
                             @endif
                         </a>
                         @else
@@ -35,7 +35,7 @@
                             @if(!empty($option->icon()))
                                 <img src="{{ILAB_PUB_IMG_URL.'/'.$option->icon()}}">
                             @else
-                                {{$option->title()}}
+                               {{$option->title()}}
                             @endif
                         </a>
                         @endif

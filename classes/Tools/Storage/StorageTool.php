@@ -2073,15 +2073,10 @@ class StorageTool extends Tool
             return $url;
         }
         $new_url = null;
-        $meta = null;
-        
-        if ( wp_attachment_is_image( $post_id ) ) {
-            $meta = wp_get_attachment_metadata( $post_id );
-            if ( $meta ) {
-                $new_url = $this->getAttachmentURLFromMeta( $meta );
-            }
+        $meta = wp_get_attachment_metadata( $post_id );
+        if ( $meta ) {
+            $new_url = $this->getAttachmentURLFromMeta( $meta );
         }
-        
         
         if ( empty($new_url) ) {
             $s3Info = get_post_meta( $post_id, 'ilab_s3_info', true );

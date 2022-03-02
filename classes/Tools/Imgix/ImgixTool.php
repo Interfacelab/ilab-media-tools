@@ -1129,7 +1129,7 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
 				->select('Complete', 'imgix setup is now complete!')
 					->group('wizard.imgix.success', 'select-buttons')
 						->option('other-features', 'Explore Other Features', null, null, null, null, 'admin:admin.php?page=media-cloud')
-						->option('advanced-imgix-settings', 'Finish &amp; Exit Wizard', null, null, null, null, 'admin:admin.php?page=media-cloud-settings-imgix')
+						->option('advanced-imgix-settings', 'Finish & Exit Wizard', null, null, null, null, 'admin:admin.php?page=media-cloud-settings-imgix')
 					->endGroup()
 				->endStep();
 

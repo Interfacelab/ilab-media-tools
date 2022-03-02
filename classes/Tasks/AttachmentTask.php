@@ -124,7 +124,11 @@ abstract class AttachmentTask extends Task {
 
 			$args = $this->filterPostArgs($args);
 
+			remove_filter( 'posts_join', 'bp_media_filter_attachments_query_posts_join', 10);
+			remove_filter( 'posts_where', 'bp_media_filter_attachments_query_posts_where', 10);
+
 			$query = new \WP_Query($args);
+			Logger::info("AttachmentTask query: ".$query->request, [], __METHOD__, __LINE__);
 			$postIds = $query->posts;
 			if (count($postIds) === 0) {
 				return false;

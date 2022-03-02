@@ -13,6 +13,8 @@ use MediaCloud\Vendor\Aws\AwsClient;
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise createWorkerConfigurationAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result deleteConnector(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteConnectorAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result deleteCustomPlugin(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteCustomPluginAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result describeConnector(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise describeConnectorAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result describeCustomPlugin(array $args = [])

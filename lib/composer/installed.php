@@ -29,12 +29,12 @@
             'dev_requirement' => false,
         ),
         'mcloud-aws/aws-sdk-php' => array(
-            'pretty_version' => '3.210.0',
-            'version' => '3.210.0.0',
+            'pretty_version' => '3.211.1',
+            'version' => '3.211.1.0',
             'type' => 'library',
             'install_path' => __DIR__ . '/../mcloud-aws/aws-sdk-php',
             'aliases' => array(),
-            'reference' => '367d0bd3773379fd00436b2e34abbf6d52ba6120',
+            'reference' => '70334180b72c224f3aad869506733ee805913107',
             'dev_requirement' => false,
         ),
         'mcloud-defuse/php-encryption' => array(

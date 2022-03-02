@@ -671,7 +671,7 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 			Logger::endTiming("Deleted directory '$key'", [], __METHOD__, __LINE__);
 		}
 		catch(AwsException $ex) {
-			Logger::error('S3 Delete File Error', [
+			Logger::error('S3 Delete File Error: '.$ex->getMessage(), [
 				'exception' => $ex->getMessage(),
 				'Bucket' => $this->settings->bucket,
 				'Key' => $key
@@ -1068,7 +1068,7 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 		$builder->select('Complete', 'Basic setup is now complete!  Configure advanced settings or setup imgix.')
 			->group('wizard.cloud-storage.providers.s3.success', 'select-buttons')
 				->option('configure-imgix', 'Set Up imgix', null, null, 'imgix')
-				->option('advanced-settings', 'Finish &amp; Exit Wizard', null, null, null, null, 'admin:admin.php?page=media-cloud-settings&tab=storage')
+				->option('advanced-settings', 'Finish & Exit Wizard', null, null, null, null, 'admin:admin.php?page=media-cloud-settings&tab=storage')
 			->endGroup()
 		->endStep();
 

@@ -58,12 +58,12 @@
         },
         {
             "name": "mcloud-aws/aws-sdk-php",
-            "version": "3.210.0",
-            "version_normalized": "3.210.0.0",
+            "version": "3.211.1",
+            "version_normalized": "3.211.1.0",
             "dist": {
                 "type": "path",
                 "url": "../library/aws/aws-sdk-php",
-                "reference": "367d0bd3773379fd00436b2e34abbf6d52ba6120"
+                "reference": "70334180b72c224f3aad869506733ee805913107"
             },
             "require": {
                 "ext-json": "*",

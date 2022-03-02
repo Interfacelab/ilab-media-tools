@@ -69,6 +69,8 @@ use MediaCloud\Vendor\Aws\AwsClient;
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise untagResourceAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result updateDataCatalog(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise updateDataCatalogAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result updateNamedQuery(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise updateNamedQueryAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result updatePreparedStatement(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise updatePreparedStatementAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result updateWorkGroup(array $args = [])

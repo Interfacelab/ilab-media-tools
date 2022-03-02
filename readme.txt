@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 5.9.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.3.6
+Stable tag: 4.3.8
 Requires PHP: 7.4
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -104,6 +104,20 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 
 == Changelog ==
+
+= 4.3.8 - 3/2/2022 =
+
+* Update to latest AWS SDK.  Fixes critical issue where deleting items from cloud storage would fail due to a bug in the SDK.  If you are using S3 or S3 compatible storage, you need to upgrade to this.
+* Fixed a misspelling in the wizard
+
+= 4.3.7 - 3/1/2022 =
+
+* Various fixes for **BuddyBoss** and **BuddyPress**
+* **Migrate to Cloud** task will now copy BuddyBoss media that isn't related to profile images or cover photos, meaning any media uploaded to timelines, groups, forums, etc.  Use the Migrate BuddyPress task for cover photos and profile images.
+* Fixed a caching issue for BuddyBoss/BuddyPress where changing cover images where would not update the cover photo.
+* Full support for BuddyBoss's video and document uploads.
+* **Note** if you want to delete uploads from your local server, you will need to turn on both **Delete Uploads** in **Cloud Storage Settings** and **Delete Uploads** in the BuddyPress integration settings.
+* Fixed a bug preventing the background delete task for BuddyPress from working.
 
 = 4.3.6 - 3/1/2022 =
 
