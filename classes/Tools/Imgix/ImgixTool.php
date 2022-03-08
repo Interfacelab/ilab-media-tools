@@ -346,8 +346,9 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
 			$imageFile = (isset($meta['s3'])) ? $meta['s3']['key'] : $meta['file'];
 		}
 
+		$doNotUrlEncode = apply_filters('media-cloud/dynamic-images/do-not-url-encode', $this->settings->doNotUrlEncode);
 		$result = [
-			$imgix->createURL(str_replace(['%2F', '%2540', '%40'], ['/', '@', '@'], urlencode($imageFile)), $params),
+			$imgix->createURL(str_replace(['%2F', '%2540', '%40'], ['/', '@', '@'], $doNotUrlEncode ? $imageFile : urlencode($imageFile)), $params),
 			$size[0],
 			$size[1]
 		];
@@ -499,8 +500,9 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
 			}
 
 
+			$doNotUrlEncode = apply_filters('media-cloud/dynamic-images/do-not-url-encode', $this->settings->doNotUrlEncode);
 			$result = [
-				$imgix->createURL(str_replace(['%2F', '%2540', '%40'], ['/', '@', '@'], urlencode($imageFile)), ($skipParams) ? [] : $params),
+				$imgix->createURL(str_replace(['%2F', '%2540', '%40'], ['/', '@', '@'], $doNotUrlEncode ? $imageFile : urlencode($imageFile)), ($skipParams) ? [] : $params),
 				$meta['width'],
 				$meta['height'],
 				false
@@ -753,7 +755,8 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
 			$imgix->setIncludeLibraryParam(false);
 		}
 
-		return $imgix->createURL(str_replace(['%2F', '%2540', '%40'], ['/', '@', '@'], urlencode($key)), $params);
+		$doNotUrlEncode = apply_filters('media-cloud/dynamic-images/do-not-url-encode', $this->settings->doNotUrlEncode);
+		return $imgix->createURL(str_replace(['%2F', '%2540', '%40'], ['/', '@', '@'], $doNotUrlEncode ? $key : urlencode($key)), $params);
 	}
 
 	public function fixCleanedUrls($good_protocol_url, $original_url, $context) {

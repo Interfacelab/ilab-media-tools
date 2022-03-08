@@ -154,6 +154,12 @@ return [
 						"description" => "Removes extra query variables from the imgix URL such as the <code>ixlib</code> and <code>wpsize</code> variables.",
 						"type" => "checkbox",
 						"default" => false
+					],
+					"mcloud-imgix-do-not-urlencode" => [
+						"title" => "Do Not URL Encode File Names",
+						"description" => "Disables URL encoding file names, which may improve compatibility for certain unicode characters.",
+						"type" => "checkbox",
+						"default" => false
 					]
 				]
 			],

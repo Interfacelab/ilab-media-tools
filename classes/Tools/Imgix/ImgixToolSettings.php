@@ -35,6 +35,7 @@ use MediaCloud\Plugin\Utilities\Environment;
  * @property bool removeQueryVars
  * @property ?string cropMode
  * @property ?string cropPosition
+ * @property bool doNotUrlEncode
  */
 class ImgixToolSettings extends DynamicImagesToolSettings {
 	private $_imgixDomains = null;
@@ -56,6 +57,7 @@ class ImgixToolSettings extends DynamicImagesToolSettings {
 		'removeQueryVars' => ['mcloud-imgix-remove-extra-variables', null, false],
 		'cropMode' => ['mcloud-imgix-crop-mode', null, null],
 		'cropPosition' => ['mcloud-imgix-crop-position', null, 'center'],
+		'doNotUrlEncode' => ['mcloud-imgix-do-not-urlencode', null, false],
 	];
 
 	public function __construct() {
@@ -130,7 +132,7 @@ class ImgixToolSettings extends DynamicImagesToolSettings {
 	}
 
 	public function __isset($name) {
-		if (in_array($name, ['imgixDomains', 'noGifSizes', 'keepThumbnails'])) {
+		if (in_array($name, ['imgixDomains', 'noGifSizes', 'keepThumbnails', 'doNotUrlEncode'])) {
 			return true;
 		}
 

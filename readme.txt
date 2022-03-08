@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 5.9.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.3.8
+Stable tag: 4.3.11
 Requires PHP: 7.4
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -104,6 +104,15 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 
 == Changelog ==
+
+= 4.3.11 - 3/8/2022 =
+
+* Added new option to imgix to disable `urlencode()` the filename which may cause issues for certain unicode characters in filenames.  If imgix is working fine for you, you should not turn this on.
+* Fixed missing regions in the setup wizard for Wasabi
+
+= 4.3.9 - 3/4/2022 =
+
+* Fixed Imagify API integration.
 
 = 4.3.8 - 3/2/2022 =
 
