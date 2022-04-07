@@ -10,18 +10,19 @@
 // WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // **********************************************************************
-namespace MediaCloud\Plugin\Tools\Video\Driver\Mux;
+namespace MediaCloud\Plugin\Tools\Video\Player;
 
 use  MediaCloud\Plugin\Tools\Video\Driver\Mux\Models\MuxAsset ;
 use  MediaCloud\Plugin\Utilities\View ;
 use function  MediaCloud\Plugin\Utilities\arrayPath ;
-class MuxShortcode
+use function  MediaCloud\Plugin\Utilities\postIdExists ;
+class VideoPlayerShortcode
 {
-    /** @var MuxToolSettings|MuxToolProSettings|null  */
+    /** @var VideoPlayerToolSettings|VideoPlayerToolProSettings|null  */
     private  $settings = null ;
     public function __construct()
     {
-        $this->settings = MuxToolSettings::instance();
+        $this->settings = VideoPlayerToolSettings::instance();
         
         if ( is_admin() ) {
             global  $pagenow, $typenow ;
@@ -34,7 +35,7 @@ class MuxShortcode
             ] ) && $typenow !== 'download' ) {
                 add_action( 'media_buttons', [ $this, 'addMediaButtons' ], 11 );
                 add_action( 'admin_footer', function () {
-                    echo  View::render_view( 'admin.mux-video-shortcode-editor', [] ) ;
+                    echo  View::render_view( 'admin.video-shortcode-editor', [] ) ;
                 } );
             }
         
@@ -42,26 +43,24 @@ class MuxShortcode
         
         add_action( 'init', function () {
             add_shortcode( "mux_video", [ $this, 'renderShortCode' ] );
+            add_shortcode( "mcloud_video", [ $this, 'renderShortCode' ] );
         } );
     }
     
     public function addMediaButtons()
     {
         $img = '<span class="wp-media-buttons-icon mux-shortcode-icon" id="edd-media-button"></span>';
-        $output = '<a name="Add Mux Video" href="#" class="button mux-shortcode-wizard" style="padding-left: .4em;">' . $img . 'Add Mux Video' . '</a>';
+        $output = '<a name="Add Media Cloud Video" href="#" class="button mux-shortcode-wizard" style="padding-left: .4em;">' . $img . 'Add Media Cloud Video' . '</a>';
         echo  $output ;
     }
     
     public function renderShortCode( $attrs )
     {
-        $muxId = $attrs['id'];
-        if ( empty($muxId) ) {
+        $attachmentId = $attrs['id'];
+        if ( empty($attachmentId) || !postIdExists( $attachmentId ) ) {
             return '';
         }
-        $asset = MuxAsset::assetForAttachment( $muxId );
-        if ( $asset === null ) {
-            return '';
-        }
+        $meta = wp_get_attachment_metadata( $attachmentId );
         $tagAttributeList = [];
         if ( arrayPath( $attrs, 'autoplay', 'false' ) !== 'false' ) {
             $tagAttributeList[] = 'autoplay';
@@ -85,17 +84,50 @@ class MuxShortcode
         $tagAttributes = implode( ' ', $tagAttributeList );
         $classes = "mux-player";
         $extras = "";
+        $asset = MuxAsset::assetForAttachment( $attachmentId );
         if ( !empty($this->settings->playerCSSClasses) ) {
             $classes .= " {$this->settings->playerCSSClasses}";
         }
-        $extras .= " width={$asset->width} height={$asset->height}";
-        $posterUrl = get_the_post_thumbnail_url( $asset->attachmentId, 'full' );
+        
+        if ( empty($asset) ) {
+            $width = intval( arrayPath( $meta, 'width', (int) 0 ) );
+            $height = intval( arrayPath( $meta, 'height', (int) 0 ) );
+            if ( !empty($width) && !empty($height) ) {
+                $extras .= " width={$asset->width} height={$asset->height}";
+            }
+        } else {
+            $extras .= " width={$asset->width} height={$asset->height}";
+        }
+        
+        $posterUrl = get_the_post_thumbnail_url( $attachmentId, 'full' );
         if ( !empty($posterUrl) ) {
             $extras .= " poster='{$posterUrl}'";
         }
         $tag = "<figure><video class='{$classes}' {$extras} {$tagAttributes}>";
-        $url = $asset->videoUrl();
-        $source = "<source src='{$url}' type='application/x-mpegURL' />";
+        
+        if ( empty($asset) ) {
+            $url = wp_get_attachment_url( $attachmentId );
+            $mime = arrayPath( $meta, 'mime_type', null );
+            
+            if ( $mime === 'video/quicktime' ) {
+                $fileformat = arrayPath( $meta, 'fileformat', null );
+                if ( !empty($fileformat) && $fileformat === 'mp4' ) {
+                    $mime = 'video/mp4';
+                }
+            }
+            
+            
+            if ( !empty($mime) ) {
+                $source = "<source src='{$url}' type='{$mime}' />";
+            } else {
+                $source = "<source src='{$url}' />";
+            }
+        
+        } else {
+            $url = $asset->videoUrl();
+            $source = "<source src='{$url}' type='application/x-mpegURL' />";
+        }
+        
         $tag .= $source . '</video></figure>';
         return $tag;
     }

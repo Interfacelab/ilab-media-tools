@@ -2,10 +2,10 @@
 Contributors: mediacloud, interfacelab, freemius
 Tags: offload, amazon, s3, imgix, uploads, video, video encoding, google cloud storage, digital ocean spaces, wasabi, media, cdn, rekognition, cloudfront, images, crop, image editing, image editor, optimize, image optimization, media library, offload, offload s3, filepicker, smush, imagify, shortpixel
 Requires at least: 4.9
-Tested up to: 5.9.1
+Tested up to: 5.9.3
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.3.11
+Stable tag: 4.4.0
 Requires PHP: 7.4
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -104,6 +104,17 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 
 == Changelog ==
+
+= 4.4.0 - 4/7/2022 =
+
+* **IMPORTANT**: This release has a breaking change if you are using the **Mux/Video Encoding** feature.  If you are using the video.js or hls.js video player, you will need to enable the separate *Video Player* feature to continue using those players.  There will be a notification in WordPress admin warning you about this, but only if it applies to you.
+* Upgraded video.js player to latest 7.19.0
+* Upgraded hls.js player to latest 1.1.5
+* Separated the video player into it's own feature from the video encoding feature.
+* Video player now supports playing any uploaded videos, not just Mux encoded videos.
+* You can now allow video downloads for logged in users only in *Video Player Settings*
+* The Video Player gutenberg block allows you to override the download setting for an individual video.
+* Filmstrip generation can now be enabled regardless of video player in use.
 
 = 4.3.11 - 3/8/2022 =
 

@@ -336,6 +336,7 @@ final class ToolsManager
             ToolsManager::registerTool( "storage", include ILAB_CONFIG_DIR . '/storage.config.php' );
             ToolsManager::registerTool( "imgix", include ILAB_CONFIG_DIR . '/imgix.config.php' );
             ToolsManager::registerTool( "video-encoding", include ILAB_CONFIG_DIR . '/video-encoding.config.php' );
+            ToolsManager::registerTool( "video-player", include ILAB_CONFIG_DIR . '/video-player.config.php' );
             ToolsManager::registerTool( "vision", include ILAB_CONFIG_DIR . '/vision.config.php' );
             ToolsManager::registerTool( "crop", include ILAB_CONFIG_DIR . '/crop.config.php' );
             ToolsManager::registerTool( "debugging", include ILAB_CONFIG_DIR . '/debugging.config.php' );

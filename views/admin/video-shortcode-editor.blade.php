@@ -1,7 +1,7 @@
 <div id="mux-shortcode-wizard" class="wizard-hidden">
     <div class="shortcode-wizard-window">
         <header>
-            <h1>Add Mux Video</h1>
+            <h1>Add Video</h1>
             <button type="button" class="close-button">Close</button>
         </header>
         <div class="contents">
@@ -54,7 +54,7 @@
             </div>
         </div>
         <div class="actions">
-            <button type="button" class="button insert-button">Insert Mux Video</button>
+            <button type="button" class="button insert-button">Insert Video</button>
         </div>
     </div>
 </div>

@@ -12,11 +12,8 @@
 // **********************************************************************
 namespace MediaCloud\Plugin\Tools\Video\Driver\Mux;
 
-use  Elementor\Elements_Manager ;
-use  Elementor\Plugin ;
 use  MediaCloud\Plugin\Tasks\TaskManager ;
 use  MediaCloud\Plugin\Tools\Video\Driver\Mux\Data\MuxDatabase ;
-use  MediaCloud\Plugin\Tools\Video\Driver\Mux\Elementor\MuxVideoWidget ;
 use  MediaCloud\Plugin\Tools\Video\Driver\Mux\Models\MuxAsset ;
 use  MediaCloud\Plugin\Tools\Video\Driver\Mux\Tasks\MigrateToMuxTask ;
 use  MediaCloud\Plugin\Tools\Tool ;
@@ -32,8 +29,6 @@ class MuxTool extends Tool
     protected  $settings = null ;
     /** @var MuxHooks */
     protected  $hooks = null ;
-    /** @var MuxShortcode|null  */
-    protected  $shortCode = null ;
     public function __construct( $toolName, $toolInfo, $toolManager )
     {
         $this->settings = MuxToolSettings::instance();
@@ -44,7 +39,6 @@ class MuxTool extends Tool
             5
         );
         parent::__construct( $toolName, $toolInfo, $toolManager );
-        $this->initBlocks();
     }
     
     //region Tool Overrides
@@ -70,7 +64,6 @@ class MuxTool extends Tool
         
         if ( $this->enabled() ) {
             MuxDatabase::init();
-            $this->shortCode = new MuxShortcode();
             $this->hooks = new MuxHooks();
             
             if ( is_admin() ) {
@@ -87,8 +80,7 @@ class MuxTool extends Tool
                 $this->integrateWithMediaLibrary();
                 $this->integrateWithAdmin();
             }
-            
-            static::enqueuePlayer( is_admin() );
+        
         }
     
     }
@@ -101,21 +93,6 @@ class MuxTool extends Tool
     public function hooks()
     {
         return $this->hooks;
-    }
-    
-    //endregion
-    //region Static
-    public static function enqueuePlayer( $admin = false )
-    {
-        add_action( ( !empty($admin) ? 'admin_enqueue_scripts' : 'wp_enqueue_scripts' ), function () {
-            wp_enqueue_script(
-                'mux_video_player_hlsjs',
-                ILAB_PUB_JS_URL . '/mux-hls.js',
-                null,
-                null,
-                true
-            );
-        } );
     }
     
     //endregion
@@ -171,98 +148,8 @@ class MuxTool extends Tool
     }
     
     //endregion
-    //region Blocks
-    protected function initBlocks()
-    {
-        add_action( 'init', function () {
-            wp_register_style(
-                'mux_video_block_style',
-                ILAB_BLOCKS_URL . 'mediacloud-mux.blocks.style.css',
-                [ 'wp-editor' ],
-                null
-            );
-            wp_register_script(
-                'mux_video_block_js',
-                ILAB_BLOCKS_URL . 'mediacloud-mux.blocks.js',
-                [
-                'wp-blocks',
-                'wp-i18n',
-                'wp-element',
-                'wp-editor'
-            ],
-                null,
-                true
-            );
-            wp_register_style(
-                'mux_video_block_editor_style',
-                ILAB_BLOCKS_URL . 'mediacloud-mux.blocks.editor.css',
-                [ 'wp-edit-blocks' ],
-                null
-            );
-            register_block_type( 'media-cloud/mux-video-block', [
-                'style'         => 'mux_video_block_style',
-                'editor_script' => 'mux_video_block_js',
-                'editor_style'  => 'mux_video_block_editor_style',
-            ] );
-        } );
-        add_filter(
-            'block_categories_all',
-            function ( $categories, $editorContext ) {
-            foreach ( $categories as $category ) {
-                if ( $category['slug'] === 'mediacloud' ) {
-                    return $categories;
-                }
-            }
-            $categories[] = [
-                'slug'  => 'mediacloud',
-                'title' => 'Media Cloud',
-                'icon'  => null,
-            ];
-            return $categories;
-        },
-            10,
-            2
-        );
-        
-        if ( class_exists( 'Elementor\\Plugin' ) ) {
-            add_action( 'elementor/widgets/widgets_registered', function () {
-                Plugin::instance()->widgets_manager->register_widget_type( new MuxVideoWidget() );
-            } );
-            add_action(
-                'elementor/elements/categories_registered',
-                function ( $elementsManager ) {
-                /** @var Elements_Manager $elementsManager */
-                $elementsManager->add_category( 'media-cloud', [
-                    'title' => 'Media Cloud',
-                    'icon'  => 'fa fa-plug',
-                ] );
-            },
-                10,
-                1
-            );
-            add_filter(
-                'the_content',
-                function ( $content ) {
-                return MuxVideoWidget::filterContent( $content );
-            },
-                PHP_INT_MAX,
-                1
-            );
-            add_action( 'wp_enqueue_scripts', function () {
-                wp_enqueue_style(
-                    'mcloud-elementor',
-                    trailingslashit( ILAB_PUB_CSS_URL ) . 'mcloud-elementor.css',
-                    [],
-                    MEDIA_CLOUD_VERSION
-                );
-            } );
-        }
-    
-    }
-    
-    //endregion
     //region Integration
-    protected function handleCaptionDelete()
+    protected function actionCaptionDelete()
     {
         $nonce = arrayPath( $_POST, 'nonce' );
         if ( empty($nonce) || !wp_verify_nonce( $nonce, 'mux-delete-caption' ) ) {
@@ -298,7 +185,7 @@ class MuxTool extends Tool
         ], 400 );
     }
     
-    protected function handleCaptionUpload()
+    protected function actionCaptionUpload()
     {
         $nonce = arrayPath( $_POST, 'nonce' );
         if ( empty($nonce) || !wp_verify_nonce( $nonce, 'mux-upload-caption' ) ) {
@@ -378,10 +265,10 @@ class MuxTool extends Tool
         
         if ( current_user_can( 'manage_options' ) ) {
             add_action( 'wp_ajax_mux-upload-caption', function () {
-                $this->handleCaptionUpload();
+                $this->actionCaptionUpload();
             } );
             add_action( 'wp_ajax_mux-delete-caption', function () {
-                $this->handleCaptionDelete();
+                $this->actionCaptionDelete();
             } );
         }
         
