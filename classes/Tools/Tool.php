@@ -501,6 +501,9 @@ abstract class Tool {
 	                        case 'text-field':
 		                        $this->registerTextFieldSetting($option,$optionInfo['title'],$group, $description, $placeholder, $conditions, isset($optionInfo['default']) ? $optionInfo['default'] : null);
 		                        break;
+	                        case 'color':
+		                        $this->registerColorFieldSetting($option, $optionInfo['title'], $group, $description, $conditions, isset($optionInfo['default']) ? $optionInfo['default'] : null);
+		                        break;
 	                        case 'webhook':
 	                            $this->registerWebhookSetting($option, $optionInfo['title'], $group, !empty($optionInfo['editable']), $description, $conditions, isset($optionInfo['default']) ? $optionInfo['default'] : null);
 		                        break;

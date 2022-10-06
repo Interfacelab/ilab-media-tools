@@ -2,10 +2,10 @@
 Contributors: mediacloud, interfacelab, freemius
 Tags: offload, amazon, s3, imgix, uploads, video, video encoding, google cloud storage, digital ocean spaces, wasabi, media, cdn, rekognition, cloudfront, images, crop, image editing, image editor, optimize, image optimization, media library, offload, offload s3, filepicker, smush, imagify, shortpixel
 Requires at least: 4.9
-Tested up to: 5.9.3
+Tested up to: 6.0.2
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.4.0
+Stable tag: 4.4.3
 Requires PHP: 7.4
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -105,6 +105,42 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 == Changelog ==
 
+= 4.4.3 - 10/2/2022 =
+
+* Ability to specify colors for video.js player in the Video Player settings.
+
+= 4.4.2 - 10/2/2022 =
+
+* Fixes for PHP 8.x compatibility
+* Implement changing poster image for video files
+* Fixed how additional buttons are displayed on attachment detail pages
+* Fixed downloading video with video player
+* Fix for getting rendition URL for mux encoded videos
+* Updated video.js library to 7.20.3
+* Updated related video.js plugins to latest versions
+* Fix mux transfer task to work with large files and give better feedback.  Note: Mux transfers wait until the mp4
+  renditions are encoded by mux before transferring.  This can take a while for large files.
+* Remove preflight admin notice
+* Added support for Supabase Storage.  This support is only provided for specific development scenarios, you should not
+  use Supabase Storage for general purpose storage because you think it's inexpensive.  Supabase Storage support is for
+  when you need to *integrate* with an application already using Supabase.
+* Added a new `Transfer Mux Video` task that allows you to transfer encoded videos from Mux to cloud or local storage to serve the videos from other services and CDNs instead of Mux.  Use Mux to encode, serve the result elsewhere.
+* Added a `Regenerate Filmstrip` task to generate new filmstrips for Mux encoded videos that might not have had them generated.
+* The Gutenberg block now supports outputting the video's dimension to insure that there isn't any reflow on document load.
+* Fixed INFO log messages with regards to PHP 8.1.
+* Transferred Mux videos display HLS logo instead of the Mux logo in the media library.
+* In the list view in the Media Library, the Mux or HLS logo is now displayed.
+* The `Relink Mux Video` task will relink any videos that were transferred with the `Transfer Mux Video` task unless they've been deleted on Mux.
+* You can setup Media Cloud to automatically transfer Mux encoded videos to local or cloud storage after they've finished being encoded by Mux.
+* Added `wp mediacloud:video transfer` command to transfer videos from Mux to cloud or local storage.
+* Added `wp mediacloud:video relink` command to relink videos that were transferred from Mux to local or cloud storage.
+* Added toggle to `Video Player` settings to replace the WordPress admin default video player with the native video player using HLS.js.  This allows you to preview Mux encoded videos in the admin without having to create a post.
+* Added toggle to override the default WordPress video shortcode and replace it with the Media Cloud Video Player.  You should, however, consider switching to the Media Cloud Video Player shortcode instead because it performs better.
+* The Elementor Media Cloud Video Player widget now supports playing non-Mux videos.
+* Added `hls` object to WP REST Attachment object that includes the playlist url, poster image url, filmstrip url, width, height, duration, mp4 fallback rendition url and subtitles.
+* Added the ability to add captions (via a VTT text file) to any video, regardless if it's Mux encoded or not.  This feature is available on the edit detail screen for a video attachment.  You must be using the Media Cloud Video Player feature.
+* Removed `yuloh/bccomp-polyfill` dependency.
+
 = 4.4.0 - 4/7/2022 =
 
 * **IMPORTANT**: This release has a breaking change if you are using the **Mux/Video Encoding** feature.  If you are using the video.js or hls.js video player, you will need to enable the separate *Video Player* feature to continue using those players.  There will be a notification in WordPress admin warning you about this, but only if it applies to you.
@@ -115,6 +151,7 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 * You can now allow video downloads for logged in users only in *Video Player Settings*
 * The Video Player gutenberg block allows you to override the download setting for an individual video.
 * Filmstrip generation can now be enabled regardless of video player in use.
+
 
 = 4.3.11 - 3/8/2022 =
 

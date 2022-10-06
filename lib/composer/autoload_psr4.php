@@ -109,6 +109,7 @@ return array(
     'MediaCloud\\Vendor\\Doctrine\\Inflector\\' => array($vendorDir . '/mcloud-doctrine/inflector/lib/Doctrine/Inflector'),
     'MediaCloud\\Vendor\\Defuse\\Crypto\\' => array($vendorDir . '/mcloud-defuse/php-encryption/src'),
     'MediaCloud\\Vendor\\Cron\\' => array($vendorDir . '/mcloud-dragonmantank/cron-expression/src/Cron'),
+    'MediaCloud\\Vendor\\Chrisyue\\PhpM3u8\\' => array($vendorDir . '/mcloud-chrisyue/php-m3u8/src'),
     'MediaCloud\\Vendor\\Carbon\\' => array($vendorDir . '/mcloud-nesbot/carbon/src/Carbon'),
     'MediaCloud\\Vendor\\Aws\\' => array($vendorDir . '/mcloud-aws/aws-sdk-php/src'),
 );

@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInite9186ca1dde9f027a6c139ed29d266e0
+class ComposerStaticInit3a39ce861240ede95efbf01f098f981c
 {
     public static $files = array (
         '114dab6f172bbf5af490493649fded0c' => __DIR__ . '/..' . '/mcloud-symfony/polyfill-php80/bootstrap.php',
@@ -142,6 +142,7 @@ class ComposerStaticInite9186ca1dde9f027a6c139ed29d266e0
             'MediaCloud\\Vendor\\Doctrine\\Inflector\\' => 37,
             'MediaCloud\\Vendor\\Defuse\\Crypto\\' => 32,
             'MediaCloud\\Vendor\\Cron\\' => 23,
+            'MediaCloud\\Vendor\\Chrisyue\\PhpM3u8\\' => 35,
             'MediaCloud\\Vendor\\Carbon\\' => 25,
             'MediaCloud\\Vendor\\Aws\\' => 22,
         ),
@@ -560,6 +561,10 @@ class ComposerStaticInite9186ca1dde9f027a6c139ed29d266e0
         array (
             0 => __DIR__ . '/..' . '/mcloud-dragonmantank/cron-expression/src/Cron',
         ),
+        'MediaCloud\\Vendor\\Chrisyue\\PhpM3u8\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mcloud-chrisyue/php-m3u8/src',
+        ),
         'MediaCloud\\Vendor\\Carbon\\' => 
         array (
             0 => __DIR__ . '/..' . '/mcloud-nesbot/carbon/src/Carbon',
@@ -640,10 +645,10 @@ class ComposerStaticInite9186ca1dde9f027a6c139ed29d266e0
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInite9186ca1dde9f027a6c139ed29d266e0::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInite9186ca1dde9f027a6c139ed29d266e0::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInite9186ca1dde9f027a6c139ed29d266e0::$prefixesPsr0;
-            $loader->classMap = ComposerStaticInite9186ca1dde9f027a6c139ed29d266e0::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit3a39ce861240ede95efbf01f098f981c::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit3a39ce861240ede95efbf01f098f981c::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInit3a39ce861240ede95efbf01f098f981c::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInit3a39ce861240ede95efbf01f098f981c::$classMap;
 
         }, null, ClassLoader::class);
     }

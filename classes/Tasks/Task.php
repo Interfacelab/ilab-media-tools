@@ -1023,6 +1023,7 @@ abstract class Task extends Model implements \JsonSerializable {
 
 	//region JSON
 
+	#[\ReturnTypeWillChange]
 	public function jsonSerialize() {
 		if ($this->state >= self::STATE_COMPLETE) {
 			$remaining = 0;

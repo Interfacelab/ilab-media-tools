@@ -133,6 +133,15 @@ return [
 				[ 'title' => 'Read Documentation', 'url' => 'https://support.mediacloud.press/articles/documentation/cloud-storage/setting-up-backblaze' ],
 			]
 		],
+		'supabase' => [
+			'name' => 'Supabase Storage (Beta)',
+			'class' => \MediaCloud\Plugin\Tools\Storage\Driver\Supabase\SupabaseStorage::class,
+			'config' => '/storage/supabase.config.php',
+			'help' => [
+				[ 'title' => 'Setup Wizard', 'wizard' => 'supabase' ],
+				[ 'title' => 'Read Documentation', 'url' => 'https://support.mediacloud.press/articles/documentation/cloud-storage/setting-up-backblaze' ],
+			]
+		],
 	],
 	"settings" => [
 		"options-page" => "media-tools-s3",

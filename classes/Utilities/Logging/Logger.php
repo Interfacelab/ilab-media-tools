@@ -180,7 +180,9 @@ class Logger {
                 $this->doLogWarning($message, ['file' => $file, 'line' => $line]);
                 break;
             default:
-                $this->doLogInfo($message, ['file' => $file, 'line' => $line]);
+            	if (strpos($file, 'wp-includes') === false) {
+                    $this->doLogInfo($message, ['file' => $file, 'line' => $line]);
+	            }
                 break;
         }
     }

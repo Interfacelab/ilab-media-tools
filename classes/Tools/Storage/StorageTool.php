@@ -2775,7 +2775,7 @@ TEMPLATE;
             add_filter( 'manage_media_columns', function ( $cols ) {
                 $cols["cloud"] = 'Cloud';
                 return $cols;
-            } );
+            }, PHP_INT_MAX );
             add_action(
                 'manage_media_custom_column',
                 function ( $column_name, $id ) {
@@ -2794,13 +2794,31 @@ TEMPLATE;
                         $lockIcon = $this->lockIcon();
                         //ILAB_PUB_IMG_URL.'/ilab-icon-lock.svg';
                         $lockImg = ( !empty($privacy) && $privacy !== StorageConstants::ACL_PUBLIC_READ ? "<img class='mcloud-lock' src='{$lockIcon}' height='22'>" : '' );
-                        echo  "<a class='media-cloud-info-link' data-post-id='{$id}' data-container='list' data-mime-type='{$mimeType}' href='" . $meta['s3']['url'] . "' target=_blank><img src='{$cloudIcon}' width='24'>{$lockImg}</a>" ;
+                        echo  "<div class='media-list-cloud-icons'><a class='media-cloud-info-link' data-post-id='{$id}' data-container='list' data-mime-type='{$mimeType}' href='" . $meta['s3']['url'] . "' target=_blank><img src='{$cloudIcon}' width='24'>{$lockImg}</a>" ;
                     }
                 
                 }
             
             },
-                10,
+                PHP_INT_MAX - 10,
+                2
+            );
+            add_action(
+                'manage_media_custom_column',
+                function ( $column_name, $id ) {
+                
+                if ( $column_name == "cloud" ) {
+                    $meta = wp_get_attachment_metadata( $id );
+                    if ( empty($meta) && !isset( $meta['s3'] ) ) {
+                        $meta = get_post_meta( $id, 'ilab_s3_info', true );
+                    }
+                    if ( !empty($meta) && isset( $meta['s3'] ) ) {
+                        echo  "</div>" ;
+                    }
+                }
+            
+            },
+                PHP_INT_MAX,
                 2
             );
             add_filter( 'bulk_actions-upload', function ( $actions ) {
@@ -2886,9 +2904,20 @@ TEMPLATE;
                 if ( get_current_screen()->base == 'upload' ) {
                     ?>
                     <style>
+                        div.media-list-cloud-icons {
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            gap: 8px;
+                        }
+
                         th.column-cloud, td.column-cloud {
-                            width: 60px !important;
-                            max-width: 60px !important;
+                            max-width: 120px !important;
+                            width: 120px !important;
+                            /*display: flex;*/
+                            /*align-items: center;*/
+                            /*justify-content: center;*/
+                            /*gap: 8px;*/
                             text-align: center;
                         }
                     </style>

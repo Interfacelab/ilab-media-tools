@@ -25,6 +25,7 @@ use  MediaCloud\Vendor\MuxPhp\Models\InputSettings ;
 use  MediaCloud\Vendor\MuxPhp\Models\PlaybackPolicy ;
 use function  MediaCloud\Plugin\Utilities\arrayPath ;
 use function  MediaCloud\Plugin\Utilities\gen_uuid ;
+use function  MediaCloud\Plugin\Utilities\postIdExists ;
 class MuxHooks
 {
     /** @var MuxToolSettings|MuxToolProSettings  */
@@ -59,6 +60,9 @@ class MuxHooks
             );
         }
         
+        if ( is_admin() ) {
+            add_action( 'wp_ajax_mcloud_replace_poster', [ $this, 'ajaxReplacePoster' ] );
+        }
         add_filter( 'template_include', [ $this, 'handleWebhook' ] );
     }
     
@@ -255,7 +259,7 @@ class MuxHooks
                 __METHOD__,
                 __LINE__
             );
-            $this->generateFilmstripForAttachment( $asset );
+            $asset->generateFilmstrip();
             return;
         }
         
@@ -312,28 +316,7 @@ class MuxHooks
         update_post_meta( $thumbId, '_wp_attached_file', $thumbAttachmentMeta['file'] );
         update_post_meta( $asset->attachmentId, '_thumbnail_id', $thumbId );
         wp_update_attachment_metadata( $thumbId, $thumbAttachmentMeta );
-        $this->generateFilmstripForAttachment( $asset );
-    }
-    
-    /**
-     * @param MuxAsset $asset
-     *
-     * @throws \Freemius_Exception
-     */
-    protected function generateFilmstripForAttachment( $asset )
-    {
-        Logger::info(
-            'Mux: generateFilmstripForAttachment',
-            [],
-            __METHOD__,
-            __LINE__
-        );
-        Logger::warning(
-            'Mux: generateFilmstripForAttachment could not be run, not premium',
-            [],
-            __METHOD__,
-            __LINE__
-        );
+        $asset->generateFilmstrip();
     }
     
     public function handleStaticRenditionsReady( $jsonData )
@@ -384,6 +367,7 @@ class MuxHooks
             }
         
         }
+        $asset->backgroundTransfer();
     }
     
     public function handleAssetReady( $jsonData )
@@ -496,6 +480,13 @@ class MuxHooks
         if ( empty($asset) ) {
             return;
         }
+        
+        if ( $asset->isTransferred == 1 ) {
+            $asset->isDeleted = 1;
+            $asset->save();
+            return;
+        }
+        
         $asset->delete();
     }
     
@@ -710,6 +701,29 @@ class MuxHooks
     public function handleUpload( $attachmentId, $file, $meta )
     {
         $this->handleDirectUpload( $attachmentId, $meta );
+    }
+    
+    public function ajaxReplacePoster()
+    {
+        wp_verify_nonce( $_POST['nonce'], 'media-cloud-mux-replace-poster' );
+        $attachmentId = arrayPath( $_POST, 'attachmentId', null );
+        if ( empty($attachmentId) ) {
+            wp_send_json_error( 'Missing attachment ID', 400 );
+        }
+        $newPosterId = arrayPath( $_POST, 'posterId', null );
+        if ( empty($newPosterId) ) {
+            wp_send_json_error( 'Missing poster ID', 400 );
+        }
+        if ( !postIdExists( $attachmentId ) ) {
+            wp_send_json_error( 'Invalid attachment ID', 400 );
+        }
+        if ( !postIdExists( $newPosterId ) ) {
+            wp_send_json_error( 'Invalid poster ID', 400 );
+        }
+        update_post_meta( $attachmentId, '_thumbnail_id', $newPosterId );
+        wp_send_json( [
+            'success' => true,
+        ] );
     }
 
 }

@@ -434,71 +434,73 @@ abstract class DynamicImagesTool extends Tool {
      */
     private function hookupUI() {
         add_filter('media_row_actions', function($actions, $post) {
-            $newaction['ilab_edit_image'] = '<a class="ilab-thickbox" href="'.$this->editPageURL($post->ID).'" title="Edit Image">'.__('Edit Image').'</a>';
+	        if (strpos($post->post_mime_type, 'image') === 0) {
+		        $meta = wp_get_attachment_metadata($post->ID);
+		        if (empty(arrayPath($meta, 's3', null))) {
+                    return $actions;
+		        }
 
-            return array_merge($actions, $newaction);
+		        $newaction['ilab_edit_image'] = '<a class="ilab-thickbox" href="' . $this->editPageURL($post->ID) . '" title="Edit Image">' . __('Edit Image') . '</a>';
+                return array_merge($actions, $newaction);
+	        }
+
+            return $actions;
         }, 10, 2);
 
-        add_action('wp_enqueue_media', function() {
-            remove_action('admin_footer', 'wp_print_media_templates');
-
-            add_action('admin_footer', function() {
-                ob_start();
-                wp_print_media_templates();
-                $result = ob_get_clean();
-                echo $result;
 
 
-                ?>
-                <script>
-                    jQuery(document).ready(function () {
+	    add_filter('mediacloud/ui/media-detail-buttons', function($buttons) {
+		    $buttons[] = [
+			    'type' => 'image',
+                'cloudonly' => true,
+			    'label' => __('Edit Image'),
+			    'url' => $this->editPageURL('__ID__'),
+		    ];
 
-                        jQuery('input[type="button"]')
-                            .filter(function () {
-                                return this.id.match(/imgedit-open-btn-[0-9]+/);
-                            })
-                            .each(function () {
-                                var image_id = this.id.match(/imgedit-open-btn-([0-9]+)/)[1];
-                                var button = jQuery(this);
-                                button.off('click');
-                                button.attr('onclick', null);
-                                button.on('click', function (e) {
-                                    e.preventDefault();
+		    return $buttons;
+	    }, 2);
 
-                                    ILabModal.loadURL("<?php echo get_admin_url(null, 'admin-ajax.php')?>?action=ilab_dynamic_images_edit_page&image_id=" + image_id, false, null);
+	    add_filter('mediacloud/ui/media-detail-links', function($links) {
+		    $links[] = [
+			    'type' => 'image',
+			    'cloudonly' => true,
+			    'label' => __('Edit Image'),
+			    'url' => $this->editPageURL('__ID__'),
+		    ];
 
-                                    return false;
-                                });
-                            });
+		    return $links;
+	    }, 2);
 
-                        jQuery(document).on('click', '.ilab-edit-attachment', function (e) {
-                            var button = jQuery(this);
-                            var image_id = button.data('id');
+	    add_filter('mediacloud/ui/media-detail-remove', function($toRemove) {
+	        $toRemove[] = "'<button type=\"button\" class=\"button edit-attachment\">".translate('Edit Image')."</button>'";
+	        $toRemove[] = '/(<a class="(?:.*)edit-attachment(?:.*)"[^>]+[^<]+<\/a>)/';
+
+		    return $toRemove;
+	    }, 2);
+
+	    add_action('mediacloud/ui/media-detail-buttons-extra', function() {
+		    $adminUrl = get_admin_url(null, 'admin-ajax.php');
+
+		    echo <<<COOL
+                jQuery('input[type="button"]')
+                    .filter(function () {
+                        return this.id.match(/imgedit-open-btn-[0-9]+/);
+                    })
+                    .each(function () {
+                        var image_id = this.id.match(/imgedit-open-btn-([0-9]+)/)[1];
+                        var button = jQuery(this);
+                        button.off('click');
+                        button.attr('onclick', null);
+                        button.on('click', function (e) {
                             e.preventDefault();
-
-                            ILabModal.loadURL("<?php echo get_admin_url(null, 'admin-ajax.php')?>?action=ilab_dynamic_images_edit_page&image_id=" + image_id, false, null);
-
+    
+                            ILabModal.loadURL("{$adminUrl}?action=ilab_dynamic_images_edit_page&image_id=" + image_id, false, null);
+    
                             return false;
                         });
-
-                        attachTemplate = jQuery('#tmpl-attachment-details-two-column');
-                        if (attachTemplate) {
-                            attachTemplate.text(attachTemplate.text().replace('<button type="button" class="button edit-attachment"><?php _e('Edit Image'); ?></button>', '<button type="button" data-id="{{data.id}}" class="button ilab-edit-attachment"><?php _e('Edit Image'); ?></button>'));
-                        }
-
-                        attachTemplate = jQuery('#tmpl-attachment-details-two-column');
-                        if (attachTemplate) {
-                            attachTemplate.text(attachTemplate.text().replace(/(<a class="(?:.*)edit-attachment(?:.*)"[^>]+[^<]+<\/a>)/, '<a href="<?php echo $this->editPageURL('{{data.id}}')?>" class="ilab-thickbox button edit-imgix"><?php echo __('Edit Image') ?></a>'));
-                        }
-
-                        attachTemplate = jQuery('#tmpl-attachment-details');
-                        if (attachTemplate)
-                            attachTemplate.text(attachTemplate.text().replace(/(<a class="(?:.*)edit-attachment(?:.*)"[^>]+[^<]+<\/a>)/, '<a class="ilab-thickbox edit-imgix" href="<?php echo $this->editPageURL('{{data.id}}')?>"><?php echo __('Edit Image') ?></a>'));
                     });
-                </script>
-                <?php
-            });
-        });
+COOL;
+	    }, 2);
     }
 
     /**

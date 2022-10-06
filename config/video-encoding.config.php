@@ -21,6 +21,9 @@ return [
 		"video-player",
 	],
 	"env" => "MCLOUD_MUX_ENABLED",
+	"CLI" => [
+		\MediaCloud\Plugin\Tools\Video\CLI\VideoCommands::class,
+	],
 	"settings" => [
 		"options-page" => "media-cloud-mux",
 		"options-group" => "media-cloud-mux",

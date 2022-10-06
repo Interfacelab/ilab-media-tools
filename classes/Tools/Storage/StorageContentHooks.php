@@ -18,8 +18,6 @@ namespace MediaCloud\Plugin\Tools\Storage;
 
 use MediaCloud\Plugin\Tasks\TaskReporter;
 use MediaCloud\Plugin\Tools\Debugging\DebuggingToolSettings;
-use MediaCloud\Plugin\Tools\Storage\Driver\S3\S3StorageSettings;
-use MediaCloud\Plugin\Utilities\Environment;
 use MediaCloud\Plugin\Utilities\Logging\Logger;
 use function MediaCloud\Plugin\Utilities\anyEmpty;
 use function MediaCloud\Plugin\Utilities\arrayPath;

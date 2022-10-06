@@ -383,6 +383,7 @@ class TaskSchedule extends Model implements \JsonSerializable {
 	//endregion
 
 	//region JSON
+	#[\ReturnTypeWillChange]
 	public function jsonSerialize() {
 		return [
 			'id' => $this->id,

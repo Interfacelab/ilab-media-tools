@@ -43,6 +43,7 @@ return array(
     'MediaCloud\\Vendor\\Grpc\\Gcp\\ChannelPoolConfig' => $vendorDir . '/mcloud-google/grpc-gcp/src/generated/Grpc/Gcp/ChannelPoolConfig.php',
     'MediaCloud\\Vendor\\Grpc\\Gcp\\MethodConfig' => $vendorDir . '/mcloud-google/grpc-gcp/src/generated/Grpc/Gcp/MethodConfig.php',
     'MediaCloud\\Vendor\\Imagify\\Optimizer' => $vendorDir . '/mcloud-wp-media/imagify-php/class-imagify.php',
+    'MediaCloud\\Vendor\\Monolog\\DateTimeImmutable' => $vendorDir . '/mcloud-monolog/monolog/src/Monolog/DateTimeImmutable.php',
     'Normalizer' => $vendorDir . '/mcloud-symfony/polyfill-intl-normalizer/Resources/stubs/Normalizer.php',
     'ReturnTypeWillChange' => $vendorDir . '/mcloud-symfony/polyfill-php81/Resources/stubs/ReturnTypeWillChange.php',
     'Stringable' => $vendorDir . '/mcloud-symfony/polyfill-php80/Resources/stubs/Stringable.php',

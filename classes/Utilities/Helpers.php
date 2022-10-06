@@ -14,6 +14,7 @@ namespace MediaCloud\Plugin\Utilities {
 	// As this file is automatically included if loaded through autoloader
 	// do a check and avoid the direct access guard in that case.
 	use MediaCloud\Plugin\Utilities\Logging\Logger;
+	use MediaCloud\Plugin\Utilities\Math\BigNumber;
 
 	if (!defined('ABSPATH') && empty($GLOBALS['__composer_autoload_files'])) { header('Location: /'); die; }
 
@@ -102,6 +103,58 @@ namespace MediaCloud\Plugin\Utilities {
 		}
 
 		return $defaultValue;
+	}
+
+	/**
+	 * Sets a value for a path in an array, eg 'some/setting/here'.
+	 * @param $array
+	 * @param $path
+	 * @param $value
+	 */
+	function arrayPathSet(&$array, $path, $value) {
+		$pathArray = explode('/', $path);
+		$config = &$array;
+		for ($i = 0; $i < count($pathArray); $i++) {
+			$part = $pathArray[$i];
+
+			if (!isset($config[$part])) {
+				$config[$part] = [];
+			}
+
+			if ($i == count($pathArray) - 1) {
+				$config[$part] = $value;
+			}
+
+			$config = &$config[$part];
+		}
+	}
+
+	/**
+	 * Fetches a value from an array using a path string, eg 'some/setting/here'.
+	 * @param $array
+	 * @param $path
+	 * @return boolean
+	 */
+	function arrayPathExists($array, $path)	{
+		$pathArray = explode('/', $path);
+
+		$config = $array;
+
+		for ($i = 0; $i < count($pathArray); $i++) {
+			$part = $pathArray[$i];
+
+			if (!isset($config[$part])) {
+				return false;
+			}
+
+			if ($i == count($pathArray) - 1) {
+				return true;
+			}
+
+			$config = $config[$part];
+		}
+
+		return false;
 	}
 
 
@@ -633,8 +686,12 @@ namespace MediaCloud\Plugin\Utilities {
 	 * @param int $limit Time limit.
 	 */
 	function ilab_set_time_limit( $limit = 0 ) {
-		if ( function_exists( 'set_time_limit' ) && false === strpos( ini_get( 'disable_functions' ), 'set_time_limit' ) && ! ini_get( 'safe_mode' ) ) { // phpcs:ignore PHPCompatibility.IniDirectives.RemovedIniDirectives.safe_modeDeprecatedRemoved
-			@set_time_limit( $limit ); // @codingStandardsIgnoreLine
+		if (function_exists('set_time_limit') && (false === strpos(ini_get('disable_functions'), 'set_time_limit')) && !ini_get('safe_mode')) { // phpcs:ignore PHPCompatibility.IniDirectives.RemovedIniDirectives.safe_modeDeprecatedRemoved
+			@set_time_limit($limit); // @codingStandardsIgnoreLine
+		}
+
+		if (function_exists('ini_set') && (false === strpos(ini_get('disable_functions'), 'ini_set')) && !ini_get('safe_mode')) {
+			@ini_set('max_execution_time', 0);
 		}
 	}
 
@@ -672,5 +729,226 @@ namespace MediaCloud\Plugin\Utilities {
 
 		return $foundExe;
 	}
+
+	/**
+	 * Streams a download to a file
+	 *
+	 * @param $url
+	 * @param $dest
+	 * @param int $currentTry
+	 * @param int $maxTries
+	 *
+	 * @return bool
+	 */
+	function ilab_stream_download($url, $dest, $currentTry = 0, $maxTries = 3) {
+		$response = wp_remote_get($url, [
+			'blocking' => true,
+			'stream' => true,
+			'timeout' => 60,
+			'filename' => $dest,
+		]);
+
+		if ($response instanceof \WP_Error) {
+			if ($currentTry < $maxTries) {
+				return ilab_stream_download($url, $dest, $currentTry + 1, $maxTries);
+			}
+
+			Logger::error($response->get_error_message());
+			return false;
+		}
+
+		return file_exists($dest);
+	}
+
+	/**
+	 * Cleans an empty directory
+	 *
+	 * @param $root
+	 */
+	function ilab_empty_directory($root) {
+		$folders = [];
+
+		$rii = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($root));
+		foreach($rii as $file) {
+			if ($file->isDir()) {
+				$path = trailingslashit($file->getPath());
+				if (!in_array($path, $folders) && ($path != $root)) {
+					$folders[] = $path;
+				}
+			}
+		}
+
+		usort($folders, function($a, $b) {
+			$countA = count(explode(DIRECTORY_SEPARATOR, $a));
+			$countB = count(explode(DIRECTORY_SEPARATOR, $b));
+			if ($countA > $countB) {
+				return -1;
+			} else if ($countA == $countB) {
+				return 0;
+			}
+
+			return 1;
+		});
+
+		foreach($folders as $folder) {
+			$filecount = count(scandir($folder));
+			if ($filecount <= 2) {
+				Logger::info("Removing directory $folder", [], __METHOD__, __LINE__);
+				@rmdir($folder);
+			} else if (($filecount == 3) && file_exists(trailingslashit($folder).'.DS_STORE')) {
+				Logger::info("Removing .DS_STORE", [], __METHOD__, __LINE__);
+				unlink(trailingslashit($folder).'.DS_STORE');
+
+				Logger::info("Removing directory $folder", [], __METHOD__, __LINE__);
+				@rmdir($folder);
+			} else {
+				Logger::info("NOT Removing directory $folder", [], __METHOD__, __LINE__);
+			}
+		}
+	}
+
+	/**
+	 * Outputs boolean value of input for a select range of possible values,
+	 * null otherwise
+	 *
+	 * @param $input
+	 * @return bool|null
+	 */
+	function ilab_boolean_value($input)
+	{
+		if (is_bool($input)) {
+			return $input;
+		}
+
+		if ($input === 0) {
+			return false;
+		}
+
+		if ($input === 1) {
+			return true;
+		}
+
+		if (is_string($input)) {
+			switch (strtolower($input)) {
+				case "true":
+				case "on":
+				case "1":
+					return true;
+					break;
+
+				case "false":
+				case "off":
+				case "0":
+					return false;
+					break;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Polyfill for bccomp
+	 *
+	 * @param $leftOperand
+	 * @param $rightOperand
+	 * @param $scale
+	 *
+	 * @return int
+	 */
+	function bccomp($leftOperand, $rightOperand, $scale = 0) {
+		$leftOperand  = new BigNumber((string) $leftOperand);
+		$rightOperand = new BigNumber((string) $rightOperand);
+
+		// The real bccomp casts floats to int but throws a warning for anything else.
+
+		if (is_float($scale)) {
+			$scale = (int) $scale;
+		}
+
+		if (!is_int($scale)) {
+			trigger_error(
+				sprintf('bccomp() expects parameter 3 to be integer, %s given', gettype($scale)),
+				E_USER_WARNING
+			);
+		}
+
+		// If both numbers are zero, they are equal.
+
+		if ($leftOperand->isZero() && $rightOperand->isZero()) {
+			return 0;
+		}
+
+		// If one number is positive while the other is negative we can return early.
+
+		if ($leftOperand->isPositive() && $rightOperand->isNegative()) {
+			return 1;
+		}
+
+		if ($leftOperand->isNegative() && $rightOperand->isPositive()) {
+			return -1;
+		}
+
+		$isPositiveComparison = $leftOperand->isPositive() && $rightOperand->isPositive();
+
+		// If the part to the left of the decimal is longer it's the larger number.
+		if ($leftOperand->getCharacteristicLength() > $rightOperand->getCharacteristicLength()) {
+			return $isPositiveComparison ? 1 : -1;
+		}
+
+		if ($leftOperand->getCharacteristicLength() < $rightOperand->getCharacteristicLength()) {
+			return $isPositiveComparison ? -1 : 1;
+		}
+
+		// if the part to the left of the decimal is equal, we check each place for a larger number.
+		for ($i = 0; $i < $leftOperand->getCharacteristicLength(); $i++) {
+			if ($leftOperand->getCharacteristic()[$i] > $rightOperand->getCharacteristic()[$i]) {
+				return $isPositiveComparison ? 1 : -1;
+			}
+
+			if ($leftOperand->getCharacteristic()[$i] < $rightOperand->getCharacteristic()[$i]) {
+				return $isPositiveComparison ? -1 : 1;
+			}
+		}
+
+		// if there is a scale and we still haven't found the larger number,
+		// check each place to the right of the decimal place.
+		$leftMantissa  = $leftOperand->getMantissa();
+		$rightMantissa = $rightOperand->getMantissa();
+		for ($i = 0; $i < $scale; $i++) {
+
+			// If we are still iterating and out of digits to compare,
+			// we can return early.
+			if (!isset($leftMantissa[$i]) && !isset($rightMantissa[$i])) {
+				return 0;
+			}
+
+			// If there isn't a digit in this decimal place, set it to 0.
+			if (!isset($leftMantissa[$i])) {
+				$leftMantissa = $leftMantissa . '0';
+			}
+			if (!isset($rightMantissa[$i])) {
+				$rightMantissa = $rightMantissa . '0';
+			}
+
+			if ($leftMantissa[$i] > $rightMantissa[$i]) {
+				return $isPositiveComparison ? 1 : -1;
+			}
+
+			if ($leftMantissa[$i] < $rightMantissa[$i]) {
+				return $isPositiveComparison ? -1 : 1;
+			}
+		}
+
+		return 0;
+	}
 }
 
+namespace {
+	if (!function_exists('bccomp')) {
+		function bccomp($leftOperand, $rightOperand, $scale = 0)
+		{
+			return \MediaCloud\Plugin\Utilities\bccomp($leftOperand, $rightOperand, $scale);
+		}
+	}
+}

@@ -37,14 +37,26 @@ abstract class AttachmentTask extends Task {
 
 		$this->currentTitle = get_post_field('post_title', $post_id);
 
-		$thumb = wp_get_attachment_image_src($post_id, 'thumbnail', true);
-		if (!empty($thumb)) {
-			$this->currentThumb = $thumb[0];
-			$this->isIcon = (($thumb[1] != 150) && ($thumb[2] != 150));
+		if (strpos(get_post_mime_type($post_id), 'video/') === 0) {
+			$thumb = get_the_post_thumbnail_url($post_id, 'thumbnail');
+			if (!empty($thumb)) {
+				$this->currentThumb = $thumb;
+				$this->isIcon = false;
+			} else {
+				$this->currentThumb = null;
+				$this->isIcon = false;
+			}
 		} else {
-			$this->currentThumb = null;
-			$this->isIcon = false;
+			$thumb = wp_get_attachment_image_src($post_id, 'thumbnail', true);
+			if (!empty($thumb)) {
+				$this->currentThumb = $thumb[0];
+				$this->isIcon = (($thumb[1] != 150) && ($thumb[2] != 150));
+			} else {
+				$this->currentThumb = null;
+				$this->isIcon = false;
+			}
 		}
+
 
 		$this->save();
 	}
@@ -87,7 +99,9 @@ abstract class AttachmentTask extends Task {
 
 		if (!empty($selectedItems) && is_array($selectedItems)) {
 			foreach($selectedItems as $postId) {
-				$this->addItem($this->filterItem(['id' => $postId], $options));
+				if (!$this->addDataForPost($postId, $options)) {
+					$this->addItem($this->filterItem(['id' => $postId], $options));
+				}
 			}
 		} else {
 			$args = [
@@ -135,7 +149,9 @@ abstract class AttachmentTask extends Task {
 			}
 
 			foreach($postIds as $postId) {
-				$this->addItem($this->filterItem(['id' => $postId], $options));
+				if (!$this->addDataForPost($postId, $options)) {
+					$this->addItem($this->filterItem(['id' => $postId], $options));
+				}
 			}
 		}
 
@@ -143,6 +159,10 @@ abstract class AttachmentTask extends Task {
 
 		Logger::info("Added {$this->totalItems} to the task.", [], __METHOD__, __LINE__);
 		return ($this->totalItems > 0);
+	}
+
+	protected function addDataForPost($postId, $options):bool {
+		return false;
 	}
 
 }

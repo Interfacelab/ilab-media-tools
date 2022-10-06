@@ -16,7 +16,7 @@ return [
     "id" => "video-player",
     "name" => "Video Player",
 	"description" => "Adds HLS support to the standard video player that can handle Mux encoded video playback.",
-	"class" => "MediaCloud\\Plugin\\Tools\\Video\\Player\\VideoPlayerTool",
+	"class" => "MediaCloud\\Plugin\\Tools\\Video\\Player\\Tool\\VideoPlayerTool",
 	"dependencies" => [
 	],
 	"env" => "MCLOUD_PLAYER_ENABLED",

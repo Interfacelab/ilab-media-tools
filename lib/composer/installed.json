@@ -152,6 +152,60 @@
             "install-path": "../mcloud-aws/aws-sdk-php"
         },
         {
+            "name": "mcloud-chrisyue/php-m3u8",
+            "version": "3.4.3",
+            "version_normalized": "3.4.3.0",
+            "dist": {
+                "type": "path",
+                "url": "../library/chrisyue/php-m3u8",
+                "reference": "41f448816584532255e57783c0c4b13221114acd"
+            },
+            "require": {
+                "php": ">=5.5"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^2",
+                "phpunit/phpunit": "^4"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": []
+            },
+            "installation-source": "dist",
+            "autoload": {
+                "psr-4": {
+                    "MediaCloud\\Vendor\\Chrisyue\\PhpM3u8\\": "src"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Chrisyue\\PhpM3u8\\Test\\": "tests"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "chrisyue",
+                    "email": "blizzchris@gmail.com",
+                    "homepage": "https://chrisyue.com"
+                }
+            ],
+            "description": "PHP M3U8 parser / dumper",
+            "homepage": "http://chrisyue.com",
+            "keywords": [
+                "dumper",
+                "m3u8",
+                "parser"
+            ],
+            "transport-options": {
+                "symlink": false,
+                "relative": true
+            },
+            "install-path": "../mcloud-chrisyue/php-m3u8"
+        },
+        {
             "name": "mcloud-defuse/php-encryption",
             "version": "v2.3.1",
             "version_normalized": "2.3.1.0",

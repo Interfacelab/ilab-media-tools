@@ -18,8 +18,7 @@
     }
   },
   "require" : {
-    "php": ">=7.1",
-    "yuloh/bccomp-polyfill": "dev-master"
+    "php": ">=7.1"
   },
   "autoload": {
     "psr-4": {

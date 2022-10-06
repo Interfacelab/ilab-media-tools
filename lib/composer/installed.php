@@ -37,6 +37,15 @@
             'reference' => '70334180b72c224f3aad869506733ee805913107',
             'dev_requirement' => false,
         ),
+        'mcloud-chrisyue/php-m3u8' => array(
+            'pretty_version' => '3.4.3',
+            'version' => '3.4.3.0',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../mcloud-chrisyue/php-m3u8',
+            'aliases' => array(),
+            'reference' => '41f448816584532255e57783c0c4b13221114acd',
+            'dev_requirement' => false,
+        ),
         'mcloud-defuse/php-encryption' => array(
             'pretty_version' => 'v2.3.1',
             'version' => '2.3.1.0',
