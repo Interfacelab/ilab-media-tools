@@ -13,6 +13,7 @@
 namespace MediaCloud\Plugin\Tools\Video\Player;
 
 use  MediaCloud\Plugin\Tools\Video\Driver\Mux\Models\MuxAsset ;
+use  MediaCloud\Plugin\Tools\Video\Player\Tool\VideoPlayerTool ;
 use  MediaCloud\Plugin\Utilities\View ;
 use function  MediaCloud\Plugin\Utilities\arrayPath ;
 use function  MediaCloud\Plugin\Utilities\postIdExists ;
@@ -85,6 +86,7 @@ class VideoPlayerShortcode
         $classes = "mux-player";
         $extras = "";
         $asset = MuxAsset::assetForAttachment( $attachmentId );
+        VideoPlayerTool::enqueuePlayer( is_admin() );
         if ( !empty($this->settings->playerCSSClasses) ) {
             $classes .= " {$this->settings->playerCSSClasses}";
         }

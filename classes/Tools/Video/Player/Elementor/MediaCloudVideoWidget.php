@@ -17,14 +17,14 @@ use Elementor\Controls_Manager;
 use Elementor\Widget_Base;
 use MediaCloud\Plugin\Tools\ToolsManager;
 use MediaCloud\Plugin\Tools\Video\Driver\Mux\Models\MuxAsset;
-use MediaCloud\Plugin\Tools\Video\Driver\Mux\MuxToolProSettings;
-use MediaCloud\Plugin\Tools\Video\Driver\Mux\MuxToolSettings;
 use MediaCloud\Plugin\Tools\Video\Player\Tool\VideoPlayerTool;
 use function MediaCloud\Plugin\Utilities\arrayPath;
-use function MediaCloud\Plugin\Utilities\gen_uuid;
-use function MediaCloud\Plugin\Utilities\vomit;
 
 class MediaCloudVideoWidget extends Widget_Base {
+	public function __construct($data = [], $args = null) {
+		parent::__construct($data, $args);
+	}
+
 	public function get_name() {
 		return "mux-video";
 	}

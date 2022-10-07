@@ -20,6 +20,7 @@ use MediaCloud\Plugin\Tools\ToolSettings;
  * @package MediaCloud\Mux
  *
  * @property bool playerCSSClasses
+ * @property bool alwaysIncludeJS
  */
 class VideoPlayerToolSettings extends ToolSettings {
 	/**
@@ -27,6 +28,7 @@ class VideoPlayerToolSettings extends ToolSettings {
 	 * @var string[]
 	 */
 	protected $settingsMap = [
+		'alwaysIncludeJS' => ['media-cloud-mux-player-include-js', null, false],
 		'playerCSSClasses' => ['media-cloud-player-css-classes', null, false],
 	];
 }

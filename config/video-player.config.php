@@ -24,6 +24,12 @@ return [
 		"options-page" => "media-cloud-player",
 		"options-group" => "media-cloud-player",
 		"groups" => [
+			"media-cloud-mux-player-include-js" => [
+				"title" => "Always Include Video Player JavaScript",
+				"description" => "When enabled, the javascript file for the video.js or HLS player will be included on every page.  You may need to do this if you dynamically display videos.",
+				"type" => "checkbox",
+				"default" => false
+			],
 			"media-cloud-mux-player" => [
 				"title" => "Player Settings",
 				"doc_link" => 'https://support.mediacloud.press/articles/documentation/video-encoding/mux-player-settings',

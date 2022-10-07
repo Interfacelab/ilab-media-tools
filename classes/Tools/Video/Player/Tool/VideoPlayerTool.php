@@ -22,7 +22,6 @@ use MediaCloud\Plugin\Tools\Tool;
 use MediaCloud\Plugin\Tools\Video\Driver\Mux\Models\MuxAsset;
 use MediaCloud\Plugin\Tools\Video\Player\Elementor\MediaCloudVideoWidget;
 use MediaCloud\Plugin\Tools\Video\Player\VideoPlayerShortcode;
-use MediaCloud\Plugin\Tools\Video\Player\VideoPlayerToolProSettings;
 use MediaCloud\Plugin\Tools\Video\Player\VideoPlayerToolSettings;
 use MediaCloud\Plugin\Utilities\UI\CSSColorParser;
 use function MediaCloud\Plugin\Utilities\arrayPath;
@@ -36,6 +35,8 @@ class VideoPlayerTool extends Tool {
 
 	/** @var null|VideoPlayerShortcode */
 	protected $shortCode = null;
+
+	protected static $enqueued = false;
 
 	public function __construct($toolName, $toolInfo, $toolManager) {
 		$this->settings = VideoPlayerToolSettings::instance();
@@ -56,7 +57,11 @@ class VideoPlayerTool extends Tool {
 
 			add_filter('render_block', [$this, 'filterBlocks'], PHP_INT_MAX - 1, 2);
 
-			static::enqueuePlayer(is_admin());
+			if (is_admin() || !empty($this->settings->alwaysIncludeJS) || class_exists('Elementor\Plugin')) {
+				static::enqueuePlayer(is_admin());
+			} else if (isset($_GET['elementor-preview'])) {
+				static::enqueuePlayer(false);
+			}
 
 			if (is_admin()) {
 				add_action('admin_enqueue_scripts', function(){
@@ -219,6 +224,12 @@ class VideoPlayerTool extends Tool {
 
 	//region Player
 	public static function enqueuePlayer($admin = false) {
+		if (static::$enqueued) {
+			return;
+		}
+
+		static::$enqueued = true;
+
 		add_action((!empty($admin)) ? 'admin_enqueue_scripts' : 'wp_enqueue_scripts', function() {
 			wp_enqueue_script('mux_video_player_hlsjs', ILAB_PUB_JS_URL . '/mux-hls.js', null, null, true);
 		});
@@ -229,10 +240,9 @@ class VideoPlayerTool extends Tool {
 	protected function initBlocks() {
 		add_action('init', function() {
 			register_block_type( ILAB_BLOCKS_DIR . '/mediacloud-video-block' );
-//			register_block_type( ILAB_BLOCKS_DIR . '/mediacloud-video-block/build' );
 		});
 
-		add_filter('block_categories', function($categories, $post) {
+		add_filter('block_categories_all', function($categories, $post) {
 			foreach($categories as $category) {
 				if ($category['slug'] === 'mediacloud') {
 					return $categories;
@@ -313,6 +323,8 @@ class VideoPlayerTool extends Tool {
 			$asset = MuxAsset::assetForAttachment($attachmentId);
 		}
 
+		static::enqueuePlayer(is_admin());
+
 		if ($asset && !empty($asset->transferData)) {
 			if ($asset->transferData['source'] === 's3') {
 				/** @var StorageTool $storageTool */
@@ -369,7 +381,6 @@ class VideoPlayerTool extends Tool {
 			$classes .= " {$this->settings->playerCSSClasses}";
 		}
 
-//		$styles = !empty($styles) ? "style='${styles}'" : "";
 		$block_content = str_replace('<video ', "<video class='{$classes}' {$extras}", $block_content);
 
 		$source = "<source src='{$playlistUrl}' type='{$playlistMime}' />";

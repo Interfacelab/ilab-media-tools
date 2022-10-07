@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 6.0.2
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.4.3
+Stable tag: 4.4.4
 Requires PHP: 7.4
 
 Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -105,7 +105,17 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 == Changelog ==
 
-= 4.4.3 - 10/2/2022 =
+= 4.4.4 - 10/7/2022 =
+
+* The video player front-end javascript files are now only included on pages that use the player.  If you run into
+  issues with this, you can set a toggle in the settings to always include the scripts.  Note that for Elementor users,
+  the player scripts are always included because there isn't a reliable mechanism to tell if a player is being used on
+  a page before it's too late to enqueue the scripts.  You can blame Elementor for this.
+* The elementor video player widget was removed from the previous version on accident, it has been included again.
+* Fix for asset tool
+* Fix for `block_categories` deprecation warning (thanks @joshuafredrickson)
+
+= 4.4.3 - 10/5/2022 =
 
 * Ability to specify colors for video.js player in the Video Player settings.
 
