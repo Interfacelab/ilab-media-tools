@@ -1,14 +1,14 @@
-=== Media Cloud for Amazon S3, Imgix, Google Cloud Storage, DigitalOcean Spaces and more ===
+=== Media Cloud for Amazon S3, Cloudflare R2, Google Cloud Storage, DigitalOcean Spaces and more ===
 Contributors: mediacloud, interfacelab, freemius
-Tags: offload, amazon, s3, imgix, uploads, video, video encoding, google cloud storage, digital ocean spaces, wasabi, media, cdn, rekognition, cloudfront, images, crop, image editing, image editor, optimize, image optimization, media library, offload, offload s3, filepicker, smush, imagify, shortpixel
+Tags: offload, amazon, s3, cloudflare, imgix, uploads, video, video encoding, google cloud storage, digital ocean spaces, wasabi, media, cdn, rekognition, cloudfront, images, crop, image editing, image editor, optimize, image optimization, media library, offload, offload s3, smush, imagify, shortpixel
 Requires at least: 4.9
 Tested up to: 6.0.2
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.4.5
+Stable tag: 4.5.0
 Requires PHP: 7.4
 
-Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
+Automatically store media on Amazon S3, Cloudflare R2, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
 
 == Description ==
 
@@ -24,7 +24,7 @@ Media Cloud also provides advanced image editing tools that provide improved cro
 
 **NOTE**: This plugin requires PHP 7.1 or higher
 
-= Upload to S3, Minio, Google Cloud Storage, Wasabi, Digital Ocean Spaces, DreamHost Object Storage and others =
+= Upload to S3, Cloudflare R2, Minio, Google Cloud Storage, Wasabi, Digital Ocean Spaces, DreamHost Object Storage and others =
 Automatically copy media uploads to the cloud and serve them directly from your cloud storage provider, CloudFront or any other CDN.
 
 = Video Encoding with Mux =
@@ -48,7 +48,7 @@ Media Cloud by ILAB ships with the most advanced image cropping tool available f
 = Compatible With Leading Image Optimizers =
 Compatible with Short Pixel, EWWW, Smush and Imagify image optimization plugins!
 
-* Upload to any of a variety of cloud storage providers (Amazon S3, Google Cloud Storage, Minio, Wasabi, Backblaze, DigitalOcean Spaces or any other S3 compatible service)
+* Upload to any of a variety of cloud storage providers (Amazon S3, Cloudflare R2, Google Cloud Storage, Minio, Wasabi, Backblaze, DigitalOcean Spaces or any other S3 compatible service)
 * Host your media directly from your cloud storage provider or specify a CDN
 * Integrate with Imgix media hosting
 * Use Amazon Rekognition to automatically tag and categorize images
@@ -104,6 +104,12 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 
 == Changelog ==
+
+= 4.5.0 - 10/7/2022 =
+
+* Support for Cloudflare Storage R2.
+* Cloudflare R2 does not support direct uploads though we will be working on it in the future.
+* R2 also does not support signed URLs, but that is a limitation of R2 and not Media Cloud's integration with it.
 
 = 4.4.4 - 10/7/2022 =
 

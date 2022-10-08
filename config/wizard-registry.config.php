@@ -16,6 +16,7 @@ return [
 	's3' => \MediaCloud\Plugin\Tools\Storage\Driver\S3\S3Storage::class,
 	'imgix' => \MediaCloud\Plugin\Tools\Imgix\ImgixTool::class,
 	'google' => \MediaCloud\Plugin\Tools\Storage\Driver\GoogleCloud\GoogleStorage::class,
+	'cloudflare' => \MediaCloud\Plugin\Tools\Storage\Driver\Cloudflare\CloudflareStorage::class,
 	'other-s3' => \MediaCloud\Plugin\Tools\Storage\Driver\S3\OtherS3Storage::class,
 	'do' => \MediaCloud\Plugin\Tools\Storage\Driver\S3\DigitalOceanStorage::class,
 	'wasabi' => \MediaCloud\Plugin\Tools\Storage\Driver\S3\WasabiStorage::class,

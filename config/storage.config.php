@@ -73,6 +73,15 @@ return [
 				[ 'title' => 'Read Documentation', 'url' => 'https://support.mediacloud.press/articles/documentation/cloud-storage/setting-up-google-cloud-storage' ],
 			]
 		],
+		'cloudflare' => [
+			'name' => 'Cloudflare R2 Storage',
+			'class' => \MediaCloud\Plugin\Tools\Storage\Driver\Cloudflare\CloudflareStorage::class,
+			'config' => '/storage/cloudflare.config.php',
+			'help' => [
+				[ 'title' => 'Setup Wizard', 'wizard' => 'cloudflare' ],
+				[ 'title' => 'Watch Tutorial', 'video_url' => 'https://www.youtube.com/watch?v=GDL2bzYMgLY' ],
+			]
+		],
 		'do' => [
 			'name' => 'DigitalOcean Spaces',
 			'class' => "\\MediaCloud\\Plugin\\Tools\\Storage\\Driver\\S3\\DigitalOceanStorage",

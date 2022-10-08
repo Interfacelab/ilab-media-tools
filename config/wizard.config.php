@@ -25,6 +25,7 @@ $builder
 			->group('wizard.cloud-storage.intro', 'select-icons')
 				->option('s3', 'Amazon S3', 'wizard.cloud-storage.providers.s3.description', 'wizard-icon-s3.svg', 'cloud-storage-s3', 'select-s3')
 				->option('google', 'Google Cloud Storage', 'wizard.cloud-storage.providers.google.description', 'wizard-icon-google.svg', 'cloud-storage-google')
+				->option('cloudflare', 'Cloudflare R2', 'wizard.cloud-storage.providers.cloudflare.description', 'wizard-icon-cloudflare.svg', 'cloud-storage-cloudflare')
 				->option('do', 'DigitalOcean Spaces', 'wizard.cloud-storage.providers.do.description', 'wizard-icon-do.svg', 'cloud-storage-do')
 				->option('dreamhost', 'DreamHost Cloud Storage', 'wizard.cloud-storage.providers.dreamhost.description', 'wizard-icon-dreamhost.svg', 'cloud-storage-dreamhost')
 				->option('wasabi', 'Wasabi', 'wizard.cloud-storage.providers.wasabi.description', 'wizard-icon-wasabi.png', 'cloud-storage-wasabi')
@@ -38,6 +39,7 @@ $builder
 
 S3Storage::configureWizard($builder);
 \MediaCloud\Plugin\Tools\Storage\Driver\GoogleCloud\GoogleStorage::configureWizard($builder);
+\MediaCloud\Plugin\Tools\Storage\Driver\Cloudflare\CloudflareStorage::configureWizard($builder);
 \MediaCloud\Plugin\Tools\Imgix\ImgixTool::configureWizard($builder);
 \MediaCloud\Plugin\Tools\Storage\Driver\S3\OtherS3Storage::configureWizard($builder);
 \MediaCloud\Plugin\Tools\Storage\Driver\S3\DigitalOceanStorage::configureWizard($builder);
