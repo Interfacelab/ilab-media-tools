@@ -1,7 +1,7 @@
 <?php
 
 add_action('plugins_loaded', function() {
-	if (!function_exists('\Spatie\WordPressRay\ray')) {
+	if (!function_exists('\Spatie\WordPressRay\ray') && !function_exists('ray')){
 		function ray() {
 			static $rayInstance = null;
 			if ($rayInstance === null) {

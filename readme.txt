@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 6.0.2
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.5.0
+Stable tag: 4.5.2
 Requires PHP: 7.4
 
 Automatically store media on Amazon S3, Cloudflare R2, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -104,6 +104,18 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 
 == Changelog ==
+
+= 4.5.2 - 10/15/2022 =
+
+* Fix for compatability issue with Presto Player
+
+= 4.5.1 - 10/11/2022 =
+
+* Integration for WP All Import Pro.  When enabled, during an import, Media Cloud will not process any images imported
+  during the process.  This is to prevent the import from timing out.  After the import is complete, a Migrate to Cloud
+  Storage task is run to move the imported media to the cloud.
+* Image Optimization will not work with the WP All Import Pro integration.  It's recommended that you use the EWWW plugin
+  for image optimization if that's something you need.
 
 = 4.5.0 - 10/7/2022 =
 

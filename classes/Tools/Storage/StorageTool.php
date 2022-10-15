@@ -812,8 +812,9 @@ class StorageTool extends Tool
         );
         // Now the goods
         $data = $this->handleUpdateAttachmentMetadata( $data, $id );
+        $shouldSkip = apply_filters( 'media-cloud/storage/ignore-metadata-update', false, $id );
         
-        if ( $this->settings->uploadOriginal && isset( $data['original_image'] ) ) {
+        if ( !$shouldSkip && $this->settings->uploadOriginal && isset( $data['original_image'] ) ) {
             $s3Data = $this->uploadOriginalImage( $data, $id, $this->preserveFilePaths );
             if ( !empty($s3Data) ) {
                 $data['original_image_s3'] = $s3Data;
