@@ -19,6 +19,7 @@ namespace MediaCloud\Vendor\Google\Auth;
 use MediaCloud\Vendor\Google\Auth\HttpHandler\HttpClientCache;
 use MediaCloud\Vendor\Google\Auth\HttpHandler\HttpHandlerFactory;
 use MediaCloud\Vendor\GuzzleHttp\Psr7;
+use MediaCloud\Vendor\GuzzleHttp\Psr7\Utils;
 
 /**
  * Tools for using the IAM API.
@@ -87,7 +88,7 @@ class Iam
             'POST',
             $uri,
             $headers,
-            Psr7\stream_for(json_encode($body))
+            Utils::streamFor(json_encode($body))
         );
 
         $res = $httpHandler($request);

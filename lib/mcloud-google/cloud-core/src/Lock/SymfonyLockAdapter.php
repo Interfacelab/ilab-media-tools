@@ -16,8 +16,7 @@
  */
 
 namespace MediaCloud\Vendor\Google\Cloud\Core\Lock;
-
-use Symfony\Component\Lock\LockInterface as SymfonyLockInterface;
+use MediaCloud\Vendor\Symfony\Component\Lock\LockInterface as SymfonyLockInterface;
 
 /**
  * Symfony lock component adapter.

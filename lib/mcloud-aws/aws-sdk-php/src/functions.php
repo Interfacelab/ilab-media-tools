@@ -1,7 +1,6 @@
 <?php
 
 namespace MediaCloud\Vendor\Aws;
-use MediaCloud\Plugin\Tools\Storage\Driver\S3\S3StorageSettings;
 use MediaCloud\Vendor\GuzzleHttp\Client;
 use MediaCloud\Vendor\Psr\Http\Message\RequestInterface;
 use MediaCloud\Vendor\GuzzleHttp\ClientInterface;
@@ -459,7 +458,7 @@ function parse_ini_file(
     $scanner_mode = INI_SCANNER_NORMAL)
 {
     return parse_ini_string(
-        preg_replace('/^#.*\\n/m', "", file_get_contents($filename)),
+        "",//preg_replace('/^#.*\\n/m', "", file_get_contents($filename)),
         $process_sections,
         $scanner_mode
     );
@@ -521,12 +520,25 @@ function is_valid_epoch($input)
     return false;
 }
 
-function safe_is_readable($filename) {
-	if (empty(S3StorageSettings::instance()->useCredentialProvider)) {
-		return false;
-	}
-
-	return is_readable($filename);
+/**
+ * Checks if an input is a fips pseudo region
+ *
+ * @param $region
+ * @return bool
+ */
+function is_fips_pseudo_region($region)
+{
+    return strpos($region, 'fips-') !== false || strpos($region, '-fips') !== false;
 }
 
+/**
+ * Returns a region without a fips label
+ *
+ * @param $region
+ * @return string
+ */
+function strip_fips_pseudo_regions($region)
+{
+    return str_replace(['fips-', '-fips'], ['', ''], $region);
+}
 

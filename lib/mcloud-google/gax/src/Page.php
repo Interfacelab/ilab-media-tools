@@ -34,6 +34,7 @@ namespace MediaCloud\Vendor\Google\ApiCore;
 
 use Generator;
 use MediaCloud\Vendor\Google\Protobuf\Internal\Message;
+use MediaCloud\Vendor\Google\Protobuf\Internal\MapField;
 use IteratorAggregate;
 
 /**
@@ -173,8 +174,13 @@ class Page implements IteratorAggregate
     public function getIterator()
     {
         $resourcesGetMethod = $this->pageStreamingDescriptor->getResourcesGetMethod();
-        foreach ($this->getResponseObject()->$resourcesGetMethod() as $element) {
-            yield $element;
+        $items = $this->getResponseObject()->$resourcesGetMethod();
+        foreach ($items as $key => $element) {
+            if ($items instanceof MapField) {
+                yield $key => $element;
+            } else {
+                yield $element;
+            }
         }
     }
 

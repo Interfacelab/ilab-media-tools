@@ -25,6 +25,7 @@ use  MediaCloud\Vendor\MuxPhp\Models\InputSettings ;
 use  MediaCloud\Vendor\MuxPhp\Models\PlaybackPolicy ;
 use function  MediaCloud\Plugin\Utilities\arrayPath ;
 use function  MediaCloud\Plugin\Utilities\gen_uuid ;
+use function  MediaCloud\Plugin\Utilities\postIdExists ;
 class MuxHooks
 {
     /** @var MuxToolSettings|MuxToolProSettings  */
@@ -59,13 +60,10 @@ class MuxHooks
             );
         }
         
+        if ( is_admin() ) {
+            add_action( 'wp_ajax_mcloud_replace_poster', [ $this, 'ajaxReplacePoster' ] );
+        }
         add_filter( 'template_include', [ $this, 'handleWebhook' ] );
-        add_filter(
-            'render_block',
-            [ $this, 'filterBlocks' ],
-            PHP_INT_MAX - 1,
-            2
-        );
     }
     
     //endregion
@@ -261,7 +259,7 @@ class MuxHooks
                 __METHOD__,
                 __LINE__
             );
-            $this->generateFilmstripForAttachment( $asset );
+            $asset->generateFilmstrip();
             return;
         }
         
@@ -318,16 +316,7 @@ class MuxHooks
         update_post_meta( $thumbId, '_wp_attached_file', $thumbAttachmentMeta['file'] );
         update_post_meta( $asset->attachmentId, '_thumbnail_id', $thumbId );
         wp_update_attachment_metadata( $thumbId, $thumbAttachmentMeta );
-        $this->generateFilmstripForAttachment( $asset );
-    }
-    
-    /**
-     * @param MuxAsset $asset
-     *
-     * @throws \Freemius_Exception
-     */
-    protected function generateFilmstripForAttachment( $asset )
-    {
+        $asset->generateFilmstrip();
     }
     
     public function handleStaticRenditionsReady( $jsonData )
@@ -378,6 +367,7 @@ class MuxHooks
             }
         
         }
+        $asset->backgroundTransfer();
     }
     
     public function handleAssetReady( $jsonData )
@@ -490,6 +480,13 @@ class MuxHooks
         if ( empty($asset) ) {
             return;
         }
+        
+        if ( $asset->isTransferred == 1 ) {
+            $asset->isDeleted = 1;
+            $asset->save();
+            return;
+        }
+        
         $asset->delete();
     }
     
@@ -705,53 +702,27 @@ class MuxHooks
         $this->handleDirectUpload( $attachmentId, $meta );
     }
     
-    //endregion
-    //region Content Filters
-    /**
-     * Filters the File block to include the goddamn attachment ID
-     *
-     * @param $block_content
-     * @param $block
-     *
-     * @return mixed
-     * @throws \Exception
-     */
-    function filterBlocks( $block_content, $block )
+    public function ajaxReplacePoster()
     {
-        if ( isset( $block['blockName'] ) ) {
-            if ( $block['blockName'] === 'media-cloud/mux-video-block' ) {
-                return $this->filterVideoBlock( $block_content, $block );
-            }
+        wp_verify_nonce( $_POST['nonce'], 'media-cloud-mux-replace-poster' );
+        $attachmentId = arrayPath( $_POST, 'attachmentId', null );
+        if ( empty($attachmentId) ) {
+            wp_send_json_error( 'Missing attachment ID', 400 );
         }
-        return $block_content;
-    }
-    
-    protected function filterVideoBlock( $block_content, $block )
-    {
-        $muxId = arrayPath( $block, 'attrs/muxId', null );
-        $asset = MuxAsset::asset( $muxId );
-        
-        if ( $asset !== null ) {
-            $classes = "mux-player";
-            $extras = "";
-            $metadata = [];
-            $metadataKey = sanitize_title( gen_uuid( 12 ) );
-            if ( !empty($this->settings->playerCSSClasses) ) {
-                $classes .= " {$this->settings->playerCSSClasses}";
-            }
-            $block_content = str_replace( '<video ', "<video class='{$classes}' {$extras} ", $block_content );
-            $url = $asset->videoUrl();
-            $source = "<source src='{$url}' type='application/x-mpegURL' />";
-            $block_content = str_replace( '<source/>', $source, $block_content );
-            
-            if ( !empty($metadata) ) {
-                $metadataHTML = "<script id='mux-{$metadataKey}' type='application/json'>" . json_encode( $metadata, JSON_PRETTY_PRINT ) . "</script>";
-                $block_content .= "\n" . $metadataHTML;
-            }
-        
+        $newPosterId = arrayPath( $_POST, 'posterId', null );
+        if ( empty($newPosterId) ) {
+            wp_send_json_error( 'Missing poster ID', 400 );
         }
-        
-        return $block_content;
+        if ( !postIdExists( $attachmentId ) ) {
+            wp_send_json_error( 'Invalid attachment ID', 400 );
+        }
+        if ( !postIdExists( $newPosterId ) ) {
+            wp_send_json_error( 'Invalid poster ID', 400 );
+        }
+        update_post_meta( $attachmentId, '_thumbnail_id', $newPosterId );
+        wp_send_json( [
+            'success' => true,
+        ] );
     }
 
 }

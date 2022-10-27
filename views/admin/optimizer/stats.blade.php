@@ -15,7 +15,7 @@ if (!empty($globalStats)) {
 
 /** @var \MediaCloud\Plugin\Tools\Optimizer\OptimizerAccountStatus $accountStatus */
 if (!empty($accountStatus)) {
-    $progress = ($accountStatus->quota() == 0) ? 0 : $accountStatus->used() / $accountStatus->quota();
+    $progress = ($accountStatus->quota() == 0) ? 0 : min(1.0, $accountStatus->used() / $accountStatus->quota());
 
     $pcolor = "#7ED321";
     if (($progress > 0.33) && ($progress < 0.66)) {
@@ -25,9 +25,18 @@ if (!empty($accountStatus)) {
     }
 
 	if ($accountStatus->quotaType() === \MediaCloud\Plugin\Tools\Optimizer\OptimizerConsts::QUOTA_API_CALLS) {
-        $quotaLabel = sprintf('%.0f', $progress * 100).'%';
+		if ($progress < 1.0) {
+            $quotaLabel = sprintf('%.0f', $progress * 100).'%';
+		} else {
+			$quotaLabel = 'Over Quota';
+		}
 	} else {
-        $quotaLabel = size_format($accountStatus->quota() - $accountStatus->used())."<br/>Remaining";
+		$remaining = max(0, $accountStatus->quota() - $accountStatus->used());
+		if ($remaining > 0) {
+            $quotaLabel = size_format($remaining)."<br/>Remaining";
+		} else {
+			$quotaLabel = 'Over Quota';
+		}
 	}
 }
 @endphp

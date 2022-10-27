@@ -39,11 +39,21 @@ class ImageProperties extends \MediaCloud\Vendor\Google\Protobuf\Internal\Messag
      * If present, dominant colors completed successfully.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.DominantColorsAnnotation dominant_colors = 1;</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\DominantColorsAnnotation
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\DominantColorsAnnotation|null
      */
     public function getDominantColors()
     {
         return $this->dominant_colors;
+    }
+
+    public function hasDominantColors()
+    {
+        return isset($this->dominant_colors);
+    }
+
+    public function clearDominantColors()
+    {
+        unset($this->dominant_colors);
     }
 
     /**

@@ -10,11 +10,11 @@
  */
 
 namespace MediaCloud\Vendor\Symfony\Component\Translation\Loader;
-
-use Symfony\Component\Config\Resource\FileResource;
-use Symfony\Component\Config\Util\XmlUtils;
+use MediaCloud\Vendor\Symfony\Component\Config\Resource\FileResource;
+use MediaCloud\Vendor\Symfony\Component\Config\Util\XmlUtils;
 use MediaCloud\Vendor\Symfony\Component\Translation\Exception\InvalidResourceException;
 use MediaCloud\Vendor\Symfony\Component\Translation\Exception\NotFoundResourceException;
+use MediaCloud\Vendor\Symfony\Component\Translation\Exception\RuntimeException;
 use MediaCloud\Vendor\Symfony\Component\Translation\MessageCatalogue;
 
 /**
@@ -27,8 +27,12 @@ class QtFileLoader implements LoaderInterface
     /**
      * {@inheritdoc}
      */
-    public function load($resource, $locale, $domain = 'messages')
+    public function load($resource, string $locale, string $domain = 'messages')
     {
+        if (!class_exists(XmlUtils::class)) {
+            throw new RuntimeException('Loading translations from the QT format requires the Symfony Config component.');
+        }
+
         if (!stream_is_local($resource)) {
             throw new InvalidResourceException(sprintf('This is not a local file "%s".', $resource));
         }
@@ -65,7 +69,7 @@ class QtFileLoader implements LoaderInterface
                 $translation = $translation->nextSibling;
             }
 
-            if (class_exists('Symfony\Component\Config\Resource\FileResource')) {
+            if (class_exists(FileResource::class)) {
                 $catalogue->addResource(new FileResource($resource));
             }
         }

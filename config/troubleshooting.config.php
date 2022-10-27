@@ -20,4 +20,7 @@ return [
 	"exclude" => true,
 	"dependencies" => [],
 	"env" => "ILAB_MEDIA_TROUBLESHOOTING_ENABLED",  // this is always enabled btw
+	"settings" => [
+		"options-group" => "media-cloud-options-group-troubleshooting",
+	]
 ];

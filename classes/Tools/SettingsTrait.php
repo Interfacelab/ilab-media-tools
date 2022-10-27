@@ -110,42 +110,78 @@ trait SettingsTrait {
         register_setting($this->options_group, $option);
     }
 
-    /**
-     * Registers an option with a text input UI
-     * @param $option_name
-     * @param $title
-     * @param $settings_slug
-     * @param null $description
-     * @param null $placeholder
-     * @param null $conditions
-     */
-    protected function registerTextFieldSetting($option_name, $title, $settings_slug, $description=null, $placeholder=null, $conditions=null, $default=null) {
-        add_settings_field($option_name,
-            $title,
-            [$this,'renderTextFieldSetting'],
-            $this->options_page,
-            $settings_slug,
-            ['option'=>$option_name, 'description'=>$description, 'placeholder' => $placeholder, 'conditions' => $conditions, 'default' => $default]);
-    }
+	/**
+	 * Registers an option with a text input UI
+	 * @param $option_name
+	 * @param $title
+	 * @param $settings_slug
+	 * @param null $description
+	 * @param null $placeholder
+	 * @param null $conditions
+	 */
+	protected function registerTextFieldSetting($option_name, $title, $settings_slug, $description=null, $placeholder=null, $conditions=null, $default=null) {
+		add_settings_field($option_name,
+			$title,
+			[$this,'renderTextFieldSetting'],
+			$this->options_page,
+			$settings_slug,
+			['option'=>$option_name, 'description'=>$description, 'placeholder' => $placeholder, 'conditions' => $conditions, 'default' => $default]);
+	}
 
-    /**
-     * Renders a text field
-     * @param $args
-     */
-    public function renderTextFieldSetting($args) {
-    	$value = Environment::Option($args['option']);
-    	if (empty($value) && !empty($args['default'])) {
-    		$value = $args['default'];
-	    }
+	/**
+	 * Registers an option with a text input UI
+	 * @param $option_name
+	 * @param $title
+	 * @param $settings_slug
+	 * @param null $description
+	 * @param null $placeholder
+	 * @param null $conditions
+	 */
+	protected function registerColorFieldSetting($option_name, $title, $settings_slug, $description=null, $conditions=null, $default=null) {
+		add_settings_field($option_name,
+			$title,
+			[$this,'renderColorFieldSetting'],
+			$this->options_page,
+			$settings_slug,
+			['option'=>$option_name, 'description'=>$description, 'conditions' => $conditions, 'default' => $default]);
+	}
 
-        echo View::render_view('base/fields/text-field.php',[
-            'value' => $value,
-            'name' => $args['option'],
-            'placeholder' => $args['placeholder'],
-            'conditions' => $args['conditions'],
-            'description' => (isset($args['description'])) ? $args['description'] : false
-        ]);
-    }
+	/**
+	 * Renders a text field
+	 * @param $args
+	 */
+	public function renderTextFieldSetting($args) {
+		$value = Environment::Option($args['option']);
+		if (empty($value) && !empty($args['default'])) {
+			$value = $args['default'];
+		}
+
+		echo View::render_view('base/fields/text-field.php',[
+			'value' => $value,
+			'name' => $args['option'],
+			'placeholder' => $args['placeholder'],
+			'conditions' => $args['conditions'],
+			'description' => (isset($args['description'])) ? $args['description'] : false
+		]);
+	}
+
+	/**
+	 * Renders a text field
+	 * @param $args
+	 */
+	public function renderColorFieldSetting($args) {
+		$value = Environment::Option($args['option']);
+		if (empty($value) && !empty($args['default'])) {
+			$value = $args['default'];
+		}
+
+		echo View::render_view('base/fields/color.php',[
+			'value' => $value,
+			'name' => $args['option'],
+			'conditions' => $args['conditions'],
+			'description' => (isset($args['description'])) ? $args['description'] : false
+		]);
+	}
 
 	/**
 	 * Registers an option with a text input UI

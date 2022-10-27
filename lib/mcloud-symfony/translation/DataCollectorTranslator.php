@@ -10,33 +10,30 @@
  */
 
 namespace MediaCloud\Vendor\Symfony\Component\Translation;
-
-use Symfony\Component\HttpKernel\CacheWarmer\WarmableInterface;
+use MediaCloud\Vendor\Symfony\Component\HttpKernel\CacheWarmer\WarmableInterface;
 use MediaCloud\Vendor\Symfony\Component\Translation\Exception\InvalidArgumentException;
+use MediaCloud\Vendor\Symfony\Contracts\Translation\LocaleAwareInterface;
+use MediaCloud\Vendor\Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * @author Abdellatif Ait boudad <a.aitboudad@gmail.com>
  */
-class DataCollectorTranslator implements TranslatorInterface, TranslatorBagInterface, WarmableInterface
+class DataCollectorTranslator implements TranslatorInterface, TranslatorBagInterface, LocaleAwareInterface, WarmableInterface
 {
-    const MESSAGE_DEFINED = 0;
-    const MESSAGE_MISSING = 1;
-    const MESSAGE_EQUALS_FALLBACK = 2;
+    public const MESSAGE_DEFINED = 0;
+    public const MESSAGE_MISSING = 1;
+    public const MESSAGE_EQUALS_FALLBACK = 2;
 
-    /**
-     * @var TranslatorInterface|TranslatorBagInterface
-     */
     private $translator;
-
     private $messages = [];
 
     /**
-     * @param TranslatorInterface $translator The translator must implement TranslatorBagInterface
+     * @param TranslatorInterface&TranslatorBagInterface&LocaleAwareInterface $translator
      */
     public function __construct(TranslatorInterface $translator)
     {
-        if (!$translator instanceof TranslatorBagInterface) {
-            throw new InvalidArgumentException(sprintf('The Translator "%s" must implement TranslatorInterface and TranslatorBagInterface.', \get_class($translator)));
+        if (!$translator instanceof TranslatorBagInterface || !$translator instanceof LocaleAwareInterface) {
+            throw new InvalidArgumentException(sprintf('The Translator "%s" must implement TranslatorInterface, TranslatorBagInterface and LocaleAwareInterface.', get_debug_type($translator)));
         }
 
         $this->translator = $translator;
@@ -45,9 +42,9 @@ class DataCollectorTranslator implements TranslatorInterface, TranslatorBagInter
     /**
      * {@inheritdoc}
      */
-    public function trans($id, array $parameters = [], $domain = null, $locale = null)
+    public function trans(?string $id, array $parameters = [], string $domain = null, string $locale = null)
     {
-        $trans = $this->translator->trans($id, $parameters, $domain, $locale);
+        $trans = $this->translator->trans($id = (string) $id, $parameters, $domain, $locale);
         $this->collectMessage($locale, $domain, $id, $trans, $parameters);
 
         return $trans;
@@ -56,18 +53,7 @@ class DataCollectorTranslator implements TranslatorInterface, TranslatorBagInter
     /**
      * {@inheritdoc}
      */
-    public function transChoice($id, $number, array $parameters = [], $domain = null, $locale = null)
-    {
-        $trans = $this->translator->transChoice($id, $number, $parameters, $domain, $locale);
-        $this->collectMessage($locale, $domain, $id, $trans, $parameters, $number);
-
-        return $trans;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setLocale($locale)
+    public function setLocale(string $locale)
     {
         $this->translator->setLocale($locale);
     }
@@ -83,7 +69,7 @@ class DataCollectorTranslator implements TranslatorInterface, TranslatorBagInter
     /**
      * {@inheritdoc}
      */
-    public function getCatalogue($locale = null)
+    public function getCatalogue(string $locale = null)
     {
         return $this->translator->getCatalogue($locale);
     }
@@ -91,17 +77,29 @@ class DataCollectorTranslator implements TranslatorInterface, TranslatorBagInter
     /**
      * {@inheritdoc}
      */
-    public function warmUp($cacheDir)
+    public function getCatalogues(): array
+    {
+        return $this->translator->getCatalogues();
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @return string[]
+     */
+    public function warmUp(string $cacheDir)
     {
         if ($this->translator instanceof WarmableInterface) {
-            $this->translator->warmUp($cacheDir);
+            return (array) $this->translator->warmUp($cacheDir);
         }
+
+        return [];
     }
 
     /**
      * Gets the fallback locales.
      *
-     * @return array The fallback locales
+     * @return array
      */
     public function getFallbackLocales()
     {
@@ -115,9 +113,9 @@ class DataCollectorTranslator implements TranslatorInterface, TranslatorBagInter
     /**
      * Passes through all unknown calls onto the translator object.
      */
-    public function __call($method, $args)
+    public function __call(string $method, array $args)
     {
-        return \call_user_func_array([$this->translator, $method], $args);
+        return $this->translator->{$method}(...$args);
     }
 
     /**
@@ -128,21 +126,12 @@ class DataCollectorTranslator implements TranslatorInterface, TranslatorBagInter
         return $this->messages;
     }
 
-    /**
-     * @param string|null $locale
-     * @param string|null $domain
-     * @param string      $id
-     * @param string      $translation
-     * @param array|null  $parameters
-     * @param int|null    $number
-     */
-    private function collectMessage($locale, $domain, $id, $translation, $parameters = [], $number = null)
+    private function collectMessage(?string $locale, ?string $domain, string $id, string $translation, ?array $parameters = [])
     {
         if (null === $domain) {
             $domain = 'messages';
         }
 
-        $id = (string) $id;
         $catalogue = $this->translator->getCatalogue($locale);
         $locale = $catalogue->getLocale();
         $fallbackLocale = null;
@@ -170,8 +159,8 @@ class DataCollectorTranslator implements TranslatorInterface, TranslatorBagInter
             'id' => $id,
             'translation' => $translation,
             'parameters' => $parameters,
-            'transChoiceNumber' => $number,
             'state' => $state,
+            'transChoiceNumber' => isset($parameters['%count%']) && is_numeric($parameters['%count%']) ? $parameters['%count%'] : null,
         ];
     }
 }

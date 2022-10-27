@@ -33,6 +33,8 @@ use MediaCloud\Vendor\Aws\AwsClient;
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise getResourceSharesAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result listPendingInvitationResources(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listPendingInvitationResourcesAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listPermissionVersions(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listPermissionVersionsAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result listPermissions(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listPermissionsAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result listPrincipals(array $args = [])

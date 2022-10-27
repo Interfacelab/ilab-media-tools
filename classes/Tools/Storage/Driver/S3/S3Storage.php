@@ -58,7 +58,8 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 
 	//region Constructor
 	public function __construct() {
-		$this->settings = new S3StorageSettings($this);
+		$settingsClass = static::settingsClass();
+		$this->settings = new $settingsClass($this);
 		$this->client = $this->getClient(null);
 	}
 	//endregion
@@ -86,6 +87,10 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 
 	public static function bucketLink($bucket) {
 		return "https://console.aws.amazon.com/s3/buckets/$bucket";
+	}
+
+	public static function settingsClass() {
+		return S3StorageSettings::class;
 	}
 
 	public function pathLink($bucket, $key) {
@@ -618,7 +623,15 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 			}
 
 			Logger::startTiming("Start Upload", ['file' => $key], __METHOD__, __LINE__);
-			$result = $this->client->upload($this->settings->bucket, $key, $file, $acl, $options);
+			if (empty($this->canUpdateACL())) {
+				$result = $this->client->putObject([
+					'Bucket' => $this->settings->bucket,
+					'Key' => $key,
+					'Body' => $file,
+				]);
+			} else {
+				$result = $this->client->upload($this->settings->bucket, $key, $file, $acl, $options);
+			}
 			Logger::endTiming("End Upload", ['file' => $key], __METHOD__, __LINE__);
 
 			if (is_resource($file)) {
@@ -671,7 +684,7 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 			Logger::endTiming("Deleted directory '$key'", [], __METHOD__, __LINE__);
 		}
 		catch(AwsException $ex) {
-			Logger::error('S3 Delete File Error', [
+			Logger::error('S3 Delete File Error: '.$ex->getMessage(), [
 				'exception' => $ex->getMessage(),
 				'Bucket' => $this->settings->bucket,
 				'Key' => $key
@@ -995,13 +1008,22 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 	protected function getOptionsData($acl, $key) {
 		$keyparts = explode('.', $key);
 
-		return [
-			['bucket' => $this->settings->bucket],
-			['acl' => $acl],
+		if ($this->canUpdateACL()) {
+			return [
+				['bucket' => $this->settings->bucket],
+				['acl' => $acl],
 //			['key' => $key],
-			['starts-with', '$key', $keyparts[0]],
-			['starts-with', '$Content-Type', '']
-		];
+				['starts-with', '$key', $keyparts[0]],
+				['starts-with', '$Content-Type', '']
+			];
+		} else {
+			return [
+				['bucket' => $this->settings->bucket],
+//			['key' => $key],
+				['starts-with', '$key', $keyparts[0]],
+				['starts-with', '$Content-Type', '']
+			];
+		}
 	}
 
 	public function uploadUrl($key, $acl, $mimeType = null, $cacheControl = null, $expires = null) {
@@ -1068,7 +1090,7 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 		$builder->select('Complete', 'Basic setup is now complete!  Configure advanced settings or setup imgix.')
 			->group('wizard.cloud-storage.providers.s3.success', 'select-buttons')
 				->option('configure-imgix', 'Set Up imgix', null, null, 'imgix')
-				->option('advanced-settings', 'Finish &amp; Exit Wizard', null, null, null, null, 'admin:admin.php?page=media-cloud-settings&tab=storage')
+				->option('advanced-settings', 'Finish & Exit Wizard', null, null, null, null, 'admin:admin.php?page=media-cloud-settings&tab=storage')
 			->endGroup()
 		->endStep();
 

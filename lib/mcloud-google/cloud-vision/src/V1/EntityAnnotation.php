@@ -49,8 +49,9 @@ class EntityAnnotation extends \MediaCloud\Vendor\Google\Protobuf\Internal\Messa
      * image. Range [0, 1].
      *
      * Generated from protobuf field <code>float confidence = 5 [deprecated = true];</code>
+     * @deprecated
      */
-    private $confidence = 0.0;
+    protected $confidence = 0.0;
     /**
      * The relevancy of the ICA (Image Content Annotation) label to the
      * image. For example, the relevancy of "tower" is likely higher to an image
@@ -252,9 +253,11 @@ class EntityAnnotation extends \MediaCloud\Vendor\Google\Protobuf\Internal\Messa
      *
      * Generated from protobuf field <code>float confidence = 5 [deprecated = true];</code>
      * @return float
+     * @deprecated
      */
     public function getConfidence()
     {
+        @trigger_error('confidence is deprecated.', E_USER_DEPRECATED);
         return $this->confidence;
     }
 
@@ -268,9 +271,11 @@ class EntityAnnotation extends \MediaCloud\Vendor\Google\Protobuf\Internal\Messa
      * Generated from protobuf field <code>float confidence = 5 [deprecated = true];</code>
      * @param float $var
      * @return $this
+     * @deprecated
      */
     public function setConfidence($var)
     {
+        @trigger_error('confidence is deprecated.', E_USER_DEPRECATED);
         GPBUtil::checkFloat($var);
         $this->confidence = $var;
 
@@ -316,11 +321,21 @@ class EntityAnnotation extends \MediaCloud\Vendor\Google\Protobuf\Internal\Messa
      * for `LABEL_DETECTION` features.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.BoundingPoly bounding_poly = 7;</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\BoundingPoly
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\BoundingPoly|null
      */
     public function getBoundingPoly()
     {
         return $this->bounding_poly;
+    }
+
+    public function hasBoundingPoly()
+    {
+        return isset($this->bounding_poly);
+    }
+
+    public function clearBoundingPoly()
+    {
+        unset($this->bounding_poly);
     }
 
     /**

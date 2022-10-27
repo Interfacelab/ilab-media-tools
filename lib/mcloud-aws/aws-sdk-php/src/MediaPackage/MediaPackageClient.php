@@ -5,6 +5,8 @@ use MediaCloud\Vendor\Aws\AwsClient;
 
 /**
  * This client is used to interact with the **AWS Elemental MediaPackage** service.
+ * @method \MediaCloud\Vendor\Aws\Result configureLogs(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise configureLogsAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result createChannel(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise createChannelAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result createHarvestJob(array $args = [])

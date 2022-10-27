@@ -13,10 +13,14 @@ namespace MediaCloud\Vendor\Symfony\Component\Debug\FatalErrorHandler;
 use MediaCloud\Vendor\Symfony\Component\Debug\Exception\FatalErrorException;
 use MediaCloud\Vendor\Symfony\Component\Debug\Exception\UndefinedMethodException;
 
+@trigger_error(sprintf('The "%s" class is deprecated since Symfony 4.4, use "%s" instead.', UndefinedMethodFatalErrorHandler::class, \MediaCloud\Vendor\Symfony\Component\ErrorHandler\ErrorEnhancer\UndefinedMethodErrorEnhancer::class), \E_USER_DEPRECATED);
+
 /**
  * ErrorHandler for undefined methods.
  *
  * @author Grégoire Pineau <lyrixx@lyrixx.info>
+ *
+ * @deprecated since Symfony 4.4, use MediaCloud\Vendor\Symfony\Component\ErrorHandler\ErrorEnhancer\UndefinedMethodErrorEnhancer instead.
  */
 class UndefinedMethodFatalErrorHandler implements FatalErrorHandlerInterface
 {
@@ -35,7 +39,7 @@ class UndefinedMethodFatalErrorHandler implements FatalErrorHandlerInterface
 
         $message = sprintf('Attempted to call an undefined method named "%s" of class "%s".', $methodName, $className);
 
-        if (!class_exists($className) || null === $methods = get_class_methods($className)) {
+        if ('' === $methodName || !class_exists($className) || null === $methods = get_class_methods($className)) {
             // failed to get the class or its methods on which an unknown method was called (for example on an anonymous class)
             return new UndefinedMethodException($message, $exception);
         }

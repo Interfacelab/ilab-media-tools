@@ -34,6 +34,7 @@ namespace MediaCloud\Vendor\Google\ApiCore\Testing;
 use MediaCloud\Vendor\Google\ApiCore\ApiException;
 use MediaCloud\Vendor\Google\ApiCore\ApiStatus;
 use MediaCloud\Vendor\Google\Rpc\Code;
+use stdClass;
 
 /**
  * The MockServerStreamingCall class is used to mock out the \MediaCloud\Vendor\Grpc\ServerStreamingCall class
@@ -50,14 +51,18 @@ class MockServerStreamingCall extends \MediaCloud\Vendor\Grpc\ServerStreamingCal
      * MockServerStreamingCall constructor.
      * @param mixed[] $responses A list of response objects.
      * @param callable|null $deserialize An optional deserialize method for the response object.
-     * @param MockStatus|null $status An optional status object. If set to null, a status of OK is used.
+     * @param MockStatus|stdClass|null $status An optional status object. If set to null, a status of OK is used.
      */
     public function __construct($responses, $deserialize = null, $status = null)
     {
         $this->responses = $responses;
         $this->deserialize = $deserialize;
         if (is_null($status)) {
-            $status = new MockStatus(Code::OK);
+            $status = new MockStatus(Code::OK, 'OK', []);
+        } elseif ($status instanceof stdClass) {
+            if (!property_exists($status, 'metadata')) {
+                $status->metadata = [];
+            }
         }
         $this->status = $status;
     }

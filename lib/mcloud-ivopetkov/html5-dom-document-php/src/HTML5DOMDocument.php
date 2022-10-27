@@ -8,6 +8,7 @@
  */
 
 namespace MediaCloud\Vendor\IvoPetkov;
+use MediaCloud\Vendor\IvoPetkov\HTML5DOMDocument\Internal\QuerySelectors;
 
 /**
  * Represents a live (can be manipulated) representation of a HTML5 document.
@@ -15,7 +16,7 @@ namespace MediaCloud\Vendor\IvoPetkov;
 class HTML5DOMDocument extends \DOMDocument
 {
 
-    use \MediaCloud\Vendor\IvoPetkov\HTML5DOMDocument\Internal\QuerySelectors;
+    use QuerySelectors;
 
     /**
      * An option passed to loadHTML() and loadHTMLFile() to disable duplicate element IDs exception.
@@ -66,7 +67,7 @@ class HTML5DOMDocument extends \DOMDocument
      * @param string $version The version number of the document as part of the XML declaration.
      * @param string $encoding The encoding of the document as part of the XML declaration.
      */
-    public function __construct(string $version = null, string $encoding = null)
+    public function __construct(string $version = '1.0', string $encoding = '')
     {
         parent::__construct($version, $encoding);
         $this->registerNodeClass('DOMElement', '\MediaCloud\Vendor\IvoPetkov\HTML5DOMElement');
@@ -96,19 +97,19 @@ class HTML5DOMDocument extends \DOMDocument
             $matches[0] = array_unique($matches[0]);
             foreach ($matches[0] as $match) {
                 if (substr($match, -2, 1) !== '/') { // check if ends with />
-                    $source = str_replace($match, $match . '<![CDATA[html5-dom-document-internal-cdata', $source);
+                    $source = str_replace($match, $match . '<![CDATA[-html5-dom-document-internal-cdata', $source); // Add CDATA after the open tag
                 }
             }
         }
-        $source = str_replace('</script>', 'html5-dom-document-internal-cdata]]></script>', $source);
-        $source = str_replace('<![CDATA[html5-dom-document-internal-cdatahtml5-dom-document-internal-cdata]]>', '', $source); // clean empty script tags
+        $source = str_replace('</script>', '-html5-dom-document-internal-cdata]]></script>', $source); // Add CDATA before the end tag
+        $source = str_replace('<![CDATA[-html5-dom-document-internal-cdata-html5-dom-document-internal-cdata]]>', '', $source); // Clean empty script tags
         $matches = null;
-        preg_match_all('/\<!\[CDATA\[html5-dom-document-internal-cdata.*?html5-dom-document-internal-cdata\]\]>/s', $source, $matches);
+        preg_match_all('/\<!\[CDATA\[-html5-dom-document-internal-cdata.*?-html5-dom-document-internal-cdata\]\]>/s', $source, $matches);
         if (isset($matches[0])) {
             $matches[0] = array_unique($matches[0]);
             foreach ($matches[0] as $match) {
                 if (strpos($match, '</') !== false) { // check if contains </
-                    $source = str_replace($match, str_replace('</', '<html5-dom-document-internal-cdata-endtagfix/', $match), $source);
+                    $source = str_replace($match, str_replace('</', '<-html5-dom-document-internal-cdata-endtagfix/', $match), $source);
                 }
             }
         }
@@ -194,7 +195,7 @@ class HTML5DOMDocument extends \DOMDocument
                                 $id = $child->getAttribute('id');
                                 if ($id !== '') {
                                     if (isset($elementIDs[$id])) {
-                                        throw new \Exception('A DOM node with an ID value "' . $id . '" already exists!');
+                                        throw new \Exception('A DOM node with an ID value "' . $id . '" already exists! Pass the HTML5DOMDocument::ALLOW_DUPLICATE_IDS option to disable this check.');
                                     } else {
                                         $elementIDs[$id] = true;
                                     }
@@ -288,10 +289,6 @@ class HTML5DOMDocument extends \DOMDocument
      */
     public function saveHTML(\DOMNode $node = null): string
     {
-        if (!$this->loaded) {
-            return '<!DOCTYPE html>';
-        }
-
         $nodeMode = $node !== null;
         if ($nodeMode && $node instanceof \DOMDocument) {
             $nodeMode = false;
@@ -373,7 +370,7 @@ class HTML5DOMDocument extends \DOMDocument
                 'html5-dom-document-internal-content',
                 '<meta data-html5-dom-document-internal-attribute="charset-meta" http-equiv="content-type" content="text/html; charset=utf-8">',
                 '</area>', '</base>', '</br>', '</col>', '</command>', '</embed>', '</hr>', '</img>', '</input>', '</keygen>', '</link>', '</meta>', '</param>', '</source>', '</track>', '</wbr>',
-                '<![CDATA[html5-dom-document-internal-cdata', 'html5-dom-document-internal-cdata]]>', 'html5-dom-document-internal-cdata-endtagfix'
+                '<![CDATA[-html5-dom-document-internal-cdata', '-html5-dom-document-internal-cdata]]>', '-html5-dom-document-internal-cdata-endtagfix'
             ];
             if ($removeHeadElement) {
                 $codeToRemove[] = '<head></head>';
@@ -391,8 +388,9 @@ class HTML5DOMDocument extends \DOMDocument
      * Dumps the internal document into a file using HTML formatting.
      * 
      * @param string $filename The path to the saved HTML document.
-     * @return int the number of bytes written or FALSE if an error occurred.
+     * @return int|false the number of bytes written or FALSE if an error occurred.
      */
+    #[\ReturnTypeWillChange] // Return type "int|false" is invalid in older supported versions.
     public function saveHTMLFile($filename)
     {
         if (!is_writable($filename)) {
@@ -565,7 +563,7 @@ class HTML5DOMDocument extends \DOMDocument
                             }
                         }
                     }
-                } else if ($target === 'beforeBodyEnd') {
+                } elseif ($target === 'beforeBodyEnd') {
                     foreach ($bodyElementChildren as $bodyElementChild) {
                         $newNode = $currentDomDocument->importNode($bodyElementChild, true);
                         if ($newNode !== null) {

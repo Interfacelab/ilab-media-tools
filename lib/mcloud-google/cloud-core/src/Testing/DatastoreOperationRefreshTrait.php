@@ -16,10 +16,9 @@
  */
 
 namespace MediaCloud\Vendor\Google\Cloud\Core\Testing;
-
-use Google\Cloud\Datastore\Connection\ConnectionInterface;
-use Google\Cloud\Datastore\EntityMapper;
-use Google\Cloud\Datastore\Operation;
+use MediaCloud\Vendor\Google\Cloud\Datastore\Connection\ConnectionInterface;
+use MediaCloud\Vendor\Google\Cloud\Datastore\EntityMapper;
+use MediaCloud\Vendor\Google\Cloud\Datastore\Operation;
 
 /**
  * Refresh Datastore operation class

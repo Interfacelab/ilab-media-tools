@@ -75,7 +75,7 @@ class BatchOperationMetadata extends \MediaCloud\Vendor\Google\Protobuf\Internal
      */
     public function setState($var)
     {
-        GPBUtil::checkEnum($var, \MediaCloud\Vendor\Google\Cloud\Vision\V1\BatchOperationMetadata_State::class);
+        GPBUtil::checkEnum($var, \MediaCloud\Vendor\Google\Cloud\Vision\V1\BatchOperationMetadata\State::class);
         $this->state = $var;
 
         return $this;
@@ -85,11 +85,21 @@ class BatchOperationMetadata extends \MediaCloud\Vendor\Google\Protobuf\Internal
      * The time when the batch request was submitted to the server.
      *
      * Generated from protobuf field <code>.google.protobuf.Timestamp submit_time = 2;</code>
-     * @return \MediaCloud\Vendor\Google\Protobuf\Timestamp
+     * @return \MediaCloud\Vendor\Google\Protobuf\Timestamp|null
      */
     public function getSubmitTime()
     {
         return $this->submit_time;
+    }
+
+    public function hasSubmitTime()
+    {
+        return isset($this->submit_time);
+    }
+
+    public function clearSubmitTime()
+    {
+        unset($this->submit_time);
     }
 
     /**
@@ -112,11 +122,21 @@ class BatchOperationMetadata extends \MediaCloud\Vendor\Google\Protobuf\Internal
      * [google.longrunning.Operation.done][google.longrunning.Operation.done] is set to true.
      *
      * Generated from protobuf field <code>.google.protobuf.Timestamp end_time = 3;</code>
-     * @return \MediaCloud\Vendor\Google\Protobuf\Timestamp
+     * @return \MediaCloud\Vendor\Google\Protobuf\Timestamp|null
      */
     public function getEndTime()
     {
         return $this->end_time;
+    }
+
+    public function hasEndTime()
+    {
+        return isset($this->end_time);
+    }
+
+    public function clearEndTime()
+    {
+        unset($this->end_time);
     }
 
     /**

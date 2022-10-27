@@ -2,7 +2,7 @@
 // GENERATED CODE -- DO NOT EDIT!
 
 // Original file comments:
-// Copyright 2019 Google LLC.
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 //
 
 namespace MediaCloud\Vendor\Google\Cloud\Vision\V1;
@@ -41,7 +40,7 @@ class ImageAnnotatorGrpcClient extends \MediaCloud\Vendor\Grpc\BaseStub {
      * @param \MediaCloud\Vendor\Google\Cloud\Vision\V1\BatchAnnotateImagesRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\BatchAnnotateImagesResponse
+     * @return \MediaCloud\Vendor\Grpc\UnaryCall
      */
     public function BatchAnnotateImages(\MediaCloud\Vendor\Google\Cloud\Vision\V1\BatchAnnotateImagesRequest $argument,
       $metadata = [], $options = []) {
@@ -62,7 +61,7 @@ class ImageAnnotatorGrpcClient extends \MediaCloud\Vendor\Grpc\BaseStub {
      * @param \MediaCloud\Vendor\Google\Cloud\Vision\V1\BatchAnnotateFilesRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\BatchAnnotateFilesResponse
+     * @return \MediaCloud\Vendor\Grpc\UnaryCall
      */
     public function BatchAnnotateFiles(\MediaCloud\Vendor\Google\Cloud\Vision\V1\BatchAnnotateFilesRequest $argument,
       $metadata = [], $options = []) {
@@ -85,7 +84,7 @@ class ImageAnnotatorGrpcClient extends \MediaCloud\Vendor\Grpc\BaseStub {
      * @param \MediaCloud\Vendor\Google\Cloud\Vision\V1\AsyncBatchAnnotateImagesRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \MediaCloud\Vendor\Google\LongRunning\Operation
+     * @return \MediaCloud\Vendor\Grpc\UnaryCall
      */
     public function AsyncBatchAnnotateImages(\MediaCloud\Vendor\Google\Cloud\Vision\V1\AsyncBatchAnnotateImagesRequest $argument,
       $metadata = [], $options = []) {
@@ -105,7 +104,7 @@ class ImageAnnotatorGrpcClient extends \MediaCloud\Vendor\Grpc\BaseStub {
      * @param \MediaCloud\Vendor\Google\Cloud\Vision\V1\AsyncBatchAnnotateFilesRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \MediaCloud\Vendor\Google\LongRunning\Operation
+     * @return \MediaCloud\Vendor\Grpc\UnaryCall
      */
     public function AsyncBatchAnnotateFiles(\MediaCloud\Vendor\Google\Cloud\Vision\V1\AsyncBatchAnnotateFilesRequest $argument,
       $metadata = [], $options = []) {

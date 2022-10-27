@@ -18,8 +18,6 @@ namespace MediaCloud\Plugin\Tools\Storage;
 
 use MediaCloud\Plugin\Tasks\TaskReporter;
 use MediaCloud\Plugin\Tools\Debugging\DebuggingToolSettings;
-use MediaCloud\Plugin\Tools\Storage\Driver\S3\S3StorageSettings;
-use MediaCloud\Plugin\Utilities\Environment;
 use MediaCloud\Plugin\Utilities\Logging\Logger;
 use function MediaCloud\Plugin\Utilities\anyEmpty;
 use function MediaCloud\Plugin\Utilities\arrayPath;
@@ -27,6 +25,9 @@ use function MediaCloud\Plugin\Utilities\arrayPath;
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
 class StorageContentHooks {
+	/** @var array */
+	private static $customizedMedia = [];
+
 	/** @var null|array */
 	protected $allSizes = null;
 
@@ -107,6 +108,18 @@ class StorageContentHooks {
 
 			return $sizes;
 		});
+
+
+		add_filter('wp_generate_attachment_metadata', function($metadata, $attachment_id, $mode) {
+			static::$customizedMedia[$attachment_id] = $metadata;
+			return $metadata;
+		}, 0, 3);
+
+		add_action('customize_save_after', function() {
+			foreach(static::$customizedMedia as $attachmentId => $metadata) {
+				StorageUtilities::instance()->fixMetadata($attachmentId, arrayPath($metadata, 'sizes', []));
+			}
+		}, PHP_INT_MAX);
 	}
 
 	//region Gutenberg Filtering

@@ -340,10 +340,15 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
 		$params = $this->buildImgixParams($params, $mimetype);
 		$params = apply_filters('media-cloud/dynamic-images/filter-parameters', $params, $size, $id, $meta);
 
-		$imageFile = (isset($meta['s3'])) ? $meta['s3']['key'] : $meta['file'];
+		if (($mimetype === 'application/pdf') && (!empty(arrayPath($meta, 'sizes/full/s3')))) {
+			$imageFile = arrayPath($meta, 'sizes/full/s3/key');
+		} else {
+			$imageFile = (isset($meta['s3'])) ? $meta['s3']['key'] : $meta['file'];
+		}
 
+		$doNotUrlEncode = apply_filters('media-cloud/dynamic-images/do-not-url-encode', $this->settings->doNotUrlEncode);
 		$result = [
-			$imgix->createURL(str_replace(['%2F', '%2540', '%40'], ['/', '@', '@'], urlencode($imageFile)), $params),
+			$imgix->createURL(str_replace(['%2F', '%2540', '%40'], ['/', '@', '@'], $doNotUrlEncode ? $imageFile : urlencode($imageFile)), $params),
 			$size[0],
 			$size[1]
 		];
@@ -410,13 +415,13 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
 
 		$mimetype = get_post_mime_type($id);
 
-		if (!$this->settings->renderPDF && ($mimetype == 'image/svg+xml')) {
+		if (!$this->settings->renderSVG && ($mimetype == 'image/svg+xml')) {
 			return false;
 		}
 
-		if (!$this->settings->renderSVG && ($mimetype == 'application/pdf')) {
-			return false;
-		}
+//		if (!$this->settings->renderPDF && ($mimetype == 'application/pdf')) {
+//			return false;
+//		}
 
 		$meta = wp_get_attachment_metadata($id);
 		if(!$meta || empty($meta)) {
@@ -452,6 +457,13 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
 			$imgix->setIncludeLibraryParam(false);
 		}
 
+		if (($mimetype === 'application/pdf') && (!empty(arrayPath($meta, 'sizes/full/s3')))) {
+			if(!isset($meta['width']) || !isset($meta['height'])) {
+				$meta['width'] = isset($meta['width']) ? $meta['width'] : arrayPath($meta, 'sizes/full/width');
+				$meta['height'] = isset($meta['height']) ? $meta['height'] : arrayPath($meta, 'sizes/full/height');
+			}
+		}
+
 		if($size == 'full' && !$newSize) {
 			if(!isset($meta['width']) || !isset($meta['height'])) {
 				return false;
@@ -480,12 +492,17 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
 
 				update_post_meta($id, '_wp_attachment_metadata', $meta);
 			} else {
-				$imageFile = (isset($meta['s3']['key'])) ? $meta['s3']['key'] : $meta['file'];
+				if (($mimetype === 'application/pdf') && (!empty(arrayPath($meta, 'sizes/full/s3')))) {
+					$imageFile = arrayPath($meta, 'sizes/full/s3/key');
+				} else {
+					$imageFile = (isset($meta['s3']['key'])) ? $meta['s3']['key'] : $meta['file'];
+				}
 			}
 
 
+			$doNotUrlEncode = apply_filters('media-cloud/dynamic-images/do-not-url-encode', $this->settings->doNotUrlEncode);
 			$result = [
-				$imgix->createURL(str_replace(['%2F', '%2540', '%40'], ['/', '@', '@'], urlencode($imageFile)), ($skipParams) ? [] : $params),
+				$imgix->createURL(str_replace(['%2F', '%2540', '%40'], ['/', '@', '@'], $doNotUrlEncode ? $imageFile : urlencode($imageFile)), ($skipParams) ? [] : $params),
 				$meta['width'],
 				$meta['height'],
 				false
@@ -709,7 +726,11 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
 
 			update_post_meta($id, '_wp_attachment_metadata', $meta);
 		} else {
-			$imageFile = (isset($meta['s3']['key'])) ? $meta['s3']['key'] : $meta['file'];
+			if (($mimetype === 'application/pdf') && (!empty(arrayPath($meta, 'sizes/full/s3')))) {
+				$imageFile = arrayPath($meta, 'sizes/full/s3/key');
+			} else {
+				$imageFile = (isset($meta['s3']['key'])) ? $meta['s3']['key'] : $meta['file'];
+			}
 		}
 
 		$result = [
@@ -734,7 +755,8 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
 			$imgix->setIncludeLibraryParam(false);
 		}
 
-		return $imgix->createURL(str_replace(['%2F', '%2540', '%40'], ['/', '@', '@'], urlencode($key)), $params);
+		$doNotUrlEncode = apply_filters('media-cloud/dynamic-images/do-not-url-encode', $this->settings->doNotUrlEncode);
+		return $imgix->createURL(str_replace(['%2F', '%2540', '%40'], ['/', '@', '@'], $doNotUrlEncode ? $key : urlencode($key)), $params);
 	}
 
 	public function fixCleanedUrls($good_protocol_url, $original_url, $context) {
@@ -1110,7 +1132,7 @@ class ImgixTool extends DynamicImagesTool implements ConfiguresWizard {
 				->select('Complete', 'imgix setup is now complete!')
 					->group('wizard.imgix.success', 'select-buttons')
 						->option('other-features', 'Explore Other Features', null, null, null, null, 'admin:admin.php?page=media-cloud')
-						->option('advanced-imgix-settings', 'Finish &amp; Exit Wizard', null, null, null, null, 'admin:admin.php?page=media-cloud-settings-imgix')
+						->option('advanced-imgix-settings', 'Finish & Exit Wizard', null, null, null, null, 'admin:admin.php?page=media-cloud-settings-imgix')
 					->endGroup()
 				->endStep();
 

@@ -95,10 +95,10 @@ class Optimizer {
         $data = array(
             'image' => curl_file_create( $image ),
             'data'  => json_encode(
-                array(
+	            (object)array(
                     'aggressive' => ( 'aggressive' === $options['level'] ) ? true : false,
                     'ultra'      => ( 'ultra' === $options['level'] ) ? true : false,
-                    'resize'     => $options['resize'],
+                    'resize'     => (object)$options['resize'],
                     'keep_exif'  => $options['keep_exif'],
                 ) 
             )

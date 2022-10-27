@@ -4,11 +4,12 @@ namespace MediaCloud\Vendor\ParagonIE\EasyRSA;
 
 class PublicKey
 {
+    /** @var string $keyMaterial */
     protected $keyMaterial = '';
 
     /**
      * PrivateKey constructor.
-     * @param $string
+     * @param string $string
      */
     public function __construct($string)
     {

@@ -3,14 +3,14 @@
 namespace MediaCloud\Vendor\Illuminate\Support;
 
 /**
- * @mixin \MediaCloud\Vendor\Illuminate\Support\Collection
+ * @mixin \MediaCloud\Vendor\Illuminate\Support\Enumerable
  */
 class HigherOrderCollectionProxy
 {
     /**
      * The collection being operated on.
      *
-     * @var \MediaCloud\Vendor\Illuminate\Support\Collection
+     * @var \MediaCloud\Vendor\Illuminate\Support\Enumerable
      */
     protected $collection;
 
@@ -24,11 +24,11 @@ class HigherOrderCollectionProxy
     /**
      * Create a new proxy instance.
      *
-     * @param \MediaCloud\Vendor\Illuminate\Support\Collection  $collection
+     * @param \MediaCloud\Vendor\Illuminate\Support\Enumerable  $collection
      * @param  string  $method
      * @return void
      */
-    public function __construct(Collection $collection, $method)
+    public function __construct(Enumerable $collection, $method)
     {
         $this->method = $method;
         $this->collection = $collection;

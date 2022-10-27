@@ -13,7 +13,7 @@ namespace MediaCloud\Vendor\Symfony\Component\Translation\Dumper;
 use MediaCloud\Vendor\Symfony\Component\Translation\Exception\LogicException;
 use MediaCloud\Vendor\Symfony\Component\Translation\MessageCatalogue;
 use MediaCloud\Vendor\Symfony\Component\Translation\Util\ArrayConverter;
-use Symfony\Component\Yaml\Yaml;
+use MediaCloud\Vendor\Symfony\Component\Yaml\Yaml;
 
 /**
  * YamlFileDumper generates yaml files from a message catalogue.
@@ -24,7 +24,7 @@ class YamlFileDumper extends FileDumper
 {
     private $extension;
 
-    public function __construct(/**string */$extension = 'yml')
+    public function __construct(string $extension = 'yml')
     {
         $this->extension = $extension;
     }
@@ -32,9 +32,9 @@ class YamlFileDumper extends FileDumper
     /**
      * {@inheritdoc}
      */
-    public function formatCatalogue(MessageCatalogue $messages, $domain, array $options = [])
+    public function formatCatalogue(MessageCatalogue $messages, string $domain, array $options = [])
     {
-        if (!class_exists('Symfony\Component\Yaml\Yaml')) {
+        if (!class_exists(Yaml::class)) {
             throw new LogicException('Dumping translations in the YAML format requires the Symfony Yaml component.');
         }
 

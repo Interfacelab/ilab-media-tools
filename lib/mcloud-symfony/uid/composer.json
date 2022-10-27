@@ -1,0 +1,43 @@
+{
+    "name": "mcloud-symfony/uid",
+    "type": "library",
+    "description": "Provides an object-oriented API to generate and represent UIDs",
+    "keywords": [
+        "uid",
+        "uuid",
+        "ulid"
+    ],
+    "homepage": "https://symfony.com",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Gr\u00e9goire Pineau",
+            "email": "lyrixx@lyrixx.info"
+        },
+        {
+            "name": "Nicolas Grekas",
+            "email": "p@tchwork.com"
+        },
+        {
+            "name": "Symfony Community",
+            "homepage": "https://symfony.com/contributors"
+        }
+    ],
+    "require": {
+        "php": ">=7.2.5",
+        "mcloud-symfony/polyfill-uuid": "v1.24.0"
+    },
+    "require-dev": {
+        "symfony/console": "^4.4|^5.0|^6.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "MediaCloud\\Vendor\\Symfony\\Component\\Uid\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
+    },
+    "minimum-stability": "dev",
+    "version": "v5.4.3"
+}

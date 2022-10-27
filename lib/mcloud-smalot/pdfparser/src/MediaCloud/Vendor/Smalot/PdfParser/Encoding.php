@@ -29,7 +29,12 @@
  */
 
 namespace MediaCloud\Vendor\Smalot\PdfParser;
+
+use Exception;
 use MediaCloud\Vendor\Smalot\PdfParser\Element\ElementNumeric;
+use MediaCloud\Vendor\Smalot\PdfParser\Encoding\EncodingLocator;
+use MediaCloud\Vendor\Smalot\PdfParser\Encoding\PostScriptGlyphs;
+use MediaCloud\Vendor\Smalot\PdfParser\Exception\EncodingNotFoundException;
 
 /**
  * Class Encoding
@@ -58,16 +63,7 @@ class Encoding extends PDFObject
         $this->encoding = [];
 
         if ($this->has('BaseEncoding')) {
-            // Load reference table charset.
-            $baseEncoding = preg_replace('/[^A-Z0-9]/is', '', $this->get('BaseEncoding')->getContent());
-            $className = '\MediaCloud\\Vendor\\Smalot\PdfParser\\Encoding\\'.$baseEncoding;
-
-            if (!class_exists($className)) {
-                throw new \Exception('Missing encoding data for: "'.$baseEncoding.'".');
-            }
-
-            $class = new $className();
-            $this->encoding = $class->getTranslations();
+            $this->encoding = EncodingLocator::getEncoding($this->getEncodingClass())->getTranslations();
 
             // Build table including differences.
             $differences = $this->get('Differences')->getContent();
@@ -94,20 +90,15 @@ class Encoding extends PDFObject
                 ++$code;
             }
 
-            // Build final mapping (custom => standard).
-            $table = array_flip(array_reverse($this->encoding, true));
-
+            $this->mapping = $this->encoding;
             foreach ($this->differences as $code => $difference) {
                 /* @var string $difference */
-                $this->mapping[$code] = (isset($table[$difference]) ? $table[$difference] : Font::MISSING);
+                $this->mapping[$code] = $difference;
             }
         }
     }
 
-    /**
-     * @return array
-     */
-    public function getDetails($deep = true)
+    public function getDetails(bool $deep = true): array
     {
         $details = [];
 
@@ -119,15 +110,46 @@ class Encoding extends PDFObject
         return $details;
     }
 
-    /**
-     * @return int
-     */
-    public function translateChar($dec)
+    public function translateChar($dec): ?int
     {
         if (isset($this->mapping[$dec])) {
             $dec = $this->mapping[$dec];
         }
 
-        return $dec;
+        return PostScriptGlyphs::getCodePoint($dec);
+    }
+
+    /**
+     * Returns encoding class name if available or empty string (only prior PHP 7.4).
+     *
+     * @throws \Exception On PHP 7.4+ an exception is thrown if encoding class doesn't exist.
+     */
+    public function __toString(): string
+    {
+        try {
+            return $this->getEncodingClass();
+        } catch (Exception $e) {
+            // prior to PHP 7.4 toString has to return an empty string.
+            if (version_compare(\PHP_VERSION, '7.4.0', '<')) {
+                return '';
+            }
+            throw $e;
+        }
+    }
+
+    /**
+     * @throws EncodingNotFoundException
+     */
+    protected function getEncodingClass(): string
+    {
+        // Load reference table charset.
+        $baseEncoding = preg_replace('/[^A-Z0-9]/is', '', $this->get('BaseEncoding')->getContent());
+        $className = '\MediaCloud\\Vendor\\Smalot\PdfParser\\Encoding\\'.$baseEncoding;
+
+        if (!class_exists($className)) {
+            throw new EncodingNotFoundException('Missing encoding data for: "'.$baseEncoding.'".');
+        }
+
+        return $className;
     }
 }

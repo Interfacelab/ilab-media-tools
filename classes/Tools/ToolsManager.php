@@ -196,6 +196,7 @@ final class ToolsManager
                 'mcloud-no-mbstring'
             );
         }
+        //	    NoticeManager::instance()->displayAdminNotice('info', "The team behind Media Cloud is launching a new product in April 2022 that's going to change the way you work with media in WordPress.  <a href='https://preflight.ju.mp/' target='_blank'>Sign up</a> to be notified when <a href='https://preflight.ju.mp/' target='_blank'><strong>Preflight for WordPress</strong></a> is released.", true, 'mcloud-preflight-beta-sales-pitch', 10 * 365);
         add_action( 'admin_enqueue_scripts', function () {
             wp_enqueue_script(
                 'mcloud-admin-js',
@@ -280,6 +281,9 @@ final class ToolsManager
         foreach ( $this->tools as $key => $tool ) {
             $tool->setup();
         }
+        if ( is_admin() ) {
+            $this->hookMediaDetailButtons();
+        }
         do_action( 'mediacloud/tasks/register' );
         //        MigrationsManager::instance()->displayMigrationErrors();
     }
@@ -329,6 +333,7 @@ final class ToolsManager
             ToolsManager::registerTool( "storage", include ILAB_CONFIG_DIR . '/storage.config.php' );
             ToolsManager::registerTool( "imgix", include ILAB_CONFIG_DIR . '/imgix.config.php' );
             ToolsManager::registerTool( "video-encoding", include ILAB_CONFIG_DIR . '/video-encoding.config.php' );
+            ToolsManager::registerTool( "video-player", include ILAB_CONFIG_DIR . '/video-player.config.php' );
             ToolsManager::registerTool( "vision", include ILAB_CONFIG_DIR . '/vision.config.php' );
             ToolsManager::registerTool( "crop", include ILAB_CONFIG_DIR . '/crop.config.php' );
             ToolsManager::registerTool( "debugging", include ILAB_CONFIG_DIR . '/debugging.config.php' );
@@ -695,7 +700,7 @@ final class ToolsManager
             'Documentation',
             'Documentation',
             'manage_options',
-            'https://support.mediacloud.press/'
+            'https://docs.mediacloud.press/'
         );
         if ( media_cloud_licensing()->is_plan( 'pro' ) ) {
             add_submenu_page(
@@ -703,9 +708,10 @@ final class ToolsManager
                 'Submit Issue',
                 'Submit Issue',
                 'manage_options',
-                'https://support.mediacloud.press/submit-issue/'
+                'https://support.mediacloud.press/'
             );
         }
+        //		add_submenu_page('media-cloud', 'Preflight Beta', 'Preflight Beta', 'manage_options', 'https://preflight.ju.mp');
         foreach ( $this->tools as $key => $tool ) {
             $tool->registerHelpMenu( 'media-cloud', $networkMode, $networkAdminMenu );
         }
@@ -1061,6 +1067,149 @@ final class ToolsManager
             'status' => ( $pinned ? 'pinned' : 'unpinned' ),
             'link'   => admin_url( "admin.php?page=media-cloud-settings&tool={$tool}" ),
         ] );
+    }
+    
+    //endregion
+    //region Media Library UI
+    private function hookMediaDetailButtons()
+    {
+        add_action( 'wp_enqueue_media', function () {
+            remove_action( 'admin_footer', 'wp_print_media_templates' );
+            add_action( 'admin_footer', function () {
+                $mediaButtons = apply_filters( 'mediacloud/ui/media-detail-buttons', [] );
+                $mediaLinks = apply_filters( 'mediacloud/ui/media-detail-links', [] );
+                $toRemove = apply_filters( 'mediacloud/ui/media-detail-remove', [] );
+                $renderedButtons = [];
+                foreach ( $mediaButtons as $button ) {
+                    $dataAttrs = '';
+                    if ( isset( $button['data'] ) ) {
+                        foreach ( $button['data'] as $key => $value ) {
+                            $dataAttrs .= "data-{$key}='{$value}' ";
+                        }
+                    }
+                    $thickbox = ( arrayPath( $button, 'thickbox', true ) === true ? 'ilab-thickbox' : '' );
+                    $classes = arrayPath( $button, 'class', '' );
+                    $style = arrayPath( $button, 'style', '' );
+                    
+                    if ( arrayPath( $button, 'button_type', 'link' ) === 'button' ) {
+                        $buttonHTML = "<button type='button' {$dataAttrs} class='button {$classes}' style='{$style}'>{$button['label']}</button>";
+                    } else {
+                        $buttonHTML = "<a href='{$button['url']}' {$dataAttrs} class='{$thickbox} button {$classes}' style='{$style}'>{$button['label']}</a>";
+                    }
+                    
+                    if ( $button['type'] !== 'any' ) {
+                        
+                        if ( isset( $button['cloudonly'] ) && $button['cloudonly'] === true ) {
+                            $buttonHTML = "<# if (data.s3 && data.type === '{$button['type']}') { #>\\n{$buttonHTML}\\n<# } #>";
+                        } else {
+                            $buttonHTML = "<# if (data.type === '{$button['type']}') { #>\\n{$buttonHTML}\\n<# } #>";
+                        }
+                    
+                    }
+                    $renderedButtons[] = $buttonHTML;
+                }
+                $mediaButtonsHTML = implode( ' ', $renderedButtons );
+                $renderedLinks = [];
+                foreach ( $mediaLinks as $link ) {
+                    $classes = arrayPath( $link, 'class', '' );
+                    $style = arrayPath( $link, 'style', '' );
+                    $dataAttrs = '';
+                    if ( isset( $link['data'] ) ) {
+                        foreach ( $link['data'] as $key => $value ) {
+                            $dataAttrs .= "data-{$key}='{$value}' ";
+                        }
+                    }
+                    $thickbox = ( arrayPath( $link, 'thickbox', true ) === true ? 'ilab-thickbox' : '' );
+                    $linkHTML = "<a href='{$link['url']}' {$dataAttrs} class='{$thickbox} {$classes}' style='{$style}'>{$link['label']}</a> <span class='links-separator'>|</span>";
+                    if ( $link['type'] !== 'any' ) {
+                        
+                        if ( isset( $link['cloudonly'] ) && $link['cloudonly'] === true ) {
+                            $linkHTML = "<# if (data.s3 && data.type === '{$link['type']}') { #>\\n{$linkHTML}\\n<# } #>";
+                        } else {
+                            $linkHTML = "<# if (data.type === '{$link['type']}') { #>\\n{$linkHTML}\\n<# } #>";
+                        }
+                    
+                    }
+                    $renderedLinks[] = $linkHTML;
+                }
+                $mediaLinksHTML = implode( '', $renderedLinks );
+                $detailLinks = [];
+                foreach ( $mediaLinks as $link ) {
+                    $classes = arrayPath( $link, 'class', '' );
+                    $style = arrayPath( $link, 'style', '' );
+                    $dataAttrs = '';
+                    if ( isset( $link['data'] ) ) {
+                        foreach ( $link['data'] as $key => $value ) {
+                            $dataAttrs .= "data-{$key}='{$value}' ";
+                        }
+                    }
+                    $linkHTML = "<a href='{$link['url']}' {$dataAttrs} class='ilab-thickbox {$classes}' style='display: block; {$style}'>{$link['label']}</a>";
+                    if ( $link['type'] !== 'any' ) {
+                        $linkHTML = "<# if (data.type === '{$link['type']}') { #>\\n{$linkHTML}\\n<# } #>";
+                    }
+                    $detailLinks[] = $linkHTML;
+                }
+                $mediaDetailLinksHTML = implode( "\\n", $detailLinks );
+                ob_start();
+                wp_print_media_templates();
+                $result = ob_get_clean();
+                echo  $result ;
+                ob_start();
+                ?>
+                <script>
+                    jQuery(document).ready(function() {
+                        <?php 
+                do_action( 'mediacloud/ui/media-detail-buttons-extra' );
+                ?>
+
+                        let attachTemplate=jQuery('#tmpl-attachment-details-two-column');
+                        let attachTemplateText = attachTemplate.text();
+                        let attachTemplateInteriorMatch = /<div class="actions">(.*?)<\/div>/gms.exec(attachTemplateText);
+                        let attachTemplateButtonText = attachTemplateInteriorMatch[1];
+                        <?php 
+                foreach ( $toRemove as $remove ) {
+                    ?>
+                        attachTemplateButtonText = attachTemplateButtonText.replace(<?php 
+                    echo  $remove ;
+                    ?>, '');
+                        <?php 
+                }
+                ?>
+                        attachTemplateText = attachTemplateText.replace(attachTemplateInteriorMatch[1], "<?php 
+                echo  str_replace( '__ID__', '{{ data.id }}', $mediaLinksHTML ) ;
+                ?>"+attachTemplateButtonText);
+
+                        attachTemplateInteriorMatch = /<div class="attachment-actions">(.*?)<\/div>/gms.exec(attachTemplateText);
+                        attachTemplateButtonText = attachTemplateInteriorMatch[1];
+	                    <?php 
+                foreach ( $toRemove as $remove ) {
+                    ?>
+                        attachTemplateButtonText = attachTemplateButtonText.replace(<?php 
+                    echo  $remove ;
+                    ?>, '');
+	                    <?php 
+                }
+                ?>
+                        attachTemplateText = attachTemplateText.replace(attachTemplateInteriorMatch[1], "<?php 
+                echo  str_replace( '__ID__', '{{ data.id }}', $mediaButtonsHTML ) ;
+                ?>"+attachTemplateButtonText);
+
+                        attachTemplate.text(attachTemplateText);
+
+                        attachTemplate=jQuery('#tmpl-attachment-details');
+                        if (attachTemplate)
+                        {
+                            attachTemplate.text(attachTemplate.text().replace(/(<a class="(?:.*)edit-attachment(?:.*)"[^>]+[^<]+<\/a>)/, "<?php 
+                echo  $mediaDetailLinksHTML ;
+                ?>"));
+                        }
+                    });
+                </script>
+			    <?php 
+                $result = ob_get_clean();
+                echo  $result ;
+            }, PHP_INT_MAX );
+        } );
     }
 
 }

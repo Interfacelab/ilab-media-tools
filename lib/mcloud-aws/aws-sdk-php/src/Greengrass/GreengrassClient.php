@@ -113,6 +113,8 @@ use MediaCloud\Vendor\Aws\AwsClient;
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise getSubscriptionDefinitionAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result getSubscriptionDefinitionVersion(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise getSubscriptionDefinitionVersionAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result getThingRuntimeConfiguration(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise getThingRuntimeConfigurationAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result listBulkDeploymentDetailedReports(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listBulkDeploymentDetailedReportsAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result listBulkDeployments(array $args = [])
@@ -185,5 +187,7 @@ use MediaCloud\Vendor\Aws\AwsClient;
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise updateResourceDefinitionAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result updateSubscriptionDefinition(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise updateSubscriptionDefinitionAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result updateThingRuntimeConfiguration(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise updateThingRuntimeConfigurationAsync(array $args = [])
  */
 class GreengrassClient extends AwsClient {}

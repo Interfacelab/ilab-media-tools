@@ -8,12 +8,12 @@ class CronType
         'Every', 'Increment', 'Multiple', 'Once',
     ];
 
-    public $type;
-    public $value;
-    public $count;
-    public $increment;
+    public string $type;
+    public ?int $value;
+    public ?int $count;
+    public ?int $increment;
 
-    private function __construct($type, $value = null, $count = null, $increment = null)
+    private function __construct(string $type, ?int $value = null, ?int $count = null, ?int $increment = null)
     {
         $this->type = $type;
         $this->value = $value;
@@ -21,27 +21,30 @@ class CronType
         $this->increment = $increment;
     }
 
-    public static function every()
+    public static function every(): CronType
     {
         return new static('Every');
     }
 
-    public static function increment($increment, $count = 1)
+    public static function increment(int $increment, int $count = 1): CronType
     {
         return new static('Increment', null, $count, $increment);
     }
 
-    public static function multiple($count)
+    public static function multiple(int $count): CronType
     {
         return new static('Multiple', null, $count);
     }
 
-    public static function once($value)
+    public static function once(int $value): CronType
     {
         return new static('Once', $value);
     }
 
-    public static function parse($expression)
+    /**
+     * @throws CronParsingException
+     */
+    public static function parse(string $expression): CronType
     {
         // Parse "*".
         if ($expression === '*') {
@@ -61,8 +64,8 @@ class CronType
         // Parse ranges of selected values like "1-5".
         if (preg_match("/^([0-9]+)\-([0-9]+)$/", $expression, $matches)) {
             $count = $matches[2] - $matches[1] + 1;
-            return $count > 1 
-                ? static::multiple($count) 
+            return $count > 1
+                ? static::multiple($count)
                 : static::once((int) $matches[1]);
         }
 
@@ -81,7 +84,7 @@ class CronType
         throw new CronParsingException($expression);
     }
 
-    public function hasType()
+    public function hasType(): bool
     {
         return in_array($this->type, func_get_args());
     }

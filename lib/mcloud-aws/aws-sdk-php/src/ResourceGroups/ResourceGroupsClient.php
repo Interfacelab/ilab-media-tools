@@ -23,6 +23,8 @@ use MediaCloud\Vendor\Aws\AwsClient;
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listGroupResourcesAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result listGroups(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listGroupsAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result putGroupConfiguration(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise putGroupConfigurationAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result searchResources(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise searchResourcesAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result tag(array $args = [])

@@ -1,0 +1,48 @@
+{
+    "name": "mcloud-symfony/event-dispatcher-contracts",
+    "type": "library",
+    "description": "Generic abstractions related to dispatching event",
+    "keywords": [
+        "abstractions",
+        "contracts",
+        "decoupling",
+        "interfaces",
+        "interoperability",
+        "standards"
+    ],
+    "homepage": "https://symfony.com",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Nicolas Grekas",
+            "email": "p@tchwork.com"
+        },
+        {
+            "name": "Symfony Community",
+            "homepage": "https://symfony.com/contributors"
+        }
+    ],
+    "require": {
+        "php": ">=7.2.5",
+        "mcloud-psr/event-dispatcher": "1.0.0"
+    },
+    "suggest": {
+        "symfony/event-dispatcher-implementation": ""
+    },
+    "autoload": {
+        "psr-4": {
+            "MediaCloud\\Vendor\\Symfony\\Contracts\\EventDispatcher\\": ""
+        }
+    },
+    "minimum-stability": "dev",
+    "extra": {
+        "branch-alias": {
+            "dev-main": "2.5-dev"
+        },
+        "thanks": {
+            "name": "symfony/contracts",
+            "url": "https://github.com/symfony/contracts"
+        }
+    },
+    "version": "v2.5.0"
+}

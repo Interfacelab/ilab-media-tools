@@ -4,6 +4,7 @@ namespace MediaCloud\Vendor\Aws\Credentials;
 use MediaCloud\Vendor\Aws\Exception\CredentialsException;
 use MediaCloud\Vendor\Aws\Exception\InvalidJsonException;
 use MediaCloud\Vendor\Aws\Sdk;
+use MediaCloud\Vendor\GuzzleHttp\Exception\TransferException;
 use MediaCloud\Vendor\GuzzleHttp\Promise;
 use MediaCloud\Vendor\GuzzleHttp\Exception\RequestException;
 use MediaCloud\Vendor\GuzzleHttp\Psr7\Request;
@@ -68,7 +69,7 @@ class InstanceProfileProvider
      */
     public function __invoke()
     {
-        return Promise\coroutine(function () {
+        return Promise\Coroutine::of(function () {
 
             // Retrieve token or switch out of secure mode
             $token = null;
@@ -81,8 +82,9 @@ class InstanceProfileProvider
                             'x-aws-ec2-metadata-token-ttl-seconds' => 21600
                         ]
                     ));
-                } catch (RequestException $e) {
-                    if (empty($e->getResponse())
+                } catch (TransferException $e) {
+                    if (!method_exists($e, 'getResponse')
+                        || empty($e->getResponse())
                         || !in_array(
                             $e->getResponse()->getStatusCode(),
                             [400, 500, 502, 503, 504]
@@ -118,7 +120,7 @@ class InstanceProfileProvider
                         'GET',
                         $headers
                     ));
-                } catch (RequestException $e) {
+                } catch (TransferException $e) {
                     // 401 indicates insecure flow not supported, switch to
                     // attempting secure mode for subsequent calls
                     if (!empty($this->getExceptionStatusCode($e))
@@ -154,7 +156,7 @@ class InstanceProfileProvider
                             'Invalid JSON response, retries exhausted'
                         )
                     );
-                } catch (RequestException $e) {
+                } catch (TransferException $e) {
                     // 401 indicates insecure flow not supported, switch to
                     // attempting secure mode for subsequent calls
                     if (!empty($this->getExceptionStatusCode($e))
@@ -212,7 +214,7 @@ class InstanceProfileProvider
                 return (string) $response->getBody();
             })->otherwise(function (array $reason) {
                 $reason = $reason['exception'];
-                if ($reason instanceof \MediaCloud\Vendor\GuzzleHttp\Exception\RequestException) {
+                if ($reason instanceof TransferException) {
                     throw $reason;
                 }
                 $msg = $reason->getMessage();

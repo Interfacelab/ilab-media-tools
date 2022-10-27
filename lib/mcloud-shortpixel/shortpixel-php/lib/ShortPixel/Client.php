@@ -5,12 +5,13 @@ namespace MediaCloud\Vendor\ShortPixel;
 
 class Client {
 
-    private $options, $customOptions;
     public static function API_DOMAIN() {
         return "api.shortpixel.com";
-        //* DEVELOPMENT !! */ return "devapi.shortpixel.com";
         //* DEVELOPMENT !! */ return "devapi2.shortpixel.com";
     }
+
+    private $options, $customOptions, $logger;
+
     public static function API_URL() {
         return "https://" . self::API_DOMAIN();
 
@@ -46,6 +47,7 @@ class Client {
 
     function __construct($curlOptions) {
         $this->customOptions = $curlOptions;
+        $this->logger = SPLog::Get(SPLog::PRODUCER_CLIENT);
         $this->options = $curlOptions + array(
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_BINARYTRANSFER => true,
@@ -265,6 +267,7 @@ class Client {
     protected function sendRequest($request, $tries) {
         for($i = 0; $i < $tries; $i++) { //curl_setopt($request, CURLOPT_TIMEOUT, 120);curl_setopt($request, CURLOPT_VERBOSE, true);
             $response = curl_exec($request);
+            $this->logger->log(SPLog::PRODUCER_CLIENT, "RAW RESPONSE: " . $response);
             if(!curl_errno($request)) {
                 break;
             } else {
@@ -308,12 +311,15 @@ class Client {
     protected function prepareJSONRequest($endpoint, $request, $body, $method, $header) {
         //to escape the + from "+webp"
         if(isset($body["convertto"]) && $body["convertto"]) {
-            $body["convertto"] = urlencode($body["convertto"]);
+            $converts = explode('|', $body["convertto"]);
+            $body["convertto"] = implode('|', array_map('urlencode', $converts ));
         }
 //        if(isset($body["urllist"])) {
 //            aici folosim ceva de genul: parse_url si apoi pe partea de path: str_replace('%2F', '/', rawurlencode($this->filePath)
 //            $body["urllist"] = array_map('rawurlencode', $body["urllist"]);
 //        }
+        if(isset($body["buffers"])) unset($body['buffers']);
+        
         $body = json_encode($body);
 
         array_push($header, "Content-Type: application/json");
@@ -471,6 +477,10 @@ class Client {
                 throw new ClientException("File cannot be renamed. Please check rights.", -16);
             }
         } else {
+            $meta = ($actualSize < 200 ? json_decode(file_get_contents($targetTemp)) : false);
+            if(isset($meta->Status->Code) && $meta->Status->Code === '-302') {
+                $this->logger->log(SPLog::PRODUCER_CLIENT, "File is gone on the server, needs to be resent.", $meta);
+            }
             // ATENTIE!!!!! daca s-a oprit aici e un caz de fisier cu dimensiunea diferita, de verificat
             @unlink($targetTemp);
             return -$actualSize; //will retry

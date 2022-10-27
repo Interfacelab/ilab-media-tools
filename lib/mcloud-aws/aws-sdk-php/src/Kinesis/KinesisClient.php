@@ -60,5 +60,7 @@ use MediaCloud\Vendor\Aws\AwsClient;
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise stopStreamEncryptionAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result updateShardCount(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise updateShardCountAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result updateStreamMode(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise updateStreamModeAsync(array $args = [])
  */
 class KinesisClient extends AwsClient {}

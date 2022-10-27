@@ -246,6 +246,7 @@ class vfsStreamDirectory extends vfsStreamAbstractContent implements vfsStreamCo
      *
      * @return  vfsStreamContainerIterator
      */
+    #[\ReturnTypeWillChange]
     public function getIterator()
     {
         return new vfsStreamContainerIterator($this->children);

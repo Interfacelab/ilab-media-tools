@@ -71,7 +71,7 @@ class OperationMetadata extends \MediaCloud\Vendor\Google\Protobuf\Internal\Mess
      */
     public function setState($var)
     {
-        GPBUtil::checkEnum($var, \MediaCloud\Vendor\Google\Cloud\Vision\V1\OperationMetadata_State::class);
+        GPBUtil::checkEnum($var, \MediaCloud\Vendor\Google\Cloud\Vision\V1\OperationMetadata\State::class);
         $this->state = $var;
 
         return $this;
@@ -81,11 +81,21 @@ class OperationMetadata extends \MediaCloud\Vendor\Google\Protobuf\Internal\Mess
      * The time when the batch request was received.
      *
      * Generated from protobuf field <code>.google.protobuf.Timestamp create_time = 5;</code>
-     * @return \MediaCloud\Vendor\Google\Protobuf\Timestamp
+     * @return \MediaCloud\Vendor\Google\Protobuf\Timestamp|null
      */
     public function getCreateTime()
     {
         return $this->create_time;
+    }
+
+    public function hasCreateTime()
+    {
+        return isset($this->create_time);
+    }
+
+    public function clearCreateTime()
+    {
+        unset($this->create_time);
     }
 
     /**
@@ -107,11 +117,21 @@ class OperationMetadata extends \MediaCloud\Vendor\Google\Protobuf\Internal\Mess
      * The time when the operation result was last updated.
      *
      * Generated from protobuf field <code>.google.protobuf.Timestamp update_time = 6;</code>
-     * @return \MediaCloud\Vendor\Google\Protobuf\Timestamp
+     * @return \MediaCloud\Vendor\Google\Protobuf\Timestamp|null
      */
     public function getUpdateTime()
     {
         return $this->update_time;
+    }
+
+    public function hasUpdateTime()
+    {
+        return isset($this->update_time);
+    }
+
+    public function clearUpdateTime()
+    {
+        unset($this->update_time);
     }
 
     /**

@@ -136,7 +136,7 @@ class SyncLocalTask extends AttachmentTask {
 		if (empty($this->reportHeaders)) {
 			$allSizes = ilab_get_image_sizes();
 			$sizeKeys = array_keys($allSizes);
-			$sizeKeys = array_sort($sizeKeys);
+			sort($sizeKeys);
 			$sizeKeysLocal = [];
 			foreach($sizeKeys as $key) {
 				$sizeKeysLocal[] = $key;

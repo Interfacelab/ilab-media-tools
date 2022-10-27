@@ -22,7 +22,7 @@ use MediaCloud\Vendor\Google\Cloud\Core\Timestamp;
 use MediaCloud\Vendor\Google\Cloud\Core\Upload\SignedUrlUploader;
 use MediaCloud\Vendor\Google\Cloud\Storage\Connection\ConnectionInterface;
 use MediaCloud\Vendor\GuzzleHttp\Promise\PromiseInterface;
-use MediaCloud\Vendor\GuzzleHttp\Psr7;
+use MediaCloud\Vendor\GuzzleHttp\Psr7\Utils;
 use MediaCloud\Vendor\Psr\Http\Message\StreamInterface;
 
 /**
@@ -610,9 +610,9 @@ class StorageObject
      */
     public function downloadToFile($path, array $options = [])
     {
-        $destination = Psr7\stream_for(fopen($path, 'w'));
+        $destination = Utils::streamFor(fopen($path, 'w'));
 
-        Psr7\copy_to_stream(
+        Utils::copyToStream(
             $this->downloadAsStream($options),
             $destination
         );

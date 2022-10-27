@@ -92,8 +92,9 @@ class Message
         $pool = DescriptorPool::getGeneratedPool();
         $this->desc = $pool->getDescriptorByClassName(get_class($this));
         if (is_null($this->desc)) {
-            user_error(get_class($this) . " is not found in descriptor pool.");
-            return;
+          throw new \InvalidArgumentException(
+            get_class($this) ." is not found in descriptor pool. " .
+            'Only generated classes may derive from Message.');
         }
         foreach ($this->desc->getField() as $field) {
             $setter = $field->getSetter();
@@ -224,15 +225,28 @@ class Message
         }
     }
 
-    protected function writeOneof($number, $value)
+    protected function hasOneof($number)
     {
         $field = $this->desc->getFieldByNumber($number);
         $oneof = $this->desc->getOneofDecl()[$field->getOneofIndex()];
         $oneof_name = $oneof->getName();
         $oneof_field = $this->$oneof_name;
-        $oneof_field->setValue($value);
-        $oneof_field->setFieldName($field->getName());
-        $oneof_field->setNumber($number);
+        return $number === $oneof_field->getNumber();
+    }
+
+    protected function writeOneof($number, $value)
+    {
+        $field = $this->desc->getFieldByNumber($number);
+        $oneof = $this->desc->getOneofDecl()[$field->getOneofIndex()];
+        $oneof_name = $oneof->getName();
+        if ($value === null) {
+            $this->$oneof_name = new OneofField($oneof);
+        } else {
+            $oneof_field = $this->$oneof_name;
+            $oneof_field->setValue($value);
+            $oneof_field->setFieldName($field->getName());
+            $oneof_field->setNumber($number);
+        }
     }
 
     protected function whichOneof($oneof_name)
@@ -1177,6 +1191,7 @@ class Message
                 $v->mergeFromJsonArray($value, $ignore_unknown);
                 $fields[$key] = $v;
             }
+            return;
         }
         if (is_a($this, "MediaCloud\Vendor\Google\Protobuf\Value")) {
             if (is_bool($array)) {
@@ -1230,7 +1245,13 @@ class Message
             if (is_null($field)) {
                 $field = $this->desc->getFieldByName($key);
                 if (is_null($field)) {
-                    continue;
+                    if ($ignore_unknown) {
+                        continue;
+                    } else {
+                        throw new GPBDecodeException(
+                            $key . ' is unknown.'
+                        );
+                    }
                 }
             }
             if ($field->isMap()) {
@@ -1558,14 +1579,19 @@ class Message
      */
     private function existField($field)
     {
-        $oneof_index = $field->getOneofIndex();
-        if ($oneof_index !== -1) {
-            $oneof = $this->desc->getOneofDecl()[$oneof_index];
-            $oneof_name = $oneof->getName();
-            return $this->$oneof_name->getNumber() === $field->getNumber();
+        $getter = $field->getGetter();
+        $hazzer = "has" . substr($getter, 3);
+
+        if (method_exists($this, $hazzer)) {
+          return $this->$hazzer();
+        } else if ($field->getOneofIndex() !== -1) {
+          // For old generated code, which does not have hazzers for oneof
+          // fields.
+          $oneof = $this->desc->getOneofDecl()[$field->getOneofIndex()];
+          $oneof_name = $oneof->getName();
+          return $this->$oneof_name->getNumber() === $field->getNumber();
         }
 
-        $getter = $field->getGetter();
         $values = $this->$getter();
         if ($field->isMap()) {
             return count($values) !== 0;

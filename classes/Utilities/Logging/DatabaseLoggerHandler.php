@@ -31,7 +31,7 @@ class DatabaseLoggerHandler extends AbstractProcessingHandler {
      * @param  array $record
      * @return void
      */
-    protected function write(array $record) {
+    protected function write(array $record):void {
         $context = '';
         $class = null;
         $method = null;

@@ -41,22 +41,22 @@ class VideoView implements ModelInterface, ArrayAccess
         'preroll_requested' => 'bool',
         'page_type' => 'string',
         'startup_score' => 'string',
-        'view_seek_duration' => 'string',
+        'view_seek_duration' => 'int',
         'country_name' => 'string',
         'player_source_height' => 'int',
         'longitude' => 'string',
-        'buffering_count' => 'string',
-        'video_duration' => 'string',
+        'buffering_count' => 'int',
+        'video_duration' => 'int',
         'player_source_type' => 'string',
         'city' => 'string',
         'view_id' => 'string',
         'platform_description' => 'string',
-        'video_startup_preroll_request_time' => 'string',
+        'video_startup_preroll_request_time' => 'int',
         'viewer_device_name' => 'string',
         'video_series' => 'string',
         'viewer_application_name' => 'string',
         'updated_at' => 'string',
-        'view_total_content_playback_time' => 'string',
+        'view_total_content_playback_time' => 'int',
         'cdn' => 'string',
         'player_instance_id' => 'string',
         'video_language' => 'string',
@@ -67,8 +67,8 @@ class VideoView implements ModelInterface, ArrayAccess
         'playback_score' => 'string',
         'page_url' => 'string',
         'metro' => 'string',
-        'view_max_request_latency' => 'string',
-        'requests_for_first_preroll' => 'string',
+        'view_max_request_latency' => 'int',
+        'requests_for_first_preroll' => 'int',
         'view_total_downscaling' => 'string',
         'latitude' => 'string',
         'player_source_host_name' => 'string',
@@ -78,7 +78,7 @@ class VideoView implements ModelInterface, ArrayAccess
         'player_language' => 'string',
         'page_load_time' => 'int',
         'viewer_device_category' => 'string',
-        'video_startup_preroll_load_time' => 'string',
+        'video_startup_preroll_load_time' => 'int',
         'player_version' => 'string',
         'watch_time' => 'int',
         'player_source_stream_type' => 'string',
@@ -88,14 +88,14 @@ class VideoView implements ModelInterface, ArrayAccess
         'experiment_name' => 'string',
         'viewer_os_version' => 'string',
         'player_preload' => 'bool',
-        'buffering_duration' => 'string',
+        'buffering_duration' => 'int',
         'player_view_count' => 'int',
         'player_software' => 'string',
-        'player_load_time' => 'string',
+        'player_load_time' => 'int',
         'platform_summary' => 'string',
         'video_encoding_variant' => 'string',
         'player_width' => 'int',
-        'view_seek_count' => 'string',
+        'view_seek_count' => 'int',
         'viewer_experience_score' => 'string',
         'view_error_id' => 'int',
         'video_variant_name' => 'string',
@@ -107,7 +107,7 @@ class VideoView implements ModelInterface, ArrayAccess
         'events' => '\MediaCloud\Vendor\MuxPhp\Models\VideoViewEvent[]',
         'player_name' => 'string',
         'view_start' => 'string',
-        'view_average_request_throughput' => 'string',
+        'view_average_request_throughput' => 'int',
         'video_producer' => 'string',
         'error_type_id' => 'int',
         'mux_viewer_id' => 'string',
@@ -118,7 +118,7 @@ class VideoView implements ModelInterface, ArrayAccess
         'video_content_type' => 'string',
         'viewer_os_family' => 'string',
         'player_poster' => 'string',
-        'view_average_request_latency' => 'string',
+        'view_average_request_latency' => 'int',
         'video_variant_id' => 'string',
         'player_source_duration' => 'int',
         'player_source_url' => 'string',
@@ -127,7 +127,7 @@ class VideoView implements ModelInterface, ArrayAccess
         'id' => 'string',
         'short_time' => 'string',
         'rebuffer_percentage' => 'string',
-        'time_to_first_frame' => 'string',
+        'time_to_first_frame' => 'int',
         'viewer_user_id' => 'string',
         'video_stream_type' => 'string',
         'player_startup_time' => 'int',
@@ -141,8 +141,10 @@ class VideoView implements ModelInterface, ArrayAccess
         'player_autoplay' => 'bool',
         'player_height' => 'int',
         'asn' => 'int',
+        'asn_name' => 'string',
         'quality_score' => 'string',
-        'player_software_version' => 'string'
+        'player_software_version' => 'string',
+        'player_mux_plugin_name' => 'string'
     ];
 
     /**
@@ -159,22 +161,22 @@ class VideoView implements ModelInterface, ArrayAccess
         'preroll_requested' => null,
         'page_type' => null,
         'startup_score' => null,
-        'view_seek_duration' => null,
+        'view_seek_duration' => 'int64',
         'country_name' => null,
         'player_source_height' => 'int32',
         'longitude' => null,
-        'buffering_count' => null,
-        'video_duration' => null,
+        'buffering_count' => 'int64',
+        'video_duration' => 'int64',
         'player_source_type' => null,
         'city' => null,
         'view_id' => null,
         'platform_description' => null,
-        'video_startup_preroll_request_time' => null,
+        'video_startup_preroll_request_time' => 'int64',
         'viewer_device_name' => null,
         'video_series' => null,
         'viewer_application_name' => null,
         'updated_at' => null,
-        'view_total_content_playback_time' => null,
+        'view_total_content_playback_time' => 'int64',
         'cdn' => null,
         'player_instance_id' => null,
         'video_language' => null,
@@ -185,8 +187,8 @@ class VideoView implements ModelInterface, ArrayAccess
         'playback_score' => null,
         'page_url' => null,
         'metro' => null,
-        'view_max_request_latency' => null,
-        'requests_for_first_preroll' => null,
+        'view_max_request_latency' => 'int64',
+        'requests_for_first_preroll' => 'int64',
         'view_total_downscaling' => null,
         'latitude' => null,
         'player_source_host_name' => null,
@@ -194,11 +196,11 @@ class VideoView implements ModelInterface, ArrayAccess
         'view_end' => null,
         'mux_embed_version' => null,
         'player_language' => null,
-        'page_load_time' => 'int32',
+        'page_load_time' => 'int64',
         'viewer_device_category' => null,
-        'video_startup_preroll_load_time' => null,
+        'video_startup_preroll_load_time' => 'int64',
         'player_version' => null,
-        'watch_time' => 'int32',
+        'watch_time' => 'int64',
         'player_source_stream_type' => null,
         'preroll_ad_tag_hostname' => null,
         'viewer_device_manufacturer' => null,
@@ -206,14 +208,14 @@ class VideoView implements ModelInterface, ArrayAccess
         'experiment_name' => null,
         'viewer_os_version' => null,
         'player_preload' => null,
-        'buffering_duration' => null,
-        'player_view_count' => 'int32',
+        'buffering_duration' => 'int64',
+        'player_view_count' => 'int64',
         'player_software' => null,
-        'player_load_time' => null,
+        'player_load_time' => 'int64',
         'platform_summary' => null,
         'video_encoding_variant' => null,
         'player_width' => 'int32',
-        'view_seek_count' => null,
+        'view_seek_count' => 'int64',
         'viewer_experience_score' => null,
         'view_error_id' => 'int32',
         'video_variant_name' => null,
@@ -225,7 +227,7 @@ class VideoView implements ModelInterface, ArrayAccess
         'events' => null,
         'player_name' => null,
         'view_start' => null,
-        'view_average_request_throughput' => null,
+        'view_average_request_throughput' => 'int64',
         'video_producer' => null,
         'error_type_id' => 'int32',
         'mux_viewer_id' => null,
@@ -236,31 +238,33 @@ class VideoView implements ModelInterface, ArrayAccess
         'video_content_type' => null,
         'viewer_os_family' => null,
         'player_poster' => null,
-        'view_average_request_latency' => null,
+        'view_average_request_latency' => 'int64',
         'video_variant_id' => null,
-        'player_source_duration' => 'int32',
+        'player_source_duration' => 'int64',
         'player_source_url' => null,
         'mux_api_version' => null,
         'video_title' => null,
         'id' => null,
         'short_time' => null,
         'rebuffer_percentage' => null,
-        'time_to_first_frame' => null,
+        'time_to_first_frame' => 'int64',
         'viewer_user_id' => null,
         'video_stream_type' => null,
-        'player_startup_time' => 'int32',
+        'player_startup_time' => 'int64',
         'viewer_application_version' => null,
         'view_max_downscale_percentage' => null,
         'view_max_upscale_percentage' => null,
         'country_code' => null,
         'used_fullscreen' => null,
         'isp' => null,
-        'property_id' => 'int32',
+        'property_id' => 'int64',
         'player_autoplay' => null,
         'player_height' => 'int32',
-        'asn' => 'int32',
+        'asn' => 'int64',
+        'asn_name' => null,
         'quality_score' => null,
-        'player_software_version' => null
+        'player_software_version' => null,
+        'player_mux_plugin_name' => null
     ];
 
     /**
@@ -398,8 +402,10 @@ class VideoView implements ModelInterface, ArrayAccess
         'player_autoplay' => 'player_autoplay',
         'player_height' => 'player_height',
         'asn' => 'asn',
+        'asn_name' => 'asn_name',
         'quality_score' => 'quality_score',
-        'player_software_version' => 'player_software_version'
+        'player_software_version' => 'player_software_version',
+        'player_mux_plugin_name' => 'player_mux_plugin_name'
     ];
 
     /**
@@ -516,8 +522,10 @@ class VideoView implements ModelInterface, ArrayAccess
         'player_autoplay' => 'setPlayerAutoplay',
         'player_height' => 'setPlayerHeight',
         'asn' => 'setAsn',
+        'asn_name' => 'setAsnName',
         'quality_score' => 'setQualityScore',
-        'player_software_version' => 'setPlayerSoftwareVersion'
+        'player_software_version' => 'setPlayerSoftwareVersion',
+        'player_mux_plugin_name' => 'setPlayerMuxPluginName'
     ];
 
     /**
@@ -634,8 +642,10 @@ class VideoView implements ModelInterface, ArrayAccess
         'player_autoplay' => 'getPlayerAutoplay',
         'player_height' => 'getPlayerHeight',
         'asn' => 'getAsn',
+        'asn_name' => 'getAsnName',
         'quality_score' => 'getQualityScore',
-        'player_software_version' => 'getPlayerSoftwareVersion'
+        'player_software_version' => 'getPlayerSoftwareVersion',
+        'player_mux_plugin_name' => 'getPlayerMuxPluginName'
     ];
 
     /**
@@ -806,8 +816,10 @@ class VideoView implements ModelInterface, ArrayAccess
         $this->container['player_autoplay'] = isset($data['player_autoplay']) ? $data['player_autoplay'] : null;
         $this->container['player_height'] = isset($data['player_height']) ? $data['player_height'] : null;
         $this->container['asn'] = isset($data['asn']) ? $data['asn'] : null;
+        $this->container['asn_name'] = isset($data['asn_name']) ? $data['asn_name'] : null;
         $this->container['quality_score'] = isset($data['quality_score']) ? $data['quality_score'] : null;
         $this->container['player_software_version'] = isset($data['player_software_version']) ? $data['player_software_version'] : null;
+        $this->container['player_mux_plugin_name'] = isset($data['player_mux_plugin_name']) ? $data['player_mux_plugin_name'] : null;
     }
 
     /**
@@ -1029,7 +1041,7 @@ class VideoView implements ModelInterface, ArrayAccess
     /**
      * Gets view_seek_duration
      *
-     * @return string|null
+     * @return int|null
      */
     public function getViewSeekDuration()
     {
@@ -1039,7 +1051,7 @@ class VideoView implements ModelInterface, ArrayAccess
     /**
      * Sets view_seek_duration
      *
-     * @param string|null $view_seek_duration view_seek_duration
+     * @param int|null $view_seek_duration view_seek_duration
      *
      * @return $this
      */
@@ -1125,7 +1137,7 @@ class VideoView implements ModelInterface, ArrayAccess
     /**
      * Gets buffering_count
      *
-     * @return string|null
+     * @return int|null
      */
     public function getBufferingCount()
     {
@@ -1135,7 +1147,7 @@ class VideoView implements ModelInterface, ArrayAccess
     /**
      * Sets buffering_count
      *
-     * @param string|null $buffering_count buffering_count
+     * @param int|null $buffering_count buffering_count
      *
      * @return $this
      */
@@ -1149,7 +1161,7 @@ class VideoView implements ModelInterface, ArrayAccess
     /**
      * Gets video_duration
      *
-     * @return string|null
+     * @return int|null
      */
     public function getVideoDuration()
     {
@@ -1159,7 +1171,7 @@ class VideoView implements ModelInterface, ArrayAccess
     /**
      * Sets video_duration
      *
-     * @param string|null $video_duration video_duration
+     * @param int|null $video_duration video_duration
      *
      * @return $this
      */
@@ -1269,7 +1281,7 @@ class VideoView implements ModelInterface, ArrayAccess
     /**
      * Gets video_startup_preroll_request_time
      *
-     * @return string|null
+     * @return int|null
      */
     public function getVideoStartupPrerollRequestTime()
     {
@@ -1279,7 +1291,7 @@ class VideoView implements ModelInterface, ArrayAccess
     /**
      * Sets video_startup_preroll_request_time
      *
-     * @param string|null $video_startup_preroll_request_time video_startup_preroll_request_time
+     * @param int|null $video_startup_preroll_request_time video_startup_preroll_request_time
      *
      * @return $this
      */
@@ -1389,7 +1401,7 @@ class VideoView implements ModelInterface, ArrayAccess
     /**
      * Gets view_total_content_playback_time
      *
-     * @return string|null
+     * @return int|null
      */
     public function getViewTotalContentPlaybackTime()
     {
@@ -1399,7 +1411,7 @@ class VideoView implements ModelInterface, ArrayAccess
     /**
      * Sets view_total_content_playback_time
      *
-     * @param string|null $view_total_content_playback_time view_total_content_playback_time
+     * @param int|null $view_total_content_playback_time view_total_content_playback_time
      *
      * @return $this
      */
@@ -1653,7 +1665,7 @@ class VideoView implements ModelInterface, ArrayAccess
     /**
      * Gets view_max_request_latency
      *
-     * @return string|null
+     * @return int|null
      */
     public function getViewMaxRequestLatency()
     {
@@ -1663,7 +1675,7 @@ class VideoView implements ModelInterface, ArrayAccess
     /**
      * Sets view_max_request_latency
      *
-     * @param string|null $view_max_request_latency view_max_request_latency
+     * @param int|null $view_max_request_latency view_max_request_latency
      *
      * @return $this
      */
@@ -1677,7 +1689,7 @@ class VideoView implements ModelInterface, ArrayAccess
     /**
      * Gets requests_for_first_preroll
      *
-     * @return string|null
+     * @return int|null
      */
     public function getRequestsForFirstPreroll()
     {
@@ -1687,7 +1699,7 @@ class VideoView implements ModelInterface, ArrayAccess
     /**
      * Sets requests_for_first_preroll
      *
-     * @param string|null $requests_for_first_preroll requests_for_first_preroll
+     * @param int|null $requests_for_first_preroll requests_for_first_preroll
      *
      * @return $this
      */
@@ -1917,7 +1929,7 @@ class VideoView implements ModelInterface, ArrayAccess
     /**
      * Gets video_startup_preroll_load_time
      *
-     * @return string|null
+     * @return int|null
      */
     public function getVideoStartupPrerollLoadTime()
     {
@@ -1927,7 +1939,7 @@ class VideoView implements ModelInterface, ArrayAccess
     /**
      * Sets video_startup_preroll_load_time
      *
-     * @param string|null $video_startup_preroll_load_time video_startup_preroll_load_time
+     * @param int|null $video_startup_preroll_load_time video_startup_preroll_load_time
      *
      * @return $this
      */
@@ -2157,7 +2169,7 @@ class VideoView implements ModelInterface, ArrayAccess
     /**
      * Gets buffering_duration
      *
-     * @return string|null
+     * @return int|null
      */
     public function getBufferingDuration()
     {
@@ -2167,7 +2179,7 @@ class VideoView implements ModelInterface, ArrayAccess
     /**
      * Sets buffering_duration
      *
-     * @param string|null $buffering_duration buffering_duration
+     * @param int|null $buffering_duration buffering_duration
      *
      * @return $this
      */
@@ -2229,7 +2241,7 @@ class VideoView implements ModelInterface, ArrayAccess
     /**
      * Gets player_load_time
      *
-     * @return string|null
+     * @return int|null
      */
     public function getPlayerLoadTime()
     {
@@ -2239,7 +2251,7 @@ class VideoView implements ModelInterface, ArrayAccess
     /**
      * Sets player_load_time
      *
-     * @param string|null $player_load_time player_load_time
+     * @param int|null $player_load_time player_load_time
      *
      * @return $this
      */
@@ -2325,7 +2337,7 @@ class VideoView implements ModelInterface, ArrayAccess
     /**
      * Gets view_seek_count
      *
-     * @return string|null
+     * @return int|null
      */
     public function getViewSeekCount()
     {
@@ -2335,7 +2347,7 @@ class VideoView implements ModelInterface, ArrayAccess
     /**
      * Sets view_seek_count
      *
-     * @param string|null $view_seek_count view_seek_count
+     * @param int|null $view_seek_count view_seek_count
      *
      * @return $this
      */
@@ -2613,7 +2625,7 @@ class VideoView implements ModelInterface, ArrayAccess
     /**
      * Gets view_average_request_throughput
      *
-     * @return string|null
+     * @return int|null
      */
     public function getViewAverageRequestThroughput()
     {
@@ -2623,7 +2635,7 @@ class VideoView implements ModelInterface, ArrayAccess
     /**
      * Sets view_average_request_throughput
      *
-     * @param string|null $view_average_request_throughput view_average_request_throughput
+     * @param int|null $view_average_request_throughput view_average_request_throughput
      *
      * @return $this
      */
@@ -2877,7 +2889,7 @@ class VideoView implements ModelInterface, ArrayAccess
     /**
      * Gets view_average_request_latency
      *
-     * @return string|null
+     * @return int|null
      */
     public function getViewAverageRequestLatency()
     {
@@ -2887,7 +2899,7 @@ class VideoView implements ModelInterface, ArrayAccess
     /**
      * Sets view_average_request_latency
      *
-     * @param string|null $view_average_request_latency view_average_request_latency
+     * @param int|null $view_average_request_latency view_average_request_latency
      *
      * @return $this
      */
@@ -3093,7 +3105,7 @@ class VideoView implements ModelInterface, ArrayAccess
     /**
      * Gets time_to_first_frame
      *
-     * @return string|null
+     * @return int|null
      */
     public function getTimeToFirstFrame()
     {
@@ -3103,7 +3115,7 @@ class VideoView implements ModelInterface, ArrayAccess
     /**
      * Sets time_to_first_frame
      *
-     * @param string|null $time_to_first_frame time_to_first_frame
+     * @param int|null $time_to_first_frame time_to_first_frame
      *
      * @return $this
      */
@@ -3427,6 +3439,30 @@ class VideoView implements ModelInterface, ArrayAccess
     }
 
     /**
+     * Gets asn_name
+     *
+     * @return string|null
+     */
+    public function getAsnName()
+    {
+        return $this->container['asn_name'];
+    }
+
+    /**
+     * Sets asn_name
+     *
+     * @param string|null $asn_name asn_name
+     *
+     * @return $this
+     */
+    public function setAsnName($asn_name)
+    {
+        $this->container['asn_name'] = $asn_name;
+
+        return $this;
+    }
+
+    /**
      * Gets quality_score
      *
      * @return string|null
@@ -3470,6 +3506,30 @@ class VideoView implements ModelInterface, ArrayAccess
     public function setPlayerSoftwareVersion($player_software_version)
     {
         $this->container['player_software_version'] = $player_software_version;
+
+        return $this;
+    }
+
+    /**
+     * Gets player_mux_plugin_name
+     *
+     * @return string|null
+     */
+    public function getPlayerMuxPluginName()
+    {
+        return $this->container['player_mux_plugin_name'];
+    }
+
+    /**
+     * Sets player_mux_plugin_name
+     *
+     * @param string|null $player_mux_plugin_name player_mux_plugin_name
+     *
+     * @return $this
+     */
+    public function setPlayerMuxPluginName($player_mux_plugin_name)
+    {
+        $this->container['player_mux_plugin_name'] = $player_mux_plugin_name;
 
         return $this;
     }

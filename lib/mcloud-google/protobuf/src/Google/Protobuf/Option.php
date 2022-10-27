@@ -23,7 +23,7 @@ class Option extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>string name = 1;</code>
      */
-    private $name = '';
+    protected $name = '';
     /**
      * The option's value packed in an Any message. If the value is a primitive,
      * the corresponding wrapper type defined in google/protobuf/wrappers.proto
@@ -32,7 +32,7 @@ class Option extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>.google.protobuf.Any value = 2;</code>
      */
-    private $value = null;
+    protected $value = null;
 
     /**
      * Constructor.
@@ -95,11 +95,21 @@ class Option extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      * value using the google.protobuf.Int32Value type.
      *
      * Generated from protobuf field <code>.google.protobuf.Any value = 2;</code>
-     * @return \MediaCloud\Vendor\Google\Protobuf\Any
+     * @return \MediaCloud\Vendor\Google\Protobuf\Any|null
      */
     public function getValue()
     {
         return $this->value;
+    }
+
+    public function hasValue()
+    {
+        return isset($this->value);
+    }
+
+    public function clearValue()
+    {
+        unset($this->value);
     }
 
     /**

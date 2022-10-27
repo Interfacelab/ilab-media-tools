@@ -63,6 +63,8 @@ use MediaCloud\Vendor\Aws\AwsClient;
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteVpcLinkAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result exportApi(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise exportApiAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result resetAuthorizersCache(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise resetAuthorizersCacheAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result getApiResource(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise getApiResourceAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result getApiMapping(array $args = [])

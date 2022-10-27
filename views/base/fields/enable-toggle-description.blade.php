@@ -1,7 +1,6 @@
 <p>{!! $tool->toolInfo['description'] !!}</p>
 @if (!empty($tool->toolInfo['dependencies']))
     <p style="font-size:12px; margin-top:5px;">
-        <strong>Requires:</strong>
         <?php
         $required=[];
         $notRequired=[];
@@ -31,9 +30,19 @@
             }
         }
         $required=implode(', ',$required);
-        if (!empty($required) && !empty($notRequired)) {
+        if (!empty($required)) {
+        	$required = '<strong>Requires:</strong> '.$required;
+        }
+
+        if (!empty($notRequired)) {
+        	if (!empty($required)) {
+		        $required .= '&nbsp; &nbsp; ';
+            } else {
+        		$required = '';
+            }
+
             $notRequired=implode(', ',$notRequired);
-            $required .= '&nbsp; &nbsp; <strong>Not compatible:</strong> '.$notRequired;
+            $required .= '<strong>Not compatible:</strong> '.$notRequired;
         }
         ?>
         {!! $required !!}

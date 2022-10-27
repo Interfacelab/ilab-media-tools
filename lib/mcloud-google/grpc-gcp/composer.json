@@ -2,12 +2,11 @@
     "name": "mcloud-google/grpc-gcp",
     "description": "gRPC GCP library for channel management",
     "license": "Apache-2.0",
-    "version": "0.1.5",
     "require": {
         "php": ">=5.5.0",
-        "mcloud-google/protobuf": "v3.13.0",
-        "mcloud-grpc/grpc": "1.30.0",
-        "mcloud-google/auth": "v1.11.1",
+        "mcloud-google/protobuf": "v3.19.4",
+        "mcloud-grpc/grpc": "1.42.0",
+        "mcloud-google/auth": "v1.18.0",
         "mcloud-psr/cache": "1.0.1"
     },
     "require-dev": {
@@ -21,5 +20,6 @@
         "classmap": [
             "src/generated/"
         ]
-    }
+    },
+    "version": "v0.2.0"
 }

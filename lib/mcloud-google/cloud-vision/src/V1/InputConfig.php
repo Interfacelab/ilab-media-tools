@@ -65,11 +65,21 @@ class InputConfig extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      * The Google Cloud Storage location to read the input from.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.GcsSource gcs_source = 1;</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\GcsSource
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\GcsSource|null
      */
     public function getGcsSource()
     {
         return $this->gcs_source;
+    }
+
+    public function hasGcsSource()
+    {
+        return isset($this->gcs_source);
+    }
+
+    public function clearGcsSource()
+    {
+        unset($this->gcs_source);
     }
 
     /**

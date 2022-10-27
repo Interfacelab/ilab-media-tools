@@ -5,7 +5,8 @@ Plugin Name: Media Cloud
 Plugin URI: https://github.com/interfacelab/ilab-media-tools
 Description: Automatically upload media to Amazon S3 and integrate with Imgix, a real-time image processing CDN.  Boosts site performance and simplifies workflows.
 Author: interfacelab
-Version: 4.2.37
+Version: 4.5.3
+Requires PHP: 7.4
 Author URI: http://interfacelab.io
 */
 // Copyright (c) 2016 Interfacelab LLC. All rights reserved.
@@ -94,9 +95,11 @@ if ( defined( 'MEDIA_CLOUD_VERSION' ) ) {
 }
 
 // Version Defines
-define( 'MEDIA_CLOUD_VERSION', '4.2.37' );
+define( 'MEDIA_CLOUD_VERSION', '4.5.3' );
 define( 'MEDIA_CLOUD_INFO_VERSION', '4.0.2' );
 define( 'MCLOUD_IS_BETA', false );
+// Debugging
+define( 'MCLOUD_DEBUGGING', false );
 // Directory defines
 define( 'ILAB_TOOLS_DIR', dirname( __FILE__ ) );
 define( 'ILAB_CONFIG_DIR', ILAB_TOOLS_DIR . '/config' );
@@ -107,6 +110,7 @@ define( 'ILAB_LIB_DIR', ILAB_TOOLS_DIR . '/lib' );
 define( 'ILAB_VIEW_DIR', ILAB_TOOLS_DIR . '/views' );
 define( 'ILAB_PLUGIN_NAME', plugin_basename( __FILE__ ) );
 define( 'ILAB_PUB_IMG_DIR', ILAB_TOOLS_DIR . '/public/img' );
+define( 'ILAB_BLOCKS_DIR', ILAB_TOOLS_DIR . '/public/blocks' );
 // URL defines for CSS/JS
 $plug_url = plugin_dir_url( __FILE__ );
 define( 'ILAB_TOOLS_URL', $plug_url );
@@ -115,6 +119,10 @@ define( 'ILAB_PUB_JS_URL', $plug_url . 'public/js' );
 define( 'ILAB_PUB_CSS_URL', $plug_url . 'public/css' );
 define( 'ILAB_PUB_IMG_URL', $plug_url . 'public/img' );
 define( 'ILAB_BLOCKS_URL', $plug_url . 'public/blocks/' );
+// Mock Ray
+if ( file_exists( ILAB_HELPERS_DIR . '/ray-helper.php' ) ) {
+    require_once ILAB_HELPERS_DIR . '/ray-helper.php';
+}
 // Composer
 if ( file_exists( ILAB_LIB_DIR . '/autoload.php' ) ) {
     require_once ILAB_LIB_DIR . '/autoload.php';

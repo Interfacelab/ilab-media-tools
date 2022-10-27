@@ -57,11 +57,16 @@ class PurgeProductsRequest extends \MediaCloud\Vendor\Google\Protobuf\Internal\M
      * Specify which ProductSet contains the Products to be deleted.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.ProductSetPurgeConfig product_set_purge_config = 2;</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ProductSetPurgeConfig
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ProductSetPurgeConfig|null
      */
     public function getProductSetPurgeConfig()
     {
         return $this->readOneof(2);
+    }
+
+    public function hasProductSetPurgeConfig()
+    {
+        return $this->hasOneof(2);
     }
 
     /**
@@ -89,6 +94,11 @@ class PurgeProductsRequest extends \MediaCloud\Vendor\Google\Protobuf\Internal\M
     public function getDeleteOrphanProducts()
     {
         return $this->readOneof(3);
+    }
+
+    public function hasDeleteOrphanProducts()
+    {
+        return $this->hasOneof(3);
     }
 
     /**

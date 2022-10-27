@@ -1,0 +1,51 @@
+<?php
+
+namespace MediaCloud\Vendor\Aws\VoiceID;
+use MediaCloud\Vendor\Aws\AwsClient;
+
+/**
+ * This client is used to interact with the **Amazon Voice ID** service.
+ * @method \MediaCloud\Vendor\Aws\Result createDomain(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise createDomainAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result deleteDomain(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteDomainAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result deleteFraudster(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteFraudsterAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result deleteSpeaker(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteSpeakerAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result describeDomain(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise describeDomainAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result describeFraudster(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise describeFraudsterAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result describeFraudsterRegistrationJob(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise describeFraudsterRegistrationJobAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result describeSpeaker(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise describeSpeakerAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result describeSpeakerEnrollmentJob(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise describeSpeakerEnrollmentJobAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result evaluateSession(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise evaluateSessionAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listDomains(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listDomainsAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listFraudsterRegistrationJobs(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listFraudsterRegistrationJobsAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listSpeakerEnrollmentJobs(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listSpeakerEnrollmentJobsAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listSpeakers(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listSpeakersAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listTagsForResource(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listTagsForResourceAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result optOutSpeaker(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise optOutSpeakerAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result startFraudsterRegistrationJob(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise startFraudsterRegistrationJobAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result startSpeakerEnrollmentJob(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise startSpeakerEnrollmentJobAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result tagResource(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise tagResourceAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result untagResource(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise untagResourceAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result updateDomain(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise updateDomainAsync(array $args = [])
+ */
+class VoiceIDClient extends AwsClient {}

@@ -23,9 +23,9 @@
     "require": {
         "php": ">=5.5",
         "ext-json": "*",
-        "mcloud-symfony/polyfill-intl-idn": "v1.18.1",
-        "mcloud-guzzlehttp/promises": "v1.3.1",
-        "mcloud-guzzlehttp/psr7": "1.6.1"
+        "mcloud-symfony/polyfill-intl-idn": "v1.24.0",
+        "mcloud-guzzlehttp/promises": "1.5.1",
+        "mcloud-guzzlehttp/psr7": "1.8.3"
     },
     "require-dev": {
         "ext-curl": "*",

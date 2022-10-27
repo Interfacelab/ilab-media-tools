@@ -47,6 +47,7 @@ use MediaCloud\Vendor\Google\ApiCore\ApiException;
 use MediaCloud\Vendor\Google\ApiCore\Call;
 use MediaCloud\Vendor\Google\ApiCore\GapicClientTrait;
 use MediaCloud\Vendor\Google\ApiCore\RetrySettings;
+use MediaCloud\Vendor\Google\ApiCore\RequestParamsHeaderDescriptor;
 use MediaCloud\Vendor\Google\ApiCore\Transport\TransportInterface;
 use MediaCloud\Vendor\Google\LongRunning\CancelOperationRequest;
 use MediaCloud\Vendor\Google\LongRunning\DeleteOperationRequest;
@@ -225,6 +226,13 @@ class OperationsGapicClient
         $request = new GetOperationRequest();
         $request->setName($name);
 
+        $requestParams = new RequestParamsHeaderDescriptor([
+          'name' => $request->getName(),
+        ]);
+        $optionalArgs['headers'] = isset($optionalArgs['headers'])
+            ? array_merge($requestParams->getHeader(), $optionalArgs['headers'])
+            : $requestParams->getHeader();
+
         return $this->startCall(
             'GetOperation',
             Operation::class,
@@ -308,6 +316,13 @@ class OperationsGapicClient
             $request->setPageToken($optionalArgs['pageToken']);
         }
 
+        $requestParams = new RequestParamsHeaderDescriptor([
+          'name' => $request->getName(),
+        ]);
+        $optionalArgs['headers'] = isset($optionalArgs['headers'])
+            ? array_merge($requestParams->getHeader(), $optionalArgs['headers'])
+            : $requestParams->getHeader();
+
         return $this->getPagedListResponse(
             'ListOperations',
             $optionalArgs,
@@ -364,6 +379,13 @@ class OperationsGapicClient
         $request = new CancelOperationRequest();
         $request->setName($name);
 
+        $requestParams = new RequestParamsHeaderDescriptor([
+          'name' => $request->getName(),
+        ]);
+        $optionalArgs['headers'] = isset($optionalArgs['headers'])
+            ? array_merge($requestParams->getHeader(), $optionalArgs['headers'])
+            : $requestParams->getHeader();
+
         return $this->startCall(
             'CancelOperation',
             GPBEmpty::class,
@@ -413,6 +435,13 @@ class OperationsGapicClient
     {
         $request = new DeleteOperationRequest();
         $request->setName($name);
+
+        $requestParams = new RequestParamsHeaderDescriptor([
+          'name' => $request->getName(),
+        ]);
+        $optionalArgs['headers'] = isset($optionalArgs['headers'])
+            ? array_merge($requestParams->getHeader(), $optionalArgs['headers'])
+            : $requestParams->getHeader();
 
         return $this->startCall(
             'DeleteOperation',

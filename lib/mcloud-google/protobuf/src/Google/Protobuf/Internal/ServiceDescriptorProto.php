@@ -19,18 +19,15 @@ class ServiceDescriptorProto extends \MediaCloud\Vendor\Google\Protobuf\Internal
     /**
      * Generated from protobuf field <code>optional string name = 1;</code>
      */
-    protected $name = '';
-    private $has_name = false;
+    protected $name = null;
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.MethodDescriptorProto method = 2;</code>
      */
     private $method;
-    private $has_method = false;
     /**
      * Generated from protobuf field <code>optional .google.protobuf.ServiceOptions options = 3;</code>
      */
     protected $options = null;
-    private $has_options = false;
 
     /**
      * Constructor.
@@ -53,7 +50,17 @@ class ServiceDescriptorProto extends \MediaCloud\Vendor\Google\Protobuf\Internal
      */
     public function getName()
     {
-        return $this->name;
+        return isset($this->name) ? $this->name : '';
+    }
+
+    public function hasName()
+    {
+        return isset($this->name);
+    }
+
+    public function clearName()
+    {
+        unset($this->name);
     }
 
     /**
@@ -65,14 +72,8 @@ class ServiceDescriptorProto extends \MediaCloud\Vendor\Google\Protobuf\Internal
     {
         GPBUtil::checkString($var, True);
         $this->name = $var;
-        $this->has_name = true;
 
         return $this;
-    }
-
-    public function hasName()
-    {
-        return $this->has_name;
     }
 
     /**
@@ -93,23 +94,27 @@ class ServiceDescriptorProto extends \MediaCloud\Vendor\Google\Protobuf\Internal
     {
         $arr = GPBUtil::checkRepeatedField($var, \MediaCloud\Vendor\Google\Protobuf\Internal\GPBType::MESSAGE, \MediaCloud\Vendor\Google\Protobuf\Internal\MethodDescriptorProto::class);
         $this->method = $arr;
-        $this->has_method = true;
 
         return $this;
     }
 
-    public function hasMethod()
-    {
-        return $this->has_method;
-    }
-
     /**
      * Generated from protobuf field <code>optional .google.protobuf.ServiceOptions options = 3;</code>
-     * @return \MediaCloud\Vendor\Google\Protobuf\Internal\ServiceOptions
+     * @return \MediaCloud\Vendor\Google\Protobuf\Internal\ServiceOptions|null
      */
     public function getOptions()
     {
         return $this->options;
+    }
+
+    public function hasOptions()
+    {
+        return isset($this->options);
+    }
+
+    public function clearOptions()
+    {
+        unset($this->options);
     }
 
     /**
@@ -121,14 +126,8 @@ class ServiceDescriptorProto extends \MediaCloud\Vendor\Google\Protobuf\Internal
     {
         GPBUtil::checkMessage($var, \MediaCloud\Vendor\Google\Protobuf\Internal\ServiceOptions::class);
         $this->options = $var;
-        $this->has_options = true;
 
         return $this;
-    }
-
-    public function hasOptions()
-    {
-        return $this->has_options;
     }
 
 }

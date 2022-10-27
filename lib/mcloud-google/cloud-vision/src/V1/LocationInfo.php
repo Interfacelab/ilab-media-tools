@@ -39,11 +39,21 @@ class LocationInfo extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      * lat/long location coordinates.
      *
      * Generated from protobuf field <code>.google.type.LatLng lat_lng = 1;</code>
-     * @return \MediaCloud\Vendor\Google\Type\LatLng
+     * @return \MediaCloud\Vendor\Google\Type\LatLng|null
      */
     public function getLatLng()
     {
         return $this->lat_lng;
+    }
+
+    public function hasLatLng()
+    {
+        return isset($this->lat_lng);
+    }
+
+    public function clearLatLng()
+    {
+        unset($this->lat_lng);
     }
 
     /**

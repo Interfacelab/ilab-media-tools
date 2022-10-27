@@ -17,7 +17,7 @@ namespace MediaCloud\Plugin\Tools\Video\Driver\Mux\Data;
  * Interface for creating the required tables
  */
 final class MuxDatabase {
-	const DB_VERSION = '1.0.0';
+	const DB_VERSION = '1.0.4';
 
 	/**
 	 * Insures the additional database tables are installed
@@ -54,8 +54,13 @@ final class MuxDatabase {
 	mp4Support int NOT NULL default 0,
 	width int NOT NULL default 0,
 	height int NOT NULL default 0,
+	isTransferred int NOT NULL default 0,
+	isDeleted int NOT NULL default 0,
 	aspectRatio VARCHAR(32) NULL,
-	jsonData text NULL,";
+	transferData text NULL,
+	relatedFiles text NULL,
+	jsonData text NULL,
+	";
 
 		$rowFormat = $wpdb->get_var("SELECT @@innodb_default_row_format;");
 		if (in_array(strtolower($rowFormat), ['redundant', 'compact'])) {

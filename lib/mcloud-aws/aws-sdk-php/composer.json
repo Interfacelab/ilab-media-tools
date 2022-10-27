@@ -30,9 +30,10 @@
         "ext-json": "*",
         "ext-simplexml": "*",
         "mcloud-guzzlehttp/guzzle": "6.5.5",
-        "mcloud-guzzlehttp/psr7": "1.6.1",
-        "mcloud-guzzlehttp/promises": "v1.3.1",
-        "mcloud-mtdowling/jmespath.php": "2.6.0"
+        "mcloud-guzzlehttp/psr7": "1.8.3",
+        "mcloud-guzzlehttp/promises": "1.5.1",
+        "mcloud-mtdowling/jmespath.php": "2.6.1",
+        "mcloud-aws/aws-crt-php": "v1.0.2"
     },
     "require-dev": {
         "ext-openssl": "*",
@@ -76,5 +77,5 @@
     "extra": {
         "branch-alias": []
     },
-    "version": "3.150.3"
+    "version": "3.211.1"
 }

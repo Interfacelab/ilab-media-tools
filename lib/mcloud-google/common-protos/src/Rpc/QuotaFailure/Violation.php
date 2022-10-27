@@ -22,7 +22,7 @@ class Violation extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>string subject = 1;</code>
      */
-    private $subject = '';
+    protected $subject = '';
     /**
      * A description of how the quota check failed. Clients can use this
      * description to find more about the quota configuration in the service's
@@ -33,7 +33,7 @@ class Violation extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>string description = 2;</code>
      */
-    private $description = '';
+    protected $description = '';
 
     /**
      * Constructor.

@@ -142,7 +142,7 @@ class VerifyLibraryTask extends AttachmentTask {
 		if (empty($this->reportHeaders)) {
 			$allSizes = ilab_get_image_sizes();
 			$sizeKeys = array_keys($allSizes);
-			$sizeKeys = array_sort($sizeKeys);
+			sort($sizeKeys);
 
 			$fields = [
 				'Post ID',

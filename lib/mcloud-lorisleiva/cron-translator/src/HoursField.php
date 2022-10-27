@@ -4,58 +4,82 @@ namespace MediaCloud\Vendor\Lorisleiva\CronTranslator;
 
 class HoursField extends Field
 {
-    public $position = 1;
+    public int $position = 1;
 
-    public function translateEvery($fields)
+    public function translateEvery()
     {
-        if ($fields->minute->hasType('Once')) {
-            return 'once an hour';
+        if ($this->expression->minute->hasType('Once')) {
+            return $this->lang('hours.once_an_hour');
         }
 
-        return 'every hour';
+        return $this->lang('hours.every');
     }
 
-    public function translateIncrement($fields)
+    public function translateIncrement()
     {
-        if ($fields->minute->hasType('Once')) {
-            return $this->times($this->count) . " every {$this->increment} hours";
+        if ($this->expression->minute->hasType('Once')) {
+            return $this->lang('hours.times_per_increment', [
+                'times' => $this->getTimes(),
+                'increment' => $this->getIncrement(),
+            ]);
         }
 
-        if ($this->count > 1) {
-            return "{$this->count} hours out of {$this->increment}";
+        if ($this->getCount() > 1) {
+            return $this->lang('hours.multiple_per_increment', [
+                'count' => $this->getCount(),
+                'increment' => $this->getIncrement(),
+            ]);
         }
 
-        if ($fields->minute->hasType('Every')) {
-            return "of every {$this->increment} hours";
+        if ($this->expression->minute->hasType('Every')) {
+            return $this->lang('hours.increment_chained', [
+                'increment' => $this->getIncrement(),
+            ]);
         }
 
-        return "every {$this->increment} hours";
-    }
-    
-    public function translateMultiple($fields)
-    {
-        if ($fields->minute->hasType('Once')) {
-            return $this->times($this->count) . " a day";
-        }
-
-        return "{$this->count} hours a day";
-    }
-    
-    public function translateOnce($fields)
-    {
-        return 'at ' . $this->format(
-            $fields->minute->hasType('Once') ? $fields->minute : null
-        );
+        return $this->lang('hours.increment', [
+            'increment' => $this->getIncrement(),
+        ]);
     }
 
-    public function format($minute = null)
+    public function translateMultiple()
     {
-        $amOrPm = $this->value < 12 ? 'am' : 'pm';
-        $hour = $this->value === 0 ? 12 : $this->value;
-        $hour = $hour > 12 ? $hour - 12 : $hour;
+        if ($this->expression->minute->hasType('Once')) {
+            return $this->lang('hours.times_per_day', [
+                'times' => $this->getTimes(),
+            ]);
+        }
 
-        return $minute 
-            ? "{$hour}:{$minute->format()}{$amOrPm}" 
+        return $this->lang('hours.multiple_per_day', [
+            'count' => $this->getCount(),
+        ]);
+    }
+
+    public function translateOnce()
+    {
+        $minute = $this->expression->minute->hasType('Once')
+            ? $this->expression->minute
+            : null;
+
+        return $this->lang('hours.once_at_time', [
+            'time' => $this->format($minute)
+        ]);
+    }
+
+    public function format(?MinutesField $minute = null): string
+    {
+        if ($this->expression->timeFormat24hours) {
+            $hour = $this->getValue();
+
+            return $minute ? "{$hour}:{$minute->format()}" : "{$hour}:00";
+        }
+
+        $amOrPm = $this->getValue() < 12 ? 'am' : 'pm';
+        $hour = $this->getValue() % 12;
+        $hour = $hour === 0 ? 12 : $hour;
+
+        return $minute
+            ? "{$hour}:{$minute->format()}{$amOrPm}"
             : "{$hour}{$amOrPm}";
     }
 }

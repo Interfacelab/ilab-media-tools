@@ -173,14 +173,16 @@ class DeleteUploadsTask extends Task {
 	 */
 	public function performTask($item) {
 		$filepath = $item['filepath'];
-		Logger::info("Delete {$filepath}", [], __METHOD__, __LINE__);
 
 		if ($filepath == -1) {
 			return $this->cleanEmptyDirectories();
 		}
 
-
-		@unlink($filepath);
+		if (@unlink($filepath)) {
+			Logger::info("Deleted $filepath", [], __METHOD__, __LINE__);
+		} else {
+			Logger::info("Error deleting $filepath", [], __METHOD__, __LINE__);
+		}
 
 		return true;
 	}

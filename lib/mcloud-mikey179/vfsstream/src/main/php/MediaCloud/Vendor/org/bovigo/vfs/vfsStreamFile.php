@@ -45,7 +45,7 @@ class vfsStreamFile extends vfsStreamAbstractContent
      */
     public function __construct($name, $permissions = null)
     {
-        $this->content = new StringBasedFileContent(null);
+        $this->content = new StringBasedFileContent('');
         $this->type    = vfsStreamContent::TYPE_FILE;
         parent::__construct($name, $permissions);
     }
@@ -190,7 +190,7 @@ class vfsStreamFile extends vfsStreamAbstractContent
      * Using this method changes the time when the file was last modified.
      *
      * @param   string  $data
-     * @return  amount of written bytes
+     * @return  int amount of written bytes
      */
     public function write($data)
     {

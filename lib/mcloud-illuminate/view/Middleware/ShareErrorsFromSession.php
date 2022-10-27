@@ -3,8 +3,8 @@
 namespace MediaCloud\Vendor\Illuminate\View\Middleware;
 
 use Closure;
-use MediaCloud\Vendor\Illuminate\Support\ViewErrorBag;
 use MediaCloud\Vendor\Illuminate\Contracts\View\Factory as ViewFactory;
+use MediaCloud\Vendor\Illuminate\Support\ViewErrorBag;
 
 class ShareErrorsFromSession
 {

@@ -30,12 +30,16 @@ use MediaCloud\Vendor\GuzzleHttp\Promise;
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteBucketCorsAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result deleteBucketEncryption(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteBucketEncryptionAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result deleteBucketIntelligentTieringConfiguration(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteBucketIntelligentTieringConfigurationAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result deleteBucketInventoryConfiguration(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteBucketInventoryConfigurationAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result deleteBucketLifecycle(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteBucketLifecycleAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result deleteBucketMetricsConfiguration(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteBucketMetricsConfigurationAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result deleteBucketOwnershipControls(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteBucketOwnershipControlsAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result deleteBucketPolicy(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteBucketPolicyAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result deleteBucketReplication(array $args = [])
@@ -62,6 +66,8 @@ use MediaCloud\Vendor\GuzzleHttp\Promise;
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise getBucketCorsAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result getBucketEncryption(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise getBucketEncryptionAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result getBucketIntelligentTieringConfiguration(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise getBucketIntelligentTieringConfigurationAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result getBucketInventoryConfiguration(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise getBucketInventoryConfigurationAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result getBucketLifecycle(array $args = [])
@@ -78,6 +84,8 @@ use MediaCloud\Vendor\GuzzleHttp\Promise;
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise getBucketNotificationAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result getBucketNotificationConfiguration(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise getBucketNotificationConfigurationAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result getBucketOwnershipControls(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise getBucketOwnershipControlsAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result getBucketPolicy(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise getBucketPolicyAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result getBucketPolicyStatus(array $args = [])
@@ -96,6 +104,8 @@ use MediaCloud\Vendor\GuzzleHttp\Promise;
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise getObjectAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result getObjectAcl(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise getObjectAclAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result getObjectAttributes(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise getObjectAttributesAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result getObjectLegalHold(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise getObjectLegalHoldAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result getObjectLockConfiguration(array $args = [])
@@ -114,6 +124,8 @@ use MediaCloud\Vendor\GuzzleHttp\Promise;
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise headObjectAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result listBucketAnalyticsConfigurations(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listBucketAnalyticsConfigurationsAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listBucketIntelligentTieringConfigurations(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listBucketIntelligentTieringConfigurationsAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result listBucketInventoryConfigurations(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listBucketInventoryConfigurationsAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result listBucketMetricsConfigurations(array $args = [])
@@ -140,6 +152,8 @@ use MediaCloud\Vendor\GuzzleHttp\Promise;
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise putBucketCorsAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result putBucketEncryption(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise putBucketEncryptionAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result putBucketIntelligentTieringConfiguration(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise putBucketIntelligentTieringConfigurationAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result putBucketInventoryConfiguration(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise putBucketInventoryConfigurationAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result putBucketLifecycle(array $args = [])
@@ -154,6 +168,8 @@ use MediaCloud\Vendor\GuzzleHttp\Promise;
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise putBucketNotificationAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result putBucketNotificationConfiguration(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise putBucketNotificationConfigurationAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result putBucketOwnershipControls(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise putBucketOwnershipControlsAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result putBucketPolicy(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise putBucketPolicyAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result putBucketReplication(array $args = [])
@@ -188,6 +204,8 @@ use MediaCloud\Vendor\GuzzleHttp\Promise;
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise uploadPartAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result uploadPartCopy(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise uploadPartCopyAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result writeGetObjectResponse(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise writeGetObjectResponseAsync(array $args = [])
  */
 class S3MultiRegionClient extends BaseClient implements S3ClientInterface
 {
@@ -239,7 +257,7 @@ class S3MultiRegionClient extends BaseClient implements S3ClientInterface
                     $command['@region'] = $region;
                 }
 
-                return Promise\coroutine(function () use (
+                return Promise\Coroutine::of(function () use (
                     $handler,
                     $command,
                     $cacheKey
@@ -317,7 +335,7 @@ class S3MultiRegionClient extends BaseClient implements S3ClientInterface
     {
         $cacheKey = $this->getCacheKey($bucketName);
         if ($cached = $this->cache->get($cacheKey)) {
-            return Promise\promise_for($cached);
+            return Promise\Create::promiseFor($cached);
         }
 
         /** @var S3ClientInterface $regionalClient */

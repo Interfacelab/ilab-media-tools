@@ -13,6 +13,8 @@ use MediaCloud\Vendor\Psr\Http\Message\StreamInterface;
  *
  * @link http://tools.ietf.org/html/rfc1952
  * @link http://php.net/manual/en/filters.compression.php
+ *
+ * @final
  */
 class InflateStream implements StreamInterface
 {
@@ -33,6 +35,7 @@ class InflateStream implements StreamInterface
     /**
      * @param StreamInterface $stream
      * @param $header
+     *
      * @return int
      */
     private function getLengthOfPossibleFilenameHeader(StreamInterface $stream, $header)

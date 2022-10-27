@@ -21,7 +21,6 @@ class FileDescriptorSet extends \MediaCloud\Vendor\Google\Protobuf\Internal\Mess
      * Generated from protobuf field <code>repeated .google.protobuf.FileDescriptorProto file = 1;</code>
      */
     private $file;
-    private $has_file = false;
 
     /**
      * Constructor.
@@ -54,14 +53,8 @@ class FileDescriptorSet extends \MediaCloud\Vendor\Google\Protobuf\Internal\Mess
     {
         $arr = GPBUtil::checkRepeatedField($var, \MediaCloud\Vendor\Google\Protobuf\Internal\GPBType::MESSAGE, \MediaCloud\Vendor\Google\Protobuf\Internal\FileDescriptorProto::class);
         $this->file = $arr;
-        $this->has_file = true;
 
         return $this;
-    }
-
-    public function hasFile()
-    {
-        return $this->has_file;
     }
 
 }

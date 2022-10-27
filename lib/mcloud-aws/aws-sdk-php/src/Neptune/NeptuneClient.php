@@ -2,6 +2,7 @@
 
 namespace MediaCloud\Vendor\Aws\Neptune;
 use MediaCloud\Vendor\Aws\AwsClient;
+use MediaCloud\Vendor\Aws\PresignUrlMiddleware;
 
 /**
  * This client is used to interact with the **Amazon Neptune** service.
@@ -21,6 +22,8 @@ use MediaCloud\Vendor\Aws\AwsClient;
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise copyDBParameterGroupAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result createDBCluster(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise createDBClusterAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result createDBClusterEndpoint(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise createDBClusterEndpointAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result createDBClusterParameterGroup(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise createDBClusterParameterGroupAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result createDBClusterSnapshot(array $args = [])
@@ -35,6 +38,8 @@ use MediaCloud\Vendor\Aws\AwsClient;
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise createEventSubscriptionAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result deleteDBCluster(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteDBClusterAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result deleteDBClusterEndpoint(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteDBClusterEndpointAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result deleteDBClusterParameterGroup(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteDBClusterParameterGroupAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result deleteDBClusterSnapshot(array $args = [])
@@ -47,6 +52,8 @@ use MediaCloud\Vendor\Aws\AwsClient;
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteDBSubnetGroupAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result deleteEventSubscription(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteEventSubscriptionAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result describeDBClusterEndpoints(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise describeDBClusterEndpointsAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result describeDBClusterParameterGroups(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise describeDBClusterParameterGroupsAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result describeDBClusterParameters(array $args = [])
@@ -89,6 +96,8 @@ use MediaCloud\Vendor\Aws\AwsClient;
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listTagsForResourceAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result modifyDBCluster(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise modifyDBClusterAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result modifyDBClusterEndpoint(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise modifyDBClusterEndpointAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result modifyDBClusterParameterGroup(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise modifyDBClusterParameterGroupAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result modifyDBClusterSnapshotAttribute(array $args = [])
@@ -124,4 +133,31 @@ use MediaCloud\Vendor\Aws\AwsClient;
  * @method \MediaCloud\Vendor\Aws\Result stopDBCluster(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise stopDBClusterAsync(array $args = [])
  */
-class NeptuneClient extends AwsClient {}
+class NeptuneClient extends AwsClient {
+    public function __construct(array $args)
+    {
+        $args['with_resolved'] = function (array $args) {
+            $this->getHandlerList()->appendInit(
+                PresignUrlMiddleware::wrap(
+                    $this,
+                    $args['endpoint_provider'],
+                    [
+                        'operations' => [
+                            'CopyDBClusterSnapshot',
+                            'CreateDBCluster',
+                        ],
+                        'service' => 'rds',
+                        'presign_param' => 'PreSignedUrl',
+                        'require_different_region' => true,
+                        'extra_query_params' => [
+                            'CopyDBClusterSnapshot' => ['DestinationRegion'],
+                            'CreateDBCluster' => ['DestinationRegion'],
+                        ]
+                    ]
+                ),
+                'rds.presigner'
+            );
+        };
+        parent::__construct($args);
+    }
+}

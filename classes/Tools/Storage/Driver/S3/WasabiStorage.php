@@ -195,7 +195,12 @@ class WasabiStorage extends OtherS3Storage {
 						'us-east-1' => 'US East 1',
 						'us-east-2' => 'US East 2',
 						'us-west-1' => 'US West',
-						'eu-central-1' => 'EU'
+						'us-central' => 'US Central',
+						'eu-central-1' => 'EU (Amsterdam)',
+						'eu-west-1' => 'EU (London)',
+						'eu-west-2' => 'EU (Paris)',
+						'ap-northeast-1' => 'Asia Pacific (Tokyo)',
+						'ap-northeast-2' => 'Asia Pacific (Osaka)',
 					])
 				->endStep()
 				->testStep('wizard.cloud-storage.providers.wasabi.test', 'Test Settings', 'Perform tests to insure that your cloud storage provider is configured correctly.', false);
@@ -205,7 +210,7 @@ class WasabiStorage extends OtherS3Storage {
 		$builder->select('Complete', 'Basic setup is now complete!  Configure advanced settings or setup imgix.')
 			->group('wizard.cloud-storage.providers.wasabi.success', 'select-buttons')
 				->option('configure-imgix', 'Set Up imgix', null, null, 'imgix')
-				->option('advanced-settings', 'Finish &amp; Exit Wizard', null, null, null, null, 'admin:admin.php?page=media-cloud-settings&tab=storage')
+				->option('advanced-settings', 'Finish & Exit Wizard', null, null, null, null, 'admin:admin.php?page=media-cloud-settings&tab=storage')
 			->endGroup()
 		->endStep();
 

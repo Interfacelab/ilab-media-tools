@@ -11,10 +11,14 @@
 
 namespace MediaCloud\Vendor\Symfony\Component\Debug\Exception;
 
+@trigger_error(sprintf('The "%s" class is deprecated since Symfony 4.4, use "%s" instead.', OutOfMemoryException::class, \MediaCloud\Vendor\Symfony\Component\ErrorHandler\Error\OutOfMemoryError::class), \E_USER_DEPRECATED);
+
 /**
  * Out of memory exception.
  *
  * @author Nicolas Grekas <p@tchwork.com>
+ *
+ * @deprecated since Symfony 4.4, use MediaCloud\Vendor\Symfony\Component\ErrorHandler\Error\OutOfMemoryError instead.
  */
 class OutOfMemoryException extends FatalErrorException
 {

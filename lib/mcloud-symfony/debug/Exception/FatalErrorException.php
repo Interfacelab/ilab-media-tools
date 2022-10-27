@@ -11,14 +11,18 @@
 
 namespace MediaCloud\Vendor\Symfony\Component\Debug\Exception;
 
+@trigger_error(sprintf('The "%s" class is deprecated since Symfony 4.4, use "%s" instead.', FatalErrorException::class, \MediaCloud\Vendor\Symfony\Component\ErrorHandler\Error\FatalError::class), \E_USER_DEPRECATED);
+
 /**
  * Fatal Error Exception.
  *
  * @author Konstanton Myakshin <koc-dp@yandex.ru>
+ *
+ * @deprecated since Symfony 4.4, use MediaCloud\Vendor\Symfony\Component\ErrorHandler\Error\FatalError instead.
  */
 class FatalErrorException extends \ErrorException
 {
-    public function __construct($message, $code, $severity, $filename, $lineno, $traceOffset = null, $traceArgs = true, array $trace = null, $previous = null)
+    public function __construct(string $message, int $code, int $severity, string $filename, int $lineno, int $traceOffset = null, bool $traceArgs = true, array $trace = null, \Throwable $previous = null)
     {
         parent::__construct($message, $code, $severity, $filename, $lineno, $previous);
 
@@ -31,8 +35,7 @@ class FatalErrorException extends \ErrorException
 
             $this->setTrace($trace);
         } elseif (null !== $traceOffset) {
-            if (\function_exists('xdebug_get_function_stack')) {
-                $trace = xdebug_get_function_stack();
+            if (\function_exists('xdebug_get_function_stack') && $trace = @xdebug_get_function_stack()) {
                 if (0 < $traceOffset) {
                     array_splice($trace, -$traceOffset);
                 }
@@ -60,11 +63,6 @@ class FatalErrorException extends \ErrorException
 
                 unset($frame);
                 $trace = array_reverse($trace);
-            } elseif (\function_exists('symfony_debug_backtrace')) {
-                $trace = symfony_debug_backtrace();
-                if (0 < $traceOffset) {
-                    array_splice($trace, 0, $traceOffset);
-                }
             } else {
                 $trace = [];
             }
@@ -75,7 +73,7 @@ class FatalErrorException extends \ErrorException
 
     protected function setTrace($trace)
     {
-        $traceReflector = new \ReflectionProperty('Exception', 'trace');
+        $traceReflector = new \ReflectionProperty(\Exception::class, 'trace');
         $traceReflector->setAccessible(true);
         $traceReflector->setValue($this, $trace);
     }

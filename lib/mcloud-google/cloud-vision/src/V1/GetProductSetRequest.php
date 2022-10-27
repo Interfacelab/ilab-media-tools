@@ -17,7 +17,7 @@ class GetProductSetRequest extends \MediaCloud\Vendor\Google\Protobuf\Internal\M
     /**
      * Required. Resource name of the ProductSet to get.
      * Format is:
-     * `projects/PROJECT_ID/locations/LOG_ID/productSets/PRODUCT_SET_ID`
+     * `projects/PROJECT_ID/locations/LOC_ID/productSets/PRODUCT_SET_ID`
      *
      * Generated from protobuf field <code>string name = 1 [(.google.api.field_behavior) = REQUIRED, (.google.api.resource_reference) = {</code>
      */
@@ -32,7 +32,7 @@ class GetProductSetRequest extends \MediaCloud\Vendor\Google\Protobuf\Internal\M
      *     @type string $name
      *           Required. Resource name of the ProductSet to get.
      *           Format is:
-     *           `projects/PROJECT_ID/locations/LOG_ID/productSets/PRODUCT_SET_ID`
+     *           `projects/PROJECT_ID/locations/LOC_ID/productSets/PRODUCT_SET_ID`
      * }
      */
     public function __construct($data = NULL) { \MediaCloud\Vendor\GPBMetadata\Google\Cloud\Vision\V1\ProductSearchService::initOnce();
@@ -42,7 +42,7 @@ class GetProductSetRequest extends \MediaCloud\Vendor\Google\Protobuf\Internal\M
     /**
      * Required. Resource name of the ProductSet to get.
      * Format is:
-     * `projects/PROJECT_ID/locations/LOG_ID/productSets/PRODUCT_SET_ID`
+     * `projects/PROJECT_ID/locations/LOC_ID/productSets/PRODUCT_SET_ID`
      *
      * Generated from protobuf field <code>string name = 1 [(.google.api.field_behavior) = REQUIRED, (.google.api.resource_reference) = {</code>
      * @return string
@@ -55,7 +55,7 @@ class GetProductSetRequest extends \MediaCloud\Vendor\Google\Protobuf\Internal\M
     /**
      * Required. Resource name of the ProductSet to get.
      * Format is:
-     * `projects/PROJECT_ID/locations/LOG_ID/productSets/PRODUCT_SET_ID`
+     * `projects/PROJECT_ID/locations/LOC_ID/productSets/PRODUCT_SET_ID`
      *
      * Generated from protobuf field <code>string name = 1 [(.google.api.field_behavior) = REQUIRED, (.google.api.resource_reference) = {</code>
      * @param string $var

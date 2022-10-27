@@ -18,8 +18,12 @@ return [
 	"description" => "Video encoding, hosting and live streaming via <a href='https://mux.com/' target='_blank'>Mux</a>.",
 	"class" => "MediaCloud\\Plugin\\Tools\\Video\\Driver\\Mux\\MuxTool",
 	"dependencies" => [
+		"video-player",
 	],
 	"env" => "MCLOUD_MUX_ENABLED",
+	"CLI" => [
+		\MediaCloud\Plugin\Tools\Video\CLI\VideoCommands::class,
+	],
 	"settings" => [
 		"options-page" => "media-cloud-mux",
 		"options-group" => "media-cloud-mux",
@@ -69,7 +73,6 @@ return [
 					],
 				]
 			],
-
 			"media-cloud-mux-encoding-settings" => [
 				"title" => "Encoding Settings",
 				"doc_link" => 'https://support.mediacloud.press/articles/documentation/video-encoding/mux-encoding-settings',
@@ -100,19 +103,6 @@ return [
 					],
 				]
 			],
-
-			"media-cloud-mux-player" => [
-				"title" => "Player Settings",
-				"doc_link" => 'https://support.mediacloud.press/articles/documentation/video-encoding/mux-player-settings',
-				"options" => [
-					"media-cloud-player-css-classes" => [
-						"title" => "Additional Player CSS Classes",
-						"description" => "Any additional CSS classes to add to the player's &lt;video&gt; tag.",
-						"type" => "text-field",
-					],
-				]
-			],
-
 			"media-cloud-mux-integration" => [
 				"title" => "WordPress Integration",
 				"doc_link" => 'https://support.mediacloud.press/articles/documentation/video-encoding/mux-integration',

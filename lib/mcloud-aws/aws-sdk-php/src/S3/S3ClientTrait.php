@@ -216,7 +216,7 @@ trait S3ClientTrait
 
         return $handler($command)
             ->then(static function (ResultInterface $result) {
-                return isset($result['@metadata']['headers']['x-amz-bucket-region']) ? $result['@metadata']['headers']['x-amz-bucket-region'] : null;
+                return $result['@metadata']['headers']['x-amz-bucket-region'];
             }, function (AwsException $e) {
                 $response = $e->getResponse();
                 if ($response === null) {

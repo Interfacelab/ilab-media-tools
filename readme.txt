@@ -1,14 +1,14 @@
-=== Media Cloud for Amazon S3, Imgix, Google Cloud Storage, DigitalOcean Spaces and more ===
+=== Media Cloud for Amazon S3, Cloudflare R2, Google Cloud Storage, DigitalOcean Spaces and more ===
 Contributors: mediacloud, interfacelab, freemius
-Tags: offload, amazon, s3, imgix, uploads, video, video encoding, google cloud storage, digital ocean spaces, wasabi, media, cdn, rekognition, cloudfront, images, crop, image editing, image editor, optimize, image optimization, media library, offload, offload s3, filepicker, smush, imagify, shortpixel
+Tags: offload, amazon, s3, cloudflare, imgix, uploads, video, video encoding, google cloud storage, digital ocean spaces, wasabi, media, cdn, rekognition, cloudfront, images, crop, image editing, image editor, optimize, image optimization, media library, offload, offload s3, smush, imagify, shortpixel
 Requires at least: 4.9
-Tested up to: 5.7.2
+Tested up to: 6.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.2.37
-Requires PHP: 7.1
+Stable tag: 4.5.3
+Requires PHP: 7.4
 
-Automatically store media on Amazon S3, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
+Automatically store media on Amazon S3, Cloudflare R2, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
 
 == Description ==
 
@@ -24,7 +24,7 @@ Media Cloud also provides advanced image editing tools that provide improved cro
 
 **NOTE**: This plugin requires PHP 7.1 or higher
 
-= Upload to S3, Minio, Google Cloud Storage, Wasabi, Digital Ocean Spaces, DreamHost Object Storage and others =
+= Upload to S3, Cloudflare R2, Minio, Google Cloud Storage, Wasabi, Digital Ocean Spaces, DreamHost Object Storage and others =
 Automatically copy media uploads to the cloud and serve them directly from your cloud storage provider, CloudFront or any other CDN.
 
 = Video Encoding with Mux =
@@ -48,7 +48,7 @@ Media Cloud by ILAB ships with the most advanced image cropping tool available f
 = Compatible With Leading Image Optimizers =
 Compatible with Short Pixel, EWWW, Smush and Imagify image optimization plugins!
 
-* Upload to any of a variety of cloud storage providers (Amazon S3, Google Cloud Storage, Minio, Wasabi, Backblaze, DigitalOcean Spaces or any other S3 compatible service)
+* Upload to any of a variety of cloud storage providers (Amazon S3, Cloudflare R2, Google Cloud Storage, Minio, Wasabi, Backblaze, DigitalOcean Spaces or any other S3 compatible service)
 * Host your media directly from your cloud storage provider or specify a CDN
 * Integrate with Imgix media hosting
 * Use Amazon Rekognition to automatically tag and categorize images
@@ -104,6 +104,150 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 
 == Changelog ==
+
+= 4.5.3 - 10/15/2022 =
+
+* Fix for compatability issue with WP All Import Pro
+* Added new Wasabi regions
+
+= 4.5.2 - 10/15/2022 =
+
+* Fix for compatability issue with Presto Player
+
+= 4.5.1 - 10/11/2022 =
+
+* Integration for WP All Import Pro.  When enabled, during an import, Media Cloud will not process any images imported
+  during the process.  This is to prevent the import from timing out.  After the import is complete, a Migrate to Cloud
+  Storage task is run to move the imported media to the cloud.
+* Image Optimization will not work with the WP All Import Pro integration.  It's recommended that you use the EWWW plugin
+  for image optimization if that's something you need.
+
+= 4.5.0 - 10/7/2022 =
+
+* Support for Cloudflare Storage R2.
+* Cloudflare R2 does not support direct uploads though we will be working on it in the future.
+* R2 also does not support signed URLs, but that is a limitation of R2 and not Media Cloud's integration with it.
+
+= 4.4.4 - 10/7/2022 =
+
+* The video player front-end javascript files are now only included on pages that use the player.  If you run into
+  issues with this, you can set a toggle in the settings to always include the scripts.  Note that for Elementor users,
+  the player scripts are always included because there isn't a reliable mechanism to tell if a player is being used on
+  a page before it's too late to enqueue the scripts.  You can blame Elementor for this.
+* The elementor video player widget was removed from the previous version on accident, it has been included again.
+* Fix for asset tool
+* Fix for `block_categories` deprecation warning (thanks @joshuafredrickson)
+
+= 4.4.3 - 10/5/2022 =
+
+* Ability to specify colors for video.js player in the Video Player settings.
+
+= 4.4.2 - 10/2/2022 =
+
+* Fixes for PHP 8.x compatibility
+* Implement changing poster image for video files
+* Fixed how additional buttons are displayed on attachment detail pages
+* Fixed downloading video with video player
+* Fix for getting rendition URL for mux encoded videos
+* Updated video.js library to 7.20.3
+* Updated related video.js plugins to latest versions
+* Fix mux transfer task to work with large files and give better feedback.  Note: Mux transfers wait until the mp4
+  renditions are encoded by mux before transferring.  This can take a while for large files.
+* Remove preflight admin notice
+* Added support for Supabase Storage.  This support is only provided for specific development scenarios, you should not
+  use Supabase Storage for general purpose storage because you think it's inexpensive.  Supabase Storage support is for
+  when you need to *integrate* with an application already using Supabase.
+* Added a new `Transfer Mux Video` task that allows you to transfer encoded videos from Mux to cloud or local storage to serve the videos from other services and CDNs instead of Mux.  Use Mux to encode, serve the result elsewhere.
+* Added a `Regenerate Filmstrip` task to generate new filmstrips for Mux encoded videos that might not have had them generated.
+* The Gutenberg block now supports outputting the video's dimension to insure that there isn't any reflow on document load.
+* Fixed INFO log messages with regards to PHP 8.1.
+* Transferred Mux videos display HLS logo instead of the Mux logo in the media library.
+* In the list view in the Media Library, the Mux or HLS logo is now displayed.
+* The `Relink Mux Video` task will relink any videos that were transferred with the `Transfer Mux Video` task unless they've been deleted on Mux.
+* You can setup Media Cloud to automatically transfer Mux encoded videos to local or cloud storage after they've finished being encoded by Mux.
+* Added `wp mediacloud:video transfer` command to transfer videos from Mux to cloud or local storage.
+* Added `wp mediacloud:video relink` command to relink videos that were transferred from Mux to local or cloud storage.
+* Added toggle to `Video Player` settings to replace the WordPress admin default video player with the native video player using HLS.js.  This allows you to preview Mux encoded videos in the admin without having to create a post.
+* Added toggle to override the default WordPress video shortcode and replace it with the Media Cloud Video Player.  You should, however, consider switching to the Media Cloud Video Player shortcode instead because it performs better.
+* The Elementor Media Cloud Video Player widget now supports playing non-Mux videos.
+* Added `hls` object to WP REST Attachment object that includes the playlist url, poster image url, filmstrip url, width, height, duration, mp4 fallback rendition url and subtitles.
+* Added the ability to add captions (via a VTT text file) to any video, regardless if it's Mux encoded or not.  This feature is available on the edit detail screen for a video attachment.  You must be using the Media Cloud Video Player feature.
+* Removed `yuloh/bccomp-polyfill` dependency.
+
+= 4.4.0 - 4/7/2022 =
+
+* **IMPORTANT**: This release has a breaking change if you are using the **Mux/Video Encoding** feature.  If you are using the video.js or hls.js video player, you will need to enable the separate *Video Player* feature to continue using those players.  There will be a notification in WordPress admin warning you about this, but only if it applies to you.
+* Upgraded video.js player to latest 7.19.0
+* Upgraded hls.js player to latest 1.1.5
+* Separated the video player into it's own feature from the video encoding feature.
+* Video player now supports playing any uploaded videos, not just Mux encoded videos.
+* You can now allow video downloads for logged in users only in *Video Player Settings*
+* The Video Player gutenberg block allows you to override the download setting for an individual video.
+* Filmstrip generation can now be enabled regardless of video player in use.
+
+
+= 4.3.11 - 3/8/2022 =
+
+* Added new option to imgix to disable `urlencode()` the filename which may cause issues for certain unicode characters in filenames.  If imgix is working fine for you, you should not turn this on.
+* Fixed missing regions in the setup wizard for Wasabi
+
+= 4.3.9 - 3/4/2022 =
+
+* Fixed Imagify API integration.
+
+= 4.3.8 - 3/2/2022 =
+
+* Update to latest AWS SDK.  Fixes critical issue where deleting items from cloud storage would fail due to a bug in the SDK.  If you are using S3 or S3 compatible storage, you need to upgrade to this.
+* Fixed a misspelling in the wizard
+
+= 4.3.7 - 3/1/2022 =
+
+* Various fixes for **BuddyBoss** and **BuddyPress**
+* **Migrate to Cloud** task will now copy BuddyBoss media that isn't related to profile images or cover photos, meaning any media uploaded to timelines, groups, forums, etc.  Use the Migrate BuddyPress task for cover photos and profile images.
+* Fixed a caching issue for BuddyBoss/BuddyPress where changing cover images where would not update the cover photo.
+* Full support for BuddyBoss's video and document uploads.
+* **Note** if you want to delete uploads from your local server, you will need to turn on both **Delete Uploads** in **Cloud Storage Settings** and **Delete Uploads** in the BuddyPress integration settings.
+* Fixed a bug preventing the background delete task for BuddyPress from working.
+
+= 4.3.6 - 3/1/2022 =
+
+* Critical fix for some libraries that were not being imported correctly.  On some systems this would cause a fatal error depending on what other plugins you had installed.
+
+= 4.3.4 - 2/28/2022 =
+
+* **NOW REQUIRES PHP 7.4**  Installing on PHP < 7.4 will not work and result in errors.
+* Fixed an issue that would prevent certain tasks from running
+* Sign up to be notified about our new product for WordPress coming in April 2022: [Preflight for WordPress](https://preflight.ju.mp)
+* Fixed compatibility with BuddyPress 6.x
+* Fixed compatibility with BuddyBoss 1.8.x including video.  **Note:** Mux encoding does not work with BuddyBoss and it's impossible to make it work.  You can have it enabled and Mux will encode videos but the videos that are played on the front end will be the uploaded MP4 source.  It's best to turn Mux off if you are using it with BuddyBoss.
+* Added new Wasabi and S3 regions.
+* All third party libraries have been updated to the latest versions.
+* Fixed MUX gutenberg block registration
+* Filmstrip generation with Mux now warns you if GD is not installed
+* Media Cloud now makes **EWWW Image Optimizer** run during the upload process which fixes a lot of issues with other plugins like Elementor.  You can disable this in **Cloud Storage Settings** if your uploads have become unbearably slow.
+* Fixed compatibility with **EWWW Image Optimizer** bulk optimizer.
+* Generated `.webp` file names are stored in S3 metadata.
+* `.webp` files are deleted from cloud storage when deleting an upload.
+* When queueing deletes, you can now specify the delay in minutes before items in the queue get processed.
+* Built-in image optimizer now properly queues deletes if that setting is enabled.
+* For the free version, if you are using Elementor with an image optimizer that isn't **EWWW Image Optimizer**, you are going to have problems and that configuration isn't supported.  You should consider a switch to EWWW or upgrading to the premium version.
+* For the premium version, if you are using Elementor with an image optimizer that isn't **EWWW Image Optimizer**, make sure to turn on **Queue Deletes** in **Cloud Storage Settings** and **Auto Update Elementor** in **Integration Settings**.
+* Fix for images specified in the customizer when using the Astra theme.
+* PDF thumbnails generated with the ImageMagick extension are now uploaded to cloud storage properly.
+* Fixed an error with PDF uploads and ImageMagick that would prevent the PDF from being uploaded to cloud storage in certain circumstances.
+* Fixed the Render PDF functionality of imgix to now properly render PDFs.
+* Large PDF uploads would cause a fatal memory error on some systems.  Now, you can now upload PDFs of any size without issues (subject to WordPress and web server limitations).
+* PDF upload speed should be greatly improved.  If you don't care about generating PDF preview images, you can improve it even more by turning off **Extract PDF Page Size** in the **Image and PDF Upload Handling** section of **Cloud Storage Settings**.
+* Added a new setting **Background Only When Using the Media Library** that, when enabled, limits image optimizations to only run in the background when using the WordPress Media Library pages in the admin, otherwise the image optimizations will run during the upload.  Enabling this could improve compatibility with some plugins.
+* Image Optimizations that fail would prevent the upload from being transferred to cloud storage.  That has been fixed.
+* Updated the Imagify Image Optimization driver.
+* Background optimizations now start a lot a sooner.
+* Added **Update URLs** task to search and replace URLs in the WordPress database.
+* Added a switch to the **Migrate to Cloud** task that will do a search and replace for migrated URLs during the migration process.
+* When files are deleted from the server, everything about the deletion is now logged when debugging is enabled.
+* Fixed issues with WordPress 5.8 and 5.9
+* Fixed compatibility with PHP 7.4 and 8.0
+* Updated latest Freemius SDK
 
 = 4.2.37 - 6/22/2021 =
 

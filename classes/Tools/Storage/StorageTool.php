@@ -19,6 +19,7 @@ use  MediaCloud\Plugin\Tasks\TaskSchedule ;
 use  MediaCloud\Plugin\Tools\ImageSizes\ImageSizePrivacy ;
 use  MediaCloud\Plugin\Tools\Optimizer\OptimizerConsts ;
 use  MediaCloud\Plugin\Tools\Optimizer\OptimizerTool ;
+use  MediaCloud\Plugin\Tools\Optimizer\OptimizerToolSettings ;
 use  MediaCloud\Plugin\Tools\Storage\Driver\S3\S3StorageSettings ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\CleanUploadsTask ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\DeleteUploadsTask ;
@@ -28,6 +29,7 @@ use  MediaCloud\Plugin\Tools\Storage\Tasks\MigrateTask ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\RegenerateThumbnailTask ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\SyncLocalTask ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\UnlinkTask ;
+use  MediaCloud\Plugin\Tools\Storage\Tasks\UpdateURLsTask ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\VerifyLibraryTask ;
 use  MediaCloud\Plugin\Tools\Tool ;
 use  MediaCloud\Plugin\Tools\ToolsManager ;
@@ -42,6 +44,7 @@ use  MediaCloud\Vendor\Smalot\PdfParser\Parser ;
 use function  MediaCloud\Plugin\Utilities\arrayPath ;
 use function  MediaCloud\Plugin\Utilities\gen_uuid ;
 use function  MediaCloud\Plugin\Utilities\ilab_set_time_limit ;
+use function  MediaCloud\Plugin\Utilities\phpMemoryLimit ;
 use function  MediaCloud\Plugin\Utilities\typeFromMeta ;
 
 if ( !defined( 'ABSPATH' ) ) {
@@ -321,51 +324,63 @@ class StorageTool extends Tool
             TaskManager::registerTask( DeleteUploadsTask::class );
             TaskManager::registerTask( VerifyLibraryTask::class );
             TaskManager::registerTask( SyncLocalTask::class );
-            foreach ( $this->toolInfo['compatibleImageOptimizers'] as $key => $plugin ) {
-                
-                if ( is_plugin_active( $plugin ) ) {
-                    $this->usingImageOptimizer = true;
-                    $this->imageOptimizer = $key;
+            $builtInImageOptimizer = ToolsManager::instance()->toolEnabled( 'optimizer' );
+            $this->usingImageOptimizer = false;
+            if ( empty($builtInImageOptimizer) ) {
+                foreach ( $this->toolInfo['compatibleImageOptimizers'] as $key => $plugin ) {
                     
-                    if ( $key == 'shortpixel' ) {
-                        add_action( 'shortpixel_image_optimised', [ $this, 'handleImageOptimizer' ] );
-                        add_action( 'shortpixel_after_restore_image', [ $this, 'handleImageOptimizer' ] );
-                    } else {
+                    if ( is_plugin_active( $plugin ) ) {
+                        $this->usingImageOptimizer = true;
+                        $this->imageOptimizer = $key;
                         
-                        if ( $key == 'smush' || $key == 'smush_pro' ) {
-                            add_action(
-                                'wp_smush_image_optimised',
-                                [ $this, 'handleSmushImageOptimizer' ],
-                                1000,
-                                2
-                            );
+                        if ( $key == 'shortpixel' ) {
+                            add_action( 'shortpixel_image_optimised', [ $this, 'handleImageOptimizer' ] );
+                            add_action( 'shortpixel_after_restore_image', [ $this, 'handleImageOptimizer' ] );
                         } else {
                             
-                            if ( $key == 'ewww' ) {
-                                Environment::UpdateOption( 'ewww_image_optimizer_parallel_optimization', false );
+                            if ( $key == 'smush' || $key == 'smush_pro' ) {
                                 add_action(
-                                    'ewww_image_optimizer_post_optimization',
-                                    function ( $file, $type, $fullsize ) {
-                                    $this->processingOptimized = true;
-                                },
+                                    'wp_smush_image_optimised',
+                                    [ $this, 'handleSmushImageOptimizer' ],
                                     1000,
-                                    3
+                                    2
                                 );
                             } else {
                                 
-                                if ( $key == 'imagify' ) {
-                                    add_action(
-                                        'imagify_after_reoptimize_media',
-                                        [ $this, 'handleImagifyAfter' ],
-                                        1000,
-                                        2
-                                    );
-                                    add_action(
-                                        'imagify_after_optimize_media',
-                                        [ $this, 'handleImagifyAfter' ],
-                                        1000,
-                                        2
-                                    );
+                                if ( $key == 'ewww' ) {
+                                    
+                                    if ( $this->settings->disableEWWWBackgroundProcessing ) {
+                                        define( 'EWWW_DISABLE_ASYNC', true );
+                                        $this->usingImageOptimizer = false;
+                                        $this->imageOptimizer = null;
+                                    } else {
+                                        add_action(
+                                            'ewww_image_optimizer_post_optimization',
+                                            function ( $file, $type, $fullsize ) {
+                                            $this->processingOptimized = true;
+                                        },
+                                            1000,
+                                            3
+                                        );
+                                    }
+                                
+                                } else {
+                                    
+                                    if ( $key == 'imagify' ) {
+                                        add_action(
+                                            'imagify_after_reoptimize_media',
+                                            [ $this, 'handleImagifyAfter' ],
+                                            1000,
+                                            2
+                                        );
+                                        add_action(
+                                            'imagify_after_optimize_media',
+                                            [ $this, 'handleImagifyAfter' ],
+                                            1000,
+                                            2
+                                        );
+                                    }
+                                
                                 }
                             
                             }
@@ -375,10 +390,9 @@ class StorageTool extends Tool
                     }
                 
                 }
-            
             }
-            if ( $this->usingImageOptimizer ) {
-                $this->displayOptimizerAdminNotice();
+            if ( $builtInImageOptimizer && !empty(OptimizerToolSettings::instance()->backgroundMode) || !empty($this->usingImageOptimizer) ) {
+                $this->displayOptimizerAdminNotice( $builtInImageOptimizer );
             }
             global  $wp_version ;
             // NOTE: We handle this differently for 5.3 than versions prior.  Also, in the previous update
@@ -670,6 +684,32 @@ class StorageTool extends Tool
         if ( $this->updateCallCount == 1 ) {
             $this->generated[] = $id;
         }
+        
+        if ( empty($meta) && get_post_mime_type( $id ) === 'application/pdf' ) {
+            $otherMeta = get_post_meta( $id, 'ilab_s3_info', true );
+            
+            if ( isset( $otherMeta['width'] ) || isset( $otherMeta['sizes'] ) ) {
+                $meta = $otherMeta;
+                if ( !isset( $otherMeta['sizes'] ) ) {
+                    $otherMeta['sizes'] = [];
+                }
+                
+                if ( !isset( $otherMeta['sizes']['full'] ) ) {
+                    $otherMeta['sizes']['full'] = [
+                        'file'      => $otherMeta['file'],
+                        'width'     => $otherMeta['width'],
+                        'height'    => $otherMeta['height'],
+                        'mime-type' => 'application/pdf',
+                    ];
+                    if ( isset( $otherMeta['s3'] ) ) {
+                        $otherMeta['sizes']['full']['s3'] = $otherMeta['s3'];
+                    }
+                }
+            
+            }
+        
+        }
+        
         return $meta;
     }
     
@@ -708,13 +748,25 @@ class StorageTool extends Tool
         // Uploads are handled by a different method for non-images
         
         if ( !wp_attachment_is_image( $id ) ) {
-            Logger::info(
-                "Attachment is not an image {$id}",
-                [],
-                __METHOD__,
-                __LINE__
-            );
-            return $data;
+            $mimeType = get_post_mime_type( $id );
+            
+            if ( !isset( $data['sizes'] ) ) {
+                Logger::info(
+                    "Attachment {$id} - {$mimeType} is not an image",
+                    [],
+                    __METHOD__,
+                    __LINE__
+                );
+                return $data;
+            } else {
+                Logger::info(
+                    "Attachment {$id} - {$mimeType} has sizes.",
+                    [],
+                    __METHOD__,
+                    __LINE__
+                );
+            }
+        
         }
         
         // This means sizes haven't been generated yet.
@@ -729,21 +781,29 @@ class StorageTool extends Tool
             return $data;
         }
         
+        $this->updateCallCount = 0;
+        $ewwProcessing = in_array( arrayPath( $_REQUEST, 'action' ), [ 'bulk_loop', 'ewww_bulk_update_meta' ] );
         // In 5.3 `wp_update_attachment_metadata` is called a few times, but we only want to handle the last time its called
         // to prevent uploading stuff twice.
         
-        if ( empty($this->processingOptimized) && !in_array( $id, $this->processed ) && arrayPath( $_REQUEST, 'action' ) != 'image-editor' ) {
-            Logger::info(
-                "Attachment hasn't been processed yet.",
-                [],
-                __METHOD__,
-                __LINE__
-            );
-            $this->processed[] = $id;
-            return $data;
+        if ( !empty($ewwProcessing) ) {
+            add_filter( 'media-cloud/storage/ignore-existing-s3-data', '__return_true' );
+            $this->updateCallCount = 1;
+        } else {
+            
+            if ( empty($this->processingOptimized) && !in_array( $id, $this->processed ) && arrayPath( $_REQUEST, 'action' ) != 'image-editor' ) {
+                Logger::info(
+                    "Attachment hasn't been processed yet.",
+                    [],
+                    __METHOD__,
+                    __LINE__
+                );
+                $this->processed[] = $id;
+                return $data;
+            }
+        
         }
         
-        $this->updateCallCount = 0;
         Logger::info(
             "Processing attachment metadata.",
             [],
@@ -752,14 +812,18 @@ class StorageTool extends Tool
         );
         // Now the goods
         $data = $this->handleUpdateAttachmentMetadata( $data, $id );
+        $shouldSkip = apply_filters( 'media-cloud/storage/ignore-metadata-update', false, $id );
         
-        if ( $this->settings->uploadOriginal && isset( $data['original_image'] ) ) {
+        if ( !$shouldSkip && $this->settings->uploadOriginal && isset( $data['original_image'] ) ) {
             $s3Data = $this->uploadOriginalImage( $data, $id, $this->preserveFilePaths );
             if ( !empty($s3Data) ) {
                 $data['original_image_s3'] = $s3Data;
             }
         }
         
+        if ( !empty($ewwProcessing) ) {
+            remove_filter( 'media-cloud/storage/ignore-existing-s3-data', '__return_true' );
+        }
         return $data;
     }
     
@@ -909,6 +973,7 @@ class StorageTool extends Tool
         if ( $mime ) {
             unset( $data['ilab-mime'] );
         }
+        $forcedIgnoreExistingS3 = false;
         
         if ( !isset( $data['file'] ) ) {
             if ( !$mime ) {
@@ -916,10 +981,6 @@ class StorageTool extends Tool
             }
             
             if ( $mime == 'application/pdf' ) {
-                $renderPDF = apply_filters( 'media-cloud/imgix/render-pdf', false );
-                if ( !$renderPDF ) {
-                    unset( $data['sizes'] );
-                }
                 $s3Info = get_post_meta( $id, 'ilab_s3_info', true );
                 
                 if ( $s3Info ) {
@@ -931,7 +992,7 @@ class StorageTool extends Tool
                         $data['width'] = $pdfInfo['width'];
                         $data['height'] = $pdfInfo['height'];
                         
-                        if ( $renderPDF ) {
+                        if ( !empty($imgixEnabled) && empty(arrayPath( $data, 'sizes/full', null )) ) {
                             $data['sizes']['full']['file'] = $s3Info['s3']['key'];
                             $data['sizes']['full']['width'] = $data['width'];
                             $data['sizes']['full']['height'] = $data['height'];
@@ -943,7 +1004,10 @@ class StorageTool extends Tool
             
             }
             
-            return $data;
+            if ( !isset( $data['sizes'] ) || !isset( $data['s3'] ) ) {
+                return $data;
+            }
+            $forcedIgnoreExistingS3 = true;
         }
         
         $upload_info = wp_upload_dir();
@@ -1023,7 +1087,7 @@ class StorageTool extends Tool
         Prefixer::setType( $mime );
         
         if ( $this->client && $this->client->enabled() ) {
-            $ignoreExistingS3 = apply_filters( 'media-cloud/storage/ignore-existing-s3-data', false, $id );
+            $ignoreExistingS3 = apply_filters( 'media-cloud/storage/ignore-existing-s3-data', $forcedIgnoreExistingS3, $id );
             
             if ( $ignoreExistingS3 || !isset( $data['s3'] ) ) {
                 Logger::info(
@@ -1033,22 +1097,26 @@ class StorageTool extends Tool
                     __LINE__
                 );
                 $doUpload = apply_filters( 'media-cloud/storage/upload-master', true );
-                $data = $this->processFile(
-                    $upload_path,
-                    $data['file'],
-                    $data,
-                    $id,
-                    $preserveFilePaths,
-                    $doUpload,
-                    null,
-                    $existingPrefix,
-                    'full'
-                );
+                if ( empty($forcedIgnoreExistingS3) || !isset( $data['s3'] ) ) {
+                    $data = $this->processFile(
+                        $upload_path,
+                        $data['file'],
+                        $data,
+                        $id,
+                        $preserveFilePaths,
+                        $doUpload,
+                        null,
+                        $existingPrefix,
+                        'full'
+                    );
+                }
                 
                 if ( $skipThumbnails && isset( $data['sizes'] ) ) {
                     unset( $data['sizes'] );
                 } else {
+                    
                     if ( isset( $data['sizes'] ) ) {
+                        $ignoreExistingS3 = apply_filters( 'media-cloud/storage/ignore-existing-s3-data', false, $id );
                         foreach ( $data['sizes'] as $key => $size ) {
                             if ( !is_array( $size ) ) {
                                 continue;
@@ -1080,7 +1148,7 @@ class StorageTool extends Tool
                                     $size,
                                     $id,
                                     $preserveFilePaths,
-                                    true,
+                                    empty($forcedIgnoreExistingS3),
                                     null,
                                     $existingPrefix,
                                     $key
@@ -1090,7 +1158,9 @@ class StorageTool extends Tool
                                         if ( isset( $lookData['s3'] ) ) {
                                             
                                             if ( $lookData['file'] == $sizeData['file'] ) {
+                                                $formats = arrayPath( $sizeData, 's3/formats', [] );
                                                 $sizeData['s3'] = $lookData['s3'];
+                                                $sizeData['s3']['formats'] = array_merge( arrayPath( $lookData, 's3/formats', [] ), $formats );
                                                 break;
                                             }
                                         
@@ -1119,6 +1189,7 @@ class StorageTool extends Tool
                             }
                         }
                     }
+                
                 }
                 
                 
@@ -1184,6 +1255,22 @@ class StorageTool extends Tool
                 $deletedFiles = [];
                 $deletedFiles[] = $data['s3']['key'];
                 $this->deleteFile( $data['s3']['key'] );
+                $formats = arrayPath( $data, 's3/formats', [] );
+                foreach ( $formats as $format ) {
+                    
+                    if ( in_array( $format, $deletedFiles ) ) {
+                        Logger::info(
+                            "File '{$format}' has already been deleted.",
+                            [],
+                            __METHOD__,
+                            __LINE__
+                        );
+                        continue;
+                    }
+                    
+                    $this->deleteFile( $format );
+                    $deletedFiles[] = $format;
+                }
                 
                 if ( isset( $data['sizes'] ) ) {
                     $pathParts = explode( '/', $data['s3']['key'] );
@@ -1207,6 +1294,22 @@ class StorageTool extends Tool
                         
                         $this->deleteFile( $file );
                         $deletedFiles[] = $file;
+                        $formats = arrayPath( $size, 's3/formats', [] );
+                        foreach ( $formats as $format ) {
+                            
+                            if ( in_array( $format, $deletedFiles ) ) {
+                                Logger::info(
+                                    "File '{$format}' has already been deleted.",
+                                    [],
+                                    __METHOD__,
+                                    __LINE__
+                                );
+                                continue;
+                            }
+                            
+                            $this->deleteFile( $format );
+                            $deletedFiles[] = $format;
+                        }
                     }
                 }
             
@@ -1323,6 +1426,135 @@ class StorageTool extends Tool
     
     }
     
+    private function extractPDFPageSize( $upload_path, $file )
+    {
+        $didParse = false;
+        $pdfWidth = 0;
+        $pdfHeight = 0;
+        
+        if ( !class_exists( '\\WP_Image_Editor_Imagick' ) ) {
+            require ABSPATH . 'wp-includes/class-wp-image-editor.php';
+            require ABSPATH . 'wp-includes/class-wp-image-editor-imagick.php';
+        }
+        
+        Logger::startTiming(
+            "PDF Loading {$file} with File Reader.",
+            [],
+            __METHOD__,
+            __LINE__
+        );
+        $pdfStream = fopen( $upload_path . '/' . $file, 'rb' );
+        while ( true ) {
+            $content = fgets( $pdfStream );
+            if ( $content === false ) {
+                break;
+            }
+            
+            if ( preg_match( '/\\/MediaBox\\s*\\[\\s*([ 0-9.]+)\\s*\\]/m', $content, $matches ) ) {
+                $dims = explode( ' ', $matches[1] );
+                
+                if ( count( $dims ) == 4 ) {
+                    $pdfWidth = round( floatval( $dims[2] ) * 4.166666667 );
+                    $pdfHeight = round( floatval( $dims[3] ) * 4.166666667 );
+                    $didParse = true;
+                }
+                
+                break;
+            }
+        
+        }
+        fclose( $pdfStream );
+        Logger::endTiming(
+            "PDF Loading {$file} with File Reader.",
+            [],
+            __METHOD__,
+            __LINE__
+        );
+        if ( !$didParse ) {
+            
+            if ( \WP_Image_Editor_Imagick::test() ) {
+                Logger::startTiming(
+                    "PDF Loading {$file} with Image Editor.",
+                    [],
+                    __METHOD__,
+                    __LINE__
+                );
+                $imageEditor = wp_get_image_editor( $upload_path . '/' . $file );
+                $sizes = $imageEditor->get_size();
+                $pdfWidth = $sizes['width'];
+                $pdfHeight = $sizes['height'];
+                Logger::endTiming(
+                    "PDF Loading {$file} with Image Editor.",
+                    [],
+                    __METHOD__,
+                    __LINE__
+                );
+                $didParse = true;
+            }
+        
+        }
+        //      //&& function_exists('gzuncompress')
+        //	    if (!$didParse) {
+        //		    $pdfFileSize = filesize($upload_path.'/'.$file);
+        //		    $memory = memory_get_usage(true);
+        //		    $limit = phpMemoryLimit('32M') * 0.5;
+        //
+        //		    if ($pdfFileSize <= min(($limit - $memory), 67108864)) {
+        //			    set_error_handler(function($errno, $errstr, $errfile, $errline) {
+        //				    throw new \Exception($errstr);
+        //			    }, E_RECOVERABLE_ERROR);
+        //
+        //
+        //			    try {
+        //				    Logger::startTiming("PDF Loading $file with PDFParser.", [], __METHOD__, __LINE__);
+        //				    $parser = new Parser();
+        //				    $pdf = $parser->parseFile($upload_path.'/'.$file);
+        //				    $pages = $pdf->getPages();
+        //				    if(count($pages) > 0) {
+        //					    $page = $pages[0];
+        //					    $details = $page->getDetails();
+        //					    if(isset($details['MediaBox'])) {
+        //						    $pdfWidth = round(floatval($details['MediaBox'][2]) * 4.166666667);
+        //						    $pdfHeight = round(floatval($details['MediaBox'][3]) * 4.166666667);
+        //						    $didParse = true;
+        //					    } else {
+        //						    Logger::info("PDF Loading $file with PDFParser.  Missing MediaBox from the page details.", [], __METHOD__, __LINE__);
+        //					    }
+        //				    }
+        //				    Logger::endTiming("PDF Loading $file with PDFParser.", [], __METHOD__, __LINE__);
+        //			    }
+        //			    catch(\Exception $ex) {
+        //				    Logger::error('PDF Loading $file with PDFParser Error:'.$ex->getMessage(), ['exception' => $ex->getMessage()], __METHOD__, __LINE__);
+        //			    }
+        //
+        //			    restore_error_handler();
+        //		    } else {
+        //			    Logger::warning("Not enough memory (probably) to parse PDF to get document size.", [], __METHOD__, __LINE__);
+        //		    }
+        //
+        //		    if (!$didParse && class_exists('\Imagick')) {
+        //			    try {
+        //				    Logger::startTiming("PDF Loading $file with Imagick.", [], __METHOD__, __LINE__);
+        //				    $pdfImage = new \Imagick($upload_path.'/'.$file);
+        //				    Logger::endTiming("PDF Loading $file with Imagick.", [], __METHOD__, __LINE__);
+        //				    Logger::startTiming("PDF Loading $file with Imagick.", [], __METHOD__, __LINE__);
+        //				    $pdfWidth = round(floatval($pdfImage->getImageWidth()) * 4.166666667);
+        //				    $pdfHeight = round(floatval($pdfImage->getImageHeight()) * 4.166666667);
+        //				    Logger::endTiming("PDF Loading $file with Imagick.", [], __METHOD__, __LINE__);
+        //			    } catch (\Exception $ex) {
+        //				    Logger::error("Error getting size for Imagick: ".$ex->getMessage(), [], __METHOD__, __LINE__);
+        //			    }
+        //		    }
+        //	    }
+        Logger::info(
+            "PDF Loading {$file} found dimensions: {$pdfWidth}w x {$pdfHeight}h.",
+            [],
+            __METHOD__,
+            __LINE__
+        );
+        return [ $pdfWidth, $pdfHeight ];
+    }
+    
     /**
      * Filters the data after a file has been uploaded to WordPress (https://core.trac.wordpress.org/browser/tags/4.8/src/wp-admin/includes/file.php#L416)
      *
@@ -1357,47 +1589,19 @@ class StorageTool extends Tool
             $upload_info = wp_upload_dir();
             $upload_path = $upload_info['basedir'];
             $file = trim( str_replace( $upload_path, '', $pi['dirname'] ), '/' ) . '/' . $pi['basename'];
-            
-            if ( $upload['type'] == 'application/pdf' && file_exists( $upload_path . '/' . $file ) && function_exists( 'gzuncompress' ) ) {
-                set_error_handler( function (
-                    $errno,
-                    $errstr,
-                    $errfile,
-                    $errline
-                ) {
-                    throw new \Exception( $errstr );
-                }, E_RECOVERABLE_ERROR );
-                try {
-                    $parser = new Parser();
-                    $pdf = $parser->parseFile( $upload_path . '/' . $file );
-                    $pages = $pdf->getPages();
-                    
-                    if ( count( $pages ) > 0 ) {
-                        $page = $pages[0];
-                        $details = $page->getDetails();
-                        
-                        if ( isset( $details['MediaBox'] ) ) {
-                            $data = [];
-                            $data['width'] = $details['MediaBox'][2];
-                            $data['height'] = $details['MediaBox'][3];
-                            $this->pdfInfo[$upload_path . '/' . $file] = $data;
-                        }
-                    
-                    }
+            if ( !empty($this->settings->extractPDFPageSize) && $upload['type'] == 'application/pdf' && file_exists( $upload_path . '/' . $file ) ) {
                 
-                } catch ( \Exception $ex ) {
-                    Logger::error(
-                        'PDF Parsing Error',
-                        [
-                        'exception' => $ex->getMessage(),
-                    ],
-                        __METHOD__,
-                        __LINE__
-                    );
+                if ( !empty($this->settings->extractPDFPageSize) ) {
+                    list( $pdfWidth, $pdfHeight ) = $this->extractPDFPageSize( $upload_path, $file );
+                    if ( !empty($pdfWidth) && !empty($pdfHeight) ) {
+                        $this->pdfInfo[$upload_path . '/' . $file] = $this->pdfInfo[$file] = [
+                            'width'  => $pdfWidth,
+                            'height' => $pdfHeight,
+                        ];
+                    }
                 }
-                restore_error_handler();
-            }
             
+            }
             Prefixer::setType( $upload['type'] );
             $upload = $this->processFile( $upload_path, $file, $upload );
             if ( isset( $upload['s3'] ) ) {
@@ -1575,6 +1779,9 @@ class StorageTool extends Tool
         }
         
         if ( isset( $this->uploadedDocs[$fileKey] ) ) {
+            //		    if (isset($this->uploadedDocs[$fileKey]['width'])) {
+            //			    add_post_meta($post_id, '_wp_attachment_metadata', $this->uploadedDocs[$fileKey]);
+            //            }
             add_post_meta( $post_id, 'ilab_s3_info', $this->uploadedDocs[$fileKey] );
             do_action(
                 'media-cloud/storage/uploaded-attachment',
@@ -1866,8 +2073,8 @@ class StorageTool extends Tool
         if ( empty(apply_filters( 'media-cloud/storage/override-url', true )) ) {
             return $url;
         }
-        $meta = wp_get_attachment_metadata( $post_id );
         $new_url = null;
+        $meta = wp_get_attachment_metadata( $post_id );
         if ( $meta ) {
             $new_url = $this->getAttachmentURLFromMeta( $meta );
         }
@@ -2087,6 +2294,7 @@ class StorageTool extends Tool
             return $data;
         }
         
+        $imgixEnabled = apply_filters( 'media-cloud/imgix/enabled', false );
         
         if ( isset( $data['s3'] ) ) {
             $key = $data['s3']['key'];
@@ -2254,6 +2462,7 @@ class StorageTool extends Tool
                 );
             }
             
+            $webpKey = null;
             $additionalPaths = apply_filters(
                 'as3cf_attachment_file_paths',
                 [
@@ -2266,10 +2475,17 @@ class StorageTool extends Tool
             if ( isset( $additionalPaths['file-webp'] ) ) {
                 $webpPath = $additionalPaths['file-webp'];
                 $webpBasename = basename( $webpPath );
+                $webpKey = $prefix . $webpBasename;
                 
-                if ( !$this->client->exists( $prefix . $webpBasename ) ) {
+                if ( !$this->client->exists( $webpKey ) ) {
+                    Logger::info(
+                        "\tUploading {$filename} .webp version to S3",
+                        [],
+                        __METHOD__,
+                        __LINE__
+                    );
                     $this->client->upload(
-                        $prefix . $webpBasename,
+                        $webpKey,
                         $webpPath,
                         $privacy,
                         StorageToolSettings::cacheControl(),
@@ -2277,12 +2493,9 @@ class StorageTool extends Tool
                         'image/webp'
                     );
                     $canDelete = apply_filters( 'media-cloud/storage/delete_uploads', true );
-                    
                     if ( !empty($canDelete) && StorageToolSettings::deleteOnUpload() ) {
                         $this->deleteCache[] = $webpPath;
-                        //                        unlink($webpPath);
                     }
-                
                 }
             
             }
@@ -2307,7 +2520,11 @@ class StorageTool extends Tool
                 'v'         => MEDIA_CLOUD_INFO_VERSION,
                 'optimized' => $didOptimize,
                 'options'   => $options,
+                'formats'   => [],
             ];
+            if ( !empty($webpKey) ) {
+                $data['s3']['formats']['webp'] = $webpKey;
+            }
             
             if ( file_exists( $upload_path . '/' . $filename ) ) {
                 $ftype = wp_check_filetype( $upload_path . '/' . $filename );
@@ -2329,12 +2546,7 @@ class StorageTool extends Tool
                 __LINE__
             );
         }
-        
         if ( isset( $data['type'] ) && $data['type'] == 'application/pdf' ) {
-            $renderPDF = apply_filters( 'media-cloud/imgix/render-pdf', false );
-            if ( !$renderPDF ) {
-                unset( $data['sizes'] );
-            }
             
             if ( isset( $data['s3'] ) ) {
                 $data['file'] = $data['s3']['key'];
@@ -2344,7 +2556,7 @@ class StorageTool extends Tool
                     $data['width'] = $pdfInfo['width'];
                     $data['height'] = $pdfInfo['height'];
                     
-                    if ( $renderPDF ) {
+                    if ( !empty($imgixEnabled) && empty(arrayPath( $data, 'sizes/full', null )) ) {
                         $data['sizes']['full']['file'] = $data['s3']['key'];
                         $data['sizes']['full']['width'] = $data['width'];
                         $data['sizes']['full']['height'] = $data['height'];
@@ -2355,7 +2567,6 @@ class StorageTool extends Tool
             }
         
         }
-        
         $canDelete = apply_filters( 'media-cloud/storage/delete_uploads', true );
         if ( !empty($canDelete) ) {
             if ( $uploadType == 'image' && !empty(ToolsManager::instance()->toolEnabled( 'optimizer' )) ) {
@@ -2404,20 +2615,39 @@ class StorageTool extends Tool
                     $task->selection = array_merge( $task->selection, $this->deleteCache );
                     $task->save();
                 } else {
-                    DeleteUploadsTask::scheduleIn( 2, [], $this->deleteCache );
+                    DeleteUploadsTask::scheduleIn( StorageToolSettings::queuedDeletesDelay(), [], $this->deleteCache );
                 }
             
             } else {
                 foreach ( $this->deleteCache as $file ) {
-                    @unlink( $file );
+                    
                     if ( file_exists( $file ) ) {
+                        
+                        if ( @unlink( $file ) ) {
+                            Logger::info(
+                                "Deleted {$file}",
+                                [],
+                                __METHOD__,
+                                __LINE__
+                            );
+                        } else {
+                            Logger::info(
+                                "Error deleting {$file}",
+                                [],
+                                __METHOD__,
+                                __LINE__
+                            );
+                        }
+                    
+                    } else {
                         Logger::info(
-                            "StorageTool::cleanUploads - Unable to delete {$file} - maybe permissions issue?",
+                            "Skipping missing file: {$file}",
                             [],
                             __METHOD__,
                             __LINE__
                         );
                     }
+                
                 }
             }
             
@@ -2546,7 +2776,7 @@ TEMPLATE;
             add_filter( 'manage_media_columns', function ( $cols ) {
                 $cols["cloud"] = 'Cloud';
                 return $cols;
-            } );
+            }, PHP_INT_MAX );
             add_action(
                 'manage_media_custom_column',
                 function ( $column_name, $id ) {
@@ -2565,13 +2795,31 @@ TEMPLATE;
                         $lockIcon = $this->lockIcon();
                         //ILAB_PUB_IMG_URL.'/ilab-icon-lock.svg';
                         $lockImg = ( !empty($privacy) && $privacy !== StorageConstants::ACL_PUBLIC_READ ? "<img class='mcloud-lock' src='{$lockIcon}' height='22'>" : '' );
-                        echo  "<a class='media-cloud-info-link' data-post-id='{$id}' data-container='list' data-mime-type='{$mimeType}' href='" . $meta['s3']['url'] . "' target=_blank><img src='{$cloudIcon}' width='24'>{$lockImg}</a>" ;
+                        echo  "<div class='media-list-cloud-icons'><a class='media-cloud-info-link' data-post-id='{$id}' data-container='list' data-mime-type='{$mimeType}' href='" . $meta['s3']['url'] . "' target=_blank><img src='{$cloudIcon}' width='24'>{$lockImg}</a>" ;
                     }
                 
                 }
             
             },
-                10,
+                PHP_INT_MAX - 10,
+                2
+            );
+            add_action(
+                'manage_media_custom_column',
+                function ( $column_name, $id ) {
+                
+                if ( $column_name == "cloud" ) {
+                    $meta = wp_get_attachment_metadata( $id );
+                    if ( empty($meta) && !isset( $meta['s3'] ) ) {
+                        $meta = get_post_meta( $id, 'ilab_s3_info', true );
+                    }
+                    if ( !empty($meta) && isset( $meta['s3'] ) ) {
+                        echo  "</div>" ;
+                    }
+                }
+            
+            },
+                PHP_INT_MAX,
                 2
             );
             add_filter( 'bulk_actions-upload', function ( $actions ) {
@@ -2657,9 +2905,20 @@ TEMPLATE;
                 if ( get_current_screen()->base == 'upload' ) {
                     ?>
                     <style>
+                        div.media-list-cloud-icons {
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            gap: 8px;
+                        }
+
                         th.column-cloud, td.column-cloud {
-                            width: 60px !important;
-                            max-width: 60px !important;
+                            max-width: 120px !important;
+                            width: 120px !important;
+                            /*display: flex;*/
+                            /*align-items: center;*/
+                            /*justify-content: center;*/
+                            /*gap: 8px;*/
                             text-align: center;
                         }
                     </style>
@@ -3410,59 +3669,25 @@ TEMPLATE;
                     }
                 
                 }
-                
                 if ( $mime == 'application/pdf' ) {
-                    $renderPDF = apply_filters( 'media-cloud/imgix/render-pdf', false );
-                    set_error_handler( function (
-                        $errno,
-                        $errstr,
-                        $errfile,
-                        $errline
-                    ) {
-                        throw new \Exception( $errstr );
-                    }, E_RECOVERABLE_ERROR );
-                    try {
-                        $parser = new Parser();
-                        $pdf = $parser->parseFile( $upload_file );
-                        $pages = $pdf->getPages();
+                    
+                    if ( !empty($this->settings->extractPDFPageSize) ) {
+                        list( $pageWidth, $pageHeight ) = $this->extractPDFPageSize( pathinfo( $upload_file, PATHINFO_DIRNAME ), pathinfo( $upload_file, PATHINFO_BASENAME ) );
                         
-                        if ( count( $pages ) > 0 ) {
-                            $page = $pages[0];
-                            $details = $page->getDetails();
-                            
-                            if ( isset( $details['MediaBox'] ) ) {
-                                $data['width'] = $details['MediaBox'][2];
-                                $data['height'] = $details['MediaBox'][3];
-                                
-                                if ( $renderPDF ) {
-                                    $data['sizes'] = [
-                                        'full' => [
-                                        'file'   => $data['file'],
-                                        'width'  => $data['width'],
-                                        'height' => $data['height'],
-                                    ],
-                                    ];
-                                    $isDocument = false;
-                                }
-                            
-                            }
-                        
+                        if ( !empty($pageWidth) && !empty($pageHeight) ) {
+                            $data['sizes'] = [
+                                'full' => [
+                                'file'   => $data['file'],
+                                'width'  => $pageWidth,
+                                'height' => $pageHeight,
+                            ],
+                            ];
+                            $isDocument = false;
                         }
                     
-                    } catch ( \Exception $ex ) {
-                        Logger::error(
-                            'PDF Exception.',
-                            [
-                            'postId'    => $postId,
-                            'exception' => $ex->getMessage(),
-                        ],
-                            __METHOD__,
-                            __LINE__
-                        );
                     }
-                    restore_error_handler();
+                
                 }
-            
             }
         
         } else {
@@ -4151,19 +4376,55 @@ TEMPLATE;
     
     }
     
-    private function displayOptimizerAdminNotice()
+    private function displayOptimizerAdminNotice( $builtInImageOptimizer )
     {
+        $type = 'warning';
+        $suffix = '';
+        
+        if ( media_cloud_licensing()->is_plan( 'pro' ) ) {
+            
+            if ( class_exists( '\\Elementor\\Plugin' ) ) {
+                $suffix .= '-elementor';
+                $adminUrl = admin_url( 'admin.php?page=media-cloud-settings-integrations#elementor' );
+                $adminUrlStorage = admin_url( 'admin.php?page=media-cloud-settings&tab=storage#deleting-files' );
+                $whatThing = ( $builtInImageOptimizer ? 'image optimization' : 'an image optimization plugin and Media Cloud' );
+                $additionalText = "<p><strong>Important!</strong>  To use <strong>Elementor</strong> with {$whatThing}, please turn on <strong>Auto Update Elementor</strong> in <a style='font-weight: bold' href='{$adminUrl}'>Integration Settings</a> and <strong>Queue Deletes</strong> in <a style='font-weight: bold' href='{$adminUrlStorage}'>Cloud Storage Settings</a>.</p>";
+            } else {
+                $additionalText = '';
+            }
+        
+        } else {
+            
+            if ( class_exists( '\\Elementor\\Plugin' ) ) {
+                $type = 'error';
+                $suffix .= '-elementor';
+                $additionalText = "<p style='font-weight: bold'>Using an image optimizer other than EWWW Image Optimizer with Elementor and Media Cloud is not supported and will lead to problems and the appearance of missing images.  It's recommended to use <a href='https://wordpress.org/plugins/ewww-image-optimizer/' target='_blank'>EWWW Image Optimizer</a> instead of the plugin you are currently using.  The Pro version of Media Cloud does not have this limitation, you can <a href='https://mediacloud.press/pricing' target='_blank'>upgrade here</a>.</p>";
+            } else {
+                $additionalText = '';
+            }
+        
+        }
+        
+        
+        if ( empty($builtInImageOptimizer) ) {
+            $warningId = "ilab-optimizer-{$this->imageOptimizer}-{$type}{$suffix}-forever";
+            $warningText = "Image optimizer plugins often do the optimization step in the background, not actually during the upload process.";
+        } else {
+            $warningId = "mcloud-builtin-optimizer-{$type}{$suffix}-forever";
+            $warningText = "You have background processing enabled for the image optimization feature.";
+        }
+        
         $message = <<<Optimizer
 <p style='text-transform:uppercase; font-weight:bold; opacity: 0.8; margin-bottom:0; padding-bottom:0px;'>Image Optimizer Warning</p>
-<p>Image optimizer plugins often do the optimization step in the background, not actually during the upload process.</p>
-<p>Because of this, Media Cloud will not upload your images to your cloud storage provider <strong>until after the image is optimized</strong>.  This means 
+{$additionalText}
+<p>{$warningText} Because of this, Media Cloud will not upload your images to your cloud storage provider <strong>until after the image is optimized</strong>.  This means 
 your uploaded images will appear as a local images until after the optimization process happens.  This can take several minutes.</p>
 Optimizer;
         NoticeManager::instance()->displayAdminNotice(
-            'warning',
+            $type,
             $message,
             true,
-            'ilab-optimizer-' . $this->imageOptimizer . '-warning-forever'
+            $warningId
         );
     }
     
@@ -4923,7 +5184,7 @@ MIGRATED;
         $client = new Client();
         $allSizes = ilab_get_image_sizes();
         $sizeKeys = array_keys( $allSizes );
-        $sizeKeys = array_sort( $sizeKeys );
+        sort( $sizeKeys );
         $sizesData = [];
         foreach ( $sizeKeys as $key ) {
             if ( $includeLocal ) {
@@ -5240,7 +5501,7 @@ MIGRATED;
         $client = new Client();
         $allSizes = ilab_get_image_sizes();
         $sizeKeys = array_keys( $allSizes );
-        $sizeKeys = array_sort( $sizeKeys );
+        sort( $sizeKeys );
         $sizesData = [];
         foreach ( $sizeKeys as $key ) {
             $sizesData[$key] = null;

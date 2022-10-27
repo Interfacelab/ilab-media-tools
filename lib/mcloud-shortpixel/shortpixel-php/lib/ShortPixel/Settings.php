@@ -50,7 +50,11 @@ class Settings {
         $data['resize'] = isset($post['resize']) ? ($post['resize_type'] == 'outer' ? 1 : 3) : 0;
         if($data['resize'] && isset($post['width'])) $data['resize_width'] = $post['width'];
         if($data['resize'] && isset($post['height'])) $data['resize_height'] = $post['height'];
-        $data['convertto'] = isset($post['webp']) ? '+webp' : '';
+
+        $convertto = isset($post['webp']) ? '|+webp' : '';
+        $convertto .= isset($post['avif']) ? '|+avif' : '';
+        $data['convertto'] = '' . substr($convertto, 1);
+
         if(isset($post['backup_path'])) {
             $data['backup_path'] = $post['backup_path'];
         }
@@ -86,7 +90,7 @@ class Settings {
         $strSettings = "[SHORTPIXEL]\n";
         foreach($this->post2options($data) as $key => $val) {
             if(!in_array($key, array("API_KEY", "folder", "")))
-                $strSettings .= $key . '=' . $val . "\n";
+                $strSettings .= $key . '=' . (is_numeric($val) ? $val : '"' . $val . '"') . "\n";
         }
         return @file_put_contents($path . '/' . self::FOLDER_INI_NAME, $strSettings);
     }

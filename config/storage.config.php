@@ -73,6 +73,15 @@ return [
 				[ 'title' => 'Read Documentation', 'url' => 'https://support.mediacloud.press/articles/documentation/cloud-storage/setting-up-google-cloud-storage' ],
 			]
 		],
+		'cloudflare' => [
+			'name' => 'Cloudflare R2 Storage',
+			'class' => \MediaCloud\Plugin\Tools\Storage\Driver\Cloudflare\CloudflareStorage::class,
+			'config' => '/storage/cloudflare.config.php',
+			'help' => [
+				[ 'title' => 'Setup Wizard', 'wizard' => 'cloudflare' ],
+				[ 'title' => 'Watch Tutorial', 'video_url' => 'https://www.youtube.com/watch?v=GDL2bzYMgLY' ],
+			]
+		],
 		'do' => [
 			'name' => 'DigitalOcean Spaces',
 			'class' => "\\MediaCloud\\Plugin\\Tools\\Storage\\Driver\\S3\\DigitalOceanStorage",
@@ -130,6 +139,15 @@ return [
 			'config' => '/storage/backblaze.config.php',
 			'help' => [
 				[ 'title' => 'Setup Wizard', 'wizard' => 'backblaze' ],
+				[ 'title' => 'Read Documentation', 'url' => 'https://support.mediacloud.press/articles/documentation/cloud-storage/setting-up-backblaze' ],
+			]
+		],
+		'supabase' => [
+			'name' => 'Supabase Storage (Beta)',
+			'class' => \MediaCloud\Plugin\Tools\Storage\Driver\Supabase\SupabaseStorage::class,
+			'config' => '/storage/supabase.config.php',
+			'help' => [
+				[ 'title' => 'Setup Wizard', 'wizard' => 'supabase' ],
 				[ 'title' => 'Read Documentation', 'url' => 'https://support.mediacloud.press/articles/documentation/cloud-storage/setting-up-backblaze' ],
 			]
 		],
@@ -230,25 +248,6 @@ return [
 						"type" => "checkbox",
 						"default" => false
 					],
-					"mcloud-storage-delete-uploads" => [
-						"title" => "Delete Uploaded Files",
-						"description" => "Deletes uploaded files from the WordPress server after they've been uploaded.",
-						"display-order" => 30,
-						"type" => "checkbox"
-					],
-					"mcloud-storage-queue-deletes" => [
-						"title" => "Queue Deletes",
-						"description" => "When this option is enabled, uploads won't be deleted right away, they will be queued for deletion two to five minutes later.  This allows other plugins the ability to process any uploads before they are deleted from your WordPress server.  If <strong>Delete From Storage</strong> is disabled, this setting is ignored.",
-						"display-order" => 31,
-						"type" => "checkbox",
-						"default" => false
-					],
-					"mcloud-storage-delete-from-server" => [
-						"title" => "Delete From Storage",
-						"description" => "When you delete from the media library, turning this on will also delete the file from cloud storage.",
-						"display-order" => 32,
-						"type" => "checkbox"
-					],
 					"mcloud-storage-skip-import-other-plugin" => [
 						"title" => "Skip Importing From Other Plugins",
 						"description" => "Skip importing from other plugins like WP Offload Media, WP-Stateless and other cloud storage plugins.",
@@ -258,12 +257,56 @@ return [
 					],
 				]
 			],
+			"ilab-media-cloud-deleting-files" => [
+				"title" => "Deleting Files",
+				"dynamic" => true,
+				"doc_link" => 'https://support.mediacloud.press/articles/documentation/cloud-storage/upload-handling-settings',
+				"description" => "The following options control how the storage tool handles uploads.",
+				"options" => [
+					"mcloud-storage-delete-uploads" => [
+						"title" => "Delete Uploaded Files",
+						"description" => "Deletes uploaded files from the WordPress server after they've been uploaded.",
+						"display-order" => 30,
+						"type" => "checkbox"
+					],
+					"mcloud-storage-queue-deletes" => [
+						"title" => "Queue Deletes",
+						"description" => "When this option is enabled, uploads won't be deleted right away, they will be queued for deletion at a later time.  This allows other plugins the ability to process any uploads before they are deleted from your WordPress server.  If <strong>Delete From Storage</strong> is disabled, this setting is ignored.",
+						"display-order" => 31,
+						"type" => "checkbox",
+						"default" => false
+					],
+					"mcloud-storage-queue-deletes-delay" => [
+						"title" => "Queue Deletes Delay",
+						"description" => "How long, in minutes, to wait to before processing the queue of items to delete.",
+						"display-order" => 32,
+						"type" => "number",
+						"min" => 2,
+						"max" => 1440,
+						"default" => 2,
+					],
+					"mcloud-storage-delete-from-server" => [
+						"title" => "Delete From Storage",
+						"description" => "When you delete from the media library, turning this on will also delete the file from cloud storage.",
+						"display-order" => 33,
+						"type" => "checkbox"
+					],
+				]
+			],
 			"ilab-media-cloud-image-upload-handling" => [
-				"title" => "Image Upload Handling",
+				"title" => "Image and PDF Upload Handling",
 				"dynamic" => true,
 				"doc_link" => 'https://support.mediacloud.press/articles/documentation/cloud-storage/upload-handling-settings',
 				"description" => "The following options control how the storage tool handles image uploads.",
 				"options" => [
+					"mcloud-storage-extract-pdf-page-size" => [
+						"title" => "Extract PDF Page Size",
+						"description" => "Extracts the width and height of the PDF and stores it in the attachment's metadata.",
+						"display-order" => 39,
+						"wp_version" => ['>=', "5.3"],
+						"type" => "checkbox",
+						"default" => false,
+					],
 					"mcloud-storage-enable-big-size-threshold" => [
 						"title" => "Enable Big Size Threshold",
 						"description" => "WordPress 5.3 introduced a new feature that automatically resizes large image uploads to be 'web-ready'.  It essentially replaces your uploaded master image with a version scaled down to 2560x2560.  Use this toggle to enable or disable this feature.",
@@ -287,6 +330,13 @@ return [
 						"description" => "WordPress 5.3 introduced a new feature that automatically resizes large image uploads to be 'web-ready'.  Use this setting to upload the unscaled original image to cloud storage.  If this is disabled and you have <strong>Delete Uploads</strong> enabled, the original file will not be deleted.",
 						"display-order" => 42,
 						"wp_version" => ['>=', "5.3"],
+						"type" => "checkbox",
+						"default" => true,
+					],
+					"mcloud-storage-disable-eww-background-processing" => [
+						"title" => "Disable EWWW Background Processing",
+						"description" => "Enabling this will disable EWWW's background processing and force EWWW to run it's optimization during the upload instead of later.  This is enabled by default as it helps with compatibility with Media Cloud and a variety of other plugins such as Elementor.  If your uploads are too slow, disable this but be aware that it may cause issues.",
+						"display-order" => 45,
 						"type" => "checkbox",
 						"default" => true,
 					],

@@ -93,14 +93,13 @@ class DescriptorPool
     public function addDescriptor($descriptor)
     {
         if (strpos($descriptor->getClass(), 'Google\\') === 0) {
-        	$class = $descriptor->getClass();
-	        $intruder = new Intruder($descriptor);
-	        $intruder->klass = 'MediaCloud\Vendor\\'.$class;
-	        $intruder->legacy_klass = 'MediaCloud\Vendor\\'.$class;
+            $class = $descriptor->getClass();
+            $intruder = new Intruder($descriptor);
+            $intruder->klass = 'MediaCloud\Vendor\\'.$class;
+            $intruder->legacy_klass = 'MediaCloud\Vendor\\'.$class;
         }
-
-	    $this->proto_to_class[$descriptor->getFullName()] =
-		    $descriptor->getClass();
+        $this->proto_to_class[$descriptor->getFullName()] =
+            $descriptor->getClass();
         $this->class_to_desc[$descriptor->getClass()] = $descriptor;
         $this->class_to_desc[$descriptor->getLegacyClass()] = $descriptor;
         foreach ($descriptor->getNestedType() as $nested_type) {

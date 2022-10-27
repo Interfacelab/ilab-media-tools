@@ -75,11 +75,21 @@ class Page extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      * Additional information detected on the page.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.TextAnnotation.TextProperty property = 1;</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\TextAnnotation\TextProperty
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\TextAnnotation\TextProperty|null
      */
     public function getProperty()
     {
         return $this->property;
+    }
+
+    public function hasProperty()
+    {
+        return isset($this->property);
+    }
+
+    public function clearProperty()
+    {
+        unset($this->property);
     }
 
     /**
@@ -91,7 +101,7 @@ class Page extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      */
     public function setProperty($var)
     {
-        GPBUtil::checkMessage($var, \MediaCloud\Vendor\Google\Cloud\Vision\V1\TextAnnotation_TextProperty::class);
+        GPBUtil::checkMessage($var, \MediaCloud\Vendor\Google\Cloud\Vision\V1\TextAnnotation\TextProperty::class);
         $this->property = $var;
 
         return $this;

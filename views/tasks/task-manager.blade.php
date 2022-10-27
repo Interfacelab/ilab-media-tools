@@ -1,4 +1,7 @@
 <?php /** @var \MediaCloud\Plugin\Tasks\TaskManager $manager */?>
+<?php
+use function \MediaCloud\Plugin\Utilities\arrayPath;
+?>
 @extends('../templates/sub-page')
 
 @section('header')
@@ -190,10 +193,15 @@
                                             @include('base/ui/checkbox', ['name' => $optionName, 'value' => $option['default'], 'description' => '', 'enabled' => true])
                                         @elseif($option['type'] == 'select')
                                             <select name="{{$optionName}}">
+	                                            <?php $defaultValue = arrayPath($option, 'default', 'null'); ?>
                                                 @foreach($option['options'] as $suboptionValue => $suboptionName)
-                                                    <option value="{{$suboptionValue}}">{{$suboptionName}}</option>
+                                                    <option {{($defaultValue == $suboptionValue) ? 'selected' : ''}} value="{{$suboptionValue}}">{{$suboptionName}}</option>
                                                 @endforeach
                                             </select>
+                                        @elseif($option['type'] == 'text')
+                                            <input style="width: 100%; max-width: 500px;" type="text" name="{{$optionName}}" value="{{arrayPath($option, 'default', '')}}" placeholder="{{arrayPath($option, 'placeholder', '')}}">
+                                        @elseif($option['type'] == 'url')
+                                            <input style="width: 100%; max-width: 500px;" type="url" name="{{$optionName}}" value="{{arrayPath($option, 'default', '')}}" placeholder="{{arrayPath($option, 'placeholder', '')}}">
                                         @elseif($option['type'] == 'browser')
                                             <input type="text" name="{{$optionName}}" disabled="disabled" value="{{$option['default']}}"><button type="button" class="button button-small button-primary" data-nonce="{{wp_create_nonce('storage-browser')}}">Browse</button>
                                         @elseif($option['type'] == 'media-select')

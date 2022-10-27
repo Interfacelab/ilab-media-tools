@@ -16,7 +16,8 @@
  */
 
 namespace MediaCloud\Vendor\Google\Cloud\Core;
-use MediaCloud\Vendor\GuzzleHttp\Psr7;
+use MediaCloud\Vendor\GuzzleHttp\Psr7\Query;
+use MediaCloud\Vendor\GuzzleHttp\Psr7\Utils;
 use MediaCloud\Vendor\Psr\Http\Message\UriInterface;
 use MediaCloud\Vendor\Rize\UriTemplate;
 
@@ -58,6 +59,6 @@ trait UriTrait
             }
         }
 
-        return Psr7\uri_for($uri)->withQuery(Psr7\build_query($query));
+        return Utils::uriFor($uri)->withQuery(Query::build($query));
     }
 }

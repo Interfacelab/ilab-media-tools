@@ -55,6 +55,7 @@ class Serializer
         'google.rpc.badrequest-bin' => \MediaCloud\Vendor\Google\Rpc\BadRequest::class,
         'google.rpc.requestinfo-bin' => \MediaCloud\Vendor\Google\Rpc\RequestInfo::class,
         'google.rpc.resourceinfo-bin' => \MediaCloud\Vendor\Google\Rpc\ResourceInfo::class,
+        'google.rpc.errorinfo-bin' => \MediaCloud\Vendor\Google\Rpc\ErrorInfo::class,
         'google.rpc.help-bin' => \MediaCloud\Vendor\Google\Rpc\Help::class,
         'google.rpc.localizedmessage-bin' => \MediaCloud\Vendor\Google\Rpc\LocalizedMessage::class,
     ];

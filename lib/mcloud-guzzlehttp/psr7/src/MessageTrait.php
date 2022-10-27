@@ -17,7 +17,7 @@ trait MessageTrait
     /** @var string */
     private $protocol = '1.1';
 
-    /** @var StreamInterface */
+    /** @var StreamInterface|null */
     private $stream;
 
     public function getProtocolVersion()
@@ -117,7 +117,7 @@ trait MessageTrait
     public function getBody()
     {
         if (!$this->stream) {
-            $this->stream = stream_for('');
+            $this->stream = Utils::streamFor('');
         }
 
         return $this->stream;
@@ -194,7 +194,7 @@ trait MessageTrait
             }
 
             return trim((string) $value, " \t");
-        }, $values);
+        }, array_values($values));
     }
 
     private function assertHeader($header)

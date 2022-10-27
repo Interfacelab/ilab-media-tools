@@ -21,22 +21,19 @@ class Annotation extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>repeated int32 path = 1 [packed = true];</code>
      */
     private $path;
-    private $has_path = false;
     /**
      * Identifies the filesystem path to the original source .proto.
      *
      * Generated from protobuf field <code>optional string source_file = 2;</code>
      */
-    protected $source_file = '';
-    private $has_source_file = false;
+    protected $source_file = null;
     /**
      * Identifies the starting offset in bytes in the generated code
      * that relates to the identified object.
      *
      * Generated from protobuf field <code>optional int32 begin = 3;</code>
      */
-    protected $begin = 0;
-    private $has_begin = false;
+    protected $begin = null;
     /**
      * Identifies the ending offset in bytes in the generated code that
      * relates to the identified offset. The end offset should be one past
@@ -44,8 +41,7 @@ class Annotation extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional int32 end = 4;</code>
      */
-    protected $end = 0;
-    private $has_end = false;
+    protected $end = null;
 
     /**
      * Constructor.
@@ -95,14 +91,8 @@ class Annotation extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
     {
         $arr = GPBUtil::checkRepeatedField($var, \MediaCloud\Vendor\Google\Protobuf\Internal\GPBType::INT32);
         $this->path = $arr;
-        $this->has_path = true;
 
         return $this;
-    }
-
-    public function hasPath()
-    {
-        return $this->has_path;
     }
 
     /**
@@ -113,7 +103,17 @@ class Annotation extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      */
     public function getSourceFile()
     {
-        return $this->source_file;
+        return isset($this->source_file) ? $this->source_file : '';
+    }
+
+    public function hasSourceFile()
+    {
+        return isset($this->source_file);
+    }
+
+    public function clearSourceFile()
+    {
+        unset($this->source_file);
     }
 
     /**
@@ -127,14 +127,8 @@ class Annotation extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->source_file = $var;
-        $this->has_source_file = true;
 
         return $this;
-    }
-
-    public function hasSourceFile()
-    {
-        return $this->has_source_file;
     }
 
     /**
@@ -146,7 +140,17 @@ class Annotation extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      */
     public function getBegin()
     {
-        return $this->begin;
+        return isset($this->begin) ? $this->begin : 0;
+    }
+
+    public function hasBegin()
+    {
+        return isset($this->begin);
+    }
+
+    public function clearBegin()
+    {
+        unset($this->begin);
     }
 
     /**
@@ -161,14 +165,8 @@ class Annotation extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
     {
         GPBUtil::checkInt32($var);
         $this->begin = $var;
-        $this->has_begin = true;
 
         return $this;
-    }
-
-    public function hasBegin()
-    {
-        return $this->has_begin;
     }
 
     /**
@@ -181,7 +179,17 @@ class Annotation extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      */
     public function getEnd()
     {
-        return $this->end;
+        return isset($this->end) ? $this->end : 0;
+    }
+
+    public function hasEnd()
+    {
+        return isset($this->end);
+    }
+
+    public function clearEnd()
+    {
+        unset($this->end);
     }
 
     /**
@@ -197,14 +205,8 @@ class Annotation extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
     {
         GPBUtil::checkInt32($var);
         $this->end = $var;
-        $this->has_end = true;
 
         return $this;
-    }
-
-    public function hasEnd()
-    {
-        return $this->has_end;
     }
 
 }

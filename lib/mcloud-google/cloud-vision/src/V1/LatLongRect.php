@@ -47,11 +47,21 @@ class LatLongRect extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      * Min lat/long pair.
      *
      * Generated from protobuf field <code>.google.type.LatLng min_lat_lng = 1;</code>
-     * @return \MediaCloud\Vendor\Google\Type\LatLng
+     * @return \MediaCloud\Vendor\Google\Type\LatLng|null
      */
     public function getMinLatLng()
     {
         return $this->min_lat_lng;
+    }
+
+    public function hasMinLatLng()
+    {
+        return isset($this->min_lat_lng);
+    }
+
+    public function clearMinLatLng()
+    {
+        unset($this->min_lat_lng);
     }
 
     /**
@@ -73,11 +83,21 @@ class LatLongRect extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      * Max lat/long pair.
      *
      * Generated from protobuf field <code>.google.type.LatLng max_lat_lng = 2;</code>
-     * @return \MediaCloud\Vendor\Google\Type\LatLng
+     * @return \MediaCloud\Vendor\Google\Type\LatLng|null
      */
     public function getMaxLatLng()
     {
         return $this->max_lat_lng;
+    }
+
+    public function hasMaxLatLng()
+    {
+        return isset($this->max_lat_lng);
+    }
+
+    public function clearMaxLatLng()
+    {
+        unset($this->max_lat_lng);
     }
 
     /**

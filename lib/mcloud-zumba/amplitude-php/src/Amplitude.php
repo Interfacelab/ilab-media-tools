@@ -359,6 +359,7 @@ class Amplitude
      * If no events are logged, it will not get sent to Amplitude
      *
      * @param array $userProperties
+     * @return \MediaCloud\Vendor\Zumba\Amplitude\Amplitude
      */
     public function setUserProperties(array $userProperties)
     {

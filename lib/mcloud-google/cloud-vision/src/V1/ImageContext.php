@@ -51,6 +51,12 @@ class ImageContext extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>.google.cloud.vision.v1.WebDetectionParams web_detection_params = 6;</code>
      */
     private $web_detection_params = null;
+    /**
+     * Parameters for text detection and document text detection.
+     *
+     * Generated from protobuf field <code>.google.cloud.vision.v1.TextDetectionParams text_detection_params = 12;</code>
+     */
+    private $text_detection_params = null;
 
     /**
      * Constructor.
@@ -75,6 +81,8 @@ class ImageContext extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      *           Parameters for product search.
      *     @type \MediaCloud\Vendor\Google\Cloud\Vision\V1\WebDetectionParams $web_detection_params
      *           Parameters for web detection.
+     *     @type \MediaCloud\Vendor\Google\Cloud\Vision\V1\TextDetectionParams $text_detection_params
+     *           Parameters for text detection and document text detection.
      * }
      */
     public function __construct($data = NULL) { \MediaCloud\Vendor\GPBMetadata\Google\Cloud\Vision\V1\ImageAnnotator::initOnce();
@@ -85,11 +93,21 @@ class ImageContext extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      * Not used.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.LatLongRect lat_long_rect = 1;</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\LatLongRect
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\LatLongRect|null
      */
     public function getLatLongRect()
     {
         return $this->lat_long_rect;
+    }
+
+    public function hasLatLongRect()
+    {
+        return isset($this->lat_long_rect);
+    }
+
+    public function clearLatLongRect()
+    {
+        unset($this->lat_long_rect);
     }
 
     /**
@@ -151,11 +169,21 @@ class ImageContext extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      * Parameters for crop hints annotation request.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.CropHintsParams crop_hints_params = 4;</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\CropHintsParams
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\CropHintsParams|null
      */
     public function getCropHintsParams()
     {
         return $this->crop_hints_params;
+    }
+
+    public function hasCropHintsParams()
+    {
+        return isset($this->crop_hints_params);
+    }
+
+    public function clearCropHintsParams()
+    {
+        unset($this->crop_hints_params);
     }
 
     /**
@@ -177,11 +205,21 @@ class ImageContext extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      * Parameters for product search.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.ProductSearchParams product_search_params = 5;</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ProductSearchParams
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ProductSearchParams|null
      */
     public function getProductSearchParams()
     {
         return $this->product_search_params;
+    }
+
+    public function hasProductSearchParams()
+    {
+        return isset($this->product_search_params);
+    }
+
+    public function clearProductSearchParams()
+    {
+        unset($this->product_search_params);
     }
 
     /**
@@ -203,11 +241,21 @@ class ImageContext extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      * Parameters for web detection.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.WebDetectionParams web_detection_params = 6;</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\WebDetectionParams
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\WebDetectionParams|null
      */
     public function getWebDetectionParams()
     {
         return $this->web_detection_params;
+    }
+
+    public function hasWebDetectionParams()
+    {
+        return isset($this->web_detection_params);
+    }
+
+    public function clearWebDetectionParams()
+    {
+        unset($this->web_detection_params);
     }
 
     /**
@@ -221,6 +269,42 @@ class ImageContext extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
     {
         GPBUtil::checkMessage($var, \MediaCloud\Vendor\Google\Cloud\Vision\V1\WebDetectionParams::class);
         $this->web_detection_params = $var;
+
+        return $this;
+    }
+
+    /**
+     * Parameters for text detection and document text detection.
+     *
+     * Generated from protobuf field <code>.google.cloud.vision.v1.TextDetectionParams text_detection_params = 12;</code>
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\TextDetectionParams|null
+     */
+    public function getTextDetectionParams()
+    {
+        return $this->text_detection_params;
+    }
+
+    public function hasTextDetectionParams()
+    {
+        return isset($this->text_detection_params);
+    }
+
+    public function clearTextDetectionParams()
+    {
+        unset($this->text_detection_params);
+    }
+
+    /**
+     * Parameters for text detection and document text detection.
+     *
+     * Generated from protobuf field <code>.google.cloud.vision.v1.TextDetectionParams text_detection_params = 12;</code>
+     * @param \MediaCloud\Vendor\Google\Cloud\Vision\V1\TextDetectionParams $var
+     * @return $this
+     */
+    public function setTextDetectionParams($var)
+    {
+        GPBUtil::checkMessage($var, \MediaCloud\Vendor\Google\Cloud\Vision\V1\TextDetectionParams::class);
+        $this->text_detection_params = $var;
 
         return $this;
     }

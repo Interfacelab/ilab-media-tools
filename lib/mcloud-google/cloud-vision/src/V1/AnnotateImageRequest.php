@@ -56,11 +56,21 @@ class AnnotateImageRequest extends \MediaCloud\Vendor\Google\Protobuf\Internal\M
      * The image to be processed.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.Image image = 1;</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\Image
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\Image|null
      */
     public function getImage()
     {
         return $this->image;
+    }
+
+    public function hasImage()
+    {
+        return isset($this->image);
+    }
+
+    public function clearImage()
+    {
+        unset($this->image);
     }
 
     /**
@@ -108,11 +118,21 @@ class AnnotateImageRequest extends \MediaCloud\Vendor\Google\Protobuf\Internal\M
      * Additional context that may accompany the image.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.ImageContext image_context = 3;</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ImageContext
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ImageContext|null
      */
     public function getImageContext()
     {
         return $this->image_context;
+    }
+
+    public function hasImageContext()
+    {
+        return isset($this->image_context);
+    }
+
+    public function clearImageContext()
+    {
+        unset($this->image_context);
     }
 
     /**

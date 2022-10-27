@@ -1,0 +1,49 @@
+{
+    "name": "mcloud-symfony/config",
+    "type": "library",
+    "description": "Helps you find, load, combine, autofill and validate configuration values of any kind",
+    "keywords": [],
+    "homepage": "https://symfony.com",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Fabien Potencier",
+            "email": "fabien@symfony.com"
+        },
+        {
+            "name": "Symfony Community",
+            "homepage": "https://symfony.com/contributors"
+        }
+    ],
+    "require": {
+        "php": ">=7.2.5",
+        "mcloud-symfony/deprecation-contracts": "v2.5.0",
+        "mcloud-symfony/filesystem": "v5.4.5",
+        "mcloud-symfony/polyfill-ctype": "v1.24.0",
+        "mcloud-symfony/polyfill-php80": "v1.24.0",
+        "mcloud-symfony/polyfill-php81": "v1.24.0"
+    },
+    "require-dev": {
+        "symfony/event-dispatcher": "^4.4|^5.0|^6.0",
+        "symfony/finder": "^4.4|^5.0|^6.0",
+        "symfony/messenger": "^4.4|^5.0|^6.0",
+        "symfony/service-contracts": "^1.1|^2|^3",
+        "symfony/yaml": "^4.4|^5.0|^6.0"
+    },
+    "conflict": {
+        "symfony/finder": "<4.4"
+    },
+    "suggest": {
+        "symfony/yaml": "To use the yaml reference dumper"
+    },
+    "autoload": {
+        "psr-4": {
+            "MediaCloud\\Vendor\\Symfony\\Component\\Config\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
+    },
+    "minimum-stability": "dev",
+    "version": "v5.4.3"
+}

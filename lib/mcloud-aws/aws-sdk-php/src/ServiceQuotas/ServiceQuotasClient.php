@@ -33,9 +33,15 @@ use MediaCloud\Vendor\Aws\AwsClient;
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listServiceQuotasAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result listServices(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listServicesAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listTagsForResource(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listTagsForResourceAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result putServiceQuotaIncreaseRequestIntoTemplate(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise putServiceQuotaIncreaseRequestIntoTemplateAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result requestServiceQuotaIncrease(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise requestServiceQuotaIncreaseAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result tagResource(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise tagResourceAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result untagResource(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise untagResourceAsync(array $args = [])
  */
 class ServiceQuotasClient extends AwsClient {}

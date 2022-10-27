@@ -2,6 +2,7 @@
 
 namespace MediaCloud\Vendor\duncan3dc\Laravel;
 use MediaCloud\Vendor\Illuminate\View\Compilers\BladeCompiler;
+
 use function assert;
 use function in_array;
 use function is_string;

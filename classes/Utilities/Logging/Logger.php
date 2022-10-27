@@ -16,6 +16,7 @@ namespace MediaCloud\Plugin\Utilities\Logging;
 use MediaCloud\Plugin\CLI\Command;
 use MediaCloud\Plugin\Tools\Debugging\DebuggingToolSettings;
 use MediaCloud\Plugin\Utilities\Environment;
+use MediaCloud\Plugin\Utilities\Logging\Ray\RayLoggerHandler;
 use MediaCloud\Vendor\Monolog\Formatter\LineFormatter;
 use MediaCloud\Vendor\Monolog\Handler\ErrorLogHandler;
 use MediaCloud\Vendor\Monolog\Handler\HandlerInterface;
@@ -87,6 +88,10 @@ class Logger {
 				}
 
 				$this->logger->pushHandler(new QueryMonitorLoggerHandler($realLevel));
+
+				if ((class_exists( 'Spatie\WordPressRay\Ray') || class_exists('\Spatie\Ray\Ray')) && !empty($this->settings->useRay)) {
+					$this->logger->pushHandler(new RayLoggerHandler($realLevel));
+				}
 			}
 
 			if (version_compare(phpversion(), '8', '>=')) {
@@ -175,7 +180,9 @@ class Logger {
                 $this->doLogWarning($message, ['file' => $file, 'line' => $line]);
                 break;
             default:
-                $this->doLogInfo($message, ['file' => $file, 'line' => $line]);
+            	if (strpos($file, 'wp-includes') === false) {
+                    $this->doLogInfo($message, ['file' => $file, 'line' => $line]);
+	            }
                 break;
         }
     }
@@ -220,7 +227,7 @@ class Logger {
 
 		if ($this->logger) {
 			$message = $this->prepMessage($message, $function, $line, $context);
-			$this->logger->addInfo($message, array_merge($this->context, $context));
+			$this->logger->info($message, array_merge($this->context, $context));
 		}
 	}
 
@@ -235,7 +242,7 @@ class Logger {
 
 		if ($this->logger) {
 			$message = $this->prepMessage($message, $function, $line, $context);
-			$this->logger->addWarning($message, array_merge($this->context, $context));
+			$this->logger->warning($message, array_merge($this->context, $context));
 		}
 	}
 
@@ -250,7 +257,7 @@ class Logger {
 
         if ($this->logger) {
 	        $message = $this->prepMessage($message, $function, $line, $context);
-	        $this->logger->addError($message, array_merge($this->context, $context));
+	        $this->logger->error($message, array_merge($this->context, $context));
 		}
 	}
 
@@ -258,7 +265,7 @@ class Logger {
 		if ($this->logger) {
 			$this->time[] = microtime(true);
 			$message = $this->prepMessage($message, $function, $line, $context);
-			$this->logger->addInfo($message, array_merge($this->context, $context));
+			$this->logger->info($message, array_merge($this->context, $context));
 		}
 	}
 
@@ -267,7 +274,7 @@ class Logger {
 			$time = array_pop($this->time);
 			$context['time'] = microtime(true) - $time;
 			$message = $this->prepMessage($message, $function, $line, $context);
-			$this->logger->addInfo($message, array_merge($this->context, $context));
+			$this->logger->info($message, array_merge($this->context, $context));
 		}
 	}
 	//endregion

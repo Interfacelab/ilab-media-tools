@@ -8,6 +8,7 @@
  */
 
 namespace MediaCloud\Vendor\IvoPetkov;
+use MediaCloud\Vendor\IvoPetkov\HTML5DOMDocument\Internal\QuerySelectors;
 
 /**
  * Represents a live (can be manipulated) representation of an element in a HTML5 document.
@@ -19,7 +20,7 @@ namespace MediaCloud\Vendor\IvoPetkov;
 class HTML5DOMElement extends \DOMElement
 {
 
-    use \MediaCloud\Vendor\IvoPetkov\HTML5DOMDocument\Internal\QuerySelectors;
+    use QuerySelectors;
 
     /**
      *
@@ -97,7 +98,7 @@ class HTML5DOMElement extends \DOMElement
                 self::$newObjectsCache['html5domdocument'] = new \MediaCloud\Vendor\IvoPetkov\HTML5DOMDocument();
             }
             $tmpDoc = clone (self::$newObjectsCache['html5domdocument']);
-            $tmpDoc->loadHTML('<body>' . $value . '</body>');
+            $tmpDoc->loadHTML('<body>' . $value . '</body>', HTML5DOMDocument::ALLOW_DUPLICATE_IDS);
             foreach ($tmpDoc->getElementsByTagName('body')->item(0)->childNodes as $node) {
                 $node = $this->ownerDocument->importNode($node, true);
                 $this->appendChild($node);
@@ -108,7 +109,7 @@ class HTML5DOMElement extends \DOMElement
                 self::$newObjectsCache['html5domdocument'] = new \MediaCloud\Vendor\IvoPetkov\HTML5DOMDocument();
             }
             $tmpDoc = clone (self::$newObjectsCache['html5domdocument']);
-            $tmpDoc->loadHTML('<body>' . $value . '</body>');
+            $tmpDoc->loadHTML('<body>' . $value . '</body>', HTML5DOMDocument::ALLOW_DUPLICATE_IDS);
             foreach ($tmpDoc->getElementsByTagName('body')->item(0)->childNodes as $node) {
                 $node = $this->ownerDocument->importNode($node, true);
                 $this->parentNode->insertBefore($node, $this);

@@ -162,7 +162,9 @@ class AssetStaticRenditionsFiles implements ModelInterface, ArrayAccess
     const NAME_LOWMP4 = 'low.mp4';
     const NAME_MEDIUMMP4 = 'medium.mp4';
     const NAME_HIGHMP4 = 'high.mp4';
+    const NAME_AUDIOM4A = 'audio.m4a';
     const EXT_MP4 = 'mp4';
+    const EXT_M4A = 'm4a';
     
 
     
@@ -177,6 +179,7 @@ class AssetStaticRenditionsFiles implements ModelInterface, ArrayAccess
             self::NAME_LOWMP4,
             self::NAME_MEDIUMMP4,
             self::NAME_HIGHMP4,
+            self::NAME_AUDIOM4A,
         ];
     }
     
@@ -189,6 +192,7 @@ class AssetStaticRenditionsFiles implements ModelInterface, ArrayAccess
     {
         return [
             self::EXT_MP4,
+            self::EXT_M4A,
         ];
     }
     

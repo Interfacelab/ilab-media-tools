@@ -26,12 +26,13 @@ use MediaCloud\Vendor\Google\Cloud\Core\Iterator\PageIterator;
 use MediaCloud\Vendor\Google\Cloud\Core\Timestamp;
 use MediaCloud\Vendor\Google\Cloud\Core\Upload\ResumableUploader;
 use MediaCloud\Vendor\Google\Cloud\Core\Upload\StreamableUploader;
-use Google\Cloud\PubSub\Topic;
+use MediaCloud\Vendor\Google\Cloud\PubSub\Topic;
 use MediaCloud\Vendor\Google\Cloud\Storage\Connection\ConnectionInterface;
 use MediaCloud\Vendor\Google\Cloud\Storage\Connection\IamBucket;
 use MediaCloud\Vendor\Google\Cloud\Storage\SigningHelper;
 use MediaCloud\Vendor\GuzzleHttp\Promise\PromiseInterface;
-use MediaCloud\Vendor\GuzzleHttp\Psr7;
+use MediaCloud\Vendor\GuzzleHttp\Psr7\MimeType;
+use MediaCloud\Vendor\GuzzleHttp\Psr7\Utils;
 use MediaCloud\Vendor\Psr\Http\Message\StreamInterface;
 
 /**
@@ -683,7 +684,7 @@ class Bucket
      * // Update the permissions on the desired topic prior to creating the
      * // notification.
      * use MediaCloud\Vendor\Google\Cloud\Core\Iam\PolicyBuilder;
-     * use Google\Cloud\PubSub\PubSubClient;
+     * use MediaCloud\Vendor\Google\Cloud\PubSub\PubSubClient;
      *
      * $pubSub = new PubSubClient();
      * $topicName = 'my-topic';
@@ -707,7 +708,7 @@ class Bucket
      *
      * ```
      * // Provide a Topic object from the Cloud PubSub component.
-     * use Google\Cloud\PubSub\PubSubClient;
+     * use MediaCloud\Vendor\Google\Cloud\PubSub\PubSubClient;
      *
      * $pubSub = new PubSubClient();
      * $topic = $pubSub->topic('my-topic');
@@ -751,7 +752,7 @@ class Bucket
      * }
      * @return Notification
      * @throws \InvalidArgumentException When providing a type other than string
-     *         or {@see Google\Cloud\PubSub\Topic} as $topic.
+     *         or {@see MediaCloud\Vendor\Google\Cloud\PubSub\Topic} as $topic.
      * @throws GoogleException When a project ID has not been detected.
      * @experimental The experimental flag means that while we believe this
      *      method or class is ready for use, it may change before release in
@@ -976,6 +977,11 @@ class Bucket
      *           [feature documentation](https://cloud.google.com/storage/docs/uniform-bucket-level-access),
      *           as well as
      *           [Should You Use uniform bucket-level access](https://cloud.google.com/storage/docs/uniform-bucket-level-access#should-you-use)
+     *     @type string $iamConfiguration.publicAccessPrevention The bucket's
+     *           Public Access Prevention configuration. Currently,
+     *           'inherited' and 'enforced' are supported. **defaults to**
+     *           `inherited`. For more details, see
+     *           [Public Access Prevention](https://cloud.google.com/storage/docs/public-access-prevention).
      * }
      * @codingStandardsIgnoreEnd
      * @return array
@@ -1064,7 +1070,7 @@ class Bucket
         ];
 
         if (!isset($options['destination']['contentType'])) {
-            $options['destination']['contentType'] = Psr7\mimetype_from_filename($name);
+            $options['destination']['contentType'] = MimeType::fromFilename($name);
         }
 
         if ($options['destination']['contentType'] === null) {
@@ -1260,7 +1266,7 @@ class Bucket
     {
         $file = $file ?: '__tempfile';
         $uploader = $this->getResumableUploader(
-            Psr7\stream_for(''),
+            Utils::streamFor(''),
             ['name' => $file]
         );
         try {
@@ -1586,7 +1592,7 @@ class Bucket
 
         if (!is_string($topic)) {
             throw new \InvalidArgumentException(
-                '$topic may only be a string or instance of Google\Cloud\PubSub\Topic'
+                '$topic may only be a string or instance of MediaCloud\Vendor\Google\Cloud\PubSub\Topic'
             );
         }
 

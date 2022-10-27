@@ -6,6 +6,8 @@ use MediaCloud\Vendor\Psr\Http\Message\StreamInterface;
 /**
  * Stream decorator that begins dropping data once the size of the underlying
  * stream becomes too full.
+ *
+ * @final
  */
 class DroppingStream implements StreamInterface
 {

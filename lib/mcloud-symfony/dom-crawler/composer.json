@@ -1,0 +1,45 @@
+{
+    "name": "mcloud-symfony/dom-crawler",
+    "type": "library",
+    "description": "Eases DOM navigation for HTML and XML documents",
+    "keywords": [],
+    "homepage": "https://symfony.com",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Fabien Potencier",
+            "email": "fabien@symfony.com"
+        },
+        {
+            "name": "Symfony Community",
+            "homepage": "https://symfony.com/contributors"
+        }
+    ],
+    "require": {
+        "php": ">=7.2.5",
+        "mcloud-symfony/deprecation-contracts": "v2.5.0",
+        "mcloud-symfony/polyfill-ctype": "v1.24.0",
+        "mcloud-symfony/polyfill-mbstring": "v1.24.0",
+        "mcloud-symfony/polyfill-php80": "v1.24.0"
+    },
+    "require-dev": {
+        "symfony/css-selector": "^4.4|^5.0|^6.0",
+        "masterminds/html5": "^2.6"
+    },
+    "conflict": {
+        "masterminds/html5": "<2.6"
+    },
+    "suggest": {
+        "symfony/css-selector": ""
+    },
+    "autoload": {
+        "psr-4": {
+            "MediaCloud\\Vendor\\Symfony\\Component\\DomCrawler\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
+    },
+    "minimum-stability": "dev",
+    "version": "v5.4.5"
+}

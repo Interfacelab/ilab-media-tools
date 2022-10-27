@@ -91,11 +91,21 @@ class Paragraph extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      * Additional information detected for the paragraph.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.TextAnnotation.TextProperty property = 1;</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\TextAnnotation\TextProperty
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\TextAnnotation\TextProperty|null
      */
     public function getProperty()
     {
         return $this->property;
+    }
+
+    public function hasProperty()
+    {
+        return isset($this->property);
+    }
+
+    public function clearProperty()
+    {
+        unset($this->property);
     }
 
     /**
@@ -107,7 +117,7 @@ class Paragraph extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      */
     public function setProperty($var)
     {
-        GPBUtil::checkMessage($var, \MediaCloud\Vendor\Google\Cloud\Vision\V1\TextAnnotation_TextProperty::class);
+        GPBUtil::checkMessage($var, \MediaCloud\Vendor\Google\Cloud\Vision\V1\TextAnnotation\TextProperty::class);
         $this->property = $var;
 
         return $this;
@@ -131,11 +141,21 @@ class Paragraph extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      *   and the vertex order will still be (0, 1, 2, 3).
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.BoundingPoly bounding_box = 2;</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\BoundingPoly
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\BoundingPoly|null
      */
     public function getBoundingBox()
     {
         return $this->bounding_box;
+    }
+
+    public function hasBoundingBox()
+    {
+        return isset($this->bounding_box);
+    }
+
+    public function clearBoundingBox()
+    {
+        unset($this->bounding_box);
     }
 
     /**

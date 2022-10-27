@@ -7,6 +7,8 @@ use MediaCloud\Vendor\Aws\AwsClient;
  * This client is used to interact with the **AWS Savings Plans** service.
  * @method \MediaCloud\Vendor\Aws\Result createSavingsPlan(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise createSavingsPlanAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result deleteQueuedSavingsPlan(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteQueuedSavingsPlanAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result describeSavingsPlanRates(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise describeSavingsPlanRatesAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result describeSavingsPlans(array $args = [])

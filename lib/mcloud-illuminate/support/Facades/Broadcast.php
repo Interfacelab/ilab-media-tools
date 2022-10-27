@@ -4,6 +4,11 @@ namespace MediaCloud\Vendor\Illuminate\Support\Facades;
 use MediaCloud\Vendor\Illuminate\Contracts\Broadcasting\Factory as BroadcastingFactoryContract;
 
 /**
+ * @method static \Illuminate\Broadcasting\Broadcasters\Broadcaster channel(string $channel, callable|string  $callback, array $options = [])
+ * @method static mixed auth(\Illuminate\Http\Request $request)
+ * @method static void connection($name = null);
+ * @method static void routes(array $attributes = null)
+ *
  * @see \MediaCloud\Vendor\Illuminate\Contracts\Broadcasting\Factory
  */
 class Broadcast extends Facade

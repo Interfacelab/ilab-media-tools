@@ -1,0 +1,53 @@
+<?php
+
+namespace MediaCloud\Vendor\Aws\LookoutforVision;
+use MediaCloud\Vendor\Aws\AwsClient;
+
+/**
+ * This client is used to interact with the **Amazon Lookout for Vision** service.
+ * @method \MediaCloud\Vendor\Aws\Result createDataset(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise createDatasetAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result createModel(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise createModelAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result createProject(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise createProjectAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result deleteDataset(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteDatasetAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result deleteModel(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteModelAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result deleteProject(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteProjectAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result describeDataset(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise describeDatasetAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result describeModel(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise describeModelAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result describeModelPackagingJob(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise describeModelPackagingJobAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result describeProject(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise describeProjectAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result detectAnomalies(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise detectAnomaliesAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listDatasetEntries(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listDatasetEntriesAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listModelPackagingJobs(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listModelPackagingJobsAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listModels(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listModelsAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listProjects(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listProjectsAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result listTagsForResource(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise listTagsForResourceAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result startModel(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise startModelAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result startModelPackagingJob(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise startModelPackagingJobAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result stopModel(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise stopModelAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result tagResource(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise tagResourceAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result untagResource(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise untagResourceAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result updateDatasetEntries(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise updateDatasetEntriesAsync(array $args = [])
+ */
+class LookoutforVisionClient extends AwsClient {}

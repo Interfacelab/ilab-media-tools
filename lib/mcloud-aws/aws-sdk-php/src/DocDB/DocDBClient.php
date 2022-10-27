@@ -2,9 +2,12 @@
 
 namespace MediaCloud\Vendor\Aws\DocDB;
 use MediaCloud\Vendor\Aws\AwsClient;
+use MediaCloud\Vendor\Aws\PresignUrlMiddleware;
 
 /**
  * This client is used to interact with the **Amazon DocumentDB with MongoDB compatibility** service.
+ * @method \MediaCloud\Vendor\Aws\Result addSourceIdentifierToSubscription(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise addSourceIdentifierToSubscriptionAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result addTagsToResource(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise addTagsToResourceAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result applyPendingMaintenanceAction(array $args = [])
@@ -23,6 +26,10 @@ use MediaCloud\Vendor\Aws\AwsClient;
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise createDBInstanceAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result createDBSubnetGroup(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise createDBSubnetGroupAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result createEventSubscription(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise createEventSubscriptionAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result createGlobalCluster(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise createGlobalClusterAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result deleteDBCluster(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteDBClusterAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result deleteDBClusterParameterGroup(array $args = [])
@@ -33,6 +40,10 @@ use MediaCloud\Vendor\Aws\AwsClient;
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteDBInstanceAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result deleteDBSubnetGroup(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteDBSubnetGroupAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result deleteEventSubscription(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteEventSubscriptionAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result deleteGlobalCluster(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise deleteGlobalClusterAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result describeCertificates(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise describeCertificatesAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result describeDBClusterParameterGroups(array $args = [])
@@ -55,8 +66,12 @@ use MediaCloud\Vendor\Aws\AwsClient;
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise describeEngineDefaultClusterParametersAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result describeEventCategories(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise describeEventCategoriesAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result describeEventSubscriptions(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise describeEventSubscriptionsAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result describeEvents(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise describeEventsAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result describeGlobalClusters(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise describeGlobalClustersAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result describeOrderableDBInstanceOptions(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise describeOrderableDBInstanceOptionsAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result describePendingMaintenanceActions(array $args = [])
@@ -75,8 +90,16 @@ use MediaCloud\Vendor\Aws\AwsClient;
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise modifyDBInstanceAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result modifyDBSubnetGroup(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise modifyDBSubnetGroupAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result modifyEventSubscription(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise modifyEventSubscriptionAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result modifyGlobalCluster(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise modifyGlobalClusterAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result rebootDBInstance(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise rebootDBInstanceAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result removeFromGlobalCluster(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise removeFromGlobalClusterAsync(array $args = [])
+ * @method \MediaCloud\Vendor\Aws\Result removeSourceIdentifierFromSubscription(array $args = [])
+ * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise removeSourceIdentifierFromSubscriptionAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result removeTagsFromResource(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise removeTagsFromResourceAsync(array $args = [])
  * @method \MediaCloud\Vendor\Aws\Result resetDBClusterParameterGroup(array $args = [])
@@ -90,4 +113,31 @@ use MediaCloud\Vendor\Aws\AwsClient;
  * @method \MediaCloud\Vendor\Aws\Result stopDBCluster(array $args = [])
  * @method \MediaCloud\Vendor\GuzzleHttp\Promise\Promise stopDBClusterAsync(array $args = [])
  */
-class DocDBClient extends AwsClient {}
+class DocDBClient extends AwsClient {
+    public function __construct(array $args)
+    {
+        $args['with_resolved'] = function (array $args) {
+            $this->getHandlerList()->appendInit(
+                PresignUrlMiddleware::wrap(
+                    $this,
+                    $args['endpoint_provider'],
+                    [
+                        'operations' => [
+                            'CopyDBClusterSnapshot',
+                            'CreateDBCluster',
+                        ],
+                        'service' => 'rds',
+                        'presign_param' => 'PreSignedUrl',
+                        'require_different_region' => true,
+                        'extra_query_params' => [
+                            'CopyDBClusterSnapshot' => ['DestinationRegion'],
+                            'CreateDBCluster' => ['DestinationRegion'],
+                        ]
+                    ]
+                ),
+                'rds.presigner'
+            );
+        };
+        parent::__construct($args);
+    }
+}

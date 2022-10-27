@@ -2,9 +2,11 @@
 
 namespace MediaCloud\Vendor\Lorisleiva\CronTranslator;
 
+use Throwable;
+
 class CronTranslator
 {
-    private static $extendedMap = [
+    private static array $extendedMap = [
         '@yearly' => '0 0 1 1 *',
         '@annually' => '0 0 1 1 *',
         '@monthly' => '0 0 1 * *',
@@ -13,41 +15,27 @@ class CronTranslator
         '@hourly' => '0 * * * *'
     ];
 
-    public static function translate($cron)
+    public static function translate(string $cron, string $locale = 'en', bool $timeFormat24hours = false): string
     {
         if (isset(self::$extendedMap[$cron])) {
             $cron = self::$extendedMap[$cron];
         }
 
         try {
-            $fields = static::parseFields($cron);
-            $orderedFields = static::orderFields($fields);
-            $fieldsAsObject = static::getFieldsAsObject($fields);
+            $expression = new CronExpression($cron, $locale, $timeFormat24hours);
+            $orderedFields = static::orderFields($expression->getFields());
 
-            $translations = array_map(function ($field) use ($fieldsAsObject) {
-                return $field->translate($fieldsAsObject);
+            $translations = array_map(function (Field $field) {
+                return $field->translate();
             }, $orderedFields);
 
             return ucfirst(implode(' ', array_filter($translations)));
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
             throw new CronParsingException($cron);
         }
     }
 
-    protected static function parseFields($cron)
-    {
-        $fields = explode(' ', $cron);
-
-        return [
-            new MinutesField($fields[0]),
-            new HoursField($fields[1]),
-            new DaysOfMonthField($fields[2]),
-            new MonthsField($fields[3]),
-            new DaysOfWeekField($fields[4]),
-        ];
-    }
-
-    protected static function orderFields($fields)
+    protected static function orderFields(array $fields)
     {
         // Group fields by CRON types.
         $onces = static::filterType($fields, 'Once');
@@ -62,6 +50,7 @@ class CronTranslator
         // Mark fields that will not be displayed as dropped.
         // This allows other fields to check whether some
         // information is missing and adapt their translation.
+        /** @var Field $field */
         foreach (array_slice($everys, $numberOfEverysKept) as $field) {
             $field->dropped = true;
         }
@@ -78,21 +67,10 @@ class CronTranslator
         );
     }
 
-    protected static function filterType($fields, ...$types)
+    protected static function filterType(array $fields, ...$types): array
     {
-        return array_filter($fields, function ($field) use ($types) {
+        return array_filter($fields, function (Field $field) use ($types) {
             return $field->hasType(...$types);
         });
-    }
-
-    protected static function getFieldsAsObject($fields)
-    {
-        return (object) [
-            'minute' => $fields[0],
-            'hour' => $fields[1],
-            'day' => $fields[2],
-            'month' => $fields[3],
-            'weekday' => $fields[4],
-        ];
     }
 }

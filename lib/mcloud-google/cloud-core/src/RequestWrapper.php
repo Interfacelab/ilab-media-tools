@@ -17,13 +17,14 @@
 
 namespace MediaCloud\Vendor\Google\Cloud\Core;
 use MediaCloud\Vendor\Google\Auth\FetchAuthTokenInterface;
+use MediaCloud\Vendor\Google\Auth\GetQuotaProjectInterface;
 use MediaCloud\Vendor\Google\Auth\HttpHandler\Guzzle5HttpHandler;
 use MediaCloud\Vendor\Google\Auth\HttpHandler\Guzzle6HttpHandler;
 use MediaCloud\Vendor\Google\Auth\HttpHandler\HttpHandlerFactory;
 use MediaCloud\Vendor\Google\Cloud\Core\RequestWrapperTrait;
 use MediaCloud\Vendor\GuzzleHttp\Exception\RequestException;
 use MediaCloud\Vendor\GuzzleHttp\Promise\PromiseInterface;
-use MediaCloud\Vendor\GuzzleHttp\Psr7;
+use MediaCloud\Vendor\GuzzleHttp\Psr7\Utils;
 use MediaCloud\Vendor\Psr\Http\Message\RequestInterface;
 use MediaCloud\Vendor\Psr\Http\Message\ResponseInterface;
 use MediaCloud\Vendor\Psr\Http\Message\StreamInterface;
@@ -281,38 +282,43 @@ class RequestWrapper
         ];
 
         if ($this->shouldSignRequest) {
-            $headers['Authorization'] = 'Bearer ' . $this->getToken();
+            $quotaProject = $this->quotaProject;
+            $token = null;
+
+            if ($this->accessToken) {
+                $token = $this->accessToken;
+            } else {
+                $credentialsFetcher = $this->getCredentialsFetcher();
+                $token = $this->fetchCredentials($credentialsFetcher)['access_token'];
+
+                if ($credentialsFetcher instanceof GetQuotaProjectInterface) {
+                    $quotaProject = $credentialsFetcher->getQuotaProject();
+                }
+            }
+
+            $headers['Authorization'] = 'Bearer ' . $token;
+
+            if ($quotaProject) {
+                $headers['X-Goog-User-Project'] = [$quotaProject];
+            }
         }
 
-        return Psr7\modify_request($request, ['set_headers' => $headers]);
-    }
-
-    /**
-     * Gets the access token.
-     *
-     * @return string
-     */
-    private function getToken()
-    {
-        if ($this->accessToken) {
-            return $this->accessToken;
-        }
-
-        return $this->fetchCredentials()['access_token'];
+        return Utils::modifyRequest($request, ['set_headers' => $headers]);
     }
 
     /**
      * Fetches credentials.
      *
+     * @param FetchAuthTokenInterface $credentialsFetcher
      * @return array
      */
-    private function fetchCredentials()
+    private function fetchCredentials(FetchAuthTokenInterface $credentialsFetcher)
     {
         $backoff = new ExponentialBackoff($this->retries, $this->getRetryFunction());
 
         try {
             return $backoff->execute(
-                [$this->getCredentialsFetcher(), 'fetchAuthToken'],
+                [$credentialsFetcher, 'fetchAuthToken'],
                 [$this->authHttpHandler]
             );
         } catch (\Exception $ex) {

@@ -149,11 +149,21 @@ class ProductSet extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      * This field is ignored when creating a ProductSet.
      *
      * Generated from protobuf field <code>.google.protobuf.Timestamp index_time = 3 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
-     * @return \MediaCloud\Vendor\Google\Protobuf\Timestamp
+     * @return \MediaCloud\Vendor\Google\Protobuf\Timestamp|null
      */
     public function getIndexTime()
     {
         return $this->index_time;
+    }
+
+    public function hasIndexTime()
+    {
+        return isset($this->index_time);
+    }
+
+    public function clearIndexTime()
+    {
+        unset($this->index_time);
     }
 
     /**
@@ -181,11 +191,21 @@ class ProductSet extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      * This field is ignored when creating a ProductSet.
      *
      * Generated from protobuf field <code>.google.rpc.Status index_error = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
-     * @return \MediaCloud\Vendor\Google\Rpc\Status
+     * @return \MediaCloud\Vendor\Google\Rpc\Status|null
      */
     public function getIndexError()
     {
         return $this->index_error;
+    }
+
+    public function hasIndexError()
+    {
+        return isset($this->index_error);
+    }
+
+    public function clearIndexError()
+    {
+        unset($this->index_error);
     }
 
     /**

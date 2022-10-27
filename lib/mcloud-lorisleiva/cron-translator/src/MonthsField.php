@@ -4,59 +4,63 @@ namespace MediaCloud\Vendor\Lorisleiva\CronTranslator;
 
 class MonthsField extends Field
 {
-    public $position = 3;
+    public int $position = 3;
 
-    public function translateEvery($fields)
+    public function translateEvery()
     {
-        if ($fields->day->hasType('Once')) {
-            return 'the ' . $fields->day->format() . ' of every month';
+        if ($this->expression->day->hasType('Once')) {
+            return $this->lang('months.every_on_day', [
+                'day' => $this->expression->day->format(),
+            ]);
         }
 
-        return 'every month';
+        return $this->lang('months.every');
     }
 
     public function translateIncrement()
     {
-        if ($this->count > 1) {
-            return "{$this->count} months out of {$this->increment}";
+        if ($this->getCount() > 1) {
+            return $this->lang('months.multiple_per_increment', [
+                'count' => $this->getCount(),
+                'increment' => $this->getCount(),
+            ]);
         }
 
-        return "every {$this->increment} months";
+        return $this->lang('months.increment', [
+            'increment' => $this->getIncrement(),
+        ]);
     }
-    
+
     public function translateMultiple()
     {
-        return "{$this->count} months a year";
+        return $this->lang('months.multiple_per_year', [
+            'count' => $this->getCount(),
+        ]);
     }
-    
-    public function translateOnce($fields)
+
+    public function translateOnce()
     {
-        if ($fields->day->hasType('Once')) {
-            return "on {$this->format()} the {$fields->day->format()}";
+        if ($this->expression->day->hasType('Once')) {
+            return $this->lang('months.once_on_day', [
+                'month' => $this->format(),
+                'day' => $this->expression->day->format(),
+            ]);
         }
 
-        return "on {$this->format()}";
+        return $this->lang('months.once_on_month', [
+            'month' => $this->format()
+        ]);
     }
 
+    /**
+     * @throws CronParsingException
+     */
     public function format()
     {
-        if ($this->value < 1 || $this->value > 12) {
-            throw new \Exception();
+        if ($this->getValue() < 1 || $this->getValue() > 12) {
+            throw new CronParsingException($this->expression->raw);
         }
 
-        return [
-            1 => 'January',
-            2 => 'February',
-            3 => 'March',
-            4 => 'April',
-            5 => 'May',
-            6 => 'June',
-            7 => 'July',
-            8 => 'August',
-            9 => 'September',
-            10 => 'October',
-            11 => 'November',
-            12 => 'December',
-        ][$this->value];
+        return $this->langCountable('months', $this->getValue());
     }
 }

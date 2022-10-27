@@ -33,8 +33,7 @@ class MessageOptions extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool message_set_wire_format = 1 [default = false];</code>
      */
-    protected $message_set_wire_format = false;
-    private $has_message_set_wire_format = false;
+    protected $message_set_wire_format = null;
     /**
      * Disables the generation of the standard "descriptor()" accessor, which can
      * conflict with a field of the same name.  This is meant to make migration
@@ -42,8 +41,7 @@ class MessageOptions extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool no_standard_descriptor_accessor = 2 [default = false];</code>
      */
-    protected $no_standard_descriptor_accessor = false;
-    private $has_no_standard_descriptor_accessor = false;
+    protected $no_standard_descriptor_accessor = null;
     /**
      * Is this message deprecated?
      * Depending on the target platform, this can emit Deprecated annotations
@@ -52,8 +50,7 @@ class MessageOptions extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool deprecated = 3 [default = false];</code>
      */
-    protected $deprecated = false;
-    private $has_deprecated = false;
+    protected $deprecated = null;
     /**
      * Whether the message is an automatically generated map entry type for the
      * maps field.
@@ -76,15 +73,13 @@ class MessageOptions extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool map_entry = 7;</code>
      */
-    protected $map_entry = false;
-    private $has_map_entry = false;
+    protected $map_entry = null;
     /**
      * The parser stores options it doesn't recognize here. See above.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
      */
     private $uninterpreted_option;
-    private $has_uninterpreted_option = false;
 
     /**
      * Constructor.
@@ -166,7 +161,17 @@ class MessageOptions extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      */
     public function getMessageSetWireFormat()
     {
-        return $this->message_set_wire_format;
+        return isset($this->message_set_wire_format) ? $this->message_set_wire_format : false;
+    }
+
+    public function hasMessageSetWireFormat()
+    {
+        return isset($this->message_set_wire_format);
+    }
+
+    public function clearMessageSetWireFormat()
+    {
+        unset($this->message_set_wire_format);
     }
 
     /**
@@ -194,14 +199,8 @@ class MessageOptions extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
     {
         GPBUtil::checkBool($var);
         $this->message_set_wire_format = $var;
-        $this->has_message_set_wire_format = true;
 
         return $this;
-    }
-
-    public function hasMessageSetWireFormat()
-    {
-        return $this->has_message_set_wire_format;
     }
 
     /**
@@ -214,7 +213,17 @@ class MessageOptions extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      */
     public function getNoStandardDescriptorAccessor()
     {
-        return $this->no_standard_descriptor_accessor;
+        return isset($this->no_standard_descriptor_accessor) ? $this->no_standard_descriptor_accessor : false;
+    }
+
+    public function hasNoStandardDescriptorAccessor()
+    {
+        return isset($this->no_standard_descriptor_accessor);
+    }
+
+    public function clearNoStandardDescriptorAccessor()
+    {
+        unset($this->no_standard_descriptor_accessor);
     }
 
     /**
@@ -230,14 +239,8 @@ class MessageOptions extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
     {
         GPBUtil::checkBool($var);
         $this->no_standard_descriptor_accessor = $var;
-        $this->has_no_standard_descriptor_accessor = true;
 
         return $this;
-    }
-
-    public function hasNoStandardDescriptorAccessor()
-    {
-        return $this->has_no_standard_descriptor_accessor;
     }
 
     /**
@@ -251,7 +254,17 @@ class MessageOptions extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      */
     public function getDeprecated()
     {
-        return $this->deprecated;
+        return isset($this->deprecated) ? $this->deprecated : false;
+    }
+
+    public function hasDeprecated()
+    {
+        return isset($this->deprecated);
+    }
+
+    public function clearDeprecated()
+    {
+        unset($this->deprecated);
     }
 
     /**
@@ -268,14 +281,8 @@ class MessageOptions extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
     {
         GPBUtil::checkBool($var);
         $this->deprecated = $var;
-        $this->has_deprecated = true;
 
         return $this;
-    }
-
-    public function hasDeprecated()
-    {
-        return $this->has_deprecated;
     }
 
     /**
@@ -303,7 +310,17 @@ class MessageOptions extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      */
     public function getMapEntry()
     {
-        return $this->map_entry;
+        return isset($this->map_entry) ? $this->map_entry : false;
+    }
+
+    public function hasMapEntry()
+    {
+        return isset($this->map_entry);
+    }
+
+    public function clearMapEntry()
+    {
+        unset($this->map_entry);
     }
 
     /**
@@ -334,14 +351,8 @@ class MessageOptions extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
     {
         GPBUtil::checkBool($var);
         $this->map_entry = $var;
-        $this->has_map_entry = true;
 
         return $this;
-    }
-
-    public function hasMapEntry()
-    {
-        return $this->has_map_entry;
     }
 
     /**
@@ -366,14 +377,8 @@ class MessageOptions extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
     {
         $arr = GPBUtil::checkRepeatedField($var, \MediaCloud\Vendor\Google\Protobuf\Internal\GPBType::MESSAGE, \MediaCloud\Vendor\Google\Protobuf\Internal\UninterpretedOption::class);
         $this->uninterpreted_option = $arr;
-        $this->has_uninterpreted_option = true;
 
         return $this;
-    }
-
-    public function hasUninterpretedOption()
-    {
-        return $this->has_uninterpreted_option;
     }
 
 }

@@ -16,12 +16,11 @@
  */
 
 namespace MediaCloud\Vendor\Google\Cloud\Core\Testing\System;
-
-use Google\Cloud\BigQuery\BigQueryClient;
-use Google\Cloud\BigQuery\Dataset;
+use MediaCloud\Vendor\Google\Cloud\BigQuery\BigQueryClient;
+use MediaCloud\Vendor\Google\Cloud\BigQuery\Dataset;
 use MediaCloud\Vendor\Google\Cloud\Core\ExponentialBackoff;
-use Google\Cloud\PubSub\PubSubClient;
-use Google\Cloud\PubSub\Topic;
+use MediaCloud\Vendor\Google\Cloud\PubSub\PubSubClient;
+use MediaCloud\Vendor\Google\Cloud\PubSub\Topic;
 use MediaCloud\Vendor\Google\Cloud\Storage\Bucket;
 use MediaCloud\Vendor\Google\Cloud\Storage\StorageClient;
 use MediaCloud\Vendor\Google\Cloud\Core\Testing\System\DeletionQueue;
@@ -36,6 +35,9 @@ use PHPUnit\Framework\TestCase;
 class SystemTestCase extends TestCase
 {
     protected static $deletionQueue;
+
+    private static $emulatedClasses = [];
+    private static $emulatedClassPrefixes = [];
 
     /**
      * Set up the deletion queue
@@ -175,5 +177,107 @@ class SystemTestCase extends TestCase
         });
 
         return $topic;
+    }
+
+    /**
+     * Set "using emulator" flag for single test case.
+     *
+     * Should be called in `setUpBeforeClass()` method. This will allow to
+     * skip tests that are not supported by emulator.
+     *
+     * Example:
+     * ```
+     * self::setUsingEmulator(getenv('FOOBAR_EMULATOR_HOST'));
+     * ```
+     *
+     * @param bool $enabled Whether emulator is detected. **Defaults to** `true`.
+     */
+    public static function setUsingEmulator($enabled = true)
+    {
+        self::$emulatedClasses[get_called_class()] = (bool)$enabled;
+    }
+
+    /**
+     * Set "using emulator" flag for test cases with specified fully-qualified name prefix.
+     *
+     * Should be called in `setUpBeforeClass()` method. This will allow to
+     * skip tests that are not supported by emulator.
+     *
+     * Example:
+     * ```
+     * // Set flag for called class namespace.
+     * self::setUsingEmulatorForClassPrefix(getenv('FOOBAR_EMULATOR_HOST'));
+     * ```
+     *
+     * ```
+     * // Set flag for some other namespace.
+     * self::setUsingEmulatorForClassPrefix(getenv('FOOBAR_EMULATOR_HOST'), 'Foobar\\Tests\\System\\Admin\\');
+     * ```
+     *
+     * @param bool $enabled Whether emulator is detected. **Defaults to** `true`.
+     * @param string|null $prefix Fully-qualified class name prefix. **Defaults to** called class namespace.
+     */
+    public static function setUsingEmulatorForClassPrefix($enabled = true, $prefix = null)
+    {
+        if (!isset($prefix)) {
+            $className = get_called_class();
+            $prefix = substr($className, 0, strrpos($className, '\\') + 1);
+        }
+        self::$emulatedClassPrefixes[$prefix] = (bool)$enabled;
+    }
+
+    /**
+     * Returns `true` when "using emulator" flag is set either for called class name or its
+     * fully-qualified name prefix or `false` otherwise.
+     *
+     * Example:
+     * ```
+     * $transports = [['grpc']];
+     * if (!self::isEmulatorUsed()) {
+     *     $transports[] = ['rest'];
+     * }
+     * ```
+     *
+     * @return bool
+     */
+    public static function isEmulatorUsed()
+    {
+        $className = get_called_class();
+        if (!isset(self::$emulatedClasses[$className])) {
+            $prefix = substr($className, 0, strrpos($className, '\\') + 1);
+            $isEmulated = false;
+            foreach (self::$emulatedClassPrefixes as $key => $flag) {
+                if (strpos($prefix, $key) === 0) {
+                    $isEmulated = $flag;
+                    break;
+                }
+            }
+            self::$emulatedClasses[$className] = $isEmulated;
+        }
+        return self::$emulatedClasses[$className];
+    }
+
+    /**
+     * Skips current test (when called from test method) or entire test case (when called from `setUpBeforeClass()`)
+     * if "using emulator" flag is set either for called class name or its fully-qualified name prefix.
+     *
+     * Example:
+     * ```
+     * // Use default reason.
+     * self::skipIfEmulatorUsed();
+     * ```
+     *
+     * ```
+     * // Use custom reason.
+     * self::skipIfEmulatorUsed('Administration functions are not supported by emulator.');
+     * ```
+     *
+     * @param string|null $reason Message explaining reason for skipping this test.
+     */
+    public static function skipIfEmulatorUsed($reason = null)
+    {
+        if (self::isEmulatorUsed()) {
+            self::markTestSkipped($reason ?: 'This test is not supported by the emulator.');
+        }
     }
 }

@@ -1,0 +1,99 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 1,
+  "name": "media-cloud/mux-video-block",
+  "version": "0.1.0",
+  "title": "Media Cloud Video",
+  "category": "mediacloud",
+  "description": "Video player block for Media Cloud.",
+  "supports": {
+	"html": false,
+	"align": true,
+	"alignWide": true,
+	"anchor": true,
+	"customClassName": true,
+	"spacing": {
+	  "margin": true,
+	  "padding": true
+	}
+  },
+  "textdomain": "mediacloud-video-block",
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./index.css",
+  "style": "file:./style-index.css",
+  "attributes": {
+	"autoplay": {
+	  "type": "boolean",
+	  "source": "attribute",
+	  "selector": "video",
+	  "attribute": "autoplay"
+	},
+	"caption": {
+	  "type": "string",
+	  "source": "html",
+	  "selector": "figcaption"
+	},
+	"controls": {
+	  "type": "boolean",
+	  "source": "attribute",
+	  "selector": "video",
+	  "attribute": "controls",
+	  "default": true
+	},
+	"id": {
+	  "type": "number"
+	},
+	"muxId": {
+	  "type": "string"
+	},
+	"outputDimensions": {
+	  "type": "boolean"
+	},
+	"loop": {
+	  "type": "boolean",
+	  "source": "attribute",
+	  "selector": "video",
+	  "attribute": "loop"
+	},
+	"muted": {
+	  "type": "boolean",
+	  "source": "attribute",
+	  "selector": "video",
+	  "attribute": "muted"
+	},
+	"poster": {
+	  "type": "string",
+	  "source": "attribute",
+	  "selector": "video",
+	  "attribute": "poster"
+	},
+	"preload": {
+	  "type": "string",
+	  "source": "attribute",
+	  "selector": "video",
+	  "attribute": "preload",
+	  "default": "metadata"
+	},
+	"src": {
+	  "type": "string",
+	  "source": "attribute",
+	  "selector": "video",
+	  "attribute": "src"
+	},
+	"playsInline": {
+	  "type": "boolean",
+	  "source": "attribute",
+	  "selector": "video",
+	  "attribute": "playsinline",
+	  "default": true
+	},
+	"allowDownload": {
+	  "type": "string",
+	  "default": "inherit"
+	},
+	"allowDownloadOriginal": {
+	  "type": "string",
+	  "default": "inherit"
+	}
+  }
+}

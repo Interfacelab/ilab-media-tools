@@ -63,7 +63,7 @@ class Landmark extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      */
     public function setType($var)
     {
-        GPBUtil::checkEnum($var, \MediaCloud\Vendor\Google\Cloud\Vision\V1\FaceAnnotation_Landmark_Type::class);
+        GPBUtil::checkEnum($var, \MediaCloud\Vendor\Google\Cloud\Vision\V1\FaceAnnotation\Landmark\Type::class);
         $this->type = $var;
 
         return $this;
@@ -73,11 +73,21 @@ class Landmark extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      * Face landmark position.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.Position position = 4;</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\Position
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\Position|null
      */
     public function getPosition()
     {
         return $this->position;
+    }
+
+    public function hasPosition()
+    {
+        return isset($this->position);
+    }
+
+    public function clearPosition()
+    {
+        unset($this->position);
     }
 
     /**

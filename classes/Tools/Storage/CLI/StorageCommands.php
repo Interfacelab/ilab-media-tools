@@ -29,6 +29,7 @@ use  MediaCloud\Plugin\Tools\Storage\Tasks\MigrateFromOtherTask ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\MigrateTask ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\RegenerateThumbnailTask ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\UnlinkTask ;
+use  MediaCloud\Plugin\Tools\Storage\Tasks\UpdateURLsTask ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\VerifyLibraryTask ;
 use  MediaCloud\Plugin\Tools\ToolsManager ;
 use  MediaCloud\Plugin\Utilities\Logging\Logger ;
@@ -708,7 +709,7 @@ class StorageCommands extends Command
         }
         $allSizes = ilab_get_image_sizes();
         $sizeKeys = array_keys( $allSizes );
-        $sizeKeys = array_sort( $sizeKeys );
+        sort( $sizeKeys );
         $sizeKeysLocal = [];
         foreach ( $sizeKeys as $key ) {
             $sizeKeysLocal[] = $key;
@@ -839,9 +840,130 @@ class StorageCommands extends Command
      */
     public function replace( $cmdArgs, $assoc_args )
     {
-        /** @var \Freemius $media_cloud_licensing */
-        global  $media_cloud_licensing ;
-        self::Error( "Only available in the Premium version.  To upgrade: https://mediacloud.press/pricing/" );
+        $uploadDir = wp_get_upload_dir();
+        
+        if ( !isset( $assoc_args['continue'] ) ) {
+            Command::Out( "", true );
+            Command::Warn( "%WThis will only replace local URLs, meaning URLs that match {$uploadDir['baseurl']}.  If you run this once and then change a setting with Media Cloud that alters the URL (adding a CDN, turning on/off imgix) this will not replace the \"old\" cloud storage URLs with the new one.  %n\n\n%WThis command will make some changes to your database that are not reversible.  Make sure to backup your database first.%n" );
+            Command::Out( "", true );
+            \WP_CLI::confirm( "Are you sure you want to continue?", $assoc_args );
+            Command::Out( "", true );
+        }
+        
+        $args = [
+            'post_type'      => 'attachment',
+            'post_status'    => 'inherit',
+            'posts_per_page' => 100,
+            'fields'         => 'ids',
+            'post_mime_type' => StorageToolSettings::allowedMimeTypes(),
+        ];
+        
+        if ( isset( $assoc_args['continue'] ) && isset( $assoc_args['limit'] ) ) {
+            $args['posts_per_page'] = $assoc_args['limit'];
+            if ( isset( $assoc_args['page'] ) ) {
+                $args['offset'] = max( 0, ($assoc_args['page'] - 1) * $assoc_args['limit'] );
+            }
+        }
+        
+        $args['meta_query'] = [
+            'relation' => 'OR',
+            [
+            'key'     => '_wp_attachment_metadata',
+            'value'   => '"s3"',
+            'compare' => 'LIKE',
+            'type'    => 'CHAR',
+        ],
+            [
+            'key'     => 'ilab_s3_info',
+            'compare' => 'EXISTS',
+        ],
+        ];
+        $query = new \WP_Query( $args );
+        $postIds = $query->posts;
+        $totalPostsCount = $query->found_posts;
+        
+        if ( $totalPostsCount === 0 ) {
+            if ( !isset( $assoc_args['continue'] ) ) {
+                Command::Error( "No attachments found." );
+            }
+            exit( 1 );
+        }
+        
+        $sleep = intval( arrayPath( $assoc_args, 'sleep', (int) 250 ) );
+        $dryRun = ( isset( $assoc_args['dry-run'] ) ? '--dry-run' : '' );
+        $dryRunText = ( isset( $assoc_args['dry-run'] ) ? '  Performing a dry run, database changes will not be made.' : '' );
+        if ( isset( $assoc_args['imgix'] ) && !empty(apply_filters( 'media-cloud/imgix/enabled', false )) ) {
+            self::Error( "You should only specify the --imgix flag if you were previously using imgix, but have since disabled it." );
+        }
+        
+        if ( !isset( $assoc_args['continue'] ) ) {
+            $token = time();
+            $batchSize = ( isset( $assoc_args['batch-size'] ) ? intval( $assoc_args['batch-size'] ) : 400 );
+            $batchSize = max( $batchSize, 50 );
+            $localSwitch = ( isset( $assoc_args['local'] ) ? '--local' : '' );
+            $imgixSwitch = ( isset( $assoc_args['imgix'] ) ? '--imgix' : '' );
+            $imgixDomainSwitch = ( isset( $assoc_args['imgix-domain'] ) ? "--imgix-domain={$assoc_args['imgix-domain']}" : '' );
+            $imgixKeySwitch = ( isset( $assoc_args['imgix-key'] ) ? "--imgix-key={$assoc_args['imgix-key']}" : '' );
+            $cdnSwitch = ( isset( $assoc_args['cdn'] ) ? "--cdn='{$assoc_args['cdn']}'" : '' );
+            $docCdnSwitch = ( isset( $assoc_args['doc-cdn'] ) ? "--doc-cdn='{$assoc_args['doc-cdn']}'" : '' );
+            $totalPages = floor( $totalPostsCount / $batchSize ) + 1;
+            for ( $i = 1 ;  $i <= $totalPages ;  $i++ ) {
+                self::Info( "", true );
+                self::Info( "Running batch {$i} of {$totalPages}", true );
+                $command = "mediacloud:storage replace --token={$token} --limit={$batchSize} --page={$i} --sleep={$sleep} --continue {$dryRun} {$imgixSwitch} {$imgixDomainSwitch} {$imgixKeySwitch} {$cdnSwitch} {$docCdnSwitch} {$localSwitch}";
+                \WP_CLI::runcommand( $command, [] );
+            }
+            exit( 1 );
+        }
+        
+        $reportDir = TaskReporter::reporterDirectory();
+        $token = $assoc_args['token'];
+        $csvFileName = trailingslashit( $reportDir ) . "replace-urls-{$token}.csv";
+        $reporter = new TaskReporter( $csvFileName, [
+            'Post ID',
+            'Old URL',
+            'Replacement URL',
+            'Changes'
+        ], true );
+        if ( arrayPath( $assoc_args, 'page', 1 ) <= 1 ) {
+            self::Info( "Found {$totalPostsCount} attachments to process.{$dryRunText}", true );
+        }
+        $currentIndex = ( isset( $args['offset'] ) ? $args['offset'] + 1 : 1 );
+        $sizes = ilab_get_image_sizes();
+        $sizes['full'] = [];
+        $cdn = arrayPath( $assoc_args, 'cdn', null );
+        $docCdn = arrayPath( $assoc_args, 'doc-cdn', $cdn );
+        $imgixDomain = arrayPath( $assoc_args, 'imgix-domain', null );
+        $imgixKey = arrayPath( $assoc_args, 'imgix-key', null );
+        $searcher = new Searcher(
+            isset( $assoc_args['dry-run'] ),
+            isset( $assoc_args['local'] ),
+            isset( $assoc_args['imgix'] ),
+            $imgixDomain,
+            $imgixKey,
+            $cdn,
+            $docCdn
+        );
+        $allChanges = 0;
+        foreach ( $postIds as $postId ) {
+            $progress = sprintf( '%.1f%%', $currentIndex / $totalPostsCount * 100.0 );
+            self::Info( "[{$progress} - {$currentIndex} of {$totalPostsCount}] Processing {$postId} ... ", false );
+            $totalChanges = $searcher->replacePostId(
+                $postId,
+                $sizes,
+                $reporter,
+                function () {
+                self::Info( "URL map generated ... Replacing URLs ... ", false );
+            }
+            );
+            if ( $sleep > 0 ) {
+                usleep( $sleep * 1000 );
+            }
+            $allChanges += $totalChanges;
+            $currentIndex++;
+            self::Info( "{$totalChanges} changes.  Done.", true );
+        }
+        self::Info( "{$allChanges} total changes made.", true );
     }
     
     public static function Register()

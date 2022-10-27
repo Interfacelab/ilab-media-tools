@@ -37,21 +37,21 @@ abstract class Base32 implements EncoderInterface
     /**
      * Decode a Base32-encoded string into raw binary
      *
-     * @param string $src
+     * @param string $encodedString
+     * @param bool $strictPadding
      * @return string
-     * @throws \TypeError
      */
-    public static function decode(string $src, bool $strictPadding = false): string
+    public static function decode(string $encodedString, bool $strictPadding = false): string
     {
-        return static::doDecode($src, false, $strictPadding);
+        return static::doDecode($encodedString, false, $strictPadding);
     }
 
     /**
      * Decode an uppercase Base32-encoded string into raw binary
      *
      * @param string $src
+     * @param bool $strictPadding
      * @return string
-     * @throws \TypeError
      */
     public static function decodeUpper(string $src, bool $strictPadding = false): string
     {
@@ -61,13 +61,13 @@ abstract class Base32 implements EncoderInterface
     /**
      * Encode into Base32 (RFC 4648)
      *
-     * @param string $src
+     * @param string $binString
      * @return string
      * @throws \TypeError
      */
-    public static function encode(string $src): string
+    public static function encode(string $binString): string
     {
-        return static::doEncode($src, false, true);
+        return static::doEncode($binString, false, true);
     }
     /**
      * Encode into Base32 (RFC 4648)
@@ -368,7 +368,6 @@ abstract class Base32 implements EncoderInterface
                 $err |= ($c0) >> 8;
             }
         }
-        /** @var bool $check */
         $check = ($err === 0);
         if (!$check) {
             throw new \RangeException(

@@ -32,10 +32,11 @@
 
 namespace MediaCloud\Vendor\Google\ApiCore\Transport;
 use MediaCloud\Vendor\Google\ApiCore\ApiException;
-use MediaCloud\Vendor\Google\ApiCore\ApiStatus;
 use MediaCloud\Vendor\Google\ApiCore\Call;
 use MediaCloud\Vendor\Google\ApiCore\RequestBuilder;
+use MediaCloud\Vendor\Google\ApiCore\ServerStream;
 use MediaCloud\Vendor\Google\ApiCore\ServiceAddressTrait;
+use MediaCloud\Vendor\Google\ApiCore\Transport\Rest\RestServerStreamingCall;
 use MediaCloud\Vendor\Google\ApiCore\ValidationException;
 use MediaCloud\Vendor\Google\ApiCore\ValidationTrait;
 use MediaCloud\Vendor\Google\Protobuf\Internal\Message;
@@ -49,7 +50,9 @@ class RestTransport implements TransportInterface
 {
     use ValidationTrait;
     use ServiceAddressTrait;
-    use HttpUnaryTransportTrait;
+    use HttpUnaryTransportTrait {
+        startServerStreamingCall as protected unsupportedServerStreamingCall;
+    }
 
     private $requestBuilder;
 
@@ -78,6 +81,7 @@ class RestTransport implements TransportInterface
      *    Config options used to construct the gRPC transport.
      *
      *    @type callable $httpHandler A handler used to deliver PSR-7 requests.
+     *    @type callable $clientCertSource A callable which returns the client cert as a string.
      * }
      * @return RestTransport
      * @throws ValidationException
@@ -86,11 +90,16 @@ class RestTransport implements TransportInterface
     {
         $config += [
             'httpHandler'  => null,
+            'clientCertSource' => null,
         ];
         list($baseUri, $port) = self::normalizeServiceAddress($apiEndpoint);
         $requestBuilder = new RequestBuilder("$baseUri:$port", $restConfigPath);
         $httpHandler = $config['httpHandler'] ?: self::buildHttpHandlerAsync();
-        return new RestTransport($requestBuilder, $httpHandler);
+        $transport = new RestTransport($requestBuilder, $httpHandler);
+        if ($config['clientCertSource']) {
+            $transport->configureMtlsChannel($config['clientCertSource']);
+        }
+        return $transport;
     }
 
     /**
@@ -128,12 +137,84 @@ class RestTransport implements TransportInterface
             },
             function (\Exception $ex) {
                 if ($ex instanceof RequestException && $ex->hasResponse()) {
-                    throw $this->convertToApiException($ex);
+                    throw ApiException::createFromRequestException($ex);
                 }
 
                 throw $ex;
             }
         );
+    }
+
+    /**
+     * {@inheritdoc}
+     * @throws BadMethodCallException for forwards compatibility with older GAPIC clients
+     */
+    public function startServerStreamingCall(Call $call, array $options)
+    {
+        $message = $call->getMessage();
+        if (!$message) {
+            throw new \InvalidArgumentException('A message is required for ServerStreaming calls.');
+        }
+
+        // Maintain forwards compatibility with older GAPIC clients not configured for REST server streaming
+        // @see https://github.com/googleapis/gax-php/issues/370
+        if (!$this->requestBuilder->pathExists($call->getMethod())) {
+            $this->unsupportedServerStreamingCall($call, $options);
+        }
+
+        $headers = self::buildCommonHeaders($options);
+        $callOptions = $this->getCallOptions($options);
+        $request = $this->requestBuilder->build(
+            $call->getMethod(),
+            $call->getMessage()
+            // Exclude headers here because they will be added in _serverStreamRequest().
+        );
+        
+        $decoderOptions = [];
+        if (isset($options['decoderOptions'])) {
+            $decoderOptions = $options['decoderOptions'];
+        }
+
+        return new ServerStream(
+            $this->_serverStreamRequest(
+                $this->httpHandler,
+                $request,
+                $headers,
+                $call->getDecodeType(),
+                $callOptions,
+                $decoderOptions
+            ),
+            $call->getDescriptor()
+        );
+    }
+
+    /**
+     * Creates and starts a RestServerStreamingCall.
+     *
+     * @param callable $httpHandler The HTTP Handler to invoke the request with.
+     * @param RequestInterface $request The request to invoke.
+     * @param array $headers The headers to include in the request.
+     * @param string $decodeType The response stream message type to decode.
+     * @param array $callOptions The call options to use when making the call.
+     * @param array $decoderOptions The options to use for the JsonStreamDecoder.
+     *
+     */
+    private function _serverStreamRequest(
+        $httpHandler,
+        $request,
+        $headers,
+        $decodeType,
+        $callOptions,
+        $decoderOptions = []
+    ) {
+        $call = new RestServerStreamingCall(
+            $httpHandler,
+            $decodeType,
+            $decoderOptions
+        );
+        $call->start($request, $headers, $callOptions);
+
+        return $call;
     }
 
     private function getCallOptions(array $options)
@@ -146,26 +227,12 @@ class RestTransport implements TransportInterface
             $callOptions['timeout'] = $options['timeoutMillis'] / 1000;
         }
 
-        return $callOptions;
-    }
-
-    /**
-     * @param RequestException $ex
-     * @return ApiException
-     * @throws ValidationException
-     */
-    private function convertToApiException(RequestException $ex)
-    {
-        $res = $ex->getResponse();
-        $body = (string) $res->getBody();
-        if ($error = json_decode($body, true)['error']) {
-            $basicMessage = $error['message'];
-            $code = ApiStatus::rpcCodeFromStatus($error['status']);
-            $metadata = isset($error['details']) ? $error['details'] : null;
-            return ApiException::createFromApiResponse($basicMessage, $code, $metadata);
+        if ($this->clientCertSource) {
+            list($cert, $key) = self::loadClientCertSource();
+            $callOptions['cert'] = $cert;
+            $callOptions['key'] = $key;
         }
-        // Use the RPC code instead of the HTTP Status Code.
-        $code = ApiStatus::rpcCodeFromHttpStatusCode($res->getStatusCode());
-        return ApiException::createFromApiResponse($body, $code);
+
+        return $callOptions;
     }
 }

@@ -19,10 +19,18 @@ class vfsStreamWrapperSelectStreamTestCase extends \BC_PHPUnit_Framework_TestCas
 {
     /**
      * @test
-     * @expectedException \PHPUnit_Framework_Error
      */
     public function selectStream()
     {
+        if (PHP_VERSION_ID >= 80000)
+        {
+            $this->bc_expectException('\ValueError');
+        }
+        else
+        {
+            $this->bc_expectException('\PHPUnit_Framework_Error');
+        }
+
         $root = vfsStream::setup();
         $file = vfsStream::newFile('foo.txt')->at($root)->withContent('testContent');
 

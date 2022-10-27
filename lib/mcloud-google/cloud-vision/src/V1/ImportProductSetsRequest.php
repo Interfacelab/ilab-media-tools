@@ -77,11 +77,21 @@ class ImportProductSetsRequest extends \MediaCloud\Vendor\Google\Protobuf\Intern
      * Required. The input content for the list of requests.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.ImportProductSetsInputConfig input_config = 2 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ImportProductSetsInputConfig
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\ImportProductSetsInputConfig|null
      */
     public function getInputConfig()
     {
         return $this->input_config;
+    }
+
+    public function hasInputConfig()
+    {
+        return isset($this->input_config);
+    }
+
+    public function clearInputConfig()
+    {
+        unset($this->input_config);
     }
 
     /**

@@ -73,11 +73,21 @@ class TextProperty extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      * Detected start or end of a text segment.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.TextAnnotation.DetectedBreak detected_break = 2;</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\TextAnnotation\DetectedBreak
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\TextAnnotation\DetectedBreak|null
      */
     public function getDetectedBreak()
     {
         return $this->detected_break;
+    }
+
+    public function hasDetectedBreak()
+    {
+        return isset($this->detected_break);
+    }
+
+    public function clearDetectedBreak()
+    {
+        unset($this->detected_break);
     }
 
     /**
@@ -89,7 +99,7 @@ class TextProperty extends \MediaCloud\Vendor\Google\Protobuf\Internal\Message
      */
     public function setDetectedBreak($var)
     {
-        GPBUtil::checkMessage($var, \MediaCloud\Vendor\Google\Cloud\Vision\V1\TextAnnotation_DetectedBreak::class);
+        GPBUtil::checkMessage($var, \MediaCloud\Vendor\Google\Cloud\Vision\V1\TextAnnotation\DetectedBreak::class);
         $this->detected_break = $var;
 
         return $this;

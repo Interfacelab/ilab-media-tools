@@ -58,11 +58,21 @@ class UpdateProductRequest extends \MediaCloud\Vendor\Google\Protobuf\Internal\M
      * product.name is immutable.
      *
      * Generated from protobuf field <code>.google.cloud.vision.v1.Product product = 1 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\Product
+     * @return \MediaCloud\Vendor\Google\Cloud\Vision\V1\Product|null
      */
     public function getProduct()
     {
         return $this->product;
+    }
+
+    public function hasProduct()
+    {
+        return isset($this->product);
+    }
+
+    public function clearProduct()
+    {
+        unset($this->product);
     }
 
     /**
@@ -89,11 +99,21 @@ class UpdateProductRequest extends \MediaCloud\Vendor\Google\Protobuf\Internal\M
      * `description`.
      *
      * Generated from protobuf field <code>.google.protobuf.FieldMask update_mask = 2;</code>
-     * @return \MediaCloud\Vendor\Google\Protobuf\FieldMask
+     * @return \MediaCloud\Vendor\Google\Protobuf\FieldMask|null
      */
     public function getUpdateMask()
     {
         return $this->update_mask;
+    }
+
+    public function hasUpdateMask()
+    {
+        return isset($this->update_mask);
+    }
+
+    public function clearUpdateMask()
+    {
+        unset($this->update_mask);
     }
 
     /**

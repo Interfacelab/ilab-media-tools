@@ -1,7 +1,7 @@
 {
     "name": "mcloud-symfony/translation",
     "type": "library",
-    "description": "Symfony Translation Component",
+    "description": "Provides tools to internationalize your application",
     "keywords": [],
     "homepage": "https://symfony.com",
     "license": "MIT",
@@ -16,23 +16,35 @@
         }
     ],
     "require": {
-        "php": "^5.5.9|>=7.0.8",
-        "mcloud-symfony/polyfill-mbstring": "v1.18.1"
+        "php": ">=7.2.5",
+        "mcloud-symfony/deprecation-contracts": "v2.5.0",
+        "mcloud-symfony/polyfill-mbstring": "v1.24.0",
+        "mcloud-symfony/polyfill-php80": "v1.24.0",
+        "mcloud-symfony/translation-contracts": "v2.5.0"
     },
     "require-dev": {
-        "symfony/config": "~2.8|~3.0|~4.0",
-        "symfony/dependency-injection": "~3.4|~4.0",
-        "symfony/http-kernel": "~3.4|~4.0",
-        "symfony/intl": "^2.8.18|^3.2.5|~4.0",
-        "symfony/var-dumper": "~3.4|~4.0",
-        "symfony/yaml": "~3.4|~4.0",
-        "symfony/finder": "~2.8|~3.0|~4.0",
-        "psr/log": "~1.0"
+        "symfony/config": "^4.4|^5.0|^6.0",
+        "symfony/console": "^5.4|^6.0",
+        "symfony/dependency-injection": "^5.0|^6.0",
+        "symfony/http-client-contracts": "^1.1|^2.0|^3.0",
+        "symfony/http-kernel": "^5.0|^6.0",
+        "symfony/intl": "^4.4|^5.0|^6.0",
+        "symfony/polyfill-intl-icu": "^1.21",
+        "symfony/service-contracts": "^1.1.2|^2|^3",
+        "symfony/yaml": "^4.4|^5.0|^6.0",
+        "symfony/finder": "^4.4|^5.0|^6.0",
+        "psr/log": "^1|^2|^3"
     },
     "conflict": {
-        "symfony/config": "<2.8",
-        "symfony/dependency-injection": "<3.4",
-        "symfony/yaml": "<3.4"
+        "symfony/config": "<4.4",
+        "symfony/dependency-injection": "<5.0",
+        "symfony/http-kernel": "<5.0",
+        "symfony/twig-bundle": "<5.0",
+        "symfony/yaml": "<4.4",
+        "symfony/console": "<5.3"
+    },
+    "provide": {
+        "symfony/translation-implementation": "2.3"
     },
     "suggest": {
         "symfony/config": "",
@@ -40,6 +52,9 @@
         "psr/log-implementation": "To use logging capability in translator"
     },
     "autoload": {
+        "files": [
+            "Resources/functions.php"
+        ],
         "psr-4": {
             "MediaCloud\\Vendor\\Symfony\\Component\\Translation\\": ""
         },
@@ -48,8 +63,5 @@
         ]
     },
     "minimum-stability": "dev",
-    "extra": {
-        "branch-alias": []
-    },
-    "version": "v3.4.43"
+    "version": "v5.4.5"
 }
