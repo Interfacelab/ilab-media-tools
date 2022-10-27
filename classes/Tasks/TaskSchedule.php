@@ -365,6 +365,15 @@ class TaskSchedule extends Model implements \JsonSerializable {
 		return null;
 	}
 
+	public function rescheduleTask(int $minutes) {
+		global $wpdb;
+
+		$table = "{$wpdb->base_prefix}mcloud_task_schedule";
+		$nextRun = time() + ($minutes * 60);
+		$wpdb->update($table, ['nextRun' => $nextRun], ['id' => $this->id()]);
+	}
+
+
 	/**
 	 * @param $type
 	 *
