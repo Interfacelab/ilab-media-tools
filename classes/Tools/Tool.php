@@ -348,6 +348,10 @@ abstract class Tool {
     }
 
     private function notifyMissingDependencies($shouldBeEnabled, $toolId) {
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+
         $problemTool = $this->toolManager->tools[$toolId];
         $problemToolName = $problemTool->toolInfo['name'];
         $problemUrl = admin_url('admin.php?page=media-cloud-settings&tab='.$toolId);

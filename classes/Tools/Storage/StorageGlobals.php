@@ -128,7 +128,10 @@ final class StorageGlobals {
 		}
 
 		if(!in_array($this->privacy, ['public-read', 'authenticated-read', 'private'])) {
-			NoticeManager::instance()->displayAdminNotice('error', "Your AWS S3 settings are incorrect.  The ACL '{$this->privacy}' is not valid.  Defaulting to 'public-read'.");
+			if (current_user_can('manage_options')) {
+				NoticeManager::instance()->displayAdminNotice('error', "Your AWS S3 settings are incorrect.  The ACL '{$this->privacy}' is not valid.  Defaulting to 'public-read'.");
+			}
+
 			$this->privacy = 'public-read';
 		}
 
@@ -182,10 +185,9 @@ final class StorageGlobals {
 			$this->expires = gmdate('D, d M Y H:i:s \G\M\T', time() + ($expires * 60));
 		}
 
-		if (is_multisite() && is_network_admin() && empty($this->prefixFormat)) {
+		if (current_user_can('manage_options') && is_multisite() && is_network_admin() && empty($this->prefixFormat)) {
 			$rootSiteName = get_network()->site_name;
 			$adminUrl = network_admin_url('admin.php?page=media-cloud-settings&tab=storage#upload-handling');
-
 			NoticeManager::instance()->displayAdminNotice('warning', "You are using Multisite WordPress but have not set a custom upload directory.  Your root site, <strong>'{$rootSiteName}'</strong> will be uploading to the root of your cloud storage which may not be desirable.  It's recommended that you set the Upload Directory to <code>sites/@{site-id}/@{date:Y/m}</code> in <a href='{$adminUrl}'>Cloud Storage</a> settings.", true, 'mcloud-multisite-missing-upload-path');
 		}
 	}
@@ -404,7 +406,9 @@ final class StorageGlobals {
 
 		if (!empty($migrated)) {
 			Environment::UpdateOption('mcloud-tool-enabled-storage', true);
-			NoticeManager::instance()->displayAdminNotice('info', "Media Cloud noticed you were using {$migratedFrom} and has migrated your settings automatically.  Everything should be working as before, but make sure to double check your Cloud Storage settings.", true, 'mcloud-migrated-other-plugin', 'forever');
+			if (current_user_can('manage_options')) {
+				NoticeManager::instance()->displayAdminNotice('info', "Media Cloud noticed you were using {$migratedFrom} and has migrated your settings automatically.  Everything should be working as before, but make sure to double check your Cloud Storage settings.", true, 'mcloud-migrated-other-plugin', 'forever');
+			}
 			update_option('mcloud-other-plugins-did-migrate', $migratedFrom);
 		}
 

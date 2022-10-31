@@ -70,7 +70,7 @@ abstract class DynamicImagesTool extends Tool {
 	    foreach($this->toolInfo['imageOptimizers'] as $key => $plugin) {
 		    if (is_plugin_active($plugin)) {
 			    $dismissibleID = 'dynamic-images-image-optimizers-7';
-			    if (NoticeManager::instance()->isAdminNoticeActive($dismissibleID)) {
+			    if (NoticeManager::instance()->isAdminNoticeActive($dismissibleID) && current_user_can('manage_options')) {
 				    add_action( 'admin_notices', function () use ($directUploadEnabled, $dismissibleID) {
 					    ?>
                         <div data-dismissible="<?php echo $dismissibleID ?>" class="notice notice-warning is-dismissible" style="padding:10px;">

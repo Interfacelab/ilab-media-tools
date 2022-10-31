@@ -151,18 +151,20 @@ final class MigrationsManager {
     		return;
 	    }
 
-	    $lastVersion = Environment::Option('mcloud_migration_last_version', null, '3.0.0');
+		if (current_user_can('manage_options')) {
+		    $lastVersion = Environment::Option('mcloud_migration_last_version', null, '3.0.0');
 
-	    $exist = [];
-	    foreach($this->deprecatedErrors as $oldEndVar => $newEnvVar) {
-		    $exist[] = "<li><code>$oldEndVar</code> is now <code>$newEnvVar</code></li>";
-	    }
+		    $exist = [];
+		    foreach($this->deprecatedErrors as $oldEndVar => $newEnvVar) {
+			    $exist[] = "<li><code>$oldEndVar</code> is now <code>$newEnvVar</code></li>";
+		    }
 
-	    $message = "You have have outdated environmental variables defined.  Please try to change them as soon as possible.  The deprecated environment variables are: <ul>";
-	    $message .= implode("\n", $exist);
-	    $message .= '</ul>';
+		    $message = "You have have outdated environmental variables defined.  Please try to change them as soon as possible.  The deprecated environment variables are: <ul>";
+		    $message .= implode("\n", $exist);
+		    $message .= '</ul>';
 
-        NoticeManager::instance()->displayAdminNotice('error', $message,true, 'mcloud-deprecated-env-'.str_replace('.','_',$lastVersion), 1);
+            NoticeManager::instance()->displayAdminNotice('error', $message,true, 'mcloud-deprecated-env-'.str_replace('.','_',$lastVersion), 1);
+		}
     }
     //endregion
 }

@@ -5,6 +5,7 @@
     "/js/ilab-media-direct-upload.js": "/js/ilab-media-direct-upload.js",
     "/js/ilab-media-direct-upload-google.js": "/js/ilab-media-direct-upload-google.js",
     "/js/ilab-media-direct-upload-other-s3.js": "/js/ilab-media-direct-upload-other-s3.js",
+    "/js/ilab-media-direct-upload-r2.js": "/js/ilab-media-direct-upload-r2.js",
     "/js/ilab-media-direct-upload-s3.js": "/js/ilab-media-direct-upload-s3.js",
     "/js/ilab-media-grid.js": "/js/ilab-media-grid.js",
     "/css/ilab-media-cloud.css": "/css/ilab-media-cloud.css",

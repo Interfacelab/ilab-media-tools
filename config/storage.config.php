@@ -80,6 +80,7 @@ return [
 			'help' => [
 				[ 'title' => 'Setup Wizard', 'wizard' => 'cloudflare' ],
 				[ 'title' => 'Watch Tutorial', 'video_url' => 'https://www.youtube.com/watch?v=GDL2bzYMgLY' ],
+				[ 'title' => 'Setting up CORS', 'video_url' => 'https://www.youtube.com/watch?v=7_4Q0WQVNUI' ],
 			]
 		],
 		'do' => [

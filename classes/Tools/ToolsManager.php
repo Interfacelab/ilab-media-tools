@@ -180,7 +180,7 @@ final class ToolsManager
             return $links;
         } );
         $maxTime = ini_get( 'max_execution_time' );
-        if ( $maxTime > 0 && $maxTime < 90 ) {
+        if ( $maxTime > 0 && $maxTime < 90 && current_user_can( 'manage_options' ) ) {
             NoticeManager::instance()->displayAdminNotice(
                 'warning',
                 "The <code>max_execution_time</code> is set to a value that might be too low ({$maxTime}).  You should set it to about 90 seconds.  Additionally, if you are using Nginx or Apache, you may need to set the respective <code>fastcgi_read_timeout</code>, <code>request_terminate_timeout</code> or <code>TimeOut</code> settings too.",
@@ -188,7 +188,7 @@ final class ToolsManager
                 'ilab-media-tools-extime-notice'
             );
         }
-        if ( !extension_loaded( 'mbstring' ) ) {
+        if ( !extension_loaded( 'mbstring' ) && current_user_can( 'manage_options' ) ) {
             NoticeManager::instance()->displayAdminNotice(
                 'warning',
                 "Media Cloud recommends that the <code>mbstring</code> PHP extension be installed and activated.",
@@ -263,7 +263,7 @@ final class ToolsManager
             );
         }
         
-        if ( defined( 'MCLOUD_IS_BETA' ) && !empty(constant( 'MCLOUD_IS_BETA' )) ) {
+        if ( defined( 'MCLOUD_IS_BETA' ) && !empty(constant( 'MCLOUD_IS_BETA' )) && current_user_can( 'manage_options' ) ) {
             $message = View::render_view( 'beta.beta-notes', [] );
             NoticeManager::instance()->displayAdminNotice(
                 'info',
@@ -954,7 +954,8 @@ final class ToolsManager
             $group = $selectedTool->optionsGroup();
             $sections = [];
             foreach ( (array) $wp_settings_sections[$page] as $section ) {
-                if ( !isset( $wp_settings_fields ) || !isset( $wp_settings_fields[$page] ) || !isset( $wp_settings_fields[$page][$section['id']] ) ) {
+                $allowEmpty = arrayPath( $selectedTool->toolInfo, "settings/groups/{$section['id']}/allow-empty", false );
+                if ( !isset( $wp_settings_fields ) || !isset( $wp_settings_fields[$page] ) || !$allowEmpty && !isset( $wp_settings_fields[$page][$section['id']] ) ) {
                     continue;
                 }
                 $help = arrayPath( $selectedTool->toolInfo, "settings/groups/{$section['id']}/help", null );

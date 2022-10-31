@@ -258,8 +258,10 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 
 	public function enabled() {
 		if (!((($this->settings->key && $this->settings->secret) || $this->settings->useCredentialProvider) && $this->settings->bucket)) {
-			$adminUrl = admin_url('admin.php?page=media-cloud-settings&tab=storage');
-			NoticeManager::instance()->displayAdminNotice('info', "Welcome to Media Cloud!  To get started, <a href='$adminUrl'>configure your cloud storage</a>.", true, 'ilab-cloud-storage-setup-warning', 'forever');
+			if (current_user_can('manage_options')) {
+				$adminUrl = admin_url('admin.php?page=media-cloud-settings&tab=storage');
+				NoticeManager::instance()->displayAdminNotice('info', "Welcome to Media Cloud!  To get started, <a href='$adminUrl'>configure your cloud storage</a>.", true, 'ilab-cloud-storage-setup-warning', 'forever');
+			}
 
 			return false;
 		}

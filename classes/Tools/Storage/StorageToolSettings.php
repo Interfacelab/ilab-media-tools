@@ -190,7 +190,10 @@ class StorageToolSettings extends ToolSettings {
 			}
 
 			if(!in_array($this->_privacy, ['public-read', 'private', 'authenticated-read'])) {
-				NoticeManager::instance()->displayAdminNotice('error', "Your AWS S3 settings are incorrect.  The ACL '{$this->privacy}' is not valid.  Defaulting to 'public-read'.");
+				if (current_user_can('manage_options')) {
+					NoticeManager::instance()->displayAdminNotice('error', "Your AWS S3 settings are incorrect.  The ACL '{$this->privacy}' is not valid.  Defaulting to 'public-read'.");
+				}
+
 				$this->_privacy = 'public-read';
 			}
 

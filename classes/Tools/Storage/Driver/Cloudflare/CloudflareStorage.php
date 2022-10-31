@@ -17,11 +17,16 @@
 namespace MediaCloud\Plugin\Tools\Storage\Driver\Cloudflare;
 
 use MediaCloud\Plugin\Tools\Storage\Driver\S3\OtherS3Storage;
+use MediaCloud\Plugin\Tools\Storage\Driver\S3\S3UploadInfo;
+use MediaCloud\Plugin\Tools\Storage\StorageException;
 use MediaCloud\Plugin\Tools\Storage\StorageToolSettings;
 use MediaCloud\Plugin\Utilities\Environment;
+use MediaCloud\Plugin\Utilities\Logging\Logger;
 use MediaCloud\Plugin\Utilities\NoticeManager;
 use MediaCloud\Vendor\Aws\CloudFront\CloudFrontClient;
 use MediaCloud\Plugin\Tools\Storage\InvalidStorageSettingsException;
+use MediaCloud\Vendor\Aws\Exception\AwsException;
+use MediaCloud\Vendor\Aws\S3\PostObjectV4;
 use function MediaCloud\Plugin\Utilities\anyNull;
 use MediaCloud\Plugin\Utilities\Tracker;
 use MediaCloud\Plugin\Wizard\WizardBuilder;
@@ -74,7 +79,7 @@ class CloudflareStorage extends OtherS3Storage {
 
 	//region Enabled/Options
 	public function supportsDirectUploads() {
-		return false;
+		return true;
 	}
 
 	public static function settingsErrorOptionName() {
@@ -95,8 +100,10 @@ class CloudflareStorage extends OtherS3Storage {
 
 	public function enabled() {
 		if (!($this->settings->key && $this->settings->secret && $this->settings->bucket && $this->settings->endpoint && $this->settings->publicBucketUrl)) {
-			$adminUrl = admin_url('admin.php?page=media-cloud-settings&tab=storage');
-			NoticeManager::instance()->displayAdminNotice('info', "Welcome to Media Cloud!  To get started, <a href='$adminUrl'>configure your cloud storage</a>.", true, 'ilab-cloud-storage-setup-warning', 'forever');
+			if (current_user_can('manage_options')) {
+				$adminUrl = admin_url('admin.php?page=media-cloud-settings&tab=storage');
+				NoticeManager::instance()->displayAdminNotice('info', "Welcome to Media Cloud!  To get started, <a href='$adminUrl'>configure your cloud storage</a>.", true, 'ilab-cloud-storage-setup-warning', 'forever');
+			}
 
 			return false;
 		}
@@ -143,8 +150,68 @@ class CloudflareStorage extends OtherS3Storage {
 	//endregion
 
 	//region Direct Uploads
+	/**
+	 * Returns the options data for generating the policy for uploads
+	 *
+	 * @param $acl
+	 * @param $key
+	 *
+	 * @return array
+	 */
+	protected function getOptionsData($acl, $key) {
+		$keyparts = explode('.', $key);
+
+		if ($this->canUpdateACL()) {
+			return [
+				['bucket' => $this->settings->bucket],
+//				['key' => $key],
+				['starts-with', '$key', $keyparts[0]],
+				['starts-with', '$Content-Type', '']
+			];
+		} else {
+			return [
+				['bucket' => $this->settings->bucket],
+//				['key' => $key],
+				['starts-with', '$key', $keyparts[0]],
+				['starts-with', '$Content-Type', '']
+			];
+		}
+	}
+
+	public function uploadUrl($key, $acl, $mimeType = null, $cacheControl = null, $expires = null) {
+		try {
+			$options = [
+				'Bucket' => $this->settings->bucket,
+				'Key' => $key,
+			];
+
+			if ($mimeType) {
+				$options['ContentType'] = $mimeType;
+			}
+
+			if ($cacheControl) {
+				$options['CacheControl'] = $cacheControl;
+			}
+
+			if ($expires) {
+				$options['Expires'] = $expires;
+			}
+
+			$command = $this->client->getCommand('PutObject', $options);
+			$result = $this->client->createPresignedRequest($command, '+15 minutes');
+			$url =  (string)$result->getUri();
+
+			return new CloudflareUploadInfo($url, $key, $mimeType, $acl, $cacheControl, $expires);
+		} catch(AwsException $ex) {
+			Logger::error('S3 Generate File Upload URL Error', ['exception' => $ex->getMessage()], __METHOD__, __LINE__);
+			throw new StorageException($ex->getMessage(), $ex->getCode(), $ex);
+		}
+	}
+
 	public function enqueueUploaderScripts() {
-		wp_enqueue_script('ilab-media-upload-other-s3', ILAB_PUB_JS_URL.'/ilab-media-direct-upload-other-s3.js', [], MEDIA_CLOUD_VERSION, true);
+//		wp_enqueue_script('ilab-media-direct-upload-other-s3', ILAB_PUB_JS_URL.'/ilab-media-direct-upload-other-s3.js', [], MEDIA_CLOUD_VERSION, true);
+		wp_enqueue_script('ilab-media-direct-upload-r2', ILAB_PUB_JS_URL.'/ilab-media-direct-upload-r2.js', [], MEDIA_CLOUD_VERSION, true);
+//		wp_enqueue_script('ilab-media-upload-other-s3', ILAB_PUB_JS_URL.'/ilab-media-direct-upload-other-s3.js', [], MEDIA_CLOUD_VERSION, true);
 	}
 	//endregion
 

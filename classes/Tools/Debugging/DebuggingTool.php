@@ -65,7 +65,10 @@ class DebuggingTool extends Tool {
 
             $link = "<a href='".admin_url('admin.php?page=media-tools-top')."'>turn it off</a>";
             $message = "Media Cloud debugging is enabled.  This may affect performance.  Unless you are troubleshooting and issue, you should $link.  You can dismiss this notice and it'll be shown to you again in 24 hours.";
-            NoticeManager::instance()->displayAdminNotice('warning', $message,true, 'ilab-debug-tools-warning', 1);
+
+			if (current_user_can('manage_options')) {
+                NoticeManager::instance()->displayAdminNotice('warning', $message,true, 'ilab-debug-tools-warning', 1);
+			}
         }
 	}
 

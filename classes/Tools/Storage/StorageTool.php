@@ -281,7 +281,7 @@ class StorageTool extends Tool
             
             if ( is_admin() ) {
                 
-                if ( empty(get_option( 'uploads_use_yearmonth_folders' )) && empty(StorageToolSettings::prefixFormat()) ) {
+                if ( current_user_can( 'manage_options' ) && empty(get_option( 'uploads_use_yearmonth_folders' )) && empty(StorageToolSettings::prefixFormat()) ) {
                     $mediaUrl = ilab_admin_url( 'options-media.php' );
                     $settingsUrl = ilab_admin_url( 'admin.php?page=media-cloud-settings#upload-handling' );
                     NoticeManager::instance()->displayAdminNotice(
@@ -294,7 +294,7 @@ class StorageTool extends Tool
                 }
                 
                 
-                if ( !empty($this->settings->replaceSrcSet) ) {
+                if ( current_user_can( 'manage_options' ) && !empty($this->settings->replaceSrcSet) ) {
                     $settingsUrl = ilab_admin_url( 'admin.php?page=media-cloud-settings#responsive-image-settings' );
                     NoticeManager::instance()->displayAdminNotice(
                         'warning',
@@ -306,7 +306,7 @@ class StorageTool extends Tool
                 }
                 
                 
-                if ( StorageToolSettings::driver() === 'do' && strpos( $this->client()->bucket(), '.' ) === false && !empty($this->client()->settings()->endPointPathStyle) ) {
+                if ( current_user_can( 'manage_options' ) && StorageToolSettings::driver() === 'do' && strpos( $this->client()->bucket(), '.' ) === false && !empty($this->client()->settings()->endPointPathStyle) ) {
                     $settingsUrl = ilab_admin_url( 'admin.php?page=media-cloud-settings#provider-settings' );
                     NoticeManager::instance()->displayAdminNotice(
                         'info',
@@ -598,13 +598,15 @@ class StorageTool extends Tool
             
             $this->hookupUI();
         } else {
-            
             if ( !empty($this->client) && $this->client->settingsError() ) {
-                $adminUrl = admin_url( 'admin.php?page=media-cloud-settings&tab=storage' );
-                $testUrl = admin_url( 'admin.php?page=media-tools-troubleshooter' );
-                NoticeManager::instance()->displayAdminNotice( 'error', "Your cloud storage settings are incorrect.  Please <a href='{$adminUrl}'>verify your settings</a> or run the <a href='{$testUrl}'>systems test</a> to troubleshoot the issue." );
+                
+                if ( current_user_can( 'manage_options' ) ) {
+                    $adminUrl = admin_url( 'admin.php?page=media-cloud-settings&tab=storage' );
+                    $testUrl = admin_url( 'admin.php?page=media-tools-troubleshooter' );
+                    NoticeManager::instance()->displayAdminNotice( 'error', "Your cloud storage settings are incorrect.  Please <a href='{$adminUrl}'>verify your settings</a> or run the <a href='{$testUrl}'>systems test</a> to troubleshoot the issue." );
+                }
+            
             }
-        
         }
     
     }
@@ -619,7 +621,7 @@ class StorageTool extends Tool
                 $error = true;
             }
         }
-        if ( $error ) {
+        if ( $error && current_user_can( 'manage_options' ) ) {
             NoticeManager::instance()->displayAdminNotice( 'error', 'There is a serious issue with your storage settings.  Please check them and try again.' );
         }
         $privacyErrors = [];
@@ -4378,6 +4380,9 @@ TEMPLATE;
     
     private function displayOptimizerAdminNotice( $builtInImageOptimizer )
     {
+        if ( !current_user_can( 'manage_options' ) ) {
+            return;
+        }
         $type = 'warning';
         $suffix = '';
         

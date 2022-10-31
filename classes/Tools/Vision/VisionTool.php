@@ -214,7 +214,7 @@ class VisionTool extends Tool
     {
         if ( ToolsManager::instance()->toolEnvEnabled( 'vision' ) ) {
             if ( !$this->driver->enabled() ) {
-                if ( !empty($this->driver->enabledError()) ) {
+                if ( !empty($this->driver->enabledError()) && current_user_can( 'manage_options' ) ) {
                     NoticeManager::instance()->displayAdminNotice( 'error', $this->driver->enabledError() );
                 }
             }
@@ -238,15 +238,17 @@ class VisionTool extends Tool
         }
         
         if ( !$this->driver->enabled() ) {
-            
-            if ( !empty($this->driver->enabledError()) ) {
-                NoticeManager::instance()->displayAdminNotice( 'error', $this->driver->enabledError() );
-            } else {
-                if ( !$this->driver->minimumOptionsEnabled() ) {
-                    NoticeManager::instance()->displayAdminNotice( 'warning', "You have enabled the Vision tool, but none of the options are on.", false );
+            if ( current_user_can( 'manage_options' ) ) {
+                
+                if ( !empty($this->driver->enabledError()) ) {
+                    NoticeManager::instance()->displayAdminNotice( 'error', $this->driver->enabledError() );
+                } else {
+                    if ( !$this->driver->minimumOptionsEnabled() ) {
+                        NoticeManager::instance()->displayAdminNotice( 'warning', "You have enabled the Vision tool, but none of the options are on.", false );
+                    }
                 }
-            }
             
+            }
             return false;
         }
         

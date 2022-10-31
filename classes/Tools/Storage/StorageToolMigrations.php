@@ -45,7 +45,9 @@ final class StorageToolMigrations {
 
 		if (!empty($migrated)) {
 			Environment::UpdateOption('mcloud-tool-enabled-storage', true);
-			NoticeManager::instance()->displayAdminNotice('info', "Media Cloud noticed you were using {$migratedFrom} and has migrated your settings automatically.  Everything should be working as before, but make sure to double check your Cloud Storage settings.", true, 'mcloud-migrated-other-plugin', 'forever');
+			if (current_user_can('manage_options')) {
+				NoticeManager::instance()->displayAdminNotice('info', "Media Cloud noticed you were using {$migratedFrom} and has migrated your settings automatically.  Everything should be working as before, but make sure to double check your Cloud Storage settings.", true, 'mcloud-migrated-other-plugin', 'forever');
+			}
 			update_option('mcloud-other-plugins-did-migrate', $migratedFrom);
 		}
 

@@ -229,13 +229,18 @@ class GoogleStorage implements StorageInterface, ConfiguresWizard {
 
 	public function enabled() {
 		if(empty($this->settings->credentials) || (!is_array($this->settings->credentials)) || empty($this->settings->bucket)) {
-			$adminUrl = admin_url('admin.php?page=media-cloud-settings&tab=storage');
-			NoticeManager::instance()->displayAdminNotice('info', "Welcome to Media Cloud!  To get started, <a href='$adminUrl'>configure your cloud storage</a>.", true, 'ilab-cloud-storage-setup-warning', 'forever');
+			if (current_user_can('manage_options')) {
+				$adminUrl = admin_url('admin.php?page=media-cloud-settings&tab=storage');
+				NoticeManager::instance()->displayAdminNotice('info', "Welcome to Media Cloud!  To get started, <a href='$adminUrl'>configure your cloud storage</a>.", true, 'ilab-cloud-storage-setup-warning', 'forever');
+			}
 			return false;
 		}
 
 		if($this->settingsError) {
-            NoticeManager::instance()->displayAdminNotice('error', "Your Google Storage settings are incorrect, or your account doesn't have the correct permissions or the bucket does not exist.  Please verify your settings and update them.");
+			if (current_user_can('manage_options')) {
+                NoticeManager::instance()->displayAdminNotice('error', "Your Google Storage settings are incorrect, or your account doesn't have the correct permissions or the bucket does not exist.  Please verify your settings and update them.");
+			}
+
 			return false;
 		}
 

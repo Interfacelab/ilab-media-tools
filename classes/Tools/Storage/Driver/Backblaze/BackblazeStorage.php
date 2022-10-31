@@ -167,14 +167,18 @@ class BackblazeStorage implements StorageInterface, AuthCacheInterface, Configur
 
 	public function enabled() {
 		if(!($this->settings->key && $this->settings->accountId && $this->settings->bucket)) {
-            $adminUrl = admin_url('admin.php?page=media-cloud-settings&tab=storage');
-			NoticeManager::instance()->displayAdminNotice('error', "To start using Cloud Storage, you will need to <a href='$adminUrl'>supply your Backblaze credentials.</a>.", true, 'ilab-cloud-storage-setup-warning', 'forever');
+			if (current_user_can('manage_options')) {
+                $adminUrl = admin_url('admin.php?page=media-cloud-settings&tab=storage');
+				NoticeManager::instance()->displayAdminNotice('error', "To start using Cloud Storage, you will need to <a href='$adminUrl'>supply your Backblaze credentials.</a>.", true, 'ilab-cloud-storage-setup-warning', 'forever');
+			}
 
 			return false;
 		}
 
 		if($this->settings->settingsError) {
-			NoticeManager::instance()->displayAdminNotice('error', 'Your Backblaze settings are incorrect or the bucket does not exist.  Please verify your settings and update them.');
+			if (current_user_can('manage_options')) {
+				NoticeManager::instance()->displayAdminNotice('error', 'Your Backblaze settings are incorrect or the bucket does not exist.  Please verify your settings and update them.');
+			}
 
 			return false;
 		}
