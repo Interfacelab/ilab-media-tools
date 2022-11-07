@@ -59,7 +59,7 @@ final class Prefixer {
 	 * Generates a UUID string.
 	 * @return string
 	 */
-	private function genUUID() {
+	public static function genUUID() {
 		return sprintf('%04x%04x%04x%03x4%04x%04x%04x%04x',
 		               mt_rand(0, 65535),
 		               mt_rand(0, 65535),
@@ -76,8 +76,8 @@ final class Prefixer {
 	 * Generates a UUID path
 	 * @return string
 	 */
-	private function genUUIDPath() {
-		$uid = $this->genUUID();
+	public static function genUUIDPath() {
+		$uid = self::genUUID();
 		$result = '/';
 
 		$segments = 8;
@@ -144,8 +144,8 @@ final class Prefixer {
 		$prefix = str_replace("@{site-name}", sanitize_title(strtolower(get_bloginfo('name'))), $prefix);
 		$prefix = str_replace("@{site-host}", $host, $prefix);
 		$prefix = str_replace("@{user-name}", $userName, $prefix);
-		$prefix = str_replace("@{unique-id}", $this->genUUID(), $prefix);
-		$prefix = str_replace("@{unique-path}", $this->genUUIDPath(), $prefix);
+		$prefix = str_replace("@{unique-id}", self::genUUID(), $prefix);
+		$prefix = str_replace("@{unique-path}", self::genUUIDPath(), $prefix);
 		$prefix = str_replace('@{type}', $this->currentType, $prefix);
 		$prefix = str_replace("//", "/", $prefix);
 

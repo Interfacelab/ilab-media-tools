@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 6.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.5.5
+Stable tag: 4.5.6
 Requires PHP: 7.4
 
 Automatically store media on Amazon S3, Cloudflare R2, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -104,6 +104,16 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 
 == Changelog ==
+
+= 4.5.7 - 11/07/2022 =
+
+* Fixed internal help links
+* Updated support links (bye bye Freshdesk!)
+
+= 4.5.6 - 11/04/2022 =
+
+* (Premium) Integration for Fluent Forms plugin.  Offload image and file uploads to cloud storage.
+* (Premium) Integration for Fluent Support plugin.  Offloads ticket attachments to cloud storage.
 
 = 4.5.5 - 10/31/2022 =
 
@@ -655,7 +665,7 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 * Fix for wizard when activating network.
 * Improved compatibility with front-end uploads
 * Tasks that make significant changes to your site now prompt you to remind you to backup your database first
-* + 48 other fixes and performance improvements
+* +48 other fixes and performance improvements
 
 
 = 3.3.23 =

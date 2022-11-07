@@ -708,7 +708,7 @@ final class ToolsManager
                 'Submit Issue',
                 'Submit Issue',
                 'manage_options',
-                'https://support.mediacloud.press/'
+                'https://docs.mediacloud.press/support/'
             );
         }
         //		add_submenu_page('media-cloud', 'Preflight Beta', 'Preflight Beta', 'manage_options', 'https://preflight.ju.mp');

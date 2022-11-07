@@ -16,7 +16,7 @@ return [
     "ilab-media-cloud-provider-settings" => [
         "title" => "Provider Settings",
         "dynamic" => true,
-	    "doc_link" => 'https://support.mediacloud.press/articles/documentation/cloud-storage/setting-up-amazon-s3',
+	    "doc_link" => 'https://docs.mediacloud.press/articles/documentation/cloud-storage/setting-up-amazon-s3',
         "options" => [
             "mcloud-storage-s3-access-key" => [
                 "title" => "Access Key",
@@ -129,7 +129,7 @@ return [
 	"ilab-media-cloud-image-upload-handling" => [
 		"title" => "Image and PDF Upload Handling",
 		"dynamic" => true,
-		"doc_link" => 'https://support.mediacloud.press/articles/documentation/cloud-storage/upload-handling-settings',
+		"doc_link" => 'https://docs.mediacloud.press/articles/documentation/cloud-storage/upload-handling-settings',
 		"description" => "The following options control how the storage tool handles image uploads.",
 		"options" => [
 			"mcloud-storage-big-size-original-privacy" => [

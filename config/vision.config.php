@@ -29,7 +29,7 @@ return [
 			'class' => "\\MediaCloud\\Plugin\\Tools\\Vision\\Driver\\Rekognition\\RekognitionDriver",
 			'config' => '/vision/rekognition.config.php',
 			'help' => [
-				[ 'title' => 'Read Documentation', 'url' => 'https://help.mediacloud.press/article/59-setting-up-amazon-rekognition', 'beacon_id' => '59' ],
+				[ 'title' => 'Read Documentation', 'url' => 'https://docs.mediacloud.press/articles/documentation/computer-vision/setting-up-amazon-rekognition/', 'beacon_id' => '59' ],
 			]
 		],
 	],
@@ -65,7 +65,7 @@ return [
             ],
 			"ilab-vision-options" => [
 				"title" => "Vision Options",
-				"doc_link" => 'https://support.mediacloud.press/articles/documentation/vision/vision-options',
+				"doc_link" => 'https://docs.mediacloud.press/articles/documentation/computer-vision/vision-options/',
                 "dynamic" => true,
 				"options" => [
 					"mcloud-vision-detect-faces" => [

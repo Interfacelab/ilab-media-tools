@@ -32,7 +32,7 @@ return [
 			],
 			"media-cloud-mux-player" => [
 				"title" => "Player Settings",
-				"doc_link" => 'https://support.mediacloud.press/articles/documentation/video-encoding/mux-player-settings',
+				"doc_link" => 'https://docs.mediacloud.press/articles/documentation/video-encoding/player-settings',
 				"options" => [
 					"media-cloud-player-css-classes" => [
 						"title" => "Additional Player CSS Classes",

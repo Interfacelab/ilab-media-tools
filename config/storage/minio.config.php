@@ -114,7 +114,7 @@ return [
 	"ilab-media-cloud-image-upload-handling" => [
 		"title" => "Image Upload Handling",
 		"dynamic" => true,
-		"doc_link" => 'https://support.mediacloud.press/articles/documentation/cloud-storage/upload-handling-settings',
+		"doc_link" => 'https://docs.mediacloud.press/articles/documentation/cloud-storage/upload-handling-settings',
 		"description" => "The following options control how the storage tool handles image uploads.",
 		"options" => [
 			"mcloud-storage-big-size-original-privacy" => [
