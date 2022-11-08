@@ -2116,6 +2116,9 @@ class StorageTool extends Tool
                 $new_url = str_replace( '//s3-.amazonaws', '//s3.amazonaws', $new_url );
             }
         }
+        if ( !parse_url( $new_url, PHP_URL_SCHEME ) ) {
+            $new_url = 'https://' . $new_url;
+        }
         return ( $new_url ?: $url );
     }
     
@@ -2447,6 +2450,9 @@ class StorageTool extends Tool
                         StorageToolSettings::cacheControl(),
                         StorageToolSettings::expires()
                     );
+                    if ( $url && !parse_url( $url, PHP_URL_SCHEME ) ) {
+                        $url = 'https://' . $url;
+                    }
                     Logger::info(
                         "\tFinished uploading {$filename} to S3.",
                         [],

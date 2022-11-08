@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 6.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.5.6
+Stable tag: 4.5.9
 Requires PHP: 7.4
 
 Automatically store media on Amazon S3, Cloudflare R2, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -104,6 +104,12 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 
 == Changelog ==
+
+= 4.5.9 - 11/08/2022 =
+
+* Fixed a bug with the AWS SDK with DigitalOcean that resulted in urls missing the scheme (eg the https:// part).  This
+  bug seems to be with the AWS SDK MultiRegionClient and not with Media Cloud.
+* Fixed another AWS SDK MultiRegionClient bug where the path style endpoint setting was being ignored.
 
 = 4.5.7 - 11/07/2022 =
 

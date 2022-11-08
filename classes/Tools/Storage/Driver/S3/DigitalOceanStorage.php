@@ -16,6 +16,7 @@
 
 namespace MediaCloud\Plugin\Tools\Storage\Driver\S3;
 
+use MediaCloud\Plugin\Tools\Storage\StorageException;
 use function MediaCloud\Plugin\Utilities\anyNull;
 use MediaCloud\Plugin\Wizard\WizardBuilder;
 
@@ -69,6 +70,44 @@ class DigitalOceanStorage extends OtherS3Storage {
 	//endregion
 
 	//region URLs
+	//endregion
+
+	//region Uploads
+
+
+	/**
+	 * Uploads a file, returning the new URL for the file.
+	 *
+	 * @param string $key
+	 * @param string $fileName
+	 * @param string $acl
+	 * @param string|null $cacheControl
+	 * @param string|null $expires
+	 * @param string|null $contentType
+	 * @param string|null $contentEncoding
+	 * @param string|null $contentLength
+	 * @throws StorageException
+	 * @return string
+	 */
+	public function upload($key, $fileName, $acl, $cacheControl=null, $expires=null, $contentType=null, $contentEncoding=null, $contentLength=null) {
+		$uploadedUrl = parent::upload($key, $fileName, $acl, $cacheControl, $expires, $contentType, $contentEncoding, $contentLength);
+		if ($uploadedUrl) {
+			if (empty(parse_url($uploadedUrl, PHP_URL_SCHEME))) {
+				$uploadedUrl = "https://{$uploadedUrl}";
+			}
+
+			if (!$this->settings->endPointPathStyle) {
+				$urlParts = parse_url($uploadedUrl);
+				if ($urlParts && strpos($urlParts['path'], "/{$this->settings->bucket}/") === 0) {
+					$fixedPath = substr($urlParts['path'], strlen($this->settings->bucket) + 1);
+					$uploadedUrl = "${urlParts['scheme']}://{$this->settings->bucket}.${urlParts['host']}{$fixedPath}";
+				}
+
+			}
+		}
+
+		return $uploadedUrl;
+	}
 	//endregion
 
 	//region Direct Uploads
