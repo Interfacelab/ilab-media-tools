@@ -1095,7 +1095,8 @@ final class ToolsManager
                     if ( arrayPath( $button, 'button_type', 'link' ) === 'button' ) {
                         $buttonHTML = "<button type='button' {$dataAttrs} class='button {$classes}' style='{$style}'>{$button['label']}</button>";
                     } else {
-                        $buttonHTML = "<a href='{$button['url']}' {$dataAttrs} class='{$thickbox} button {$classes}' style='{$style}'>{$button['label']}</a>";
+                        $buttonUrl = str_replace( '__ID__', '{{ data.id }}', $button['url'] );
+                        $buttonHTML = "<a href='{$buttonUrl}' {$dataAttrs} class='{$thickbox} button {$classes}' style='{$style}'>{$button['label']}</a>";
                     }
                     
                     if ( $button['type'] !== 'any' ) {
@@ -1121,7 +1122,8 @@ final class ToolsManager
                         }
                     }
                     $thickbox = ( arrayPath( $link, 'thickbox', true ) === true ? 'ilab-thickbox' : '' );
-                    $linkHTML = "<a href='{$link['url']}' {$dataAttrs} class='{$thickbox} {$classes}' style='{$style}'>{$link['label']}</a> <span class='links-separator'>|</span>";
+                    $linkUrl = str_replace( '__ID__', '{{ data.id }}', $link['url'] );
+                    $linkHTML = "<a href='{$linkUrl}' {$dataAttrs} class='{$thickbox} {$classes}' style='{$style}'>{$link['label']}</a> <span class='links-separator'>|</span>";
                     if ( $link['type'] !== 'any' ) {
                         
                         if ( isset( $link['cloudonly'] ) && $link['cloudonly'] === true ) {
@@ -1144,7 +1146,8 @@ final class ToolsManager
                             $dataAttrs .= "data-{$key}='{$value}' ";
                         }
                     }
-                    $linkHTML = "<a href='{$link['url']}' {$dataAttrs} class='ilab-thickbox {$classes}' style='display: block; {$style}'>{$link['label']}</a>";
+                    $linkUrl = str_replace( '__ID__', '{{ data.id }}', $link['url'] );
+                    $linkHTML = "<a href='{$linkUrl}' {$dataAttrs} class='ilab-thickbox {$classes}' style='display: block; {$style}'>{$link['label']}</a>";
                     if ( $link['type'] !== 'any' ) {
                         $linkHTML = "<# if (data.type === '{$link['type']}') { #>\\n{$linkHTML}\\n<# } #>";
                     }

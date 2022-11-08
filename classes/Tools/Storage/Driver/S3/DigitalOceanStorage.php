@@ -91,14 +91,14 @@ class DigitalOceanStorage extends OtherS3Storage {
 	 */
 	public function upload($key, $fileName, $acl, $cacheControl=null, $expires=null, $contentType=null, $contentEncoding=null, $contentLength=null) {
 		$uploadedUrl = parent::upload($key, $fileName, $acl, $cacheControl, $expires, $contentType, $contentEncoding, $contentLength);
-		if ($uploadedUrl) {
-			if (empty(parse_url($uploadedUrl, PHP_URL_SCHEME))) {
+		if (!empty($uploadedUrl)) {
+			if (strpos($uploadedUrl, 'http') !== 0) {
 				$uploadedUrl = "https://{$uploadedUrl}";
 			}
 
 			if (!$this->settings->endPointPathStyle) {
 				$urlParts = parse_url($uploadedUrl);
-				if ($urlParts && strpos($urlParts['path'], "/{$this->settings->bucket}/") === 0) {
+				if ($urlParts && (strpos($urlParts['path'], "/{$this->settings->bucket}/") === 0)) {
 					$fixedPath = substr($urlParts['path'], strlen($this->settings->bucket) + 1);
 					$uploadedUrl = "${urlParts['scheme']}://{$this->settings->bucket}.${urlParts['host']}{$fixedPath}";
 				}

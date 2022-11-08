@@ -2116,7 +2116,7 @@ class StorageTool extends Tool
                 $new_url = str_replace( '//s3-.amazonaws', '//s3.amazonaws', $new_url );
             }
         }
-        if ( !parse_url( $new_url, PHP_URL_SCHEME ) ) {
+        if ( !empty($new_url) && strpos( $new_url, 'http' ) !== 0 ) {
             $new_url = 'https://' . $new_url;
         }
         return ( $new_url ?: $url );
@@ -2450,7 +2450,7 @@ class StorageTool extends Tool
                         StorageToolSettings::cacheControl(),
                         StorageToolSettings::expires()
                     );
-                    if ( $url && !parse_url( $url, PHP_URL_SCHEME ) ) {
+                    if ( !empty($url) && strpos( $url, 'http' ) !== 0 ) {
                         $url = 'https://' . $url;
                     }
                     Logger::info(
