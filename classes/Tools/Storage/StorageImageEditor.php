@@ -283,8 +283,12 @@ class StorageImageEditor extends \WP_Image_Editor {
 
         } else {
 	        $dir = wp_get_upload_dir();
-	        if (strpos($destfilename, $dir['basedir']) !== 0) {
+	        if (strpos($destfilename, ABSPATH) !== 0) {
 		        $destfilename = trailingslashit($dir['basedir']).$destfilename;
+				$destPath = pathinfo($destfilename, PATHINFO_DIRNAME);
+				if (!file_exists($destPath)) {
+					@mkdir($destPath, 0777, true);
+				}
 	        }
 
             $result = $this->imageEditor->save($destfilename, $mime_type);
