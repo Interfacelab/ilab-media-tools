@@ -5,7 +5,7 @@ Plugin Name: Media Cloud
 Plugin URI: https://github.com/interfacelab/ilab-media-tools
 Description: Automatically upload media to Amazon S3 and integrate with Imgix, a real-time image processing CDN.  Boosts site performance and simplifies workflows.
 Author: interfacelab
-Version: 4.5.11
+Version: 4.5.12
 Requires PHP: 7.4
 Author URI: http://interfacelab.io
 */
@@ -33,11 +33,26 @@ if ( function_exists( 'media_cloud_licensing' ) ) {
 
 include_once ABSPATH . 'wp-admin/includes/plugin.php';
 
-if ( !defined( 'PHP_MAJOR_VERSION' ) || PHP_MAJOR_VERSION < 7 || PHP_MAJOR_VERSION == 7 && PHP_MINOR_VERSION < 1 ) {
+if ( !defined( 'PHP_MAJOR_VERSION' ) ) {
     deactivate_plugins( plugin_basename( __FILE__ ) );
     add_action( 'admin_notices', function () {
         ?>
-        <div class="notice notice-error is-dismissible">
+        <div class="notice notice-error">
+            <p><?php 
+        _e( 'Media Cloud can\'t determine what version of PHP you are using as PHP_MAJOR_VERSION is not defined.  This is a serious server misconfiguration issue and you should contact your hosting provider.', 'ilab-media-tools' );
+        ?></p>
+        </div>
+		<?php 
+    } );
+    return;
+}
+
+
+if ( PHP_MAJOR_VERSION < 7 || PHP_MAJOR_VERSION == 7 && PHP_MINOR_VERSION < 1 ) {
+    deactivate_plugins( plugin_basename( __FILE__ ) );
+    add_action( 'admin_notices', function () {
+        ?>
+        <div class="notice notice-error">
             <p><?php 
         _e( 'Media Cloud requires PHP 7.1 or higher.', 'ilab-media-tools' );
         ?></p>
@@ -95,7 +110,7 @@ if ( defined( 'MEDIA_CLOUD_VERSION' ) ) {
 }
 
 // Version Defines
-define( 'MEDIA_CLOUD_VERSION', '4.5.11' );
+define( 'MEDIA_CLOUD_VERSION', '4.5.12' );
 define( 'MEDIA_CLOUD_INFO_VERSION', '4.0.2' );
 define( 'MCLOUD_IS_BETA', false );
 // Debugging

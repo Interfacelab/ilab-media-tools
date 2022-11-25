@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 6.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.5.11
+Stable tag: 4.5.12
 Requires PHP: 7.4
 
 Automatically store media on Amazon S3, Cloudflare R2, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -104,6 +104,13 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 
 == Changelog ==
+
+= 4.5.12 - 11/25/2022 =
+
+* Workaround for a bug in Fluent Forms when Fluent Support is integrated with Fluent Forms, for example when you are
+  creating tickets in Fluent Support via a Fluent Form.
+* Give a different error message if PHP_MAJOR_VERSION is not defined.
+* Updated to latest Freemius version.
 
 = 4.5.11 - 11/09/2022 =
 
