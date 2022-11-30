@@ -16,6 +16,7 @@
 
 namespace MediaCloud\Plugin\Tools\Storage;
 
+use function MediaCloud\Plugin\Utilities\anyEmpty;
 use function MediaCloud\Plugin\Utilities\arrayPath;
 use MediaCloud\Plugin\Utilities\Environment;
 use MediaCloud\Plugin\Utilities\NoticeManager;
@@ -35,9 +36,13 @@ final class StorageToolMigrations {
 		$migratedFrom = null;
 		$migrated = false;
 		$statelessVersion = get_option('wp-stateless-current-version');
+		$leopardSchemaVersion = get_option('leopard_schema_version');
 		if (!empty($statelessVersion)) {
 			$migrated = static::migrateStatelessSettings();
 			$migratedFrom = 'WP-Stateless';
+		} else if (!empty($leopardSchemaVersion)) {
+			$migrated = static::migrateLeopardSettings();
+			$migratedFrom = 'Leopard Offload';
 		} else {
 			$migrated = static::migrateOffloadSettings();
 			$migratedFrom = 'WP Offload Media';
@@ -48,6 +53,7 @@ final class StorageToolMigrations {
 			if (current_user_can('manage_options')) {
 				NoticeManager::instance()->displayAdminNotice('info', "Media Cloud noticed you were using {$migratedFrom} and has migrated your settings automatically.  Everything should be working as before, but make sure to double check your Cloud Storage settings.", true, 'mcloud-migrated-other-plugin', 'forever');
 			}
+
 			update_option('mcloud-other-plugins-did-migrate', $migratedFrom);
 		}
 
@@ -203,6 +209,75 @@ final class StorageToolMigrations {
 		Environment::UpdateOption('mcloud-storage-google-bucket', $bucket);
 
 		static::migrateOffloadMiscSettings($offloadConfig);
+
+		return true;
+	}
+
+	public static function migrateLeopardSettings() {
+		$settings = get_option('nou_leopard_offload_media', null);
+		if (empty($settings)) {
+			return false;
+		}
+
+		$provider = arrayPath($settings, 'provider', null);
+		$key = arrayPath($settings, 'access_key', null);
+		$secret = arrayPath($settings, 'secret_access_key', null);
+
+		if (anyEmpty($provider, $key, $secret)) {
+			return false;
+		}
+
+		$providerMap = ['aws' => 's3', 's3' => 's3', 'do' => 'do'];
+		if (!in_array($provider, array_keys($providerMap))) {
+			return false;
+		}
+		$provider = $providerMap[$provider];
+
+		$weirdBucketRegionThing = get_option('nou_leopard_offload_media_connection_bucket_selected_select');
+		if (strpos($weirdBucketRegionThing, '_nou_wc_as3s_separator_') === false) {
+			return false;
+		}
+
+		$bucketRegion = explode('_nou_wc_as3s_separator_', $weirdBucketRegionThing);
+		if (count($bucketRegion) !== 2) {
+			return false;
+		}
+
+		$bucket = $bucketRegion[0];
+		$region = $bucketRegion[1];
+
+		Environment::UpdateOption('mcloud-storage-provider', $provider);
+		Environment::UpdateOption("mcloud-storage-s3-access-key", $key);
+		Environment::UpdateOption("mcloud-storage-s3-secret", $secret);
+		Environment::UpdateOption("mcloud-storage-s3-bucket", $bucket);
+
+		if ($provider === 'do') {
+			Environment::UpdateOption("mcloud-storage-s3-endpoint", "https://{$region}.digitaloceanspaces.com");
+		} else {
+			Environment::UpdateOption("mcloud-storage-s3-region", $region);
+		}
+
+		$prefix = get_option('nou_leopard_offload_media_bucket_folder_main', null);
+		$deleteUploads = get_option('nou_leopard_offload_media_remove_from_server_checkbox', null);
+		$cdn = get_option('nou_leopard_offload_media_cname');
+
+		if ($deleteUploads === 'on') {
+			Environment::UpdateOption("mcloud-storage-delete-uploads", true);
+		}
+
+		if (!empty($cdn)) {
+			Environment::UpdateOption("mcloud-storage-cdn-base", 'https://'.$cdn);
+		}
+
+		if (!empty($prefix)) {
+			$prefix = ltrim(rtrim($prefix, '/'), '/');
+			Environment::UpdateOption('mcloud-leopard-prefix-fix', $prefix);
+
+			$prefix .= '/@{date:Y/m}';
+			Environment::UpdateOption("mcloud-storage-prefix", $prefix);
+		}
+
+
 
 		return true;
 	}

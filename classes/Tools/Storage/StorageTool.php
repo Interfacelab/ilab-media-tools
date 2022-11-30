@@ -2094,9 +2094,16 @@ class StorageTool extends Tool
                     $new_url = $this->importOffloadMetadata( $post_id, $meta, $offloadS3Info );
                 } else {
                     $statelessInfo = get_post_meta( $post_id, 'sm_cloud', true );
+                    
                     if ( !empty($statelessInfo) ) {
                         $new_url = $this->importStatelessMetadata( $post_id, $meta, $statelessInfo );
+                    } else {
+                        $leopardInfo = get_post_meta( $post_id, '_nou_leopard_wom_amazonS3_info', true );
+                        if ( !empty($leopardInfo) ) {
+                            $new_url = $this->importLeopardMetadata( $post_id, $meta, $leopardInfo );
+                        }
                     }
+                
                 }
             
             }
@@ -4915,6 +4922,127 @@ MIGRATED;
     }
     
     /**
+     * Generates a URL from Leopard Offload
+     *
+     * @param $provider
+     * @param $region
+     * @param $bucket
+     * @param $key
+     *
+     * @return string|null
+     *
+     * @throws StorageException
+     */
+    private function getLeopardURL(
+        string $provider,
+        $region,
+        $bucket,
+        $key
+    )
+    {
+        $prefixFix = Environment::Option( 'mcloud-leopard-prefix-fix', null, false );
+        if ( !empty($prefixFix) ) {
+            $key = $prefixFix . '/' . $key;
+        }
+        if ( $provider === StorageToolSettings::driver() && $bucket === $this->client->bucket() ) {
+            return $this->client->url( $key );
+        }
+        
+        if ( $provider === 's3' ) {
+            if ( empty($region) ) {
+                return "https://s3.amazonaws.com/{$bucket}/{$key}";
+            }
+            return "https://s3-{$region}.amazonaws.com/{$bucket}/{$key}";
+        }
+        
+        if ( $provider === 'do' ) {
+            return "https://{$region}.digitaloceanspaces.com/{$bucket}/{$key}";
+        }
+        if ( $provider === 'google' ) {
+            return "https://storage.googleapis.com/{$bucket}/{$key}";
+        }
+        return null;
+    }
+    
+    private function importLeopardMetadata( $postId, $meta, $leopardMetadata )
+    {
+        $provider = arrayPath( $leopardMetadata, 'provider', 'aws' );
+        $bucket = arrayPath( $leopardMetadata, 'bucket', null );
+        $region = arrayPath( $leopardMetadata, 'region', null );
+        $key = arrayPath( $leopardMetadata, 'key', null );
+        $prefix = Environment::Option( 'mcloud-leopard-prefix-fix', null, false );
+        if ( empty($provider) || empty($bucket) || empty($key) || !in_array( $provider, [
+            's3',
+            'aws',
+            'do',
+            'gcp'
+        ] ) ) {
+            return null;
+        }
+        $providerMap = [
+            'aws' => 's3',
+            's3'  => 's3',
+            'do'  => 'do',
+            'gcp' => 'google',
+        ];
+        $provider = $providerMap[$provider];
+        $mime = get_post_mime_type( $postId );
+        $hasMeta = !empty($meta);
+        if ( empty($meta) ) {
+            $meta = [];
+        }
+        $s3Info = [
+            'url'       => $this->getLeopardURL(
+            $provider,
+            $region,
+            $bucket,
+            $key
+        ),
+            'provider'  => $provider,
+            'bucket'    => $bucket,
+            'key'       => ( !empty($prefix) ? $prefix . '/' . $key : $key ),
+            'privacy'   => 'public-read',
+            'v'         => MEDIA_CLOUD_INFO_VERSION,
+            'mime-type' => $mime,
+        ];
+        if ( $provider !== 'google' ) {
+            $s3Info['region'] = $region;
+        }
+        $meta['s3'] = $s3Info;
+        
+        if ( isset( $meta['sizes'] ) ) {
+            $baseKey = ltrim( pathinfo( '/' . $key, PATHINFO_DIRNAME ), '/' );
+            $newSizes = [];
+            foreach ( $meta['sizes'] as $size => $sizeData ) {
+                $sizeKey = trailingslashit( $baseKey ) . $sizeData['file'];
+                $sizeS3Info = $s3Info;
+                $sizeS3Info['url'] = $this->getLeopardURL(
+                    $provider,
+                    $region,
+                    $bucket,
+                    $sizeKey
+                );
+                $sizeS3Info['key'] = ( !empty($prefix) ? $prefix . '/' . $sizeKey : $sizeKey );
+                $sizeS3Info['mime-type'] = $sizeData['mime-type'];
+                $sizeData['s3'] = $sizeS3Info;
+                $newSizes[$size] = $sizeData;
+            }
+            $meta['sizes'] = $newSizes;
+        }
+        
+        
+        if ( $hasMeta ) {
+            update_post_meta( $postId, '_wp_attachment_metadata', $meta );
+        } else {
+            update_post_meta( $postId, 'ilab_s3_info', [
+                's3' => $s3Info,
+            ] );
+        }
+        
+        return $s3Info['url'];
+    }
+    
+    /**
      * Imports metadata from WP-Stateless
      *
      * @param $post_id
@@ -5148,9 +5276,16 @@ MIGRATED;
             $new_url = $this->importOffloadMetadata( $postId, $meta, $offloadS3Info );
         } else {
             $statelessInfo = get_post_meta( $postId, 'sm_cloud', true );
+            
             if ( !empty($statelessInfo) ) {
                 $new_url = $this->importStatelessMetadata( $postId, $meta, $statelessInfo );
+            } else {
+                $leopardInfo = get_post_meta( $postId, '_nou_leopard_wom_amazonS3_info', true );
+                if ( !empty($leopardInfo) ) {
+                    $new_url = $this->importLeopardMetadata( $postId, $meta, $leopardInfo );
+                }
             }
+        
         }
         
         return !empty($new_url);

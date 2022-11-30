@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 6.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.5.12
+Stable tag: 4.5.14
 Requires PHP: 7.4
 
 Automatically store media on Amazon S3, Cloudflare R2, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -104,6 +104,16 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 
 == Changelog ==
+
+= 4.5.14 - 11/30/2022 =
+
+* Media Cloud will now import setting from Leopard Offload if you are upgrading.  This only works for S3 and S3
+  compatible cloud storage.  If you are using Google, you will have to set that up manually.
+* When upgrading from Leopard Offload, your links will be migrated as needed, but you can manually run a background
+  task to do them all in one go.
+* If using Leopard Offload with WooCommerce, after migrating to Media Cloud you must run the command line
+  tool `wp mediacloud:integrations fixLeopardWooLinks` to replace the weird link shortcode that Leopard Offload uses.
+  This tool is only in the premium version.
 
 = 4.5.12 - 11/25/2022 =
 

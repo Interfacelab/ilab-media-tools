@@ -49,6 +49,10 @@ return [
 		    "plugin" => "image-sizes/image-sizes.php",
 		    "description" => "A useless plugin that can cause media uploads to fail, with or without Media Cloud.  Not exactly sure how it has so many stars."
 	    ],
+	    "Leopard Offload" => [
+		    "plugin" => "leopard-wordpress-offload-media/leopard-wordpress-offload-media.php",
+		    "description" => "An offloading plugin.  Not compatible with Media Cloud."
+	    ],
     ],
 	"CLI" => [
 		"\\MediaCloud\\Plugin\\Tools\\Storage\\CLI\\StorageCommands"
