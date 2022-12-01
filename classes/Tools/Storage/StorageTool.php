@@ -4909,7 +4909,7 @@ MIGRATED;
             if ( empty($region) ) {
                 return "https://s3.amazonaws.com/{$bucket}/{$key}";
             }
-            return "https://s3-{$region}.amazonaws.com/{$bucket}/{$key}";
+            return "https://s3.{$region}.amazonaws.com/{$bucket}/{$key}";
         }
         
         if ( $provider === 'do' ) {
@@ -4952,7 +4952,7 @@ MIGRATED;
             if ( empty($region) ) {
                 return "https://s3.amazonaws.com/{$bucket}/{$key}";
             }
-            return "https://s3-{$region}.amazonaws.com/{$bucket}/{$key}";
+            return "https://s3.{$region}.amazonaws.com/{$bucket}/{$key}";
         }
         
         if ( $provider === 'do' ) {

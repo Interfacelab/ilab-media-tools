@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 6.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.5.14
+Stable tag: 4.5.15
 Requires PHP: 7.4
 
 Automatically store media on Amazon S3, Cloudflare R2, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -104,6 +104,10 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 
 == Changelog ==
+
+= 4.5.15 - 12/1/2022 =
+
+* Fix for edge case when migrating Offload Media and Leopard Offload links.
 
 = 4.5.14 - 11/30/2022 =
 
