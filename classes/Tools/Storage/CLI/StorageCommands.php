@@ -25,9 +25,11 @@ use  MediaCloud\Plugin\Tools\Browser\Tasks\ImportFromStorageTask ;
 use  MediaCloud\Plugin\Tools\Integrations\PlugIns\Elementor\Tasks\UpdateElementorTask ;
 use  MediaCloud\Plugin\Tools\Integrations\PlugIns\NextGenGallery\Tasks\MigrateNextGenTask ;
 use  MediaCloud\Plugin\Tools\Storage\StorageTool ;
+use  MediaCloud\Plugin\Tools\Storage\Tasks\GenerateEwwwWebPTask ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\MigrateFromOtherTask ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\MigrateTask ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\RegenerateThumbnailTask ;
+use  MediaCloud\Plugin\Tools\Storage\Tasks\SyncLocalTask ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\UnlinkTask ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\UpdateURLsTask ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\VerifyLibraryTask ;
@@ -675,6 +677,69 @@ class StorageCommands extends Command
     }
     
     /**
+     * Syncs all files on cloud storage back to your local server.  Note that this does not remove the cloud metadata, you must run `unlink` after if you want to do that.
+     *
+     * ## OPTIONS
+     *
+     * [--limit=<number>]
+     * : The maximum number of items to process, default is infinity.
+     *
+     * [--offset=<number>]
+     * : The starting offset to process.  Cannot be used with page.
+     *
+     * [--page=<number>]
+     * : The starting offset to process.  Page numbers start at 1.  Cannot be used with offset.
+     *
+     * [--order-by=<string>]
+     * : The field to sort the items to be imported by. Valid values are 'date', 'title' and 'filename'.
+     * ---
+     * options:
+     *   - date
+     *   - title
+     *   - filename
+     * ---
+     *
+     * [--order=<string>]
+     * : The sort order. Valid values are 'asc' and 'desc'.
+     * ---
+     * default: asc
+     * options:
+     *   - asc
+     *   - desc
+     * ---
+     *
+     * @when after_wp_load
+     *
+     * @param $args
+     * @param $assoc_args
+     *
+     * @throws \Exception
+     */
+    public function syncAllLocal( $args, $assoc_args )
+    {
+        $options = $assoc_args;
+        if ( isset( $options['limit'] ) ) {
+            
+            if ( isset( $options['page'] ) ) {
+                $options['offset'] = max( 0, ($assoc_args['page'] - 1) * $assoc_args['limit'] );
+                unset( $options['page'] );
+            }
+        
+        }
+        
+        if ( isset( $options['order-by'] ) ) {
+            $orderBy = $options['order-by'];
+            $dir = arrayPath( $options, 'order', 'asc' );
+            unset( $options['order-by'] );
+            unset( $options['order'] );
+            $options['sort-order'] = $orderBy . '-' . $dir;
+        }
+        
+        $task = new SyncLocalTask();
+        $this->runTask( $task, $options );
+    }
+    
+    /**
      * Syncs cloud storage to the local file system
      *
      * ## OPTIONS
@@ -782,6 +847,50 @@ class StorageCommands extends Command
         }
         remove_filter( 'media-cloud/dynamic-images/skip-url-generation', '__return_true' );
         $reporter->close();
+    }
+    
+    /**
+     * Generates webp files for images on cloud storage.
+     *
+     * ## OPTIONS
+     *
+     * [--limit=<number>]
+     * : The maximum number of items to process, default is infinity.
+     *
+     * [--offset=<number>]
+     * : The starting offset to process.  Cannot be used with page.
+     *
+     * [--page=<number>]
+     * : The starting offset to process.  Page numbers start at 1.  Cannot be used with offset.
+     *
+     * [--order-by=<string>]
+     * : The field to sort the items to be imported by. Valid values are 'date', 'title' and 'filename'.
+     * ---
+     * options:
+     *   - date
+     *   - title
+     *   - filename
+     * ---
+     *
+     * [--order=<string>]
+     * : The sort order. Valid values are 'asc' and 'desc'.
+     * ---
+     * default: asc
+     * options:
+     *   - asc
+     *   - desc
+     * ---
+     *
+     * @when after_wp_load
+     *
+     * @param $args
+     * @param $assoc_args
+     *
+     * @throws \Exception
+     */
+    public function makewebp( $args, $assoc_args )
+    {
+        self::Error( "Only available in the Premium version.  To upgrade: https://mediacloud.press/pricing/" );
     }
     
     /**

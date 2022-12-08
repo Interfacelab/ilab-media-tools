@@ -107,7 +107,7 @@
                 }
             }
 
-            return apply_filters('freemius/filter/asset_url', $asset_url);
+	        return apply_filters('freemius/filter/asset_url', $asset_url);
         }
     }
 

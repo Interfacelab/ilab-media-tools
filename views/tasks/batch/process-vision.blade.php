@@ -3,7 +3,7 @@
     'instructionsView' => $taskClass::instructionView(),
     'commandLine' => 'wp vision process',
     'commandTitle' => 'Process Images With Vision',
-    'commandLink'=> 'https://kb.mediacloud.press/articles/advanced-usage/command-line/process-image-with-vision',
+    'commandLink'=> 'https://docs.mediacloud.press/articles/advanced-usage/command-line/process-image-with-vision',
     'warning' => $warning,
     'taskClass' => $taskClass
 ])

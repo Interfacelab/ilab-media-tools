@@ -24,6 +24,7 @@ use  MediaCloud\Plugin\Tools\Storage\Driver\S3\S3StorageSettings ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\CleanUploadsTask ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\DeleteUploadsTask ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\FixMetadataTask ;
+use  MediaCloud\Plugin\Tools\Storage\Tasks\GenerateEwwwWebPTask ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\MigrateFromOtherTask ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\MigrateTask ;
 use  MediaCloud\Plugin\Tools\Storage\Tasks\RegenerateThumbnailTask ;

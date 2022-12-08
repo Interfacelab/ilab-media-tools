@@ -8,7 +8,7 @@
                 </ul>
             </div>
             <div class="mcsb-buttons mcsb-action-buttons">
-                <a href="https://kb.mediacloud.press/articles/documentation/tools/storage-browser" class="button button-primary button-help" target="_blank" data-article-sidebar="https://kb.mediacloud.press/articles/documentation/tools/storage-browser">@inline('ilab-ui-icon-help.svg') Help</a>
+                <a href="https://docs.mediacloud.press/articles/documentation/tools/storage-browser" class="button button-primary button-help" target="_blank" data-article-sidebar="https://kb.mediacloud.press/articles/documentation/tools/storage-browser">@inline('ilab-ui-icon-help.svg') Help</a>
                 @if($allowUploads && $directUploads)
                 <a href="#" class="button button-primary button-upload">@inline('ilab-ui-icon-upload.svg') Upload</a>
                 <a href="#" class="button button-primary button-create-folder">@inline('ilab-ui-icon-create-folder.svg') Create Folder</a>

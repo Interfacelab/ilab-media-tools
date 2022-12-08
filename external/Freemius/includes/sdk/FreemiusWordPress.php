@@ -1,91 +1,91 @@
 <?php
-/**
- * Copyright 2016 Freemius, Inc.
- *
- * Licensed under the GPL v2 (the "License"); you may
- * not use this file except in compliance with the License. You may obtain
- * a copy of the License at
- *
- *     http://choosealicense.com/licenses/gpl-v2/
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+	/**
+	 * Copyright 2016 Freemius, Inc.
+	 *
+	 * Licensed under the GPL v2 (the "License"); you may
+	 * not use this file except in compliance with the License. You may obtain
+	 * a copy of the License at
+	 *
+	 *     http://choosealicense.com/licenses/gpl-v2/
+	 *
+	 * Unless required by applicable law or agreed to in writing, software
+	 * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+	 * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+	 * License for the specific language governing permissions and limitations
+	 * under the License.
+	 */
+    if ( ! defined( 'ABSPATH' ) ) {
+        exit;
+    }
 
-require_once dirname( __FILE__ ) . '/FreemiusBase.php';
+	require_once dirname( __FILE__ ) . '/FreemiusBase.php';
 
-if ( ! defined( 'FS_SDK__USER_AGENT' ) ) {
-	define( 'FS_SDK__USER_AGENT', 'fs-php-' . Freemius_Api_Base::VERSION );
-}
-
-if ( ! defined( 'FS_SDK__SIMULATE_NO_CURL' ) ) {
-	define( 'FS_SDK__SIMULATE_NO_CURL', false );
-}
-
-if ( ! defined( 'FS_SDK__SIMULATE_NO_API_CONNECTIVITY_CLOUDFLARE' ) ) {
-	define( 'FS_SDK__SIMULATE_NO_API_CONNECTIVITY_CLOUDFLARE', false );
-}
-
-if ( ! defined( 'FS_SDK__SIMULATE_NO_API_CONNECTIVITY_SQUID_ACL' ) ) {
-	define( 'FS_SDK__SIMULATE_NO_API_CONNECTIVITY_SQUID_ACL', false );
-}
-
-if ( ! defined( 'FS_SDK__HAS_CURL' ) ) {
-	if ( FS_SDK__SIMULATE_NO_CURL ) {
-		define( 'FS_SDK__HAS_CURL', false );
-	} else {
-		$curl_required_methods = array(
-			'curl_version',
-			'curl_exec',
-			'curl_init',
-			'curl_close',
-			'curl_setopt',
-			'curl_setopt_array',
-			'curl_error',
-		);
-
-		$has_curl = true;
-		foreach ( $curl_required_methods as $m ) {
-			if ( ! function_exists( $m ) ) {
-				$has_curl = false;
-				break;
-			}
-		}
-
-		define( 'FS_SDK__HAS_CURL', $has_curl );
+	if ( ! defined( 'FS_SDK__USER_AGENT' ) ) {
+		define( 'FS_SDK__USER_AGENT', 'fs-php-' . Freemius_Api_Base::VERSION );
 	}
-}
 
-if ( ! defined( 'FS_SDK__SSLVERIFY' ) ) {
-	define( 'FS_SDK__SSLVERIFY', false );
-}
+	if ( ! defined( 'FS_SDK__SIMULATE_NO_CURL' ) ) {
+		define( 'FS_SDK__SIMULATE_NO_CURL', false );
+	}
 
-$curl_version = FS_SDK__HAS_CURL ?
-	curl_version() :
-	array( 'version' => '7.37' );
+	if ( ! defined( 'FS_SDK__SIMULATE_NO_API_CONNECTIVITY_CLOUDFLARE' ) ) {
+		define( 'FS_SDK__SIMULATE_NO_API_CONNECTIVITY_CLOUDFLARE', false );
+	}
 
-if ( ! defined( 'FS_API__PROTOCOL' ) ) {
-	define( 'FS_API__PROTOCOL', version_compare( $curl_version['version'], '7.37', '>=' ) ? 'https' : 'http' );
-}
+	if ( ! defined( 'FS_SDK__SIMULATE_NO_API_CONNECTIVITY_SQUID_ACL' ) ) {
+		define( 'FS_SDK__SIMULATE_NO_API_CONNECTIVITY_SQUID_ACL', false );
+	}
 
-if ( ! defined( 'FS_API__LOGGER_ON' ) ) {
-	define( 'FS_API__LOGGER_ON', false );
-}
+	if ( ! defined( 'FS_SDK__HAS_CURL' ) ) {
+		if ( FS_SDK__SIMULATE_NO_CURL ) {
+			define( 'FS_SDK__HAS_CURL', false );
+		} else {
+			$curl_required_methods = array(
+				'curl_version',
+				'curl_exec',
+				'curl_init',
+				'curl_close',
+				'curl_setopt',
+				'curl_setopt_array',
+				'curl_error',
+			);
 
-if ( ! defined( 'FS_API__ADDRESS' ) ) {
-	define( 'FS_API__ADDRESS', '://api.freemius.com' );
-}
-if ( ! defined( 'FS_API__SANDBOX_ADDRESS' ) ) {
-	define( 'FS_API__SANDBOX_ADDRESS', '://sandbox-api.freemius.com' );
-}
+			$has_curl = true;
+			foreach ( $curl_required_methods as $m ) {
+				if ( ! function_exists( $m ) ) {
+					$has_curl = false;
+					break;
+				}
+			}
 
-if ( ! class_exists( 'Freemius_Api_WordPress' ) ) {
+			define( 'FS_SDK__HAS_CURL', $has_curl );
+		}
+	}
+
+    if ( ! defined( 'FS_SDK__SSLVERIFY' ) ) {
+        define( 'FS_SDK__SSLVERIFY', false );
+    }
+
+	$curl_version = FS_SDK__HAS_CURL ?
+		curl_version() :
+		array( 'version' => '7.37' );
+
+	if ( ! defined( 'FS_API__PROTOCOL' ) ) {
+		define( 'FS_API__PROTOCOL', version_compare( $curl_version['version'], '7.37', '>=' ) ? 'https' : 'http' );
+	}
+
+	if ( ! defined( 'FS_API__LOGGER_ON' ) ) {
+		define( 'FS_API__LOGGER_ON', false );
+	}
+
+	if ( ! defined( 'FS_API__ADDRESS' ) ) {
+		define( 'FS_API__ADDRESS', '://api.freemius.com' );
+	}
+	if ( ! defined( 'FS_API__SANDBOX_ADDRESS' ) ) {
+		define( 'FS_API__SANDBOX_ADDRESS', '://sandbox-api.freemius.com' );
+	}
+
+	if ( ! class_exists( 'Freemius_Api_WordPress' ) ) {
 	class Freemius_Api_WordPress extends Freemius_Api_Base {
 		private static $_logger = array();
 
@@ -233,12 +233,12 @@ if ( ! class_exists( 'Freemius_Api_WordPress' ) ) {
 			$date         = date( 'r', $now );
 
 			if ( in_array( $pMethod, array( 'POST', 'PUT' ) ) ) {
-				$content_type = 'application/json';
+                $content_type = 'application/json';
 
-				if ( ! empty( $pPostParams ) ) {
-					$content_md5 = md5( $pPostParams );
-				}
-			}
+                if ( ! empty( $pPostParams ) ) {
+                    $content_md5 = md5( $pPostParams );
+                }
+            }
 
 			$string_to_sign = implode( $eol, array(
 				$pMethod,
@@ -255,10 +255,10 @@ if ( ! class_exists( 'Freemius_Api_WordPress' ) ) {
 			$auth = array(
 				'date'          => $date,
 				'authorization' => $auth_type . ' ' . $this->_id . ':' .
-					$this->_public . ':' .
-					self::Base64UrlEncode( hash_hmac(
-						'sha256', $string_to_sign, $this->_secret
-					) )
+				                   $this->_public . ':' .
+				                   self::Base64UrlEncode( hash_hmac(
+					                   'sha256', $string_to_sign, $this->_secret
+				                   ) )
 			);
 
 			if ( ! empty( $content_md5 ) ) {
@@ -270,8 +270,8 @@ if ( ! class_exists( 'Freemius_Api_WordPress' ) ) {
 
 		/**
 		 * Get API request URL signed via query string.
-		 *
-		 * @since 1.2.3 Stopped using http_build_query(). Instead, use urlencode(). In some environments the encoding of http_build_query() can generate a URL that once used with a redirect, the `&` querystring separator is escaped to `&amp;` which breaks the URL (Added by @svovaf).
+         *
+         * @since 1.2.3 Stopped using http_build_query(). Instead, use urlencode(). In some environments the encoding of http_build_query() can generate a URL that once used with a redirect, the `&` querystring separator is escaped to `&amp;` which breaks the URL (Added by @svovaf).
 		 *
 		 * @param string $pPath
 		 *
@@ -279,19 +279,19 @@ if ( ! class_exists( 'Freemius_Api_WordPress' ) ) {
 		 *
 		 * @return string
 		 */
-		function GetSignedUrl( $pPath ) {
-			$resource     = explode( '?', $this->CanonizePath( $pPath ) );
-			$pResourceUrl = $resource[0];
+        function GetSignedUrl( $pPath ) {
+            $resource     = explode( '?', $this->CanonizePath( $pPath ) );
+            $pResourceUrl = $resource[0];
 
-			$auth = $this->GenerateAuthorizationParams( $pResourceUrl );
+            $auth = $this->GenerateAuthorizationParams( $pResourceUrl );
 
-			return Freemius_Api_WordPress::GetUrl(
-				$pResourceUrl . '?' .
-				( 1 < count( $resource ) && ! empty( $resource[1] ) ? $resource[1] . '&' : '' ) .
-				'authorization=' . urlencode( $auth['authorization'] ) .
-				'&auth_date=' . urlencode( $auth['date'] )
-				, $this->_isSandbox );
-		}
+            return Freemius_Api_WordPress::GetUrl(
+                $pResourceUrl . '?' .
+                ( 1 < count( $resource ) && ! empty( $resource[1] ) ? $resource[1] . '&' : '' ) .
+                'authorization=' . urlencode( $auth['authorization'] ) .
+                '&auth_date=' . urlencode( $auth['date'] )
+                , $this->_isSandbox );
+        }
 
 		/**
 		 * @author Vova Feldman
@@ -302,7 +302,7 @@ if ( ! class_exists( 'Freemius_Api_WordPress' ) ) {
 		 * @return mixed
 		 */
 		private static function ExecuteRequest( $pUrl, &$pWPRemoteArgs ) {
-			$bt = debug_backtrace();
+            $bt = debug_backtrace();
 
 			$start = microtime( true );
 
@@ -369,7 +369,7 @@ if ( ! class_exists( 'Freemius_Api_WordPress' ) ) {
 
 			if ( empty( $pWPRemoteArgs ) ) {
 				$user_agent = 'Freemius/WordPress-SDK/' . Freemius_Api_Base::VERSION . '; ' .
-					home_url();
+				              home_url();
 
 				$pWPRemoteArgs = array(
 					'method'           => strtoupper( $pMethod ),
@@ -383,35 +383,35 @@ if ( ! class_exists( 'Freemius_Api_WordPress' ) ) {
 			}
 
 			if ( ! isset( $pWPRemoteArgs['headers'] ) ||
-				! is_array( $pWPRemoteArgs['headers'] )
+			     ! is_array( $pWPRemoteArgs['headers'] )
 			) {
 				$pWPRemoteArgs['headers'] = array();
 			}
 
 			if ( in_array( $pMethod, array( 'POST', 'PUT' ) ) ) {
-				$pWPRemoteArgs['headers']['Content-type'] = 'application/json';
+                $pWPRemoteArgs['headers']['Content-type'] = 'application/json';
 
-				if ( is_array( $pParams ) && 0 < count( $pParams ) ) {
-					$pWPRemoteArgs['body'] = json_encode( $pParams );
-				}
+                if ( is_array( $pParams ) && 0 < count( $pParams ) ) {
+                    $pWPRemoteArgs['body'] = json_encode( $pParams );
+                }
 			}
 
 			$request_url = self::GetUrl( $pCanonizedPath, $pIsSandbox );
 
 			$resource = explode( '?', $pCanonizedPath );
 
-			if ( FS_SDK__HAS_CURL ) {
-				// Disable the 'Expect: 100-continue' behaviour. This causes cURL to wait
-				// for 2 seconds if the server does not support this header.
-				$pWPRemoteArgs['headers']['Expect'] = '';
-			}
+            if ( FS_SDK__HAS_CURL ) {
+                // Disable the 'Expect: 100-continue' behaviour. This causes cURL to wait
+                // for 2 seconds if the server does not support this header.
+                $pWPRemoteArgs['headers']['Expect'] = '';
+            }
 
 			if ( 'https' === substr( strtolower( $request_url ), 0, 5 ) ) {
 				$pWPRemoteArgs['sslverify'] = FS_SDK__SSLVERIFY;
 			}
 
 			if ( false !== $pBeforeExecutionFunction &&
-				is_callable( $pBeforeExecutionFunction )
+			     is_callable( $pBeforeExecutionFunction )
 			) {
 				$pWPRemoteArgs = call_user_func( $pBeforeExecutionFunction, $resource[0], $pWPRemoteArgs );
 			}
@@ -465,11 +465,11 @@ if ( ! class_exists( 'Freemius_Api_WordPress' ) ) {
 
 			if ( is_null( $decoded ) ) {
 				if ( preg_match( '/Please turn JavaScript on/i', $response_body ) &&
-					preg_match( '/text\/javascript/', $response_body )
+				     preg_match( '/text\/javascript/', $response_body )
 				) {
 					self::ThrowCloudFlareDDoSException( $response_body );
 				} else if ( preg_match( '/Access control configuration prevents your request from being allowed at this time. Please contact your service provider if you feel this is incorrect./', $response_body ) &&
-					preg_match( '/squid/', $response_body )
+				            preg_match( '/squid/', $response_body )
 				) {
 					self::ThrowSquidAclException( $response_body );
 				} else {
@@ -712,4 +712,4 @@ if ( ! class_exists( 'Freemius_Api_WordPress' ) ) {
 
 		#endregion
 	}
-}
+    }
