@@ -2146,6 +2146,15 @@ class StorageTool extends Tool
         }
         $cdn = apply_filters( 'media-cloud/storage/override-cdn', StorageToolSettings::cdn() );
         $docCdn = apply_filters( 'media-cloud/storage/override-doc-cdn', StorageToolSettings::docCdn() );
+        $hasWebP = false;
+        $oldKey = $key = arrayPath( $meta, 's3/key', null );
+        
+        if ( !empty($this->settings->forceWebP) && !empty(arrayPath( $meta, 's3/formats/webp', null )) ) {
+            $hasWebP = true;
+            $oldKey = $key;
+            $key = arrayPath( $meta, 's3/formats/webp', null );
+        }
+        
         $type = typeFromMeta( $meta );
         $privacy = arrayPath( $meta, 's3/privacy', 'private' );
         $doSign = $this->client->usesSignedURLs( $type ) && $privacy != 'public-read' || $privacy !== 'public-read' && is_admin();
@@ -2155,9 +2164,9 @@ class StorageTool extends Tool
         if ( $doSign ) {
             
             if ( $privacy !== 'public-read' && is_admin() ) {
-                $url = $this->client->presignedUrl( $meta['s3']['key'], $this->client->signedURLExpirationForType( $type ) );
+                $url = $this->client->presignedUrl( $key, $this->client->signedURLExpirationForType( $type ) );
             } else {
-                $url = $this->client->url( $meta['s3']['key'], $type );
+                $url = $this->client->url( $key, $type );
             }
             
             
@@ -2180,7 +2189,7 @@ class StorageTool extends Tool
         } else {
             
             if ( !empty($cdn) && empty($ignoreCDN) ) {
-                return $cdn . '/' . $meta['s3']['key'];
+                return $cdn . '/' . $key;
             } else {
                 
                 if ( isset( $meta['s3']['url'] ) ) {
@@ -2195,11 +2204,14 @@ class StorageTool extends Tool
                             'png'
                         );
                         if ( !in_array( $ext, $image_exts ) ) {
-                            return trim( $docCdn, '/' ) . '/' . $meta['s3']['key'];
+                            return trim( $docCdn, '/' ) . '/' . $key;
                         }
                     }
                     
                     $new_url = $meta['s3']['url'];
+                    if ( $hasWebP && $this->settings->forceWebP ) {
+                        $new_url = str_replace( $oldKey, $key, $new_url );
+                    }
                     if ( !empty($new_url) ) {
                         if ( strpos( $new_url, '//s3-.amazonaws' ) !== false ) {
                             $new_url = str_replace( '//s3-.amazonaws', '//s3.amazonaws', $new_url );
@@ -2211,10 +2223,10 @@ class StorageTool extends Tool
             }
             
             try {
-                return $this->client->url( $meta['s3']['key'] );
+                return $this->client->url( $key );
             } catch ( \Exception $ex ) {
                 Logger::error(
-                    "Error trying to generate url for {$meta['s3']['key']}.  Message:" . $ex->getMessage(),
+                    "Error trying to generate url for {$key}.  Message:" . $ex->getMessage(),
                     [],
                     __METHOD__,
                     __LINE__

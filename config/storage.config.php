@@ -376,6 +376,12 @@ return [
 				"title" => "URL Replacement",
 				"description" => "",
 				"options" => [
+					"mcloud-storage-force-webp" => [
+						"title" => "Force WebP",
+						"description" => "When this is enabled, Media Cloud will output URLs for webp images, if a webp image has been generated for an attachment via the EWWW Image Optimization plugin.",
+						"type" => "checkbox",
+						"default" => false
+					],
 					"mcloud-storage-filter-content" => [
 						"title" => "Replace URLs",
 						"description" => "When this is enabled, Media Cloud will replace URLs in content on the fly.  <strong>You should not turn this off in most circumstances.</strong>  However, if you've been using Media Cloud since day zero of your WordPress site, you may be able to turn this setting off.",

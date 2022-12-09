@@ -704,10 +704,16 @@ class StorageContentHooks {
 		foreach($replacements as $idSize => $data) {
 			$idSizeParts = explode(',', $idSize);
 			$content = $this->replaceImageInContent($idSizeParts[0], $data, $content);
+			if ($this->settings->forceWebP) {
+				$content = str_replace('.webp.webp', '.webp', $content);
+			}
 		}
 
 		foreach($resizedReplacements as $id => $data) {
 			$content = $this->replaceImageInContent($data['id'], $data, $content);
+			if ($this->settings->forceWebP) {
+				$content = str_replace('.webp.webp', '.webp', $content);
+			}
 		}
 
 		if ($this->settings->replaceAnchorHrefs) {

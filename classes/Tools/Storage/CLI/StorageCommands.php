@@ -881,6 +881,9 @@ class StorageCommands extends Command
      *   - desc
      * ---
      *
+     * [--skip-processed]
+     * : Skips images that have already been processed.
+     *
      * @when after_wp_load
      *
      * @param $args

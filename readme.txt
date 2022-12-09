@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 6.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.5.17
+Stable tag: 4.5.19
 Requires PHP: 7.4
 
 Automatically store media on Amazon S3, Cloudflare R2, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -104,6 +104,15 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 
 == Changelog ==
+
+= 4.5.19 - 12/9/2022 =
+
+* Added `--skip-processed` flag to `mediacloud:storage makewebp` command to skip any attachments that already have webp
+  metadata associated with them. (Premium)
+* Added a setting to *Cloud Storage* settings called *Force WebP* that forces Media Cloud to return .webp urls for images
+  that have webp metadata associated with them.  Note this does not do any sort of content negotiation or browser
+  sniffing, it simply returns the webp url for the image.  Consider that only IE 11 and much older versions of Safari
+  do not support webp.
 
 = 4.5.17 - 12/8/2022 =
 
