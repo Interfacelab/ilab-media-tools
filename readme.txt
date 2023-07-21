@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 6.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.5.19
+Stable tag: 4.5.21
 Requires PHP: 7.4
 
 Automatically store media on Amazon S3, Cloudflare R2, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -104,6 +104,17 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 
 == Changelog ==
+
+= 4.5.21 - 07/21/2023 =
+
+* IMPORTANT: This includes an important security fix for a third party lib.  Please update ASAP.
+* Added missing us-west-1 region to Rekognition
+
+= 4.5.20 - 12/12/2022 =
+
+* Media Cloud can now offload elementor form submission uploads to cloud storage.  You must enable this in the **Integrations**
+  settings. (Premium)
+* Added a task **Migrated Elementor Forms** to migrate existing form submission uploads to cloud storage. (Premium)
 
 = 4.5.19 - 12/9/2022 =
 

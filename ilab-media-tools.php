@@ -5,7 +5,7 @@ Plugin Name: Media Cloud
 Plugin URI: https://github.com/interfacelab/ilab-media-tools
 Description: Automatically upload media to Amazon S3 and integrate with Imgix, a real-time image processing CDN.  Boosts site performance and simplifies workflows.
 Author: interfacelab
-Version: 4.5.19
+Version: 4.5.21
 Requires PHP: 7.4
 Author URI: http://interfacelab.io
 */
@@ -114,7 +114,7 @@ if ( defined( 'MEDIA_CLOUD_VERSION' ) ) {
 }
 
 // Version Defines
-define( 'MEDIA_CLOUD_VERSION', '4.5.19' );
+define( 'MEDIA_CLOUD_VERSION', '4.5.21' );
 define( 'MEDIA_CLOUD_INFO_VERSION', '4.0.2' );
 define( 'MCLOUD_IS_BETA', false );
 // Debugging
