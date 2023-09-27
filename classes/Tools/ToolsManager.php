@@ -316,7 +316,7 @@ final class ToolsManager
             return;
         }
         static::$booted = true;
-        Environment::Boot();
+        //	    Environment::Boot();
         
         if ( !is_multisite() && ($media_cloud_licensing->is_plan__premium_only( 'multisite_basic', true ) || $media_cloud_licensing->is_plan__premium_only( 'multisite_pro', true ) || $media_cloud_licensing->is_plan__premium_only( 'multisite_unlimited', true )) ) {
             add_action( 'admin_notices', function () {

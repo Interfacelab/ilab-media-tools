@@ -79,7 +79,7 @@ class ConfigurationProvider extends AbstractConfigurationProvider
         $configProviders[] = self::fallback($config['region']);
 
         $memo = self::memoize(
-            call_user_func_array('self::chain', $configProviders)
+            call_user_func_array([self::class, 'chain'], $configProviders)
         );
 
         if (isset($config['use_fips_endpoint'])

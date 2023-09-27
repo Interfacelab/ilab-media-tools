@@ -2,10 +2,10 @@
 Contributors: mediacloud, interfacelab, freemius
 Tags: offload, amazon, s3, cloudflare, imgix, uploads, video, video encoding, google cloud storage, digital ocean spaces, wasabi, media, cdn, rekognition, cloudfront, images, crop, image editing, image editor, optimize, image optimization, media library, offload, offload s3, smush, imagify, shortpixel
 Requires at least: 4.9
-Tested up to: 6.1
+Tested up to: 6.3
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.5.21
+Stable tag: 4.5.24
 Requires PHP: 7.4
 
 Automatically store media on Amazon S3, Cloudflare R2, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -24,7 +24,7 @@ Media Cloud also provides advanced image editing tools that provide improved cro
 
 **NOTE**: This plugin requires PHP 7.1 or higher
 
-= Upload to S3, Cloudflare R2, Minio, Google Cloud Storage, Wasabi, Digital Ocean Spaces, DreamHost Object Storage and others =
+= Upload to S3, Cloudflare R2, Minio, Google Cloud Storage, Digital Ocean Spaces, DreamHost Object Storage and others =
 Automatically copy media uploads to the cloud and serve them directly from your cloud storage provider, CloudFront or any other CDN.
 
 = Video Encoding with Mux =
@@ -48,7 +48,7 @@ Media Cloud by ILAB ships with the most advanced image cropping tool available f
 = Compatible With Leading Image Optimizers =
 Compatible with Short Pixel, EWWW, Smush and Imagify image optimization plugins!
 
-* Upload to any of a variety of cloud storage providers (Amazon S3, Cloudflare R2, Google Cloud Storage, Minio, Wasabi, Backblaze, DigitalOcean Spaces or any other S3 compatible service)
+* Upload to any of a variety of cloud storage providers (Amazon S3, Cloudflare R2, Google Cloud Storage, Minio, Backblaze, DigitalOcean Spaces or any other S3 compatible service)
 * Host your media directly from your cloud storage provider or specify a CDN
 * Integrate with Imgix media hosting
 * Use Amazon Rekognition to automatically tag and categorize images
@@ -104,6 +104,20 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 
 == Changelog ==
+
+= 4.5.24 - 09/27/2023 =
+
+* Fix Clean Uploads task to deal with crusty databases that have URLs in the _wp_attached_file meta field.
+* Added `media-cloud/storage/verify/settings` filter to enable skipping cloud storage settings verification.  Only use this
+  if you are using a strict IAM policy that prevents Media Cloud from verifying your settings.
+* System compatibility test now takes upload prefix into account when testing cloud storage
+* Deprecate Wasabi.  Wasabi is not a suitable cloud storage provider for Media Cloud's purpose.  If you are using Wasabi currently,
+  nothing will change.  If you are not using Wasabi, you will not be able to add it as a cloud storage provider.
+
+= 4.5.23 - 09/07/2023 =
+
+* Massive performance improvement for multisite.
+* Some fixes for PHP 8.2.  Still don't recommend using 8.2 with WordPress.  8.1 and 8.0 work fine though.
 
 = 4.5.21 - 07/21/2023 =
 

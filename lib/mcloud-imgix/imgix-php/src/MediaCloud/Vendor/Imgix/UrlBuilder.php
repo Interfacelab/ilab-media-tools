@@ -3,7 +3,8 @@
 namespace MediaCloud\Vendor\Imgix;
 use MediaCloud\Vendor\Imgix\Validator;
 
-class UrlBuilder {
+
+class UrlBuilder extends \stdClass {
 
     private $currentVersion = "3.3.1";
     private $domain;

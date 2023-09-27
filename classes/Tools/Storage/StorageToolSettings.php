@@ -17,6 +17,7 @@
 namespace MediaCloud\Plugin\Tools\Storage;
 
 use MediaCloud\Plugin\Tools\ToolSettings;
+use MediaCloud\Plugin\Utilities\Logging\Logger;
 use function MediaCloud\Plugin\Utilities\arrayPath;
 use MediaCloud\Plugin\Utilities\Environment;
 use MediaCloud\Plugin\Utilities\NoticeManager;
@@ -176,6 +177,10 @@ class StorageToolSettings extends ToolSettings {
 	public function __get($name) {
 		if ($name === 'expires') {
 			if (($this->_expires === null) && !empty($this->expireMinutes)) {
+				if (gettype($this->expireMinutes) === 'string') {
+					$this->expireMinutes = intval($this->expireMinutes);
+				}
+
 				$this->_expires = gmdate('D, d M Y H:i:s \G\M\T', time() + ($this->expireMinutes * 60));
 			}
 

@@ -13,6 +13,8 @@
 
 namespace MediaCloud\Plugin\Utilities;
 
+use MediaCloud\Plugin\Utilities\Logging\Logger;
+
 if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 
 
@@ -23,6 +25,7 @@ if (!defined( 'ABSPATH')) { header( 'Location: /'); die; }
 final class Environment {
 	private static $booted = false;
 	private static $networkMode = false;
+	private static $siteOptions = [];
 
 	/**
 	 * Sets up the environment
@@ -33,7 +36,20 @@ final class Environment {
 			if ($media_cloud_licensing->is_plan('pro')) {
 				static::$networkMode = get_site_option('mcloud-network-mode');
 				if(!static::$networkMode) {
-					static::$networkMode = static::Option('mcloud-network-mode', null, false);
+					static::$networkMode = static::Option('mcloud-network-mode', null, false, false);
+				}
+			}
+
+			global $wpdb;
+			$options = $wpdb->get_results($wpdb->prepare("select option_name, option_value from {$wpdb->options} where option_name like %s", 'mcloud%'));
+			foreach($options as $option) {
+				static::$siteOptions[$option->option_name] = maybe_unserialize($option->option_value);
+			}
+
+			if (is_multisite()) {
+				$options = $wpdb->get_results($wpdb->prepare("select meta_key, meta_value from {$wpdb->sitemeta} where meta_key like %s and (site_id = 1 OR site_id = %d) order by site_id asc", 'mcloud%', get_current_blog_id()));
+				foreach($options as $option) {
+					static::$siteOptions[$option->meta_key] = maybe_unserialize($option->meta_value);
 				}
 			}
 
@@ -76,7 +92,7 @@ final class Environment {
 	 *
 	 * @return array|false|mixed|string|null
 	 */
-	public static function Option($optionName = null, $envVariableName = null, $default = false) {
+	public static function Option($optionName = null, $envVariableName = null, $default = false, $useCache = true) {
 		if (empty($optionName) && empty($envVariableName)) {
 			return $default;
 		}
@@ -111,11 +127,19 @@ final class Environment {
 			return $default;
 		}
 
+		if ($useCache) {
+			if (array_key_exists($optionName, static::$siteOptions)) {
+				return static::$siteOptions[$optionName];
+			}
+		}
+
 		if (static::$networkMode) {
 			$val = get_site_option($optionName, $default);
 		} else {
 			$val = get_option($optionName, $default);
 		}
+
+		static::$siteOptions[$optionName] = $val;
 
 		return $val;
 	}
@@ -132,6 +156,8 @@ final class Environment {
 		} else {
 			update_option($optionName, $value);
 		}
+
+		static::$siteOptions[$optionName] = $value;
 	}
 
 	/**
@@ -158,6 +184,8 @@ final class Environment {
 		} else {
 			delete_option($optionName);
 		}
+
+		unset(static::$siteOptions[$optionName]);
 	}
 
     /**

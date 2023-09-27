@@ -15,7 +15,7 @@ use MediaCloud\Vendor\Psr\Http\Message\RequestInterface;
  *
  * @property resource $_mh Internal use only. Lazy loaded multi-handle.
  */
-class CurlMultiHandler
+class CurlMultiHandler extends \stdClass
 {
     /** @var CurlFactoryInterface */
     private $factory;

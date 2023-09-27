@@ -175,6 +175,10 @@ class S3Storage implements S3StorageInterface, ConfiguresWizard {
 		if($this->enabled()) {
 			$client = $this->getClient($errorCollector);
 
+			if (empty(apply_filters('media-cloud/storage/verify/settings', true))) {
+				return true;
+			}
+
 			if (!empty($client)) {
 				$connectError = false;
 

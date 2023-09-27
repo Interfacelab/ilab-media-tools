@@ -83,7 +83,7 @@ class ConfigurationProvider extends AbstractConfigurationProvider
         $configProviders[] = self::fallback($config);
 
         $memo = self::memoize(
-            call_user_func_array('self::chain', $configProviders)
+            call_user_func_array([self::class, 'chain'], $configProviders)
         );
 
         if (isset($config['endpoint_discovery'])

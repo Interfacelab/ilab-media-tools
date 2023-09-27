@@ -482,7 +482,7 @@ class SystemCompatibilityTool extends Tool {
         $errors = [];
 
         try {
-            $url = $storageTool->client()->upload('_troubleshooter/sample.txt',ILAB_TOOLS_DIR.'/public/text/sample-upload.txt', StorageToolSettings::privacy());
+            $url = $storageTool->client()->upload(StorageToolSettings::prefix() . '_troubleshooter/sample.txt',ILAB_TOOLS_DIR.'/public/text/sample-upload.txt', StorageToolSettings::privacy());
 	        Tracker::trackView("System Test - Test Uploads - Success", "/system-test/uploads/success");
         } catch (\Exception $ex) {
 	        Tracker::trackView("System Test - Test Uploads - Error", "/system-test/uploads/error");
@@ -519,7 +519,7 @@ class SystemCompatibilityTool extends Tool {
 
 	    try {
 		    $result = null;
-		    $url = $storageTool->client()->url('_troubleshooter/sample.txt');
+		    $url = $storageTool->client()->url(StorageToolSettings::prefix() . '_troubleshooter/sample.txt');
 
 		    $result = ilab_file_get_contents($url);
 
@@ -567,7 +567,7 @@ class SystemCompatibilityTool extends Tool {
         $errors = [];
 
         try {
-            $storageTool->client()->delete('_troubleshooter/sample.txt');
+            $storageTool->client()->delete(StorageToolSettings::prefix() . '_troubleshooter/sample.txt');
 	        Tracker::trackView("System Test - Deleting - Success", "/system-test/delete/success");
         } catch (\Exception $ex) {
             $errors[] = $ex->getMessage();

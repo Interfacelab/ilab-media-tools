@@ -44,7 +44,9 @@ class TasksTool extends Tool {
 
 		add_action('init', function() {
 			$role = get_role('administrator');
-			$role->add_cap('mcloud_heartbeat', true);
+			if ($role) {
+				$role->add_cap('mcloud_heartbeat', true);
+			}
 		});
 
 		if (is_admin()) {

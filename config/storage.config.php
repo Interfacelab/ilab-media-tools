@@ -114,7 +114,7 @@ return [
 			]
 		],
 		'wasabi' => [
-			'name' => 'Wasabi',
+			'name' => 'Wasabi (Deprecated)',
 			'class' => "\\MediaCloud\\Plugin\\Tools\\Storage\\Driver\\S3\\WasabiStorage",
 			'config' => '/storage/wasabi.config.php',
 			'help' => [

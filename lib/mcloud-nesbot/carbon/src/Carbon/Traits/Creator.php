@@ -924,9 +924,11 @@ trait Creator
      *
      * @return void
      */
-    private static function setLastErrors(array $lastErrors)
+    private static function setLastErrors($lastErrors)
     {
-        static::$lastErrors = $lastErrors;
+		if (is_array($lastErrors)) {
+            static::$lastErrors = $lastErrors;
+		}
     }
 
     /**

@@ -28,7 +28,7 @@ $builder
 				->option('cloudflare', 'Cloudflare R2', 'wizard.cloud-storage.providers.cloudflare.description', 'wizard-icon-cloudflare.svg', 'cloud-storage-cloudflare')
 				->option('do', 'DigitalOcean Spaces', 'wizard.cloud-storage.providers.do.description', 'wizard-icon-do.svg', 'cloud-storage-do')
 				->option('dreamhost', 'DreamHost Cloud Storage', 'wizard.cloud-storage.providers.dreamhost.description', 'wizard-icon-dreamhost.svg', 'cloud-storage-dreamhost')
-				->option('wasabi', 'Wasabi', 'wizard.cloud-storage.providers.wasabi.description', 'wizard-icon-wasabi.png', 'cloud-storage-wasabi')
+//				->option('wasabi', 'Wasabi', 'wizard.cloud-storage.providers.wasabi.description', 'wizard-icon-wasabi.png', 'cloud-storage-wasabi')
 				->option('backblaze-s3', 'Backblaze', 'wizard.cloud-storage.providers.backblaze.description', 'wizard-icon-backblaze.svg', 'cloud-storage-backblaze-s3')
 				->option('minio', 'Minio', 'wizard.cloud-storage.providers.minio.description', 'wizard-icon-minio.png', 'cloud-storage-minio')
 				->option('other-s3', 'S3 Compatible', 'wizard.cloud-storage.providers.other-s3.description', 'wizard-icon-other-s3.svg', 'cloud-storage-other-s3')

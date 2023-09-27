@@ -18,7 +18,7 @@ namespace MediaCloud\Plugin\Tools\Vision;
 
 if (!defined('ABSPATH')) { header('Location: /'); die; }
 
-abstract class VisionDriver {
+abstract class VisionDriver extends \stdClass {
     /** @var null|VisionToolSettings  */
     protected $settings = null;
 

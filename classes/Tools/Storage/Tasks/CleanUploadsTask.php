@@ -14,6 +14,9 @@
 namespace MediaCloud\Plugin\Tools\Storage\Tasks;
 
 use MediaCloud\Plugin\Tasks\AttachmentTask;
+use MediaCloud\Plugin\Tools\Storage\StorageTool;
+use MediaCloud\Plugin\Tools\Storage\StorageToolSettings;
+use MediaCloud\Plugin\Tools\ToolsManager;
 use MediaCloud\Plugin\Utilities\Logging\Logger;
 use function MediaCloud\Plugin\Utilities\arrayPath;
 use function MediaCloud\Plugin\Utilities\postIdExists;
@@ -111,7 +114,7 @@ class CleanUploadsTask extends AttachmentTask {
 	}
 
 	public static function warnOption() {
-		return 'clean-uploads-task-warning-seen';
+		return 'clean-uploads-task-warning-seen-'.time();
 	}
 
 	public static function warnConfirmationAnswer() {
@@ -230,6 +233,11 @@ class CleanUploadsTask extends AttachmentTask {
 	 * @throws \Exception
 	 */
 	public function performTask($item) {
+		/** @var StorageTool $storageTool */
+		$storageTool = ToolsManager::instance()->tools['storage'];
+
+		add_filter('media-cloud/storage/should-override-attached-file', '__return_false');
+
 		$post_id = $item['id'];
 
 		if ($post_id == -1) {
@@ -246,12 +254,36 @@ class CleanUploadsTask extends AttachmentTask {
 		$this->updateCurrentPost($post_id);
 
 		$file = get_attached_file($post_id, true);
-		$meta = wp_get_attachment_metadata($post_id, true);
+		if (strpos($file, 'http://') !== false || strpos($file, 'https://') !== false) {
+			Logger::info("File is URL", [], __METHOD__, __LINE__);
 
+			$idx = strpos($file, 'https://');
+			if ($idx === false) {
+				$idx = strpos($file, 'http://');
+			}
+
+			$startPath = substr($file, 0, $idx);
+			$fileUrl = substr($file, $idx);
+
+			$path = ltrim(parse_url($fileUrl, PHP_URL_PATH), '/');
+			$parts = explode('/', $path);
+			$possibleBucket = array_shift($parts);
+
+			if($possibleBucket === $storageTool->client()->bucket()) {
+				$file = $startPath . implode('/', $parts);
+				Logger::info("Parsed file is bucket, new file is $file", [], __METHOD__, __LINE__);
+			} else {
+				$file = $startPath . $path;
+				Logger::info("Parsed file is NOT current bucket, new file is $file", [], __METHOD__, __LINE__);
+			}
+		}
+
+		$filesToDelete = [$file];
+
+		$meta = wp_get_attachment_metadata($post_id, true);
 
 		$baseDir = pathinfo($file, PATHINFO_DIRNAME);
 
-		$filesToDelete = [$file];
 		if (isset($meta['sizes'])) {
 			foreach($meta['sizes'] as $size => $sizeData) {
 				if (empty($sizeData['file'])) {
