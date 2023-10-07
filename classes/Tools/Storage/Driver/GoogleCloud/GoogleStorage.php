@@ -26,7 +26,6 @@ use MediaCloud\Plugin\Tools\Storage\StorageConstants;
 use MediaCloud\Plugin\Tools\Storage\StorageException;
 use MediaCloud\Plugin\Tools\Storage\StorageFile;
 use MediaCloud\Plugin\Tools\Storage\StorageInterface;
-use function MediaCloud\Plugin\Utilities\anyNull;
 use function MediaCloud\Plugin\Utilities\arrayPath;
 use MediaCloud\Plugin\Utilities\Environment;
 use MediaCloud\Plugin\Utilities\Logging\ErrorCollector;
@@ -228,7 +227,7 @@ class GoogleStorage implements StorageInterface, ConfiguresWizard {
 	}
 
 	public function enabled() {
-		if(empty($this->settings->credentials) || (!is_array($this->settings->credentials)) || empty($this->settings->bucket)) {
+		if (((empty($this->settings->credentials) || (!is_array($this->settings->credentials))) && !$this->settings->useApplicationDefaultCredentials) || empty($this->settings->bucket)) {
 			if (current_user_can('manage_options')) {
 				$adminUrl = admin_url('admin.php?page=media-cloud-settings&tab=storage');
 				NoticeManager::instance()->displayAdminNotice('info', "Welcome to Media Cloud!  To get started, <a href='$adminUrl'>configure your cloud storage</a>.", true, 'ilab-cloud-storage-setup-warning', 'forever');
@@ -285,6 +284,10 @@ class GoogleStorage implements StorageInterface, ConfiguresWizard {
 				                                  'keyFile' => $this->settings->credentials,
                                                   'scopes' => StorageClient::FULL_CONTROL_SCOPE
 			                                  ]);
+		} elseif ($this->settings->useApplicationDefaultCredentials) {
+			$client = new StorageClient([
+				'scopes' => StorageClient::FULL_CONTROL_SCOPE
+			]);
 		}
 
 		if(!$client) {
@@ -709,6 +712,7 @@ class GoogleStorage implements StorageInterface, ConfiguresWizard {
 				->hiddenField('nonce', wp_create_nonce('update-storage-settings'))
 				->hiddenField('mcloud-storage-provider', 'google')
 				->uploadField('mcloud-storage-google-credentials-file', 'Credentials JSON File', 'The JSON file containing your Google Cloud Storage credentials.', false)
+				->checkBoxField('mcloud-storage-application-default-credentials', 'Use Google Application Default Credentials', "Set to true when running your workload on a Google Cloud solution where these are automatically provided. See <a target='_blank' href='https://cloud.google.com/docs/authentication/application-default-credentials'>this documentation</a> for more information. If you enable this, you don't need to provide a JSON file with credentials.", false)
 				->textField('mcloud-storage-google-bucket', 'Bucket', 'The name of bucket you wish to store your media in.', null)
 				->checkboxField('mcloud-storage-bucket-policy-only', 'Use Bucket Policy Only', "Set to true to when using a bucket which has the 'Bucket Policy Only' flag enabled.  See <a target='_blank' href='https://cloud.google.com/storage/docs/bucket-policy-only'>this documentation</a> for more information.  Also, make sure to make the bucket public, as specified in <a target-'_blank' href='https://cloud.google.com/storage/docs/access-control/making-data-public#buckets'>this documentation</a>.", false)
 			->endStep()
@@ -739,24 +743,28 @@ class GoogleStorage implements StorageInterface, ConfiguresWizard {
 			wp_send_json(['status' => 'error', 'message' => 'Nonce is invalid.  Please try refreshing the page and submitting the form again.'], 200);
 		}
 
-		if (isset($_FILES['mcloud-storage-google-credentials-file'])) {
-			$credentials = file_get_contents($_FILES['mcloud-storage-google-credentials-file']['tmp_name']);
-		}
+		$applicationDefaultCredentials = arrayPath($_POST, 'mcloud-storage-application-default-credentials', false);
 
-		if (empty($credentials)) {
-			$credentials = Environment::Option('mcloud-storage-google-credentials');
+		if (!$applicationDefaultCredentials) {
+			if (isset($_FILES['mcloud-storage-google-credentials-file'])) {
+				$credentials = file_get_contents($_FILES['mcloud-storage-google-credentials-file']['tmp_name']);
+			}
+	
+			if (empty($credentials)) {
+				$credentials = Environment::Option('mcloud-storage-google-credentials');
+			}	
 		}
-
 
 		$bucket = arrayPath($_POST, 'mcloud-storage-google-bucket', null);
 		$bucketPolicyOnly = arrayPath($_POST, 'mcloud-storage-bucket-policy-only', false);
 
-		if (anyNull($credentials, $bucket)) {
+		if ((!$applicationDefaultCredentials && $credentials === null) || $bucket === null) {
 			wp_send_json(['status' => 'error', 'message' => 'Missing required fields'], 200);
 		}
 
 		$oldProvider = Environment::ReplaceOption('mcloud-storage-provider', 'google');
 		$oldCredentials = Environment::ReplaceOption('mcloud-storage-google-credentials', $credentials);
+		$oldApplicationDefaultCredentials = Environment::ReplaceOption('mcloud-strage-application-default-credentials', $applicationDefaultCredentials);
 		$oldBucket = Environment::ReplaceOption('mcloud-storage-google-bucket', $bucket);
 		$oldBucketPolicyOnly = Environment::ReplaceOption('mcloud-storage-bucket-policy-only', $bucketPolicyOnly);
 
@@ -771,6 +779,7 @@ class GoogleStorage implements StorageInterface, ConfiguresWizard {
 			Environment::UpdateOption('mcloud-storage-provider', $oldProvider);
 			Environment::UpdateOption('mcloud-storage-s3-bucket', $oldBucket);
 			Environment::UpdateOption('mcloud-storage-google-credentials', $oldCredentials);
+			Environment::UpdateOption('mcloud-storage-application-default-credentials', $oldApplicationDefaultCredentials);
 			Environment::UpdateOption('mcloud-storage-bucket-policy-only', $oldBucketPolicyOnly);
 
 			$message = "There was a problem with your settings.  Please double check entries for potential mistakes.";
