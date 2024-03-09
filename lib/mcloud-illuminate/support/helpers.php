@@ -250,6 +250,10 @@ if (! function_exists('e')) {
      */
     function e($value, $doubleEncode = true)
     {
+		if (empty($value)) {
+			return $value;
+		}
+
         if ($value instanceof DeferringDisplayableValue) {
             $value = $value->resolveDisplayableValue();
         }

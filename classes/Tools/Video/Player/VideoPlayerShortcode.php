@@ -79,8 +79,8 @@ class VideoPlayerShortcode
             $tagAttributeList[] = 'playsInline';
         }
         $preload = arrayPath( $attrs, 'preload', null );
-        if ( $preload !== null ) {
-            $tagAttributeList[] = "preload='{$preload}'";
+        if ( $preload !== null && in_array( strtolower( $preload ), [ 'auto', 'metadata', 'none' ] ) ) {
+            $tagAttributeList[] = "preload='" . strtolower( $preload ) . "'";
         }
         $tagAttributes = implode( ' ', $tagAttributeList );
         $classes = "mux-player";

@@ -1725,7 +1725,7 @@ class StorageTool extends Tool
             return $fail;
         }
         $meta = wp_get_attachment_metadata( $id );
-        if ( empty($meta) ) {
+        if ( empty($meta) || is_wp_error( $meta ) ) {
             return $fail;
         }
         if ( !isset( $meta['sizes'] ) ) {
