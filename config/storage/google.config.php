@@ -23,10 +23,17 @@ return [
                 "display-order" => 1,
                 "type" => "text-area",
             ],
+			"mcloud-storage-application-default-credentials" => [
+				"title" => "Use Application Default Credentials",
+				"description" => "Set to true when running your workload on a Google Cloud solution where these are automatically provided. See <a target='_blank' href='https://cloud.google.com/docs/authentication/application-default-credentials'>this documentation</a> for more information. If you enable this, you don't need to provide a JSON file with credentials.",
+				"display-order" => 2,	
+				"type" => "checkbox",
+				"default" => false,
+			],
             "mcloud-storage-google-bucket" => [
                 "title" => "Bucket",
                 "description" => "The bucket you wish to store your media in.  Must not be blank.",
-                "display-order" => 2,
+                "display-order" => 3,
                 "type" => "text-field",
             ],
 	        "mcloud-storage-bucket-policy-only" => [
