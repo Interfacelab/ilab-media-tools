@@ -1291,6 +1291,7 @@ class Collection implements ArrayAccess, Enumerable
      *
      * @return \ArrayIterator
      */
+	#[\ReturnTypeWillChange]
     public function getIterator()
     {
         return new ArrayIterator($this->items);
@@ -1301,6 +1302,7 @@ class Collection implements ArrayAccess, Enumerable
      *
      * @return int
      */
+	#[\ReturnTypeWillChange]
     public function count()
     {
         return count($this->items);
@@ -1346,7 +1348,8 @@ class Collection implements ArrayAccess, Enumerable
      * @param  mixed  $key
      * @return bool
      */
-    public function offsetExists($key)
+	#[\ReturnTypeWillChange]
+	public function offsetExists($key)
     {
         return array_key_exists($key, $this->items);
     }
@@ -1357,6 +1360,7 @@ class Collection implements ArrayAccess, Enumerable
      * @param  mixed  $key
      * @return mixed
      */
+	#[\ReturnTypeWillChange]
     public function offsetGet($key)
     {
         return $this->items[$key];
@@ -1369,7 +1373,8 @@ class Collection implements ArrayAccess, Enumerable
      * @param  mixed  $value
      * @return void
      */
-    public function offsetSet($key, $value)
+	#[\ReturnTypeWillChange]
+	public function offsetSet($key, $value)
     {
         if (is_null($key)) {
             $this->items[] = $value;
@@ -1384,7 +1389,8 @@ class Collection implements ArrayAccess, Enumerable
      * @param  string  $key
      * @return void
      */
-    public function offsetUnset($key)
+	#[\ReturnTypeWillChange]
+	public function offsetUnset($key)
     {
         unset($this->items[$key]);
     }

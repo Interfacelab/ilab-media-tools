@@ -26,12 +26,13 @@ $builder
 				->option('s3', 'Amazon S3', 'wizard.cloud-storage.providers.s3.description', 'wizard-icon-s3.svg', 'cloud-storage-s3', 'select-s3')
 				->option('google', 'Google Cloud Storage', 'wizard.cloud-storage.providers.google.description', 'wizard-icon-google.svg', 'cloud-storage-google')
 				->option('cloudflare', 'Cloudflare R2', 'wizard.cloud-storage.providers.cloudflare.description', 'wizard-icon-cloudflare.svg', 'cloud-storage-cloudflare')
+				->option('bunnycdn', 'Bunny CDN', 'wizard.cloud-storage.providers.bunnycdn.description', 'wizard-icon-bunnycdn.svg', 'cloud-storage-bunnycdn')
 				->option('do', 'DigitalOcean Spaces', 'wizard.cloud-storage.providers.do.description', 'wizard-icon-do.svg', 'cloud-storage-do')
 				->option('dreamhost', 'DreamHost Cloud Storage', 'wizard.cloud-storage.providers.dreamhost.description', 'wizard-icon-dreamhost.svg', 'cloud-storage-dreamhost')
 //				->option('wasabi', 'Wasabi', 'wizard.cloud-storage.providers.wasabi.description', 'wizard-icon-wasabi.png', 'cloud-storage-wasabi')
-				->option('backblaze-s3', 'Backblaze', 'wizard.cloud-storage.providers.backblaze.description', 'wizard-icon-backblaze.svg', 'cloud-storage-backblaze-s3')
 				->option('minio', 'Minio', 'wizard.cloud-storage.providers.minio.description', 'wizard-icon-minio.png', 'cloud-storage-minio')
 				->option('other-s3', 'S3 Compatible', 'wizard.cloud-storage.providers.other-s3.description', 'wizard-icon-other-s3.svg', 'cloud-storage-other-s3')
+				->option('backblaze-s3', 'Backblaze', 'wizard.cloud-storage.providers.backblaze.description', 'wizard-icon-backblaze.svg', 'cloud-storage-backblaze-s3')
 			->endGroup()
 		->endStep()
 	->endSection()
@@ -47,7 +48,7 @@ S3Storage::configureWizard($builder);
 \MediaCloud\Plugin\Tools\Storage\Driver\S3\WasabiStorage::configureWizard($builder);
 \MediaCloud\Plugin\Tools\Storage\Driver\S3\MinioStorage::configureWizard($builder);
 \MediaCloud\Plugin\Tools\Storage\Driver\S3\BackblazeS3Storage::configureWizard($builder);
-
+\MediaCloud\Plugin\Tools\Storage\Driver\BunnyCDN\BunnyCDNStorage::configureWizard($builder);
 return $builder->build();
 
 

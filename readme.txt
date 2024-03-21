@@ -1,11 +1,11 @@
-=== Media Cloud for Amazon S3, Cloudflare R2, Google Cloud Storage, DigitalOcean Spaces and more ===
+=== Media Cloud for Bunny CDN, Amazon S3, Cloudflare R2, Google Cloud Storage, DigitalOcean and more ===
 Contributors: mediacloud, interfacelab, freemius
-Tags: offload, amazon, s3, cloudflare, imgix, uploads, video, video encoding, google cloud storage, digital ocean spaces, wasabi, media, cdn, rekognition, cloudfront, images, crop, image editing, image editor, optimize, image optimization, media library, offload, offload s3, smush, imagify, shortpixel
+Tags: offload, amazon, s3, cloudflare, bunnycdn, imgix, uploads, video, video encoding, google cloud storage, digital ocean spaces, wasabi, media, cdn, rekognition, cloudfront, images, crop, image editing, image editor, optimize, image optimization, media library, offload, offload s3, smush, imagify, shortpixel
 Requires at least: 4.9
-Tested up to: 6.4.2
+Tested up to: 6.5
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.5.25
+Stable tag: 4.6.0
 Requires PHP: 7.4
 
 Automatically store media on Amazon S3, Cloudflare R2, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -104,6 +104,29 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 
 == Changelog ==
+
+= 4.6.0 - 03/212024 =
+
+* Migrating media now migrates .webp and .avif files regardless of what plugin generated them.
+* Added beta support for Bunny CDN as a storage provider.
+    * Note that Bunny CDN doesn't support ACLs so it can't do signed URLs like other cloud storage providers, so it is not suitable for WooCommerce, EDD or anything else where you want to protect individual files.
+    * You can protect directories though and any files in a specified directory will be signed.  This is probably a moving target  feature wise.
+    * Also note that this works differently then Bunny's WordPress plugin.  Bunny's plugin works via pull where Media Cloud is  push (it uploads your media to Bunny CDN).  Which way is better is up to you to decide, though you can't use Bunny's plugin in a dev environment or on a localhost during dev.
+    * Documentation is non existent at the moment but that will be remedied later next week.
+* Fixed Migrate to Mux task.
+* Fixes for some PHP 8.2 errors and notices.
+
+
+= 4.5.27 - 03/13/2024 =
+
+* Fix for assets tool where bucket name appears in URL.
+* PUSH Asset mode deprecated.  PUSH mode was meant for edge cases and PULL mode is superior in every way.  Will display warning
+  if you have it enabled in PUSH mode.
+
+
+= 4.5.26 - 03/10/2024 =
+
+* Fix for assets tool.
 
 = 4.5.25 - 03/10/2024 =
 

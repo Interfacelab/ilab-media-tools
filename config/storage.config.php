@@ -96,6 +96,16 @@ return [
 				[ 'title' => 'Read Documentation', 'url' => 'https://docs.mediacloud.press/articles/documentation/cloud-storage/setting-up-digitalocean-spaces' ],
 			]
 		],
+		'bunnycdn' => [
+			'name' => 'Bunny CDN (beta)',
+			'class' => \MediaCloud\Plugin\Tools\Storage\Driver\BunnyCDN\BunnyCDNStorage::class,
+			'config' => '/storage/bunnycdn.config.php',
+			'help' => [
+				[ 'title' => 'Sign Up For Bunny CDN Account', 'url' => 'https://bunny.net?ref=33lsyjqfr3' ],
+				[ 'title' => 'Setup Wizard', 'wizard' => 'bunnycdn' ],
+				[ 'title' => 'Read Documentation', 'url' => 'https://docs.mediacloud.press/articles/documentation/cloud-storage/setting-up-digitalocean-spaces' ],
+			]
+		],
 		'dreamhost' => [
 			'name' => 'DreamHost Cloud Storage',
 			'class' => "\\MediaCloud\\Plugin\\Tools\\Storage\\Driver\\S3\\DreamHostStorage",
@@ -111,15 +121,6 @@ return [
 			'config' => '/storage/minio.config.php',
 			'help' => [
 				[ 'title' => 'Setup Wizard', 'wizard' => 'minio' ]
-			]
-		],
-		'wasabi' => [
-			'name' => 'Wasabi (Deprecated)',
-			'class' => "\\MediaCloud\\Plugin\\Tools\\Storage\\Driver\\S3\\WasabiStorage",
-			'config' => '/storage/wasabi.config.php',
-			'help' => [
-				[ 'title' => 'Setup Wizard', 'wizard' => 'wasabi' ],
-				[ 'title' => 'Read Documentation', 'url' => 'https://docs.mediacloud.press/articles/documentation/cloud-storage/setting-up-wasabi' ],
 			]
 		],
 		'other-s3' => [
@@ -138,21 +139,30 @@ return [
 				[ 'title' => 'Setup Wizard', 'wizard' => 'backblaze-s3' ]
 			]
 		],
-		'backblaze' => [
-			'name' => 'Backblaze (Deprecated)',
-			'class' => \MediaCloud\Plugin\Tools\Storage\Driver\Backblaze\BackblazeStorage::class,
-			'config' => '/storage/backblaze.config.php',
-			'help' => [
-				[ 'title' => 'Setup Wizard', 'wizard' => 'backblaze' ],
-				[ 'title' => 'Read Documentation', 'url' => 'https://docs.mediacloud.press/articles/documentation/cloud-storage/setting-up-backblaze' ],
-			]
-		],
 		'supabase' => [
 			'name' => 'Supabase Storage (Beta)',
 			'class' => \MediaCloud\Plugin\Tools\Storage\Driver\Supabase\SupabaseStorage::class,
 			'config' => '/storage/supabase.config.php',
 			'help' => [
 				[ 'title' => 'Setup Wizard', 'wizard' => 'supabase' ],
+				[ 'title' => 'Read Documentation', 'url' => 'https://docs.mediacloud.press/articles/documentation/cloud-storage/setting-up-backblaze' ],
+			]
+		],
+		'wasabi' => [
+			'name' => 'Wasabi (Deprecated)',
+			'class' => "\\MediaCloud\\Plugin\\Tools\\Storage\\Driver\\S3\\WasabiStorage",
+			'config' => '/storage/wasabi.config.php',
+			'help' => [
+				[ 'title' => 'Setup Wizard', 'wizard' => 'wasabi' ],
+				[ 'title' => 'Read Documentation', 'url' => 'https://docs.mediacloud.press/articles/documentation/cloud-storage/setting-up-wasabi' ],
+			]
+		],
+		'backblaze' => [
+			'name' => 'Backblaze (Deprecated)',
+			'class' => \MediaCloud\Plugin\Tools\Storage\Driver\Backblaze\BackblazeStorage::class,
+			'config' => '/storage/backblaze.config.php',
+			'help' => [
+				[ 'title' => 'Setup Wizard', 'wizard' => 'backblaze' ],
 				[ 'title' => 'Read Documentation', 'url' => 'https://docs.mediacloud.press/articles/documentation/cloud-storage/setting-up-backblaze' ],
 			]
 		],

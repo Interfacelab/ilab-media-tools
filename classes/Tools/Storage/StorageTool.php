@@ -2491,6 +2491,8 @@ class StorageTool extends Tool
             }
             
             $webpKey = null;
+            $extraFiles = [];
+            $extraFormats = [];
             $additionalPaths = apply_filters(
                 'as3cf_attachment_file_paths',
                 [
@@ -2504,28 +2506,115 @@ class StorageTool extends Tool
                 $webpPath = $additionalPaths['file-webp'];
                 $webpBasename = basename( $webpPath );
                 $webpKey = $prefix . $webpBasename;
+                $extraFiles[] = [
+                    'format' => 'webp',
+                    'path'   => $webpPath,
+                    'key'    => $webpKey,
+                ];
+                //		        if (!$this->client->exists($webpKey)) {
+                //		            Logger::info("\tUploading $filename .webp version to S3", [], __METHOD__, __LINE__);
+                //			        $this->client->upload($webpKey, $webpPath, $privacy, StorageToolSettings::cacheControl(), StorageToolSettings::expires(), 'image/webp');
+                //			        $canDelete = apply_filters('media-cloud/storage/delete_uploads', true);
+                //			        if (!empty($canDelete) && StorageToolSettings::deleteOnUpload()) {
+                //				        $this->deleteCache[] = $webpPath;
+                //			        }
+                //                }
+            }
+            
+            
+            if ( $uploadType === 'image' ) {
+                Logger::info( "Testing for webp and avif for {$filename}" );
+                $parsed = pathinfo( $filename );
+                $webP = $parsed['dirname'] . '/' . $parsed['filename'] . '.webp';
+                $webPBase = $parsed['dirname'] . '/' . $parsed['basename'] . '.webp';
+                $avif = $parsed['dirname'] . '/' . $parsed['filename'] . '.avif';
+                $avifBase = $parsed['dirname'] . '/' . $parsed['basename'] . '.avif';
+                Logger::info( "Looking for " . $upload_path . '/' . $webP );
                 
-                if ( !$this->client->exists( $webpKey ) ) {
-                    Logger::info(
-                        "\tUploading {$filename} .webp version to S3",
-                        [],
-                        __METHOD__,
-                        __LINE__
-                    );
-                    $this->client->upload(
-                        $webpKey,
-                        $webpPath,
-                        $privacy,
-                        StorageToolSettings::cacheControl(),
-                        StorageToolSettings::expires(),
-                        'image/webp'
-                    );
-                    $canDelete = apply_filters( 'media-cloud/storage/delete_uploads', true );
-                    if ( !empty($canDelete) && StorageToolSettings::deleteOnUpload() ) {
-                        $this->deleteCache[] = $webpPath;
-                    }
+                if ( file_exists( $upload_path . '/' . $webP ) ) {
+                    Logger::info( "Found " . $upload_path . '/' . $webP );
+                    $extraFiles[] = [
+                        'format' => 'webp',
+                        'path'   => $upload_path . '/' . $webP,
+                        'key'    => $prefix . $parsed['filename'] . '.webp',
+                    ];
+                }
+                
+                Logger::info( "Looking for " . $upload_path . '/' . $avif );
+                
+                if ( file_exists( $upload_path . '/' . $avif ) ) {
+                    Logger::info( "Found " . $upload_path . '/' . $avif );
+                    $extraFiles[] = [
+                        'format' => 'avif',
+                        'path'   => $upload_path . '/' . $avif,
+                        'key'    => $prefix . $parsed['filename'] . '.avif',
+                    ];
+                }
+                
+                Logger::info( "Looking for " . $upload_path . '/' . $webPBase );
+                
+                if ( file_exists( $upload_path . '/' . $webPBase ) ) {
+                    Logger::info( "Found " . $upload_path . '/' . $webPBase );
+                    $extraFiles[] = [
+                        'format' => 'webp',
+                        'path'   => $upload_path . '/' . $webPBase,
+                        'key'    => $prefix . $parsed['basename'] . '.webp',
+                    ];
+                }
+                
+                Logger::info( "Looking for " . $upload_path . '/' . $avifBase );
+                
+                if ( file_exists( $upload_path . '/' . $avifBase ) ) {
+                    Logger::info( "Found " . $upload_path . '/' . $avifBase );
+                    $extraFiles[] = [
+                        'format' => 'avif',
+                        'path'   => $upload_path . '/' . $avifBase,
+                        'key'    => $prefix . $parsed['basename'] . '.avif',
+                    ];
                 }
             
+            }
+            
+            
+            if ( !empty($extraFiles) ) {
+                Logger::info( "Found " . count( $extraFiles ) . ' extra files.' );
+                foreach ( $extraFiles as $extraFile ) {
+                    
+                    if ( isset( $extraFormats[$extraFile['format']] ) ) {
+                        Logger::info( "Format exists already " . $extraFile['format'] );
+                        continue;
+                    }
+                    
+                    $extraKey = $extraFile['key'];
+                    $extraPath = $extraFile['path'];
+                    Logger::info( "Uploading {$extraKey} at {$extraPath}" );
+                    
+                    if ( !$this->client->exists( $extraKey ) ) {
+                        Logger::info(
+                            "\tUploading {$extraKey} version to S3",
+                            [],
+                            __METHOD__,
+                            __LINE__
+                        );
+                        $this->client->upload(
+                            $extraKey,
+                            $extraPath,
+                            $privacy,
+                            StorageToolSettings::cacheControl(),
+                            StorageToolSettings::expires(),
+                            'image/webp'
+                        );
+                        $extraFormats[$extraFile['format']] = $extraKey;
+                        $canDelete = apply_filters( 'media-cloud/storage/delete_uploads', true );
+                        if ( !empty($canDelete) && StorageToolSettings::deleteOnUpload() ) {
+                            $this->deleteCache[] = $extraPath;
+                        }
+                    } else {
+                        $extraFormats[$extraFile['format']] = $extraKey;
+                        Logger::info( "{$extraKey} already exists." );
+                    }
+                
+                }
             }
             
             $options = [];
@@ -2548,11 +2637,12 @@ class StorageTool extends Tool
                 'v'         => MEDIA_CLOUD_INFO_VERSION,
                 'optimized' => $didOptimize,
                 'options'   => $options,
-                'formats'   => [],
+                'formats'   => $extraFormats,
             ];
-            if ( !empty($webpKey) ) {
-                $data['s3']['formats']['webp'] = $webpKey;
-            }
+            Logger::info( "New data:" . json_encode( $extraFormats, JSON_PRETTY_PRINT ) );
+            //			if (!empty($webpKey)) {
+            //			    $data['s3']['formats']['webp'] = $webpKey;
+            //            }
             
             if ( file_exists( $upload_path . '/' . $filename ) ) {
                 $ftype = wp_check_filetype( $upload_path . '/' . $filename );

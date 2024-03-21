@@ -155,6 +155,7 @@ class StorageFile implements \JsonSerializable {
 		return $this->url;
 	}
 
+	#[\ReturnTypeWillChange]
 	public function jsonSerialize() {
 		return [
 			'type' => strtolower($this->type),

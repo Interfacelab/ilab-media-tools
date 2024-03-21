@@ -765,7 +765,8 @@ trait EnumeratesValues
      *
      * @return array
      */
-    public function jsonSerialize()
+	#[\ReturnTypeWillChange]
+	public function jsonSerialize()
     {
         return array_map(function ($value) {
             if ($value instanceof JsonSerializable) {
