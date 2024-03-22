@@ -563,7 +563,7 @@ class BunnyCDNStorage implements StorageInterface, ConfiguresWizard {
 		$builder
 			->tutorialSection('cloud-storage-bunnycdn-tutorial', true)
 			->tutorial('wizard.cloud-storage.providers.bunnycdn.tutorial.step-1', 'Create Storage Zone', 'Create the storage zone you will be using with Media Cloud.')
-			->tutorial('wizard.cloud-storage.providers.bunnycdn.tutorial.step-2', 'Create Pull Zone', 'Create a pull zone for your storage zone.  It\'s a lot of zones.', null, true)
+			->tutorial('wizard.cloud-storage.providers.bunnycdn.tutorial.step-2', 'Add a Pull Zone', 'Create a pull zone for your storage zone.', null, true)
 			->endSection();
 
 		return $builder;

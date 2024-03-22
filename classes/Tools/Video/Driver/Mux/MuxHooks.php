@@ -611,7 +611,6 @@ class MuxHooks
                 $url = $storageTool->client()->presignedUrl( $meta['s3']['key'], 30 );
             } else {
                 $otherMeta = wp_get_attachment_metadata( $attachmentId, true );
-                Logger::info( "URL FOR IMPORT:" . json_encode( $otherMeta, JSON_PRETTY_PRINT ) );
                 
                 if ( isset( $otherMeta['s3'] ) ) {
                     $url = $storageTool->client()->presignedUrl( $otherMeta['s3']['key'], 30 );
@@ -620,15 +619,13 @@ class MuxHooks
                 }
             
             }
-            
-            Logger::info( "URL FOR IMPORT:" . $url );
+        
         } else {
             $url = wp_get_attachment_url( $attachmentId );
             if ( defined( 'MEDIACLOUD_DEV_MODE' ) && defined( 'MEDIACLOUD_VIDEO_SERVER' ) && !empty(constant( 'MEDIACLOUD_VIDEO_SERVER' )) ) {
                 // DEBUG ONLY
                 $url = str_replace( home_url(), constant( 'MEDIACLOUD_VIDEO_SERVER' ), $url );
             }
-            Logger::info( "URL FOR IMPORT 2:" . $url );
         }
         
         $input = new InputSettings( [

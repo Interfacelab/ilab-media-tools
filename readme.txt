@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 6.5
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.6.0
+Stable tag: 4.6.1
 Requires PHP: 7.4
 
 Automatically store media on Amazon S3, Cloudflare R2, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -105,15 +105,15 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 == Changelog ==
 
-= 4.6.0 - 03/212024 =
+= 4.6.1 - 03/22/2024 =
 
-* Migrating media now migrates .webp and .avif files regardless of what plugin generated them.
 * Added beta support for Bunny CDN as a storage provider.
     * Note that Bunny CDN doesn't support ACLs so it can't do signed URLs like other cloud storage providers, so it is not suitable for WooCommerce, EDD or anything else where you want to protect individual files.
     * You can protect directories though and any files in a specified directory will be signed.  This is probably a moving target  feature wise.
     * Also note that this works differently then Bunny's WordPress plugin.  Bunny's plugin works via pull where Media Cloud is  push (it uploads your media to Bunny CDN).  Which way is better is up to you to decide, though you can't use Bunny's plugin in a dev environment or on a localhost during dev.
-    * Documentation is non existent at the moment but that will be remedied later next week.
+* Added documentation for Bunny CDN
 * Fixed Migrate to Mux task.
+* Migrating media now migrates .webp and .avif files regardless of what plugin generated them.
 * Fixes for some PHP 8.2 errors and notices.
 
 

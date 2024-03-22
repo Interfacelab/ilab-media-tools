@@ -103,7 +103,7 @@ return [
 			'help' => [
 				[ 'title' => 'Sign Up For Bunny CDN Account', 'url' => 'https://bunny.net?ref=33lsyjqfr3' ],
 				[ 'title' => 'Setup Wizard', 'wizard' => 'bunnycdn' ],
-				[ 'title' => 'Read Documentation', 'url' => 'https://docs.mediacloud.press/articles/documentation/cloud-storage/setting-up-digitalocean-spaces' ],
+				[ 'title' => 'Read Documentation', 'url' => 'https://docs.mediacloud.press/articles/documentation/cloud-storage/setting-up-bunny-cdn/' ],
 			]
 		],
 		'dreamhost' => [
