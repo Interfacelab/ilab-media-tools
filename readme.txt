@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 6.5
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.6.1
+Stable tag: 4.6.2
 Requires PHP: 7.4
 
 Automatically store media on Amazon S3, Cloudflare R2, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -104,6 +104,10 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 
 == Changelog ==
+
+= 4.6.2 - 03/22/2024 =
+
+* Fix for Bunny CDN region list
 
 = 4.6.1 - 03/22/2024 =
 

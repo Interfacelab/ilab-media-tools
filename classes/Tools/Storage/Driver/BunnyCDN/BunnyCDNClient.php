@@ -24,7 +24,7 @@ class BunnyCDNClient {
 
 		$this->apiKey = $apiKey;
 		$this->storageZone = $storageZone;
-		$this->region = $region;
+		$this->region = empty($region) ? '' : "{$region}.";
 		$this->pullZone = $pullZone;
 
 		$this->client = new Client();
@@ -33,7 +33,7 @@ class BunnyCDNClient {
 	public function upload($sourceFile, $destPath) {
 		$res = fopen($sourceFile, 'r');
 
-		$res = $this->client->put("https://{$this->region}.storage.bunnycdn.com/{$this->storageZone}/{$destPath}", [
+		$res = $this->client->put("https://{$this->region}storage.bunnycdn.com/{$this->storageZone}/{$destPath}", [
 			RequestOptions::HEADERS => [
 				'Content-Type' => 'application/octet-stream',
 				'AccessKey' => $this->apiKey
@@ -50,7 +50,7 @@ class BunnyCDNClient {
 			return false;
 		}
 
-		$ftpId = ftp_connect("{$this->region}.storage.bunnycdn.com");
+		$ftpId = ftp_connect("{$this->region}storage.bunnycdn.com");
 		$login = ftp_login($ftpId, $this->storageZone, $this->apiKey);
 		if (!$login) {
 			throw new StorageException("Invalid settings");
@@ -64,7 +64,7 @@ class BunnyCDNClient {
 	}
 
 	public function listFiles($path) {
-		$res = $this->client->get("https://{$this->region}.storage.bunnycdn.com/{$this->storageZone}/{$path}/", [
+		$res = $this->client->get("https://{$this->region}storage.bunnycdn.com/{$this->storageZone}/{$path}/", [
 			RequestOptions::HEADERS => [
 				'AccessKey' => $this->apiKey
 			],
@@ -95,7 +95,7 @@ class BunnyCDNClient {
 
 	public function deleteFile($file) {
 
-		$res = $this->client->delete("https://{$this->region}.storage.bunnycdn.com/{$this->storageZone}/{$file}", [
+		$res = $this->client->delete("https://{$this->region}storage.bunnycdn.com/{$this->storageZone}/{$file}", [
 			RequestOptions::HEADERS => [
 				'AccessKey' => $this->apiKey
 			],
@@ -110,7 +110,7 @@ class BunnyCDNClient {
 			return false;
 		}
 
-		$ftpId = ftp_connect("{$this->region}.storage.bunnycdn.com");
+		$ftpId = ftp_connect("{$this->region}storage.bunnycdn.com");
 		$login = ftp_login($ftpId, $this->storageZone, $this->apiKey);
 		if (!$login) {
 			throw new StorageException("Invalid settings");
