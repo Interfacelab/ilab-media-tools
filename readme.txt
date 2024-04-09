@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 6.5
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.6.2
+Stable tag: 4.6.4
 Requires PHP: 7.4
 
 Automatically store media on Amazon S3, Cloudflare R2, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -104,6 +104,17 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 
 == Changelog ==
+
+= 4.6.4 - 04/09/2024 =
+
+* IMPORTANT UPDATE.  Due to an issue with our build process Gutenberg blocks were excluded
+* Updated Freemius SDK
+* Fixed issue with weird dialogs displaying in admin (missing CSS files due to new build process)
+
+= 4.6.3 - 04/03/2024 =
+
+* Added `Ignore Errors` option to migrate task to continue processing even if errors occurred during import.
+* Added `--ignore-errors` switch to `wp mediacloud:storage migrate` command (see above)
 
 = 4.6.2 - 03/22/2024 =
 
