@@ -26,6 +26,7 @@ use MediaCloud\Plugin\Utilities\Logging\Logger;
  *
  * @property-read string credentials
  * @property string bucket
+ * @property bool useApplicationDefaultCredentials
  * @property bool useBucketPolicyOnly
  * @property bool usePresignedURLs
  * @property bool usePresignedURLsForImages
@@ -46,6 +47,7 @@ class GoogleStorageSettings extends ToolSettings {
 	 */
 	protected $settingsMap = [
 		'bucket' => ['mcloud-storage-google-bucket', ['ILAB_CLOUD_GOOGLE_BUCKET', 'ILAB_AWS_S3_BUCKET', 'ILAB_CLOUD_BUCKET'], null],
+		'useApplicationDefaultCredentials' => ['mcloud-storage-application-default-credentials', null, false],
 		'useBucketPolicyOnly' => ['mcloud-storage-bucket-policy-only', null, false],
 		'usePresignedURLs' => ['mcloud-storage-use-presigned-urls', null, false],
 		'presignedURLExpiration' => ['mcloud-storage-presigned-expiration', null, 300],
