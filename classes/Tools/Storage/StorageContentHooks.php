@@ -195,7 +195,7 @@ class StorageContentHooks {
 					continue;
 				}
 
-				$block_content = str_replace($class[1], "{$class[1]} mcloud-attachment-{$id}", $block_content);
+				$block_content = preg_replace("/[\s'\"]" . $class[1] . "[\s'\"]/m", "{$class[1]} mcloud-attachment-{$id}", $block_content);
 			}
 		}
 
