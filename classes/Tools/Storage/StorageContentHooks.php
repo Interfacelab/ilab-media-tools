@@ -191,11 +191,11 @@ class StorageContentHooks {
 					continue;
 				}
 
-				if (strpos($class[1], 'wp-block-cover') === false) {
+				if ( !preg_match("/wp-block-cover(\s|$)/ui", $class[1]) ) {
 					continue;
 				}
 
-				$block_content = str_replace($class[1], "{$class[1]} mcloud-attachment-{$id}", $block_content);
+				$block_content = preg_replace("/([\s'\"])({$class[1]})([\s'\"])/ui", "$1$2 mcloud-attachment-{$id} $3", $block_content);
 			}
 		}
 
