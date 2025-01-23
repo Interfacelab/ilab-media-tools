@@ -147,4 +147,24 @@ final class StoragePostMap {
 		return $postId;
 	}
 	//endregion
+
+	public static function deleteAttachment($postId) {
+		global $wpdb;
+
+		$tableName = $wpdb->base_prefix.'mcloud_post_map';
+
+		if (static::verifyInstalled()) {
+			// First, delete rows based on post_id
+			$rowsDeleted = $wpdb->delete($tableName, ['post_id' => $postId], ['%d']);
+
+			// If no rows were deleted, fallback to using post_url
+			if (!$rowsDeleted) {
+				$attachmentUrl = wp_get_attachment_url($postId);
+
+				if (!empty($attachmentUrl)) {
+					$wpdb->delete($tableName, ['post_url' => $attachmentUrl], ['%s']);
+				}
+			}
+		}
+	}
 }
