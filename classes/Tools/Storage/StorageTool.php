@@ -1221,6 +1221,7 @@ class StorageTool extends Tool
      */
     public function deleteAttachment( $id )
     {
+	StoragePostMap::deleteAttachment( $id );
         if ( !StorageToolSettings::deleteFromStorage() ) {
             return $id;
         }
