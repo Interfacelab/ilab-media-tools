@@ -56,6 +56,21 @@ trait SettingsTrait {
             return $primaryConfig;
         }
 
+		foreach($otherConfigs as $configKey => $otherConfig) {
+			foreach($groups as $groupKey => $group) {
+				if(isset($otherConfig[$groupKey]['conditions'])) {
+					foreach($otherConfig[$groupKey]['conditions'] as $conditionProp => $condition) {
+						if (isset($primaryConfig['settings']['groups'][$groupKey]['conditions'][$conditionProp])) {
+							$primaryConfig['settings']['groups'][$groupKey]['conditions'][$conditionProp] = array_merge($primaryConfig['settings']['groups'][$groupKey]['conditions'][$conditionProp], $condition);
+						} else {
+							$primaryConfig['settings']['groups'][$groupKey]['conditions'][$conditionProp] = $condition;
+						}
+					}
+//					$primaryConfig['settings']['groups'][$groupKey]['conditions'] = array_merge(isset($group['conditions']) ? $group['conditions'] : [], $otherConfig[$groupKey]['conditions']);
+				}
+			}
+		}
+
         foreach($groups as $groupKey => $group) {
             if (arrayPath($group, 'dynamic', false)) {
                 $newOptions = [];
@@ -66,7 +81,8 @@ trait SettingsTrait {
                         continue;
                     }
 
-                    foreach($configGroup['options'] as $optionKey => $option) {
+					$options = isset($configGroup['options']) ? $configGroup['options'] : [];
+                    foreach($options as $optionKey => $option) {
                         if (empty($newOptions[$optionKey])) {
                             $newOptions[$optionKey] = $option;
                             $newOptions[$optionKey]['conditions'] = [];
@@ -129,6 +145,24 @@ trait SettingsTrait {
 	}
 
 	/**
+	 * Registers an option with a url input UI
+	 * @param $option_name
+	 * @param $title
+	 * @param $settings_slug
+	 * @param null $description
+	 * @param null $placeholder
+	 * @param null $conditions
+	 */
+	protected function registerUrlFieldSetting($option_name, $title, $settings_slug, $description=null, $placeholder=null, $conditions=null, $default=null) {
+		add_settings_field($option_name,
+			$title,
+			[$this,'renderUrlFieldSetting'],
+			$this->options_page,
+			$settings_slug,
+			['option'=>$option_name, 'description'=>$description, 'placeholder' => $placeholder, 'conditions' => $conditions, 'default' => $default]);
+	}
+
+	/**
 	 * Registers an option with a text input UI
 	 * @param $option_name
 	 * @param $title
@@ -157,6 +191,25 @@ trait SettingsTrait {
 		}
 
 		echo View::render_view('base/fields/text-field.php',[
+			'value' => $value,
+			'name' => $args['option'],
+			'placeholder' => $args['placeholder'],
+			'conditions' => $args['conditions'],
+			'description' => (isset($args['description'])) ? $args['description'] : false
+		]);
+	}
+
+	/**
+	 * Renders a text field
+	 * @param $args
+	 */
+	public function renderUrlFieldSetting($args) {
+		$value = Environment::Option($args['option']);
+		if (empty($value) && !empty($args['default'])) {
+			$value = $args['default'];
+		}
+
+		echo View::render_view('base/fields/url-field.php',[
 			'value' => $value,
 			'name' => $args['option'],
 			'placeholder' => $args['placeholder'],

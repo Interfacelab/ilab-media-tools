@@ -17,7 +17,7 @@ VIDEO_TESTS=./examples/video/exercise*.php
 for f in $VIDEO_TESTS
 do
   echo "========== Running $f =========="
-    php $f
+  php $f
 done
 
 DATA_TESTS=./examples/data/exercise*.php

@@ -161,7 +161,6 @@
 
                 fs_require_once_template( 'plugin-icon.php', $vars );
             ?>
-            <!--			<img class="fs-connect-logo" width="--><?php //echo $size ?><!--" height="--><?php //echo $size ?><!--" src="//img.freemius.com/logo/connect.svg"/>-->
         </div>
         <div class="fs-box-container">
 		<div class="fs-content">
@@ -336,6 +335,9 @@
                             <span class="fs-input-label"><?php echo $do_not_send_updates_text ?></span>
                         </label>
                     </div>
+                </div>
+                <div id="fs_orphan_license_message">
+                    <span class="fs-message"><?php fs_echo_inline( "A user has not yet been associated with the license, which is necessary to prevent unauthorized activation. To assign the license to your user, you agree to share your WordPress user's full name and email address." ) ?></span>
                 </div>
 			<?php endif ?>
 			<?php if ( $is_network_level_activation ) : ?>
@@ -740,10 +742,11 @@
 					var
                         licenseKey = $licenseKeyInput.val(),
                         data       = {
-                            action     : action,
-                            security   : security,
-                            license_key: licenseKey,
-                            module_id  : '<?php echo $fs->get_id() ?>'
+                            action          : action,
+                            security        : security,
+                            license_key     : licenseKey,
+                            module_id       : '<?php echo $fs->get_id() ?>',
+                            license_owner_id: licenseOwnerIDByLicense[ licenseKey ]
                         };
 
 					if (
@@ -916,14 +919,14 @@
 
 					if ('' === key) {
 						$primaryCta.attr('disabled', 'disabled');
-                        $marketingOptin.hide();
+						hideOptinAndLicenseMessage();
 					} else {
                         $primaryCta.prop('disabled', false);
 
                         if (32 <= key.length){
                             fetchIsMarketingAllowedFlagAndToggleOptin();
                         } else {
-                            $marketingOptin.hide();
+                            hideOptinAndLicenseMessage();
                         }
 					}
 
@@ -959,8 +962,10 @@
 		//region GDPR
 		//--------------------------------------------------------------------------------
         var isMarketingAllowedByLicense = {},
-            $marketingOptin = $('#fs_marketing_optin'),
-            previousLicenseKey = null;
+            licenseOwnerIDByLicense     = {},
+            $marketingOptin             = $( '#fs_marketing_optin' ),
+            $orphanLicenseMessage       = $( '#fs_orphan_license_message' ),
+            previousLicenseKey          = null;
 
 		if (requireLicenseKey) {
 
@@ -982,6 +987,14 @@
                             $marketingOptin.hide();
                             $primaryCta.focus();
                         }
+
+                        $orphanLicenseMessage.toggle( false === licenseOwnerIDByLicense[ licenseKey ] );
+
+                        if ( false !== licenseOwnerIDByLicense[ licenseKey ] ) {
+                            $( 'input[name=user_firstname]' ).remove();
+                            $( 'input[name=user_lastname]' ).remove();
+                            $( 'input[name=user_email]' ).remove();
+                        }
                     },
                     /**
                      * @author Leo Fajardo (@leorw)
@@ -991,7 +1004,8 @@
                         var licenseKey = $licenseKeyInput.val();
 
                         if (licenseKey.length < 32) {
-                            $marketingOptin.hide();
+                            hideOptinAndLicenseMessage();
+
                             return;
                         }
 
@@ -1000,8 +1014,7 @@
                             return;
                         }
 
-                        $marketingOptin.hide();
-
+                        hideOptinAndLicenseMessage();
                         setLoadingMode();
 
                         $primaryCta.addClass('fs-loading');
@@ -1025,11 +1038,16 @@
 
                                     // Cache result.
                                     isMarketingAllowedByLicense[licenseKey] = result.is_marketing_allowed;
+                                    licenseOwnerIDByLicense[ licenseKey ]   = result.license_owner_id;
                                 }
 
                                 afterMarketingFlagLoaded();
                             }
                         });
+                    },
+                    hideOptinAndLicenseMessage = function() {
+                        $marketingOptin.hide();
+                        $orphanLicenseMessage.hide();
                     };
 
 			$marketingOptin.find( 'input' ).click(function() {

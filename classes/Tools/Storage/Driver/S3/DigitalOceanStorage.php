@@ -100,7 +100,7 @@ class DigitalOceanStorage extends OtherS3Storage {
 				$urlParts = parse_url($uploadedUrl);
 				if ($urlParts && (strpos($urlParts['path'], "/{$this->settings->bucket}/") === 0)) {
 					$fixedPath = substr($urlParts['path'], strlen($this->settings->bucket) + 1);
-					$uploadedUrl = "${urlParts['scheme']}://{$this->settings->bucket}.${urlParts['host']}{$fixedPath}";
+					$uploadedUrl = "{$urlParts['scheme']}://{$this->settings->bucket}.{$urlParts['host']}{$fixedPath}";
 				}
 
 			}

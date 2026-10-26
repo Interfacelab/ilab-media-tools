@@ -18,6 +18,7 @@ use MediaCloud\Plugin\Utilities\Logging\Logger;
 use MediaCloud\Vendor\Firebase\JWT\JWT;
 use MediaCloud\Vendor\GuzzleHttp\Client;
 use MediaCloud\Vendor\MuxPhp\Api\AssetsApi;
+use MediaCloud\Vendor\MuxPhp\Api\PlaybackRestrictionsApi;
 use MediaCloud\Vendor\MuxPhp\Api\URLSigningKeysApi;
 use MediaCloud\Vendor\MuxPhp\ApiException;
 use MediaCloud\Vendor\MuxPhp\Configuration;
@@ -25,6 +26,9 @@ use MediaCloud\Vendor\MuxPhp\Configuration;
 class MuxAPI {
 	/** @var AssetsApi|null */
 	private $assetAPI = null;
+
+	/** @var PlaybackRestrictionsApi|null */
+	private $playbackRestrictionsAPI = null;
 
 	/** @var URLSigningKeysApi|null */
 	private $keysApi = null;
@@ -76,6 +80,22 @@ class MuxAPI {
 		}
 
 		return static::instance()->assetAPI;
+	}
+
+	/**
+	 * Returns the Mux asset API instance
+	 * @return PlaybackRestrictionsApi|null
+	 */
+	public static function playbackRestrictionsAPI() {
+		if (static::instance()->config === null) {
+			return null;
+		}
+
+		if (static::instance()->playbackRestrictionsAPI === null) {
+			static::instance()->playbackRestrictionsAPI = new PlaybackRestrictionsApi(new Client(), static::instance()->config);
+		}
+
+		return static::instance()->playbackRestrictionsAPI;
 	}
 
 	/**

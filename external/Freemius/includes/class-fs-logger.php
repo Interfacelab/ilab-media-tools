@@ -32,6 +32,9 @@
 		 */
 		private static $_abspathLength;
 
+		/**
+		 * @var FS_Logger[] $LOGGERS
+		 */
 		private static $LOGGERS = array();
 		private static $LOG = array();
 		private static $CNT = 0;
@@ -124,7 +127,6 @@
 
 			self::hook_footer();
 		}
-
 		function echo_on() {
 			$this->on();
 
@@ -320,6 +322,11 @@
 
 			$table = "{$wpdb->prefix}fs_logger";
 
+			/**
+			 * Drop logging table in any case.
+			 */
+			$result = $wpdb->query( "DROP TABLE IF EXISTS $table;" );
+
 			if ( $is_on ) {
 				/**
 				 * Create logging table.
@@ -329,7 +336,7 @@
 				 *
 				 * @link https://core.trac.wordpress.org/ticket/2695
 				 */
-				$result = $wpdb->query( "CREATE TABLE {$table} (
+				$result = $wpdb->query( "CREATE TABLE IF NOT EXISTS {$table} (
 `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
 `process_id` INT UNSIGNED NOT NULL,
 `user_name` VARCHAR(64) NOT NULL,
@@ -348,15 +355,11 @@ KEY `process_id` (`process_id` ASC),
 KEY `process_logger` (`process_id` ASC, `logger` ASC),
 KEY `function` (`function` ASC),
 KEY `type` (`type` ASC))" );
-			} else {
-				/**
-				 * Drop logging table.
-				 */
-				$result = $wpdb->query( "DROP TABLE IF EXISTS $table;" );
 			}
 
 			if ( false !== $result ) {
 				update_option( 'fs_storage_logger', ( $is_on ? 1 : 0 ) );
+				self::$_isStorageLoggingOn = $is_on;
 			}
 
 			return ( false !== $result );
@@ -633,7 +636,17 @@ KEY `type` (`type` ASC))" );
 			$offset = 0,
 			$order = false
 		) {
-			global $wpdb;
+			if ( empty( $filename ) ) {
+				$filename = 'fs-logs-' . date( 'Y-m-d_H-i-s', WP_FS__SCRIPT_START_TIME ) . '.csv';
+			}
+
+			$upload_dir = wp_upload_dir();
+			$filepath   = rtrim( $upload_dir['path'], '/' ) . "/{$filename}";
+
+			WP_Filesystem();
+			if ( ! $GLOBALS['wp_filesystem']->is_writable( dirname( $filepath ) ) ) {
+				return false;
+			}
 
 			$query = self::build_db_logs_query(
 				$filters,
@@ -642,14 +655,6 @@ KEY `type` (`type` ASC))" );
 				$order,
 				true
 			);
-
-			$upload_dir = wp_upload_dir();
-			if ( empty( $filename ) ) {
-				$filename = 'fs-logs-' . date( 'Y-m-d_H-i-s', WP_FS__SCRIPT_START_TIME ) . '.csv';
-			}
-			$filepath = rtrim( $upload_dir['path'], '/' ) . "/{$filename}";
-
-			$query .= " INTO OUTFILE '{$filepath}' FIELDS TERMINATED BY '\t' ESCAPED BY '\\\\' OPTIONALLY ENCLOSED BY '\"' LINES TERMINATED BY '\\n'";
 
 			$columns = '';
 			for ( $i = 0, $len = count( self::$_log_columns ); $i < $len; $i ++ ) {
@@ -662,9 +667,13 @@ KEY `type` (`type` ASC))" );
 
 			$query = "SELECT {$columns} UNION ALL " . $query;
 
-			$result = $wpdb->query( $query );
+			$result = $GLOBALS['wpdb']->get_results( $query );
 
 			if ( false === $result ) {
+				return false;
+			}
+
+			if ( ! self::write_csv_to_filesystem( $filepath, $result ) ) {
 				return false;
 			}
 
@@ -686,6 +695,33 @@ KEY `type` (`type` ASC))" );
 			}
 
 			return rtrim( $upload_dir['url'], '/' ) . $filename;
+		}
+
+		/**
+		 * @param string $file_path
+		 * @param array  $query_results
+		 *
+		 * @return bool
+		 */
+		private static function write_csv_to_filesystem( $file_path, $query_results ) {
+			if ( empty( $query_results ) ) {
+				return false;
+			}
+
+			$content = '';
+
+			foreach ( $query_results as $row ) {
+				$row_data = array_map( function ( $value ) {
+					return str_replace( "\n", ' ', $value );
+				}, (array) $row );
+				$content  .= implode( "\t", $row_data ) . "\n";
+			}
+
+			if ( ! $GLOBALS['wp_filesystem']->put_contents( $file_path, $content, FS_CHMOD_FILE ) ) {
+				return false;
+			}
+
+			return true;
 		}
 
 		#endregion

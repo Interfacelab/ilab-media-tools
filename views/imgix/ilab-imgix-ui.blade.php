@@ -56,7 +56,7 @@
 
 @section('bottom-bar')
     @if($mode != 'size')
-        <a href="#" class="button imgix-new-preset-button">New Preset</a>
+        <a href="#" class="button imgix-new-preset-button" data-nonce="{!! $new_preset_nonce !!}">New Preset</a>
         <div class="imgix-preset-container">
             <div class="ilabm-bottom-bar-seperator"></div>
             <select class="imgix-presets">
@@ -69,8 +69,8 @@
                 </label>
                 <div class="ilabm-bottom-bar-seperator"></div>
             </div>
-            <a href="#" class="button button-primary imgix-save-preset-button">Save Preset</a>
-            <a href="#" class="button button-reset imgix-delete-preset-button">Delete Preset</a>
+            <a href="#" class="button button-primary imgix-save-preset-button" data-nonce="{!! $edit_preset_nonce !!}">Save Preset</a>
+            <a href="#" class="button button-reset imgix-delete-preset-button" data-nonce="{!! $delete_preset_nonce !!}">Delete Preset</a>
         </div>
     @endif
 @endsection

@@ -115,7 +115,6 @@ final class TaskRunner {
 		$rawUrl = esc_url_raw( $url );
 
 		$options = [
-			'synchronous' => !empty($args['blocking']),
 			'cookies' => $cookies,
 			'verify' => $verifySSL
 		];
@@ -142,10 +141,9 @@ final class TaskRunner {
 
 		$client = new Client();
 		try {
-			if (empty($options['synchronous'])) {
+			if (empty($args['blocking'])) {
 				Logger::info("Async call to $rawUrl", [], __METHOD__, __LINE__);
-				$options['synchronous'] = true;
-				$client->postSync($rawUrl, $options);
+				$client->post($rawUrl, $options);
 				Logger::info("Async call to $rawUrl complete.", [], __METHOD__, __LINE__);
 				return true;
 			} else {

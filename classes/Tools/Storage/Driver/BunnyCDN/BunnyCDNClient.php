@@ -110,7 +110,12 @@ class BunnyCDNClient {
 			return false;
 		}
 
+		Logger::info("Connecting to {$this->region}storage.bunnycdn.com");
 		$ftpId = ftp_connect("{$this->region}storage.bunnycdn.com");
+		if (empty($ftpId)) {
+			throw new StorageException("FTP login response is false.  It should not be false.");
+		}
+
 		$login = ftp_login($ftpId, $this->storageZone, $this->apiKey);
 		if (!$login) {
 			throw new StorageException("Invalid settings");

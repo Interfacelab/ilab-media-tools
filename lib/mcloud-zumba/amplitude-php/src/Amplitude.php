@@ -517,6 +517,6 @@ class Amplitude
                 compact('httpCode', 'response', 'postFields')
             );
         }
-        curl_close($ch);
+//        curl_close($ch);
     }
 }

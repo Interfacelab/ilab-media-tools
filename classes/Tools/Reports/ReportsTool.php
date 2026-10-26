@@ -66,6 +66,16 @@ class ReportsTool extends Tool {
 	public function setup() {
 		if ($this->enabled()) {
 			if (is_admin()) {
+				add_filter( 'wp_script_attributes', function($attributes) {
+					if (key_exists('id', $attributes) && in_array($attributes['id'], [
+						'mcloud-reports-js-js',
+					])) {
+						$attributes['type'] = 'module';
+					}
+
+					return $attributes;
+				}, 10, 1 );
+
 				add_action('admin_enqueue_scripts', function(){
 					wp_enqueue_script('mcloud-reports-js', ILAB_PUB_JS_URL.'/mcloud-reports.js', null, null, true);
 					wp_enqueue_style('mcloud-reports-css', ILAB_PUB_CSS_URL . '/mcloud-reports.css' );
@@ -98,7 +108,7 @@ class ReportsTool extends Tool {
 		$unsorted = [];
 		foreach($files as $file) {
 			$info = pathinfo($file);
-			if (empty($info) || (strtolower($info['extension']) !== 'csv')) {
+			if (empty($info) || !key_exists('extension', $info) || (strtolower($info['extension']) !== 'csv')) {
 				continue;
 			}
 

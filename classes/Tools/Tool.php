@@ -352,6 +352,10 @@ abstract class Tool {
             return;
         }
 
+        if(!isset($this->toolManager->tools[$toolId])) {
+            return;
+        }
+
         $problemTool = $this->toolManager->tools[$toolId];
         $problemToolName = $problemTool->toolInfo['name'];
         $problemUrl = admin_url('admin.php?page=media-cloud-settings&tab='.$toolId);
@@ -504,6 +508,9 @@ abstract class Tool {
                         switch($optionInfo['type']) {
 	                        case 'text-field':
 		                        $this->registerTextFieldSetting($option,$optionInfo['title'],$group, $description, $placeholder, $conditions, isset($optionInfo['default']) ? $optionInfo['default'] : null);
+		                        break;
+	                        case 'url':
+		                        $this->registerUrlFieldSetting($option,$optionInfo['title'],$group, $description, $placeholder, $conditions, isset($optionInfo['default']) ? $optionInfo['default'] : null);
 		                        break;
 	                        case 'color':
 		                        $this->registerColorFieldSetting($option, $optionInfo['title'], $group, $description, $conditions, isset($optionInfo['default']) ? $optionInfo['default'] : null);

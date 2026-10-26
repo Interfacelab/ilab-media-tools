@@ -65,6 +65,23 @@ namespace MediaCloud\Plugin\Utilities {
 		return substr($uid, 0, $len);
 	}
 
+	/**
+	 * @param callable $callback
+	 * @param array $array
+	 *
+	 * @return mixed
+	 */
+	function arrayFind($callback, $array) {
+		foreach($array as $val) {
+			$res = call_user_func($callback, $val);
+			if (!empty($res)) {
+				return $val;
+			}
+		}
+
+		return null;
+	}
+
 	function parse_req($var,$default=null)
 	{
 		if (isset($_POST[$var]))
@@ -173,6 +190,29 @@ namespace MediaCloud\Plugin\Utilities {
 		}
 
 		return implode(' ', $flattened);
+	}
+
+	/**
+	 * Merges two arrays containing css styles and returns the attribute string value
+	 *
+	 * @param array $first
+	 * @param array $second
+	 *
+	 * @return string
+	 */
+	function mergeCSSStyles($first, $second) {
+		$styles = array_merge($first, $second);
+
+		$styles = array_map(function($k, $v) {
+			return "$k: $v";
+		}, array_keys($styles), array_values($styles));
+
+		$stylesText = implode('; ', $styles);
+		if (!empty($stylesText)) {
+			$stylesText .= '; ';
+		}
+
+		return $stylesText;
 	}
 
 

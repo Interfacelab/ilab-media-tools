@@ -1,6 +1,7 @@
 {
     "name": "mcloud-muxinc/mux-php",
-    "description": "Official Mux API wrapper for PHP projects, supporting both Mux Data and Mux Video. Not familiar with Mux? Check out https://mux.com/ for more information.",
+    "version": "3.16.0",
+    "description": "Mux is how developers build online video. This API encompasses both Mux Video and Mux Data functionality to help you build your video-related projects better and faster than ever before.",
     "keywords": [
         "php",
         "sdk",
@@ -13,21 +14,21 @@
     "license": "MIT",
     "authors": [
         {
-            "name": "Mux SDK team",
+            "name": "Mux SDK Team",
             "homepage": "https://mux.com",
             "email": "sdks@mux.com"
         }
     ],
     "require": {
-        "php": ">=7.1",
+        "php": ">=7.4.0",
         "ext-curl": "*",
         "ext-json": "*",
         "ext-mbstring": "*",
-        "mcloud-guzzlehttp/guzzle": "6.5.5"
+        "mcloud-guzzlehttp/guzzle": "7.8.1"
     },
     "require-dev": {
-        "squizlabs/php_codesniffer": "~2.6",
-        "friendsofphp/php-cs-fixer": "~2.12"
+        "phpunit/phpunit": "^8.0 || ^9.0",
+        "friendsofphp/php-cs-fixer": "^3.14"
     },
     "autoload": {
         "psr-4": {
@@ -36,8 +37,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "MuxPhp\\": "test/"
+            "MuxPhp\\Test\\": "test/"
         }
-    },
-    "version": "0.5.0"
+    }
 }

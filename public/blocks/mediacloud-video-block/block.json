@@ -3,7 +3,7 @@
   "apiVersion": 1,
   "name": "media-cloud/mux-video-block",
   "version": "0.1.0",
-  "title": "Media Cloud Video",
+  "title": "Media Cloud Video (Deprecated)",
   "category": "mediacloud",
   "description": "Video player block for Media Cloud.",
   "supports": {

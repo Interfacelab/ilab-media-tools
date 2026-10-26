@@ -71,6 +71,7 @@ if (!defined('ABSPATH')) { header('Location: /'); die; }
  * @property bool $disableEWWWBackgroundProcessing
  * @property bool $extractPDFPageSize
  * @property bool $forceWebP
+ * @property bool $excludeSignedFromREST
  *
  */
 class StorageToolSettings extends ToolSettings {
@@ -118,6 +119,7 @@ class StorageToolSettings extends ToolSettings {
 		'queuedDeletesDelay' => ["mcloud-storage-queue-deletes-delay", null, 2],
 		'extractPDFPageSize' => ["mcloud-storage-extract-pdf-page-size", null, false],
 		'forceWebP' => ["mcloud-storage-force-webp", null, false],
+		'excludeSignedFromREST' => ["mcloud-storage-exclude-presigned-urls-rest", null, true],
 	];
 
 

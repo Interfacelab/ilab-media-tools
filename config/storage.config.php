@@ -372,13 +372,13 @@ return [
                 "options" => [
                     "mcloud-storage-cdn-base" => [
                         "title" => "CDN Base URL",
-                        "description" => "This is the base URL for your CDN for serving images, including the scheme (meaning the http/https part).  If you don't have a CDN, you can simply use the AWS S3 URL, eg <strong>https://s3-ap-southeast-1.amazonaws.com/your-bucket-name/</strong>.",
-                        "type" => "text-field"
+                        "description" => "This is the base URL for your CDN for serving images.  If you don't have a CDN, you can simply use the AWS S3 URL, eg <strong>https://s3-ap-southeast-1.amazonaws.com/your-bucket-name/</strong>.",
+                        "type" => "url"
                     ],
                     "mcloud-storage-doc-cdn-base" => [
                         "title" => "Document CDN Base URL",
-                        "description" => "This is the base URL for your CDN for serving non-image files, including the scheme (meaning the http/https part).  This is separated for your convenience.  If you don't specify a document CDN, it'll use the media/image CDN.",
-                        "type" => "text-field"
+                        "description" => "This is the base URL for your CDN for serving non-image files.  This is separated for your convenience.  If you don't specify a document CDN, it'll use the media/image CDN.",
+                        "type" => "url"
                     ]
                 ]
             ],

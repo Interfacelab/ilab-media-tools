@@ -1,11 +1,11 @@
 === Media Cloud for Bunny CDN, Amazon S3, Cloudflare R2, Google Cloud Storage, DigitalOcean and more ===
-Contributors: mediacloud, interfacelab, freemius
+Contributors: mediacloud, interfacelab
 Tags: offload, amazon, s3, cloudflare, bunnycdn, imgix, uploads, video, video encoding, google cloud storage, digital ocean spaces, wasabi, media, cdn, rekognition, cloudfront, images, crop, image editing, image editor, optimize, image optimization, media library, offload, offload s3, smush, imagify, shortpixel
 Requires at least: 4.9
-Tested up to: 6.5
+Tested up to: 7.1.3
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.6.4
+Stable tag: 4.7.2
 Requires PHP: 7.4
 
 Automatically store media on Amazon S3, Cloudflare R2, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -104,6 +104,23 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 
 == Changelog ==
+
+= 4.7.2 - 10/26/2026 =
+
+* We're back.  This release has support for more video encoding services.
+* Fix for minor security issue
+* Fix for direct uploads on R2
+* Added Cloudflare stream video encoding support (beta)
+* Added api.video video encoding support (beta)
+* Added BunnyCDN video encoding support (beta)
+* Generate storyboards on video upload
+* Updated freemius version
+* PHP 8.2/8.5 compatibility fixes
+* Fix srcset generation (let us know if you have issues with this)
+* New website launched
+* New support website launched
+* Other minor fixes
+
 
 = 4.6.4 - 04/09/2024 =
 

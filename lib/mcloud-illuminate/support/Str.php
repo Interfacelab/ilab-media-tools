@@ -645,6 +645,10 @@ class Str
      */
     public static function startsWith($haystack, $needles)
     {
+		if (empty($haystack)) {
+			return false;
+		}
+
         foreach ((array) $needles as $needle) {
             if ((string) $needle !== '' && strncmp($haystack, $needle, strlen($needle)) === 0) {
                 return true;

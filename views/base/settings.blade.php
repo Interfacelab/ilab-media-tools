@@ -116,15 +116,15 @@
                     <span class="label">Quick Jump</span>
                     @foreach($sections as $section)
                         @continue($loop->first)
-                        <a href="#{{sanitize_title($section['title'])}}">{{$section['title']}}</a>
-                        @if(!$loop->last)
-                        <span class="sep">|</span>
+                        @if($loop->iteration > 2)
+                            <span id="{{sanitize_title($section['title'])}}-jump-div" class="sep">|</span>
                         @endif
+                        <a id="{{sanitize_title($section['title'])}}-jump" href="#{{sanitize_title($section['title'])}}">{{$section['title']}}</a>
                     @endforeach
                 </div>
                 @endif
                 @foreach($sections as $section)
-                <div id="{{sanitize_title($section['title'])}}" class="ilab-settings-section">
+                <div id="{{sanitize_title($section['title'])}}" class="ilab-settings-section" {{(($section['conditions']) ? 'data-section-conditions="true"' : '')}}>
                     @if(!empty($section['title']))
                     <h2>
                         {{$section['title']}}
@@ -163,6 +163,11 @@
                         </div>
                     @endif
                 </div>
+                @if($section['conditions'])
+                    <script id="{{sanitize_title($section['title'])}}-section-conditions" type="text/plain">
+                        {!! json_encode($section['conditions'], JSON_PRETTY_PRINT) !!}
+                    </script>
+                @endif
                 @endforeach
 
                 @if((count($sections) <= 1) || (count($tool->actions()) > 0))
@@ -188,6 +193,86 @@
 </div>
 <script>
     (function($){
+        $('[data-section-conditions]').each(function() {
+	        const name = this.getAttribute('id');
+	        const conditions = JSON.parse($('#'+name+'-section-conditions').html());
+
+	        const conditionTest = function() {
+		        let match = false;
+                let matchAll = false;
+		        Object.getOwnPropertyNames(conditions).forEach(function(prop){
+			        const val = $('#'+prop).val();
+
+			        let trueCount = 0;
+			        conditions[prop].forEach(function(conditionVal){
+				        if (conditionVal[0] === '!') {
+                            matchAll = true;
+					        if (val !== conditionVal.substring(1)) {
+						        trueCount++;
+					        }
+				        } else {
+					        if (val === conditionVal) {
+						        trueCount++;
+					        }
+				        }
+			        });
+
+                    if (matchAll) {
+                        match = trueCount === conditions[prop].length;
+                    } else {
+	                    match = trueCount > 0;
+                    }
+		        });
+
+		        return match;
+	        };
+
+	        if (!conditionTest()) {
+                const jumpDiv = document.getElementById(name+'-jump-div');
+                if (jumpDiv) {
+	                jumpDiv.style.display = 'none';
+                }
+
+                const jump = document.getElementById(name+'-jump');
+                if (jump) {
+                    jump.style.display = 'none';
+                }
+
+                this.style.display = 'none';
+	        }
+
+            const sectionEle = this;
+
+	        Object.getOwnPropertyNames(conditions).forEach(function(prop){
+		        $('#'+prop).on('change', function(e){
+			        if (!conditionTest()) {
+                        const jumpDiv = document.getElementById(name+'-jump-div');
+                        if (jumpDiv) {
+                            jumpDiv.style.display = 'none';
+                        }
+
+                        const jump = document.getElementById(name+'-jump');
+                        if (jump) {
+                            jump.style.display = 'none';
+                        }
+                        sectionEle.style.display = 'none';
+			        } else {
+                        const jumpDiv = document.getElementById(name+'-jump-div');
+                        if (jumpDiv) {
+                            jumpDiv.style.display = '';
+                        }
+
+                        const jump = document.getElementById(name+'-jump');
+                        if (jump) {
+                            jump.style.display = '';
+                        }
+                        sectionEle.style.display = '';
+			        }
+		        });
+	        });
+        });
+
+
         $('[data-conditions]').each(function(){
             var parent = this.parentElement;
             while (parent.tagName.toLowerCase() != 'tr') {

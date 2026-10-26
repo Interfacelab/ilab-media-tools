@@ -22,8 +22,8 @@
 	 * @var FS_Plugin_Tag $update
 	 */
 	$update = $fs->has_release_on_freemius() ?
-        $fs->get_update( false, false, WP_FS__TIME_24_HOURS_IN_SEC / 24 ) :
-        null;
+		$fs->get_update( false, false ) :
+		null;
 
 	if ( is_object($update) ) {
 		/**
@@ -252,6 +252,8 @@
     $available_license_paid_plan = is_object( $available_license ) ?
         $fs->_get_plan_by_id( $available_license->plan_id ) :
         null;
+
+    $is_dev_mode = ( defined( 'WP_FS__DEV_MODE' ) && WP_FS__DEV_MODE );
 ?>
 	<div class="wrap fs-section">
 		<?php if ( ! $has_tabs && ! $fs->apply_filters( 'hide_account_tabs', false ) ) : ?>
@@ -510,7 +512,7 @@
 											?>
 											<tr class="fs-field-<?php echo esc_attr( $p['id'] ) ?><?php if ( $odd ) : ?> alternate<?php endif ?>">
 												<td>
-													<nobr><?php echo esc_attr( $p['title'] ) ?><?php echo ( ! empty( $p['title'] ) ) ? ':' : '' ?></nobr>
+													<nobr><?php echo esc_html( $p['title'] ) ?><?php echo ( ! empty( $p['title'] ) ) ? ':' : '' ?></nobr>
 												</td>
 												<td<?php if ( 'plan' === $p['id'] || 'bundle_plan' === $p['id'] ) { echo ' colspan="2"'; }?>>
 													<?php if ( in_array( $p['id'], array( 'license_key', 'site_secret_key' ) ) ) : ?>
@@ -787,7 +789,7 @@
 											<th><?php echo esc_html( $plan_text ) ?></th>
 											<th><?php fs_esc_html_echo_x_inline( 'License', 'as software license', 'license', $slug ) ?></th>
 											<th></th>
-											<?php if ( defined( 'WP_FS__DEV_MODE' ) && WP_FS__DEV_MODE ) : ?>
+											<?php if ( $is_dev_mode ) : ?>
 												<th></th>
 											<?php endif ?>
 										</tr>
@@ -853,10 +855,20 @@
                                                     'is_whitelabeled'                => ( $is_whitelabeled && ! $is_data_debug_mode )
 												);
 
-												fs_require_template(
-													'account/partials/addon.php',
-													$addon_view_params
-												);
+												if ( ! empty($addon_view_params['addon_info'] ) ) {
+													fs_require_template(
+														'account/partials/addon.php',
+														$addon_view_params
+													);
+												} else {
+													// If we are here it means there is an activation of an unreleased add-on and yet the SDK is not in development mode.
+													echo '<tr>';
+													echo '<td style="text-align: right;">' . esc_html( $addon_id ) . '</td>';
+													echo '<td colspan="' . ( $is_dev_mode ? 6 : 5 ) . '" style="text-align: left;">';
+													echo 'The add-on you have activated is no longer <a href="https://freemius.com/help/documentation/wordpress/selling-add-ons-extensions/#preparing-the-add-on-for-sale" rel="noreferrer noopener" target="_blank">listed</a> by the product owner, or the SDK is not running in <a href="https://freemius.com/help/documentation/wordpress-sdk/testing/" rel="noreferrer noopener" target="_blank">test mode</a>. Please <a href="' . esc_url( $fs->contact_url() ) . '">contact support</a> if you need further assistance.';
+													echo '</td>';
+													echo '</tr>';
+												}
 
 												$odd = ! $odd;
 											} ?>
@@ -1118,12 +1130,3 @@
 	if ( $has_tabs ) {
 		$fs->_add_tabs_after_content();
 	}
-
-	$params = array(
-		'page'           => 'account',
-		'module_id'      => $fs->get_id(),
-		'module_type'    => $fs->get_module_type(),
-		'module_slug'    => $slug,
-		'module_version' => $fs->get_plugin_version(),
-	);
-    fs_require_template( 'powered-by.php', $params );

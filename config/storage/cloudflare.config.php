@@ -43,7 +43,7 @@ return [
 		        "title" => "Public Bucket URL",
 		        "description" => "The public URL for your cloudflare R2 bucket.",
 		        "display-order" => 14,
-		        "type" => "text-field",
+		        "type" => "url",
 	        ],
         ]
     ],
@@ -75,10 +75,6 @@ return [
 		]
 	],
 	"ilab-media-cloud-signed-urls" => [
-		"title" => "Secure URL Settings",
-		"description" => "These settings control how pre-signed URLs work.",
-		"dynamic" => true,
-		"options" => [
-		],
+		"conditions" => [ "mcloud-storage-provider" => [ "!cloudflare" ] ]
 	],
 ];

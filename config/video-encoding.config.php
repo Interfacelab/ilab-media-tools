@@ -15,14 +15,53 @@ if (!defined('ABSPATH')) { header('Location: /'); die; }
 return [
     "id" => "video-encoding",
     "name" => "Video Encoding",
-	"description" => "Video encoding, hosting and live streaming via <a href='https://mux.com/' target='_blank'>Mux</a>.",
-	"class" => "MediaCloud\\Plugin\\Tools\\Video\\Driver\\Mux\\MuxTool",
+	"description" => "Video encoding via <a href='https://bunny.net/stream/?ref=33lsyjqfr3' target='_blank'>Bunny CDN Stream</a>, <a href='https://www.cloudflare.com/products/cloudflare-stream/' target='_blank'>Cloudflare Stream</a>, <a href='https://api.video' target='_blank'>api.video</a> or <a href='https://mux.com/' target='_blank'>Mux</a>.",
+	"class" => \MediaCloud\Plugin\Tools\Video\VideoEncodingTool::class,
 	"dependencies" => [
 		"video-player",
 	],
+	"dynamic-config-option" => "media-cloud-video-encoding-provider",
 	"env" => "MCLOUD_MUX_ENABLED",
 	"CLI" => [
 		\MediaCloud\Plugin\Tools\Video\CLI\VideoCommands::class,
+	],
+	"videoEncodingDrivers" => [
+		'mux' => [
+			'name' => 'Mux',
+			'class' => \MediaCloud\Plugin\Tools\Video\Driver\Mux\MuxTool::class,
+			'config' => '/video-encoding/mux.config.php',
+			'help' => [
+				[ 'title' => 'Sign Up For Mux Account', 'external_url' => 'https://mux.com' ],
+				[ 'title' => 'Read Documentation', 'url' => 'https://support.mediacloud.press/articles/documentation/video-encoding/about-video-encoding' ],
+			]
+		],
+		'bunny-stream' => [
+			'name' => 'Bunny CDN Stream (Beta)',
+			'class' => \MediaCloud\Plugin\Tools\Video\Driver\Bunny\BunnyStreamTool::class,
+			'config' => '/video-encoding/bunny-stream.config.php',
+			'help' => [
+				[ 'title' => 'Sign Up For Bunny CDN Account', 'url' => 'https://bunny.net?ref=33lsyjqfr3' ],
+				[ 'title' => 'Read Documentation', 'url' => 'https://docs.mediacloud.press/articles/documentation/cloud-storage/setting-up-bunny-cdn/' ],
+			]
+		],
+		'cloudflare-stream' => [
+			'name' => 'Cloudflare Stream (Beta)',
+			'class' => \MediaCloud\Plugin\Tools\Video\Driver\Cloudflare\CloudflareStreamTool::class,
+			'config' => '/video-encoding/cloudflare-stream.config.php',
+			'help' => [
+				[ 'title' => 'Sign Up For Cloudflare Stream', 'url' => 'https://www.cloudflare.com/products/cloudflare-stream/' ],
+				[ 'title' => 'Read Documentation', 'url' => 'https://docs.mediacloud.press/articles/documentation/cloud-storage/setting-up-bunny-cdn/' ],
+			]
+		],
+		'api-video' => [
+			'name' => 'api.video (Beta)',
+			'class' => \MediaCloud\Plugin\Tools\Video\Driver\APIVideo\APIVideoTool::class,
+			'config' => '/video-encoding/api-video.config.pro.php',
+			'help' => [
+				[ 'title' => 'Sign Up For api.video', 'url' => 'https://www.api.video/' ],
+				[ 'title' => 'Read Documentation', 'url' => 'https://docs.mediacloud.press/articles/documentation/cloud-storage/setting-up-bunny-cdn/' ],
+			]
+		],
 	],
 	"settings" => [
 		"options-page" => "media-cloud-mux",
@@ -30,7 +69,7 @@ return [
 		"groups" => [
 			"media-cloud-video-encoding-provider" => [
 				"title" => "Video Encoding Provider",
-				"description" => "To get Cloud Storage working, select a provider and supply the requested credentials.",
+				"description" => "To get video encoding working, select a provider and supply the requested credentials.",
 				"help" => [
 					'target' => 'footer',
 					'watch' => 'media-cloud-video-encoding-provider',
@@ -40,79 +79,30 @@ return [
 					"media-cloud-video-encoding-provider" => [
 						"title" => "Video Encoding Provider",
 						"type" => "select",
-						"options" => [
-							"mux" => "Mux",
-						],
+						"options" => "providerOptions",
 					],
 				],
 				"hide-save" => true
 			],
-			"media-cloud-mux-credentials" => [
+			"media-cloud-video-encoding-credentials" => [
 				"title" => "Credentials",
+				"dynamic" => true,
 				"doc_link" => 'https://docs.mediacloud.press/articles/documentation/video-encoding/credentials',
 				"options" => [
-					"media-cloud-mux-token-id" => [
-						"title" => "Token ID",
-						"description" => "The Mux API token ID.  You can find, or create new keys, on the <a href='https://dashboard.mux.com/settings/access-tokens' target='_blank'>mux.com dashboard</a>.",
-						"type" => "text-field",
-					],
-					"media-cloud-mux-token-secret" => [
-						"title" => "Token Secret",
-						"description" => "The Mux API token secret.  You can find, or create new keys, on the <a href='https://dashboard.mux.com/settings/access-tokens' target='_blank'>mux.com dashboard</a>.",
-						"type" => "password",
-					],
-					"media-cloud-mux-webhook" => [
-						"title" => "Web Hook URL",
-						"description" => "This is the URL to use when configuring web hooks in Mux.  Note that your website must be publicly accessible before video encoding will work as Mux needs to send events about the encoding process to your site.  If you are working on a development site that is not publicly viewable, use something like <a href='https://ngrok.io' target='_blank'>ngrok.io</a> so that Mux can connect to it to post events about encoding.  For more information, read the <a href='https://docs.mux.com/docs/webhooks' target='_blank'>Mux documentation.</a>.",
-						"type" => "mux-webhook",
-					],
-					"media-cloud-mux-webhook-secret" => [
-						"title" => "Web Hook Secret",
-						"description" => "The web hook signing secret.  You can find that <a href='https://dashboard.mux.com/settings/webhooks' target='_blank'>here</a>.",
-						"type" => "password",
-					],
 				]
 			],
-			"media-cloud-mux-encoding-settings" => [
+			"media-cloud-video-encoding-settings" => [
 				"title" => "Encoding Settings",
+				"dynamic" => true,
 				"doc_link" => 'https://docs.mediacloud.press/articles/documentation/video-encoding/encoding-settings',
 				"options" => [
-					"media-cloud-mux-normalize-audio" => [
-						"title" => "Normalize Audio",
-						"description" => "Normalize the audio track loudness level.",
-						"type" => "checkbox",
-						"default" => false
-					],
-					"media-cloud-mux-per-title-encoding" => [
-						"title" => "Per-Title Encoding",
-						"description" => "Per-title encoding analyzes an individual video to determine the ideal encoding ladder. The result is that different videos are streamed at different resolutions and bitrates, and every video looks better - often by up to 20%-30%.",
-						"type" => "checkbox",
-						"default" => false
-					],
-					"media-cloud-mux-test-mode" => [
-						"title" => "Test Mode",
-						"description" => "Enabling test mode will allow you to evaluate the Mux Video APIs without incurring any cost. There is no limit on number of test assets created. Any encoded videos will be watermarked with the Mux logo, limited to 10 seconds and be deleted after 24 hrs",
-						"type" => "checkbox",
-						"default" => false
-					],
 				]
 			],
-			"media-cloud-mux-integration" => [
+			"media-cloud-video-encoding-integration" => [
 				"title" => "WordPress Integration",
+				"dynamic" => true,
 				"doc_link" => 'https://docs.mediacloud.press/articles/documentation/video-encoding/integration',
 				"options" => [
-					"media-cloud-mux-process-uploads" => [
-						"title" => "Import Uploaded Videos",
-						"description" => "When enabled, after a video is uploaded to cloud storage it will be imported it to Mux Video.  If disabled, you must use the Mux upload tool.",
-						"type" => "checkbox",
-						"default" => true,
-					],
-					"media-cloud-mux-delete-uploads" => [
-						"title" => "Delete Videos From Mux",
-						"description" => "When enabled, when you delete a video from the media library, the associated asset on Mux will be deleted too.",
-						"type" => "checkbox",
-						"default" => false,
-					],
 				]
 			],
 		]

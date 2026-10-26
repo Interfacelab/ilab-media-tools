@@ -12,60 +12,62 @@
 // **********************************************************************
 namespace MediaCloud\Plugin\Tools\Video\Driver\Mux;
 
-use  MediaCloud\Plugin\Tools\Storage\StorageToolSettings ;
-use  MediaCloud\Plugin\Tools\Video\Driver\Mux\Models\MuxAsset ;
-use  MediaCloud\Plugin\Tools\Video\Driver\Mux\Models\MuxPlaybackID ;
-use  MediaCloud\Plugin\Tools\Video\Driver\Mux\Models\MuxRendition ;
-use  MediaCloud\Plugin\Tools\Storage\StorageTool ;
-use  MediaCloud\Plugin\Tools\ToolsManager ;
-use  MediaCloud\Plugin\Utilities\Logging\Logger ;
-use  MediaCloud\Plugin\Utilities\Prefixer ;
-use  MediaCloud\Vendor\MuxPhp\Models\CreateAssetRequest ;
-use  MediaCloud\Vendor\MuxPhp\Models\InputSettings ;
-use  MediaCloud\Vendor\MuxPhp\Models\PlaybackPolicy ;
-use function  MediaCloud\Plugin\Utilities\arrayPath ;
-use function  MediaCloud\Plugin\Utilities\gen_uuid ;
-use function  MediaCloud\Plugin\Utilities\postIdExists ;
-class MuxHooks
-{
+use MediaCloud\Plugin\Tools\Storage\StorageTool;
+use MediaCloud\Plugin\Tools\Storage\StorageToolSettings;
+use MediaCloud\Plugin\Tools\ToolsManager;
+use MediaCloud\Plugin\Tools\Video\Driver\Mux\Models\MuxAsset;
+use MediaCloud\Plugin\Tools\Video\Driver\Mux\Models\MuxPlaybackID;
+use MediaCloud\Plugin\Tools\Video\Driver\Mux\Models\MuxRendition;
+use MediaCloud\Plugin\Tools\VideoPlayer\VideoPlayerData;
+use MediaCloud\Plugin\Utilities\Logging\Logger;
+use MediaCloud\Plugin\Utilities\Prefixer;
+use MediaCloud\Vendor\MuxPhp\Models\CreateAssetRequest;
+use MediaCloud\Vendor\MuxPhp\Models\InputSettings;
+use MediaCloud\Vendor\MuxPhp\Models\PlaybackPolicy;
+use function MediaCloud\Plugin\Utilities\arrayPath;
+use function MediaCloud\Plugin\Utilities\arrayPathExists;
+use function MediaCloud\Plugin\Utilities\postIdExists;
+class MuxHooks {
     /** @var MuxToolSettings|MuxToolProSettings  */
-    private  $settings ;
-    public function __construct()
-    {
+    private $settings;
+
+    public function __construct() {
         $this->settings = MuxToolSettings::instance();
-        
         if ( ToolsManager::instance()->toolEnabled( 'storage' ) ) {
-            
             if ( $this->settings->processUploads ) {
                 add_action(
                     'media-cloud/storage/uploaded-attachment',
-                    [ $this, 'handleUpload' ],
+                    [$this, 'handleUpload'],
                     1000,
                     3
                 );
                 add_action(
                     'media-cloud/storage/direct-uploaded-attachment',
-                    [ $this, 'handleDirectUpload' ],
+                    [$this, 'handleDirectUpload'],
                     1000,
                     2
                 );
             }
-        
         } else {
             add_filter(
                 'wp_update_attachment_metadata',
-                [ $this, 'handleUpdateAttachmentMetadata' ],
+                [$this, 'handleUpdateAttachmentMetadata'],
                 1000,
                 2
             );
         }
-        
         if ( is_admin() ) {
-            add_action( 'wp_ajax_mcloud_replace_poster', [ $this, 'ajaxReplacePoster' ] );
+            add_action( 'wp_ajax_mcloud_replace_poster', [$this, 'ajaxReplacePoster'] );
         }
-        add_filter( 'template_include', [ $this, 'handleWebhook' ] );
+        add_filter(
+            'media-cloud/video-player/player-data',
+            [$this, 'playerData'],
+            2000,
+            4
+        );
+        add_filter( 'template_include', [$this, 'handleWebhook'] );
     }
-    
+
     //endregion
     //region Asset Events
     /**
@@ -74,14 +76,12 @@ class MuxHooks
      * @param float $duration
      * @return string
      */
-    private function timecode( $duration )
-    {
+    private function timecode( $duration ) {
         $hours = floor( $duration / (60.0 * 60.0) );
         $duration -= $hours * 60 * 60;
         $minutes = floor( $duration / 60.0 );
         $duration -= $minutes * 60;
         $seconds = round( $duration );
-        
         if ( $hours > 0 ) {
             return sprintf(
                 '%02d:%02d:%02d',
@@ -92,13 +92,10 @@ class MuxHooks
         } else {
             return sprintf( '%02d:%02d', $minutes, $seconds );
         }
-    
     }
-    
-    protected function updateAttachmentMeta( $asset )
-    {
-        
-        if ( empty($asset->attachmentId) ) {
+
+    protected function updateAttachmentMeta( $asset ) {
+        if ( empty( $asset->attachmentId ) ) {
             Logger::error(
                 "Mux: Missing attachment id, cannot update meta.",
                 [],
@@ -107,7 +104,6 @@ class MuxHooks
             );
             return;
         }
-        
         Logger::info(
             "Mux: Updating meta for attachment {$asset->attachmentId}",
             [],
@@ -115,8 +111,7 @@ class MuxHooks
             __LINE__
         );
         $meta = get_post_meta( $asset->attachmentId, '_wp_attachment_metadata', true );
-        
-        if ( empty($meta) ) {
+        if ( empty( $meta ) ) {
             Logger::error(
                 "Mux: Attachment {$asset->attachmentId} meta is missing or empty, cannot update.",
                 [],
@@ -125,7 +120,6 @@ class MuxHooks
             );
             return;
         }
-        
         $meta['mux'] = [
             'muxId'  => $asset->muxId,
             'id'     => $asset->id(),
@@ -139,20 +133,18 @@ class MuxHooks
             __LINE__
         );
     }
-    
+
     /**
      * @param MuxAsset $asset
      * @throws \Exception
      */
-    protected function createAttachmentForAsset( $asset )
-    {
+    protected function createAttachmentForAsset( $asset ) {
         Logger::info(
             "Mux: Creating attachment for asset",
             [],
             __METHOD__,
             __LINE__
         );
-        
         if ( MuxAPI::assetAPI() === null ) {
             Logger::error(
                 "Mux: Unable to create API client",
@@ -162,10 +154,8 @@ class MuxHooks
             );
             return;
         }
-        
         try {
             $result = MuxAPI::assetAPI()->getAssetInputInfo( $asset->muxId );
-            
             if ( $result === null ) {
                 Logger::error(
                     "Mux: Could not get asset input info for {$asset->muxId}",
@@ -175,7 +165,6 @@ class MuxHooks
                 );
                 return;
             }
-        
         } catch ( \Exception $ex ) {
             Logger::error(
                 "Mux: Mux error fetching input info: " . $ex->getMessage(),
@@ -186,8 +175,7 @@ class MuxHooks
             return;
         }
         $inputInfos = $result->getData();
-        
-        if ( empty($inputInfos) ) {
+        if ( empty( $inputInfos ) ) {
             Logger::error(
                 "Mux: Could not find asset inputs for {$asset->muxId}",
                 [],
@@ -196,7 +184,6 @@ class MuxHooks
             );
             return;
         }
-        
         $inputInfo = $inputInfos[0];
         $url = $inputInfo->getSettings()->getUrl();
         $meta = [
@@ -235,23 +222,21 @@ class MuxHooks
         ];
         update_post_meta( $attachmentId, '_wp_attachment_metadata', $meta );
         update_post_meta( $attachmentId, '_wp_attached_file', $filename );
-        if ( empty($asset->title) ) {
+        if ( empty( $asset->title ) ) {
             $asset->title = $filename;
         }
         $asset->attachmentId = $attachmentId;
         $asset->save();
         $this->assignThumbnailForAsset( $asset );
     }
-    
+
     /**
      * @param MuxAsset $asset
      */
-    protected function assignThumbnailForAsset( $asset )
-    {
-        if ( empty($asset->attachmentId) ) {
+    protected function assignThumbnailForAsset( $asset ) {
+        if ( empty( $asset->attachmentId ) ) {
             return;
         }
-        
         if ( has_post_thumbnail( $asset->attachmentId ) ) {
             Logger::warning(
                 "Mux: Thumbnail already exists",
@@ -262,10 +247,8 @@ class MuxHooks
             $asset->generateFilmstrip();
             return;
         }
-        
         $url = $asset->thumbnailUrl();
-        
-        if ( empty($url) ) {
+        if ( empty( $url ) ) {
             Logger::error(
                 "Mux: Could not generate URL for thumbnail?",
                 [],
@@ -274,22 +257,36 @@ class MuxHooks
             );
             return;
         }
-        
         $uploadDirInfo = wp_get_upload_dir();
-        
         if ( ToolsManager::instance()->toolEnabled( 'storage' ) ) {
             Prefixer::setType( 'image/jpeg' );
             $prefix = StorageToolSettings::prefix();
             $uploadDir = trailingslashit( $uploadDirInfo['basedir'] ) . $prefix;
-            @mkdir( $uploadDir, 0777, true );
+            if ( !mkdir( $uploadDir, 0777, true ) && !is_dir( $uploadDir ) ) {
+                throw new \RuntimeException(sprintf( 'Directory "%s" was not created', $uploadDir ));
+            }
         } else {
             $uploadDir = trailingslashit( $uploadDirInfo['basedir'] );
         }
-        
-        $filePath = trailingslashit( $uploadDir ) . $asset->attachmentId . '-' . sanitize_title( $asset->title ) . '-thumb.jpg';
-        file_put_contents( $filePath, ilab_file_get_contents( $url ) );
-        
-        if ( !file_exists( $filePath ) ) {
+        $tries = 0;
+        while ( $tries < 4 ) {
+            $filePath = trailingslashit( $uploadDir ) . $asset->attachmentId . '-' . sanitize_title( $asset->title ) . '-thumb.jpg';
+            file_put_contents( $filePath, ilab_file_get_contents( $url ) );
+            if ( !file_exists( $filePath ) || empty( filesize( $filePath ) ) ) {
+                Logger::warning(
+                    "Mux: Could not download image {$url}.  Try {$tries} of 4.",
+                    [],
+                    __METHOD__,
+                    __LINE__
+                );
+                $tries++;
+                sleep( $tries * 2 );
+                $url = $asset->thumbnailUrl();
+            } else {
+                break;
+            }
+        }
+        if ( !file_exists( $filePath ) || empty( filesize( $filePath ) ) ) {
             Logger::error(
                 "Mux: Could not download image {$url}.",
                 [],
@@ -298,7 +295,6 @@ class MuxHooks
             );
             return;
         }
-        
         $thumbId = wp_insert_attachment( [
             'post_mime_type' => 'image/jpeg',
             'post_title'     => $asset->title . ' Poster',
@@ -318,9 +314,8 @@ class MuxHooks
         wp_update_attachment_metadata( $thumbId, $thumbAttachmentMeta );
         $asset->generateFilmstrip();
     }
-    
-    public function handleStaticRenditionsReady( $jsonData )
-    {
+
+    public function handleStaticRenditionsReady( $jsonData ) {
         $muxId = arrayPath( $jsonData, 'data/id', null );
         Logger::info(
             "Mux: Asset ready {$muxId}",
@@ -330,7 +325,6 @@ class MuxHooks
         );
         /** @var MuxAsset $asset */
         $asset = MuxAsset::findOrCreate( $muxId );
-        
         if ( $asset === null ) {
             Logger::error(
                 'Mux: Asset could not be created.',
@@ -340,7 +334,6 @@ class MuxHooks
             );
             return;
         }
-        
         $renditions = arrayPath( $jsonData, 'data/static_renditions/files', [] );
         Logger::info(
             "Mux: Found " . count( $renditions ) . " renditions for {$muxId}",
@@ -350,8 +343,7 @@ class MuxHooks
         );
         foreach ( $renditions as $renditionData ) {
             $renditionName = arrayPath( $renditionData, 'name', null );
-            
-            if ( !empty($renditionName) ) {
+            if ( !empty( $renditionName ) ) {
                 $rendition = MuxRendition::findOrCreate( $muxId, $renditionName );
                 $rendition->width = arrayPath( $renditionData, 'width', 0 );
                 $rendition->height = arrayPath( $renditionData, 'height', 0 );
@@ -365,13 +357,11 @@ class MuxHooks
                     __LINE__
                 );
             }
-        
         }
         $asset->backgroundTransfer();
     }
-    
-    public function handleAssetReady( $jsonData )
-    {
+
+    public function handleAssetReady( $jsonData ) {
         $muxId = arrayPath( $jsonData, 'data/id', null );
         Logger::info(
             "Mux: Asset ready {$muxId}",
@@ -381,7 +371,6 @@ class MuxHooks
         );
         /** @var MuxAsset $asset */
         $asset = MuxAsset::findOrCreate( $muxId );
-        
         if ( $asset === null ) {
             Logger::error(
                 'Mux: Asset could not be created.',
@@ -391,7 +380,6 @@ class MuxHooks
             );
             return;
         }
-        
         $asset->createdAt = arrayPath( $jsonData, 'data/created_at', time() );
         $asset->status = arrayPath( $jsonData, 'data/status', $asset->status );
         $asset->duration = arrayPath( $jsonData, 'data/duration', 0.0 );
@@ -402,12 +390,10 @@ class MuxHooks
         $asset->mp4Support = $mp4Support !== 'none';
         $tracks = arrayPath( $jsonData, 'data/tracks', [] );
         foreach ( $tracks as $track ) {
-            
             if ( $track['type'] === 'video' ) {
                 $asset->width = arrayPath( $track, 'max_width', 0 );
                 $asset->height = arrayPath( $track, 'max_height', 0 );
             }
-        
         }
         $asset->save();
         Logger::info(
@@ -427,8 +413,7 @@ class MuxHooks
         $renditions = arrayPath( $jsonData, 'data/static_renditions/files', [] );
         foreach ( $renditions as $renditionData ) {
             $renditionName = arrayPath( $renditionData, 'name', null );
-            
-            if ( !empty($renditionName) ) {
+            if ( !empty( $renditionName ) ) {
                 $rendition = MuxRendition::findOrCreate( $muxId, $renditionName );
                 $rendition->width = arrayPath( $renditionData, 'width', 0 );
                 $rendition->height = arrayPath( $renditionData, 'height', 0 );
@@ -436,20 +421,16 @@ class MuxHooks
                 $rendition->filesize = arrayPath( $renditionData, 'filesize', 0 );
                 $rendition->save();
             }
-        
         }
-        
-        if ( empty($asset->attachmentId) ) {
+        if ( empty( $asset->attachmentId ) ) {
             $this->createAttachmentForAsset( $asset );
         } else {
             $this->updateAttachmentMeta( $asset );
             $this->assignThumbnailForAsset( $asset );
         }
-    
     }
-    
-    public function handleAssetUpdated( $jsonData )
-    {
+
+    public function handleAssetUpdated( $jsonData ) {
         $muxId = arrayPath( $jsonData, 'data/id', null );
         Logger::info(
             "Mux: Asset updated {$muxId}",
@@ -459,7 +440,7 @@ class MuxHooks
         );
         /** @var MuxAsset $asset */
         $asset = MuxAsset::asset( $muxId );
-        if ( empty($asset) ) {
+        if ( empty( $asset ) ) {
             return;
         }
         $asset->jsonData = arrayPath( $jsonData, 'data', null );
@@ -471,47 +452,47 @@ class MuxHooks
             __LINE__
         );
     }
-    
-    public function handleAssetDeleted( $jsonData )
-    {
+
+    public function handleAssetDeleted( $jsonData ) {
         $muxId = arrayPath( $jsonData, 'data/id', null );
         /** @var MuxAsset $asset */
         $asset = MuxAsset::asset( $muxId );
-        if ( empty($asset) ) {
+        if ( empty( $asset ) ) {
             return;
         }
-        
         if ( $asset->isTransferred == 1 ) {
             $asset->isDeleted = 1;
             $asset->save();
             return;
         }
-        
         $asset->delete();
     }
-    
-    public function handleAssetErrored( $jsonData )
-    {
+
+    public function handleAssetErrored( $jsonData ) {
     }
-    
+
     //endregion
     //region Webhook
-    private function saveDebugOutput( $muxId, $data )
-    {
+    private function saveDebugOutput( $muxId, $data ) {
         $uploadDirInfo = wp_upload_dir();
         $debugPath = trailingslashit( $uploadDirInfo['basedir'] ) . 'webhook/mux/';
         if ( !file_exists( $debugPath ) ) {
-            mkdir( $debugPath, 0777, true );
+            if ( !mkdir( $debugPath, 0777, true ) && !is_dir( $debugPath ) ) {
+                Logger::error(
+                    sprintf( 'Directory "%s" was not created', $debugPath ),
+                    [],
+                    __METHOD__,
+                    __LINE__
+                );
+                return;
+            }
         }
         $path = $debugPath . time() . '-' . $muxId . '.json';
         file_put_contents( $path, json_encode( $data, JSON_PRETTY_PRINT ) );
     }
-    
-    public function handleWebhook( $template )
-    {
-        
+
+    public function handleWebhook( $template ) {
         if ( strpos( $_SERVER['REQUEST_URI'], '/__mux/webhook' ) === 0 ) {
-            
             if ( !isset( $_SERVER['HTTP_MUX_SIGNATURE'] ) ) {
                 Logger::error(
                     "Mux: Missing Mux Signature",
@@ -523,9 +504,7 @@ class MuxHooks
                     'status' => 'error',
                 ], 400 );
             }
-            
             $body = file_get_contents( 'php://input' );
-            
             if ( !MuxAPI::validateSignature( $_SERVER['HTTP_MUX_SIGNATURE'], $body, $this->settings->webhookSecret ) ) {
                 Logger::error(
                     "Mux: Invalid Mux Signature",
@@ -537,10 +516,9 @@ class MuxHooks
                     'status' => 'invalid signature',
                 ], 400 );
             }
-            
             $data = json_decode( $body, true );
             $type = arrayPath( $data, 'type', null );
-            if ( empty($type) ) {
+            if ( empty( $type ) ) {
                 Logger::error(
                     "Mux: Webhook missing type.  Exiting.",
                     [],
@@ -548,31 +526,25 @@ class MuxHooks
                     __LINE__
                 );
             }
-            
-            if ( defined( 'MEDIACLOUD_DEV_MODE' ) && !empty(constant( 'MEDIACLOUD_DEV_MODE' )) ) {
+            if ( defined( 'MEDIACLOUD_DEV_MODE' ) && !empty( constant( 'MEDIACLOUD_DEV_MODE' ) ) ) {
                 $muxId = arrayPath( $data, 'data/id', null );
                 $this->saveDebugOutput( $muxId, $data );
             }
-            
             Logger::info(
                 "Mux: Webhook event: {$type}",
                 [],
                 __METHOD__,
                 __LINE__
             );
-            
             if ( $type === 'video.asset.ready' ) {
                 $this->handleAssetReady( $data );
             } else {
-                
                 if ( $type === 'video.asset.static_renditions.ready' ) {
                     $this->handleStaticRenditionsReady( $data );
                 } else {
-                    
                     if ( $type === 'video.asset.errored' ) {
                         $this->handleAssetErrored( $data );
                     } else {
-                        
                         if ( $type === 'video.asset.deleted' ) {
                             $this->handleAssetDeleted( $data );
                         } else {
@@ -580,67 +552,55 @@ class MuxHooks
                                 $this->handleAssetUpdated( $data );
                             }
                         }
-                    
                     }
-                
                 }
-            
             }
-            
             wp_send_json( [
                 'status' => 'ok',
             ], 200 );
         }
-        
         return $template;
     }
-    
+
     //endregion
     //region Upload Hooks
-    public function importUrl( $attachmentId, $meta, $doUpdate = true )
-    {
+    public function importUrl( $attachmentId, $meta, $doUpdate = true ) {
         if ( MuxAPI::assetAPI() === null ) {
             return $meta;
         }
-        
         if ( ToolsManager::instance()->toolEnabled( 'storage' ) ) {
             /** @var StorageTool $storageTool */
             $storageTool = ToolsManager::instance()->tools['storage'];
-            
             if ( isset( $meta['s3'] ) ) {
                 $url = $storageTool->client()->presignedUrl( $meta['s3']['key'], 30 );
             } else {
                 $otherMeta = wp_get_attachment_metadata( $attachmentId, true );
-                
                 if ( isset( $otherMeta['s3'] ) ) {
                     $url = $storageTool->client()->presignedUrl( $otherMeta['s3']['key'], 30 );
                 } else {
                     $url = wp_get_attachment_url( $attachmentId );
                 }
-            
             }
-        
         } else {
             $url = wp_get_attachment_url( $attachmentId );
-            if ( defined( 'MEDIACLOUD_DEV_MODE' ) && defined( 'MEDIACLOUD_VIDEO_SERVER' ) && !empty(constant( 'MEDIACLOUD_VIDEO_SERVER' )) ) {
+            if ( defined( 'MEDIACLOUD_DEV_MODE' ) && defined( 'MEDIACLOUD_VIDEO_SERVER' ) && !empty( constant( 'MEDIACLOUD_VIDEO_SERVER' ) ) ) {
                 // DEBUG ONLY
                 $url = str_replace( home_url(), constant( 'MEDIACLOUD_VIDEO_SERVER' ), $url );
             }
         }
-        
-        $input = new InputSettings( [
+        $input = new InputSettings([
             'url' => $url,
-        ] );
-        $policy = PlaybackPolicy::PUBLIC_PLAYBACK_POLICY;
+        ]);
+        $policy = PlaybackPolicy::_PUBLIC;
         $mp4Support = 'none';
-        $req = new CreateAssetRequest( [
+        $req = new CreateAssetRequest([
             'input'            => $input,
             'playback_policy'  => $policy,
             'mp4_support'      => $mp4Support,
-            'normalize_audio'  => ( !empty($this->settings->normalizeAudio) ? true : false ),
-            'per_title_encode' => ( !empty($this->settings->perTitleEncoding) ? true : false ),
-            'test'             => ( !empty($this->settings->testMode) ? true : false ),
-        ] );
+            'normalize_audio'  => ( !empty( $this->settings->normalizeAudio ) ? true : false ),
+            'per_title_encode' => ( !empty( $this->settings->perTitleEncoding ) ? true : false ),
+            'test'             => ( !empty( $this->settings->testMode ) ? true : false ),
+        ]);
         try {
             $result = MuxAPI::assetAPI()->createAsset( $req );
         } catch ( \Exception $exception ) {
@@ -653,7 +613,7 @@ class MuxHooks
             $meta['mux'] = [
                 'error' => true,
             ];
-            if ( !empty($doUpdate) ) {
+            if ( !empty( $doUpdate ) ) {
                 update_post_meta( $attachmentId, '_wp_attachment_metadata', $meta );
             }
             return $meta;
@@ -675,56 +635,48 @@ class MuxHooks
             'id'     => $asset->id(),
             'status' => $asset->status,
         ];
-        if ( !empty($doUpdate) ) {
+        if ( !empty( $doUpdate ) ) {
             update_post_meta( $attachmentId, '_wp_attachment_metadata', $meta );
         }
         return $meta;
     }
-    
-    public function handleDirectUpload( $attachmentId, $meta )
-    {
+
+    public function handleDirectUpload( $attachmentId, $meta ) {
         $type = arrayPath( $meta, 'type', null );
-        
-        if ( empty($type) ) {
+        if ( empty( $type ) ) {
             $type = arrayPath( $meta, 'mime_type', null );
-            
-            if ( empty($type) ) {
+            if ( empty( $type ) ) {
                 $type = arrayPath( $meta, 's3/mime-type', null );
-                if ( empty($type) ) {
+                if ( empty( $type ) ) {
                     return;
                 }
             }
-        
         }
-        
         if ( strpos( $type, 'video' ) !== 0 || !isset( $meta['s3'] ) ) {
             return;
         }
         $this->importUrl( $attachmentId, $meta );
     }
-    
-    public function handleUpdateAttachmentMetadata( $data, $id )
-    {
+
+    public function handleUpdateAttachmentMetadata( $data, $id ) {
         if ( isset( $data['mime_type'] ) && strpos( $data['mime_type'], 'video/' ) === 0 ) {
             return $this->importUrl( $id, $data, false );
         }
         return $data;
     }
-    
-    public function handleUpload( $attachmentId, $file, $meta )
-    {
+
+    public function handleUpload( $attachmentId, $file, $meta ) {
         $this->handleDirectUpload( $attachmentId, $meta );
     }
-    
-    public function ajaxReplacePoster()
-    {
+
+    public function ajaxReplacePoster() {
         wp_verify_nonce( $_POST['nonce'], 'media-cloud-mux-replace-poster' );
         $attachmentId = arrayPath( $_POST, 'attachmentId', null );
-        if ( empty($attachmentId) ) {
+        if ( empty( $attachmentId ) ) {
             wp_send_json_error( 'Missing attachment ID', 400 );
         }
         $newPosterId = arrayPath( $_POST, 'posterId', null );
-        if ( empty($newPosterId) ) {
+        if ( empty( $newPosterId ) ) {
             wp_send_json_error( 'Missing poster ID', 400 );
         }
         if ( !postIdExists( $attachmentId ) ) {
@@ -737,6 +689,81 @@ class MuxHooks
         wp_send_json( [
             'success' => true,
         ] );
+    }
+
+    //endregion
+    public function playerData(
+        $existingData,
+        $block,
+        $attachmentId,
+        $meta
+    ) {
+        $asset = null;
+        $renditionUrl = null;
+        $originalUrl = wp_get_attachment_url( $attachmentId );
+        $playlistMime = 'video/mp4';
+        if ( !empty( $block ) ) {
+            $muxId = arrayPath( $block, 'attrs/muxId', null );
+            if ( !empty( $muxId ) ) {
+                $asset = MuxAsset::asset( $muxId );
+            }
+        }
+        if ( !$asset ) {
+            $asset = MuxAsset::assetForAttachment( $attachmentId );
+        }
+        if ( $asset && !empty( $asset->transferData ) ) {
+            if ( $asset->transferData['source'] === 's3' ) {
+                /** @var StorageTool $storageTool */
+                $storageTool = ToolsManager::instance()->tools['storage'];
+                $playlistUrl = $storageTool->getAttachmentURLFromMeta( [
+                    'type' => 'application/vnd.apple.mpegurl',
+                    's3'   => [
+                        'key' => $asset->transferData['playlist'],
+                    ],
+                ], $asset->attachmentId );
+                $playlistMime = 'application/vnd.apple.mpegurl';
+                if ( arrayPathExists( $asset->transferData, 'renditions/' . $this->settings->playerMP4Quality ) ) {
+                    $renditionKey = arrayPath( $asset->transferData, 'renditions/' . $this->settings->playerMP4Quality );
+                    $renditionUrl = $storageTool->getAttachmentURLFromMeta( [
+                        'type' => 'video/mp4',
+                        's3'   => [
+                            'key' => $renditionKey,
+                        ],
+                    ], $asset->attachmentId );
+                }
+            } else {
+                $uploadDir = wp_upload_dir();
+                $playlistUrl = trailingslashit( $uploadDir['baseurl'] ) . $asset->transferData['playlist'];
+                $playlistMime = 'application/vnd.apple.mpegurl';
+                if ( arrayPathExists( $asset->transferData, 'renditions/' . $this->settings->playerMP4Quality ) ) {
+                    $renditionUrl = trailingslashit( $uploadDir['baseurl'] ) . arrayPath( $asset->transferData, 'renditions/' . $this->settings->playerMP4Quality );
+                }
+            }
+        } else {
+            if ( !empty( $asset ) ) {
+                $renditionUrl = $asset->renditionUrl( $this->settings->playerMP4Quality );
+                $playlistUrl = $asset->videoUrl();
+                $playlistMime = 'application/vnd.apple.mpegurl';
+            } else {
+                $playlistUrl = $originalUrl;
+            }
+        }
+        return new VideoPlayerData(
+            ( $asset ? $asset->title : $attachmentId ),
+            ( $asset ? $asset->width : 0 ),
+            ( $asset ? $asset->height : 0 ),
+            ( $asset ? $asset->duration : 0 ),
+            $renditionUrl,
+            $originalUrl,
+            $playlistUrl,
+            $playlistMime,
+            ( $asset ? $asset->muxMetadata : null ),
+            ( $asset ? $asset->subtitles : null ),
+            ( $asset ? $asset->filmstripUrl : null ),
+            ( $asset && empty( $asset->isTransferred ) ? $asset : null ),
+            ( $asset && empty( $asset->isTransferred ) ? 'mux' : null ),
+            ( $asset && empty( $asset->isTransferred ) ? $asset->storyboardUrl() : null )
+        );
     }
 
 }

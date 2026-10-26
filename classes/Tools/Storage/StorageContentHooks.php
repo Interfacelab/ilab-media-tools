@@ -28,6 +28,8 @@ class StorageContentHooks {
 	/** @var array */
 	private static $customizedMedia = [];
 
+	private static $attachmentMetaCache = [];
+
 	/** @var null|array */
 	protected $allSizes = null;
 
@@ -51,7 +53,7 @@ class StorageContentHooks {
 		if ($this->settings->filterContent) {
 			// gutenberg filters
 			add_filter('render_block', [$this, 'filterBlocks'], PHP_INT_MAX - 1, 2);
-			add_filter('the_content', [$this, 'fixGutenbergFigures'], PHP_INT_MAX - 2, 1);
+			add_filter('the_content', [$this, 'fixGutenbergFigures'], 1, 1);
 			add_filter('the_content', [$this, 'filterGutenbergContent'], PHP_INT_MAX - 1, 1);
 
 			// content filters
@@ -63,6 +65,11 @@ class StorageContentHooks {
 			add_filter('the_editor_content', [$this, 'filterContent'], PHP_INT_MAX - 1, 2);
 			add_filter('wp_video_shortcode', [$this, 'filterVideoShortcode'], PHP_INT_MAX, 5);
 			add_filter('wp_audio_shortcode', [$this, 'filterAudioShortcode'], PHP_INT_MAX, 5);
+
+			add_filter('wp_get_attachment_metadata', function($meta, $attachmentId) {
+				static::$attachmentMetaCache[$attachmentId] = $meta;
+				return $meta;
+			}, 1, 2);
 
 			add_filter('shortcode_atts_video', function($out, $pairs, $atts, $shortcode) {
 				$default_types = wp_get_video_extensions();
@@ -277,6 +284,24 @@ class StorageContentHooks {
 								$newUrl = wp_get_attachment_image_src($imageId, $size);
 								if (!empty($newUrl)) {
 									$newImage = str_replace($srcs[0], " src=\"{$newUrl[0]}\"", $imageTagMatch[0]);
+									$newImage = preg_replace('/(width|height)="\d+"\s/', "", $newImage);
+									$sz = ilab_get_image_sizes($size);
+
+									if (isset($sz['width']) && isset($sz['height'])) {
+										if (!empty(arrayPath($sz, 'crop', false))) {
+											$newImage = str_replace(' src=', " width=\"{$sz['width']}\" height=\"{$sz['height']}\" src=", $newImage);
+										} else {
+											$meta = static::$attachmentMetaCache[$imageId] ?? wp_get_attachment_metadata($imageId);
+											$w = arrayPath($meta, 'width', null);
+											$h = arrayPath($meta, 'height', null);
+											if (!anyEmpty($w, $h)) {
+												$nsz = sizeToFitSize($w, $h, $sz['width'], $sz['height']);
+												$newImage = str_replace(' src=', " width=\"{$nsz[0]}\" height=\"{$nsz[1]}\" src=", $newImage);
+											}
+										}
+									}
+
+									$newImage = str_replace("wp-image-{$imageId}", "wp-image-{$imageId} size-{$size}", $newImage);
 									$newFigure = str_replace($imageTagMatch[0], $newImage, $figureMatch);
 									$newFigure = str_replace("wp-image-{$imageId}", "wp-image-{$imageId}", $newFigure);
 									$content = str_replace($figureMatch, $newFigure, $content);
@@ -983,25 +1008,15 @@ class StorageContentHooks {
 				$nratio = floor(($nsw / $nsh) * 10);
 				$sratio = floor(($sw / $sh) * 10);
 
-				return ((($k === 'full') || isset($meta['sizes'][$k])) && ($nratio === $sratio) && ($nsw <= $sw));
+				return (isset($meta['sizes'][$k]) && $nratio === $sratio);
 			}, ARRAY_FILTER_USE_BOTH);
 		} else {
-			$currentSize = sizeToFitSize($w, $h, $sw, $sh);
-			$filteredSizes = array_filter($this->allSizes, function($v, $k) use ($meta, $currentSize, $w, $h, $sw, $sh) {
-				$nsw = empty($v['width']) ? (int)0 : (int)$v['width'];
-				$nsh = empty($v['height']) ? (int)0 : (int)$v['height'];
-
-				if ($nsw === 0) {
-					$nsw = 100000;
+			$filteredSizes = array_filter($this->allSizes, function($v, $k) use ($meta, $w, $h, $sw, $sh) {
+				if (!empty($v['crop'])) {
+					return false;
 				}
 
-				if ($nsh === 0) {
-					$nsh = 100000;
-				}
-
-				$newSize = sizeToFitSize($w, $h, $nsw, $nsh);
-
-				return ((($k === 'full') || isset($meta['sizes'][$k])) && empty($v['crop']) && ($newSize[0] <= $currentSize[0]) && ($newSize[1] <= $currentSize[1]));
+				return isset($meta['sizes'][$k]);
 			}, ARRAY_FILTER_USE_BOTH);
 		}
 
@@ -1067,7 +1082,7 @@ class StorageContentHooks {
 		$id = apply_filters('wpml_object_id', $id, 'attachment', true);
 		if (empty($data['size'])) {
 			$meta = wp_get_attachment_metadata($id);
-			$url = $this->tool->getAttachmentURLFromMeta($meta);
+			$url = $this->tool->getAttachmentURLFromMeta($meta, $id);
 			$srcSet = '';
 		} else {
 			$url = image_downsize($id, $data['size']);
@@ -1095,7 +1110,7 @@ class StorageContentHooks {
 			return $content;
 		}
 
-		if (!empty($data['image']) && $this->settings->replaceSrcSet) {
+		if (!empty($data['image']) && !empty(apply_filters('media-cloud/storage/override-replace-srcset', $this->settings->replaceSrcSet))) {
 			$image = $data['image'];
 			$image = preg_replace('/(sizes\s*=\s*[\'"]{1}(?:[^\'"]*)[\'"]{1})/m', '', $image);
 			$image = preg_replace('/(srcset\s*=\s*[\'"]{1}(?:[^\'"]*)[\'"]{1})/m', '', $image);

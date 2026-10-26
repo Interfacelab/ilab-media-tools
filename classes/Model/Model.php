@@ -93,35 +93,39 @@ abstract class Model {
 	 */
 	public function __construct($data = null) {
 		if (!empty($data)) {
-			$this->modelState = self::MODEL_LIVE;
+			$this->loadData($data);
+		}
+	}
 
-			if (is_array($data)) {
-				$data = (object)$data;
+	protected function loadData($data) {
+		$this->modelState = self::MODEL_LIVE;
+
+		if (is_array($data)) {
+			$data = (object)$data;
+		}
+
+		if (property_exists($data, 'id')) {
+			$this->id = intval($data->id);
+		}
+
+		$modelProps = array_keys($this->modelProperties);
+		foreach($modelProps as $prop) {
+			$propName = $prop;
+
+			if (isset($this->columnMap[$prop])) {
+				$propName = $this->columnMap[$prop];
 			}
 
-			if (property_exists($data, 'id')) {
-				$this->id = intval($data->id);
-			}
-
-			$modelProps = array_keys($this->modelProperties);
-			foreach($modelProps as $prop) {
-				$propName = $prop;
-
-				if (isset($this->columnMap[$prop])) {
-					$propName = $this->columnMap[$prop];
-				}
-
-				if (property_exists($data, $propName)) {
-					if (in_array($prop, $this->serializedProperties)) {
-						$val = $data->{$propName};
-						$this->{$prop} = maybe_unserialize($val);
-					} else if (in_array($prop, $this->jsonProperties)) {
-						if (!empty($data->{$propName})) {
-							$this->{$prop} = json_decode($data->{$propName}, true);
-						}
-					} else {
-						$this->{$prop} = $data->{$propName};
+			if (property_exists($data, $propName)) {
+				if (in_array($prop, $this->serializedProperties)) {
+					$val = $data->{$propName};
+					$this->{$prop} = maybe_unserialize($val);
+				} else if (in_array($prop, $this->jsonProperties)) {
+					if (!empty($data->{$propName})) {
+						$this->{$prop} = json_decode($data->{$propName}, true);
 					}
+				} else {
+					$this->{$prop} = $data->{$propName};
 				}
 			}
 		}
@@ -302,6 +306,20 @@ abstract class Model {
 		}
 
 		return null;
+	}
+
+	public function refreshData() {
+		if (empty($this->id())) {
+			return;
+		}
+
+		global $wpdb;
+
+		$table = static::table();
+		$rows = $wpdb->get_results($wpdb->prepare("select * from {$table} where id = %d", $this->id()));
+		if (count($rows) === 1) {
+			$this->loadData($rows[0]);
+		}
 	}
 
 	/**

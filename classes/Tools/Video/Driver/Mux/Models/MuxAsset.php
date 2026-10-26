@@ -12,25 +12,26 @@
 // **********************************************************************
 namespace MediaCloud\Plugin\Tools\Video\Driver\Mux\Models;
 
-use  MediaCloud\Plugin\Model\Model ;
-use  MediaCloud\Plugin\Tasks\TaskSchedule ;
-use  MediaCloud\Plugin\Tools\Storage\StorageConstants ;
-use  MediaCloud\Plugin\Tools\Storage\StorageTool ;
-use  MediaCloud\Plugin\Tools\Storage\StorageToolSettings ;
-use  MediaCloud\Plugin\Tools\ToolsManager ;
-use  MediaCloud\Plugin\Tools\Video\Driver\Mux\MuxAPI ;
-use  MediaCloud\Plugin\Tools\Video\Driver\Mux\MuxToolProSettings ;
-use  MediaCloud\Plugin\Tools\Video\Driver\Mux\MuxToolSettings ;
-use  MediaCloud\Plugin\Utilities\Logging\Logger ;
-use  MediaCloud\Plugin\Utilities\Prefixer ;
-use  MediaCloud\Vendor\MuxPhp\Models\CreateTrackRequest ;
-use  MediaCloud\Vendor\MuxPhp\Models\CreateTrackResponse ;
-use function  MediaCloud\Plugin\Utilities\arrayPath ;
-use  MediaCloud\Vendor\Chrisyue\PhpM3u8\Facade\ParserFacade ;
-use  MediaCloud\Vendor\Chrisyue\PhpM3u8\Stream\TextStream ;
-use function  MediaCloud\Plugin\Utilities\gen_uuid ;
-use function  MediaCloud\Plugin\Utilities\ilab_set_time_limit ;
-use function  MediaCloud\Plugin\Utilities\ilab_stream_download ;
+use MediaCloud\Plugin\Model\Model;
+use MediaCloud\Plugin\Tasks\TaskSchedule;
+use MediaCloud\Plugin\Tools\Storage\StorageConstants;
+use MediaCloud\Plugin\Tools\Storage\StorageTool;
+use MediaCloud\Plugin\Tools\Storage\StorageToolSettings;
+use MediaCloud\Plugin\Tools\ToolsManager;
+use MediaCloud\Plugin\Tools\Video\Driver\Mux\MuxAPI;
+use MediaCloud\Plugin\Tools\Video\Driver\Mux\MuxToolProSettings;
+use MediaCloud\Plugin\Tools\Video\Driver\Mux\MuxToolSettings;
+use MediaCloud\Plugin\Tools\Video\Driver\Mux\Tasks\TransferTask;
+use MediaCloud\Plugin\Utilities\Logging\Logger;
+use MediaCloud\Plugin\Utilities\Prefixer;
+use MediaCloud\Vendor\MuxPhp\Models\CreateTrackRequest;
+use MediaCloud\Vendor\MuxPhp\Models\CreateTrackResponse;
+use function MediaCloud\Plugin\Utilities\arrayPath;
+use MediaCloud\Vendor\Chrisyue\PhpM3u8\Facade\ParserFacade;
+use MediaCloud\Vendor\Chrisyue\PhpM3u8\Stream\TextStream;
+use function MediaCloud\Plugin\Utilities\gen_uuid;
+use function MediaCloud\Plugin\Utilities\ilab_set_time_limit;
+use function MediaCloud\Plugin\Utilities\ilab_stream_download;
 /**
  * Class MuxAsset
  * @package MediaCloud\Plugin\Tools\Video\Driver\Mux\Models
@@ -58,98 +59,119 @@ use function  MediaCloud\Plugin\Utilities\ilab_stream_download ;
  * @property mixed|null $transferData
  * @property mixed|null $relatedFiles
  */
-class MuxAsset extends Model
-{
+class MuxAsset extends Model {
+    //region Playback Restrictions
+    public static $restrictionId = null;
+
     //region Settings
     /** @var MuxToolSettings|MuxToolProSettings */
-    protected  $settings ;
+    protected $settings;
+
     //endregion
     //region Fields
     /**
      * Mux Identifier
      * @var null
      */
-    protected  $muxId = null ;
+    protected $muxId = null;
+
     /**
      * Mux status
      * @var null
      */
-    protected  $status = null ;
+    protected $status = null;
+
     /**
      * Epoch time created
      * @var int
      */
-    protected  $createdAt = 0 ;
+    protected $createdAt = 0;
+
     /**
      * Title of the upload
      * @var string
      */
-    protected  $title = null ;
+    protected $title = null;
+
     /**
      * Attachment Id
      * @var int
      */
-    protected  $attachmentId = null ;
+    protected $attachmentId = null;
+
     /**
      * Duration
      * @var float
      */
-    protected  $duration = 0.0 ;
+    protected $duration = 0.0;
+
     /**
      * Frame rate
      * @var float
      */
-    protected  $frameRate = 0.0 ;
+    protected $frameRate = 0.0;
+
     /**
      * Mux MP4 support
      * @var bool
      */
-    protected  $mp4Support = false ;
+    protected $mp4Support = false;
+
     /**
      * Width
      * @var int
      */
-    protected  $width = 0 ;
+    protected $width = 0;
+
     /**
      * Height
      * @var int
      */
-    protected  $height = 0 ;
+    protected $height = 0;
+
     /**
      * Has the video been transferred to local or cloud storage?
      * @var int
      */
-    protected  $isTransferred = 0 ;
+    protected $isTransferred = 0;
+
     /**
      * Has the video been deleted from Mux?
      * @var int
      */
-    protected  $isDeleted = 0 ;
+    protected $isDeleted = 0;
+
     /**
      * Aspect ratio
      * @var null
      */
-    protected  $aspectRatio = null ;
+    protected $aspectRatio = null;
+
     /**
      * Mux JSON data
      * @var null|mixed
      */
-    protected  $jsonData = null ;
+    protected $jsonData = null;
+
     /**
      * Mux JSON data
      * @var null|mixed
      */
-    protected  $relatedFiles = null ;
+    protected $relatedFiles = null;
+
     /**
      * Mux transfer data
      * @var null|mixed
      */
-    protected  $transferData = null ;
+    protected $transferData = null;
+
     /** @var bool|MuxPlaybackID[]  */
-    protected  $_playbackIds = false ;
+    protected $_playbackIds = false;
+
     /** @var array[]  */
-    protected  $_subtitles = false ;
-    protected  $modelProperties = array(
+    protected $_subtitles = false;
+
+    protected $modelProperties = [
         'muxId'         => '%s',
         'status'        => '%s',
         'createdAt'     => '%d',
@@ -166,11 +188,13 @@ class MuxAsset extends Model
         'isTransferred' => '%d',
         'isDeleted'     => '%d',
         'relatedFiles'  => '%s',
-    ) ;
-    protected  $jsonProperties = array( 'jsonData', 'transferData', 'relatedFiles' ) ;
+    ];
+
+    protected $jsonProperties = ['jsonData', 'transferData', 'relatedFiles'];
+
     //endregion
     //region Static
-    public static  $subtitleLanguages = array(
+    public static $subtitleLanguages = [
         'af'         => 'Afrikaans',
         'af-ZA'      => 'Afrikaans - South Africa',
         'ar'         => 'Arabic',
@@ -371,36 +395,32 @@ class MuxAsset extends Model
         'zh-MO'      => 'Chinese - Macao SAR',
         'zh-SG'      => 'Chinese - Singapore',
         'zh-TW'      => 'Chinese - Taiwan',
-    ) ;
-    public static function table()
-    {
-        global  $wpdb ;
+    ];
+
+    public static function table() {
+        global $wpdb;
         return "{$wpdb->base_prefix}mcloud_mux_assets";
     }
-    
+
     //endregion
     //region Constructor
-    public function __construct( $data = null )
-    {
+    public function __construct( $data = null ) {
         $this->settings = MuxToolSettings::instance();
         parent::__construct( $data );
     }
-    
+
     //endregion
     //region Properties
-    public function __get( $name )
-    {
-        
+    public function __get( $name ) {
         if ( $name === 'playbackIds' ) {
             if ( $this->_playbackIds === false ) {
                 $this->_playbackIds = MuxPlaybackID::playbackIDsForAsset( $this->muxId );
             }
             return $this->_playbackIds;
         } else {
-            
             if ( $name === 'publicPlaybackID' ) {
                 $pids = $this->playbackIds;
-                if ( !empty($pids) ) {
+                if ( !empty( $pids ) ) {
                     foreach ( $pids as $pid ) {
                         if ( $pid->policy === 'public' ) {
                             return $pid->playbackId;
@@ -409,10 +429,9 @@ class MuxAsset extends Model
                 }
                 return null;
             } else {
-                
                 if ( $name === 'securePlaybackID' ) {
                     $pids = $this->playbackIds;
-                    if ( !empty($pids) ) {
+                    if ( !empty( $pids ) ) {
                         foreach ( $pids as $pid ) {
                             if ( $pid->policy === 'signed' ) {
                                 return $pid->playbackId;
@@ -421,26 +440,20 @@ class MuxAsset extends Model
                     }
                     return null;
                 } else {
-                    
                     if ( $name === 'filmstripUrl' ) {
-                        
-                        if ( !empty($this->attachmentId) ) {
+                        if ( !empty( $this->attachmentId ) ) {
                             $fid = get_post_meta( $this->attachmentId, 'mux_filmstrip', true );
-                            
-                            if ( !empty($fid) ) {
+                            if ( !empty( $fid ) ) {
                                 $src = wp_get_attachment_image_src( $fid, 'full' );
                                 if ( is_array( $src ) ) {
                                     return $src[0];
                                 }
                             }
-                        
                         }
-                        
                         return null;
                     } else {
-                        
                         if ( $name === 'muxMetadata' ) {
-                            if ( empty($this->settings->envKey) ) {
+                            if ( empty( $this->settings->envKey ) ) {
                                 return null;
                             }
                             return [
@@ -450,18 +463,16 @@ class MuxAsset extends Model
                                 'video_stream_type' => 'on-demand',
                             ];
                         } else {
-                            
                             if ( $name === 'subtitles' ) {
                                 if ( $this->_subtitles !== false ) {
                                     return $this->_subtitles;
                                 }
                                 $this->_subtitles = [];
                                 $tracks = arrayPath( $this->jsonData, 'tracks', [] );
-                                
-                                if ( !empty($tracks) ) {
+                                if ( !empty( $tracks ) ) {
                                     foreach ( $tracks as $track ) {
                                         $type = arrayPath( $track, 'text_type', null );
-                                        if ( !empty($type) && $type === 'subtitles' ) {
+                                        if ( !empty( $type ) && $type === 'subtitles' ) {
                                             $this->_subtitles[] = $track;
                                         }
                                     }
@@ -469,29 +480,21 @@ class MuxAsset extends Model
                                         $subtitle['local'] = false;
                                     }
                                 }
-                                
                                 $captions = get_post_meta( $this->attachmentId, '_captions', true );
                                 if ( $captions && is_array( $captions ) ) {
                                     $this->_subtitles = array_merge( $this->_subtitles, $captions );
                                 }
                                 return $this->_subtitles;
                             }
-                        
                         }
-                    
                     }
-                
                 }
-            
             }
-        
         }
-        
         return parent::__get( $name );
     }
-    
-    public function __isset( $name )
-    {
+
+    public function __isset( $name ) {
         if ( in_array( $name, [
             'playbackIds',
             'publicPlaybackID',
@@ -504,11 +507,10 @@ class MuxAsset extends Model
         }
         return parent::__isset( $name );
     }
-    
+
     //endregion
     //region Overrides
-    public function willDelete()
-    {
+    public function willDelete() {
         $playbackIds = $this->__get( 'playbackIds' );
         /** @var MuxPlaybackID $playbackId */
         foreach ( $playbackIds as $playbackId ) {
@@ -521,11 +523,10 @@ class MuxAsset extends Model
         }
         parent::willDelete();
     }
-    
+
     //endregion
     //region Captions
-    public function addLocalCaptions( $language, $captionsURL, $closedCaptions = false )
-    {
+    public function addLocalCaptions( $language, $captionsURL, $closedCaptions = false ) {
         $captions = get_post_meta( $this->attachmentId, '_captions', true );
         if ( !is_array( $captions ) ) {
             $captions = [];
@@ -544,19 +545,18 @@ class MuxAsset extends Model
         update_post_meta( $this->attachmentId, '_captions', $captions );
         return true;
     }
-    
-    public function addCaptions( $language, $captionsURL, $closedCaptions = false )
-    {
+
+    public function addCaptions( $language, $captionsURL, $closedCaptions = false ) {
         if ( $this->isTransferred ) {
             return $this->addLocalCaptions( $language, $captionsURL, $closedCaptions );
         }
-        $req = new CreateTrackRequest( [
+        $req = new CreateTrackRequest([
             'url'             => $captionsURL,
             'type'            => 'text',
             'text_type'       => 'subtitles',
-            'closed_captions' => !empty($closedCaptions),
+            'closed_captions' => !empty( $closedCaptions ),
             'language_code'   => $language,
-        ] );
+        ]);
         try {
             /** @var CreateTrackResponse $response */
             $response = MuxAPI::assetAPI()->createAssetTrack( $this->muxId, $req );
@@ -571,10 +571,8 @@ class MuxAsset extends Model
             return false;
         }
     }
-    
-    public function deleteCaptions( $captionsId )
-    {
-        
+
+    public function deleteCaptions( $captionsId ) {
         if ( $this->isTransferred ) {
             $captions = get_post_meta( $this->attachmentId, '_captions', true ) ?? [];
             $newCaptions = [];
@@ -587,7 +585,6 @@ class MuxAsset extends Model
             update_post_meta( $this->attachmentId, '_captions', $newCaptions );
             return true;
         }
-        
         try {
             Logger::info(
                 "Deleting track {$captionsId} for asset {$this->muxId}",
@@ -607,60 +604,63 @@ class MuxAsset extends Model
             return false;
         }
     }
-    
+
     //endregion
     //region Video URLs
-    public function hasRendition( $qualityLevel )
-    {
+    public function hasRendition( $qualityLevel ) {
         $rendition = MuxRendition::rendition( $this->muxId, $qualityLevel );
-        return !empty($rendition);
+        return !empty( $rendition );
     }
-    
-    public function secureVideoUrl()
-    {
+
+    public function secureToken( $pid, $time = null, $audience = 'v' ) {
         return null;
     }
-    
-    public function publicVideoUrl()
-    {
+
+    private function insurePlaybackRestriction() {
+        if ( !empty( static::$restrictionId ) ) {
+            return;
+        }
+        $restriction = get_option( 'mux_playback_restriction' );
+        static::$restrictionId = ( !empty( $restriction ) ? $restriction['id'] : null );
+    }
+
+    public function secureVideoUrl() {
+        return null;
+    }
+
+    public function publicVideoUrl() {
         $pid = $this->__get( 'publicPlaybackID' );
-        if ( empty($pid) ) {
+        if ( empty( $pid ) ) {
             return null;
         }
         return "https://stream.mux.com/{$pid}.m3u8";
     }
-    
-    public function videoUrl( $preferSecure = true )
-    {
-        
-        if ( $this->isTransferred && !empty($this->transferData) ) {
-            
+
+    public function videoUrl( $preferSecure = true ) {
+        if ( $this->isTransferred && !empty( $this->transferData ) ) {
             if ( $this->transferData['source'] === 's3' ) {
                 /** @var StorageTool $storageTool */
                 $storageTool = ToolsManager::instance()->tools['storage'];
                 return $storageTool->getAttachmentURLFromMeta( [
                     'type' => 'application/vnd.apple.mpegurl',
                     's3'   => [
-                    'key' => $this->transferData['playlist'],
-                ],
-                ] );
+                        'key' => $this->transferData['playlist'],
+                    ],
+                ], $this->attachmentId );
             } else {
                 $uploadDir = wp_upload_dir();
                 return trailingslashit( $uploadDir['baseurl'] ) . $this->transferData['playlist'];
             }
-        
         } else {
             $url = ( $preferSecure ? $this->secureVideoUrl() : $this->publicVideoUrl() );
-            if ( !empty($url) ) {
+            if ( !empty( $url ) ) {
                 return $url;
             }
             return ( $preferSecure ? $this->publicVideoUrl() : $this->secureVideoUrl() );
         }
-    
     }
-    
-    public function secureRenditionUrl( $qualityLevel )
-    {
+
+    public function secureRenditionUrl( $qualityLevel ) {
         Logger::info(
             "Getting secure rendition url for {$qualityLevel}",
             [],
@@ -669,9 +669,8 @@ class MuxAsset extends Model
         );
         return $this->publicRenditionUrl( $qualityLevel );
     }
-    
-    public function publicRenditionUrl( $qualityLevel )
-    {
+
+    public function publicRenditionUrl( $qualityLevel ) {
         $pid = $this->__get( 'publicPlaybackID' );
         Logger::info(
             "Getting public rendition URL for {$pid} at {$qualityLevel}",
@@ -679,34 +678,29 @@ class MuxAsset extends Model
             __METHOD__,
             __LINE__
         );
-        if ( empty($pid) ) {
+        if ( empty( $pid ) ) {
             return null;
         }
         return "https://stream.mux.com/{$pid}/{$qualityLevel}";
     }
-    
-    public function renditionUrl( $qualityLevel, $preferSecure = true )
-    {
-        
-        if ( $this->isTransferred && !empty($this->transferData) ) {
+
+    public function renditionUrl( $qualityLevel, $preferSecure = true ) {
+        if ( $this->isTransferred && !empty( $this->transferData ) ) {
             if ( isset( $this->transferData['renditions'][$qualityLevel] ) ) {
-                
                 if ( $this->transferData['source'] === 's3' ) {
                     /** @var StorageTool $storageTool */
                     $storageTool = ToolsManager::instance()->tools['storage'];
                     return $storageTool->getAttachmentURLFromMeta( [
                         'type' => 'video/mp4',
                         's3'   => [
-                        'key' => $this->transferData['renditions'][$qualityLevel],
-                    ],
-                    ] );
+                            'key' => $this->transferData['renditions'][$qualityLevel],
+                        ],
+                    ], $this->attachmentId );
                 } else {
                     $uploadDir = wp_upload_dir();
                     return trailingslashit( $uploadDir['baseurl'] ) . $this->transferData['renditions'][$qualityLevel];
                 }
-            
             }
-            
             if ( $qualityLevel === 'high.mp4' ) {
                 return $this->renditionUrl( 'medium.mp4', $preferSecure );
             } else {
@@ -714,10 +708,8 @@ class MuxAsset extends Model
                     return $this->renditionUrl( 'low.mp4', $preferSecure );
                 }
             }
-            
             return null;
         }
-        
         $url = ( $preferSecure ? $this->secureRenditionUrl( $qualityLevel ) : $this->publicRenditionUrl( $qualityLevel ) );
         Logger::info(
             "Rendition URL: {$qualityLevel} => {$url}",
@@ -725,10 +717,9 @@ class MuxAsset extends Model
             __METHOD__,
             __LINE__
         );
-        if ( !empty($url) ) {
+        if ( !empty( $url ) ) {
             return $url;
         }
-        
         if ( $qualityLevel === 'high.mp4' ) {
             return $this->renditionUrl( 'medium.mp4', $preferSecure );
         } else {
@@ -736,10 +727,9 @@ class MuxAsset extends Model
                 return $this->renditionUrl( 'low.mp4', $preferSecure );
             }
         }
-        
         return null;
     }
-    
+
     //endregion
     //region Thumbnail URLs
     public function secureThumbnailUrl(
@@ -747,37 +737,34 @@ class MuxAsset extends Model
         $height = null,
         $time = null,
         $cropMode = null
-    )
-    {
+    ) {
         return null;
     }
-    
+
     public function publicThumbnailUrl(
         $width = null,
         $height = null,
         $time = null,
         $cropMode = null
-    )
-    {
+    ) {
         $pid = $this->__get( 'publicPlaybackID' );
-        if ( empty($pid) ) {
+        if ( empty( $pid ) ) {
             return null;
         }
         $url = "https://image.mux.com/{$pid}/thumbnail.jpg";
         $args = [];
-        if ( !empty($width) ) {
+        if ( !empty( $width ) ) {
             $args['width'] = $width;
         }
-        if ( !empty($height) ) {
+        if ( !empty( $height ) ) {
             $args['height'] = $height;
         }
-        if ( !empty($time) ) {
+        if ( !empty( $time ) ) {
             $args['time'] = $time;
         }
-        if ( !empty($cropMode) ) {
+        if ( !empty( $cropMode ) ) {
             $args['fit_mode'] = $cropMode;
         }
-        
         if ( count( $args ) > 0 ) {
             $queryString = '?';
             foreach ( $args as $key => $val ) {
@@ -785,25 +772,23 @@ class MuxAsset extends Model
             }
             $url .= rtrim( $queryString, '&' );
         }
-        
         return $url;
     }
-    
+
     public function thumbnailUrl(
         $preferSecure = true,
         $width = null,
         $height = null,
         $time = null,
         $cropMode = null
-    )
-    {
+    ) {
         $url = ( $preferSecure ? $this->secureThumbnailUrl( $width, $height, $time ) : $this->publicThumbnailUrl(
             $width,
             $height,
             $time,
             $cropMode
         ) );
-        if ( !empty($url) ) {
+        if ( !empty( $url ) ) {
             return $url;
         }
         return ( $preferSecure ? $this->publicThumbnailUrl( $width, $height, $time ) : $this->secureThumbnailUrl(
@@ -813,31 +798,36 @@ class MuxAsset extends Model
             $cropMode
         ) );
     }
-    
+
+    public function storyboardUrl() {
+        if ( !empty( $this->securePlaybackID ) ) {
+            $token = $this->secureToken( $this->securePlaybackID, 60 * 60, 's' );
+            return "https://image.mux.com/{$this->securePlaybackID}/storyboard.vtt?token={$token}";
+        }
+        return "https://image.mux.com/{$this->publicPlaybackID}/storyboard.vtt";
+    }
+
     //endregion
     //region GIF URLs
-    public function secureGIFUrl()
-    {
+    public function secureGIFUrl() {
     }
-    
-    public function publicGIFUrl()
-    {
+
+    public function publicGIFUrl() {
         $pid = $this->__get( 'publicPlaybackID' );
-        if ( empty($pid) ) {
+        if ( empty( $pid ) ) {
             return null;
         }
         return "https://image.mux.com/{$pid}/animated.gif";
     }
-    
-    public function gifUrl( $preferSecure = true )
-    {
+
+    public function gifUrl( $preferSecure = true ) {
         $url = ( $preferSecure ? $this->secureGIFUrl() : $this->publicGIFUrl() );
-        if ( !empty($url) ) {
+        if ( !empty( $url ) ) {
             return $url;
         }
         return ( $preferSecure ? $this->publicGIFUrl() : $this->secureGIFUrl() );
     }
-    
+
     //endregion
     //region Filmstrips
     /**
@@ -845,8 +835,7 @@ class MuxAsset extends Model
      *
      * @throws \Freemius_Exception
      */
-    public function generateFilmstrip()
-    {
+    public function generateFilmstrip() {
         Logger::info(
             'Mux: generateFilmstripForAttachment',
             [],
@@ -860,7 +849,7 @@ class MuxAsset extends Model
             __LINE__
         );
     }
-    
+
     //endregion
     //region Queries
     /**
@@ -871,17 +860,16 @@ class MuxAsset extends Model
      * @return MuxAsset|null
      * @throws \Exception
      */
-    public static function asset( $muxId )
-    {
-        global  $wpdb ;
+    public static function asset( $muxId ) {
+        global $wpdb;
         $table = static::table();
         $rows = $wpdb->get_results( $wpdb->prepare( "select * from {$table} where muxId = %s", $muxId ) );
         foreach ( $rows as $row ) {
-            return new static( $row );
+            return new static($row);
         }
         return null;
     }
-    
+
     /**
      * Returns a task with the given ID
      *
@@ -890,17 +878,16 @@ class MuxAsset extends Model
      * @return MuxAsset|null
      * @throws \Exception
      */
-    public static function assetForAttachment( $attachmentId )
-    {
-        global  $wpdb ;
+    public static function assetForAttachment( $attachmentId ) {
+        global $wpdb;
         $table = static::table();
         $rows = $wpdb->get_results( $wpdb->prepare( "select * from {$table} where attachmentId = %s", $attachmentId ) );
         foreach ( $rows as $row ) {
-            return new static( $row );
+            return new static($row);
         }
         return null;
     }
-    
+
     /**
      * Returns a task with the given ID, if not found, creates a new one.
      *
@@ -909,17 +896,16 @@ class MuxAsset extends Model
      * @return MuxAsset|null
      * @throws \Exception
      */
-    public static function findOrCreate( $muxId )
-    {
+    public static function findOrCreate( $muxId ) {
         $asset = static::asset( $muxId );
-        if ( !empty($asset) ) {
+        if ( !empty( $asset ) ) {
             return $asset;
         }
         $asset = new MuxAsset();
         $asset->muxId = $muxId;
         return $asset;
     }
-    
+
     //endregion
     //region Transfer
     private function downloadFile(
@@ -931,8 +917,7 @@ class MuxAsset extends Model
         bool $localOnly,
         callable $status,
         callable $error
-    )
-    {
+    ) {
         if ( file_exists( $destFile ) ) {
             @unlink( $destFile );
         }
@@ -949,13 +934,10 @@ class MuxAsset extends Model
             __METHOD__,
             __LINE__
         );
-        
         if ( !$result ) {
             $error( "Error downloading {$sourceUrl}", __METHOD__, __LINE__ );
             return false;
         }
-        
-        
         if ( !$localOnly ) {
             $status(
                 "Uploading {$destKey} ... ",
@@ -977,7 +959,6 @@ class MuxAsset extends Model
                 __METHOD__,
                 __LINE__
             );
-            
             if ( StorageToolSettings::deleteOnUpload() ) {
                 $status(
                     "Deleting {$destFile} from local ... ",
@@ -993,12 +974,10 @@ class MuxAsset extends Model
                     __LINE__
                 );
             }
-        
         }
-        
         return true;
     }
-    
+
     /**
      * Transfers a Mux video to cloud storage and/or local storage
      *
@@ -1006,9 +985,7 @@ class MuxAsset extends Model
      *
      * @return string[]|void
      */
-    public function getFilesToTransfer( string $dest )
-    {
-        
+    public function getFilesToTransfer( string $dest ) {
         if ( $this->isDeleted === 1 ) {
             Logger::info(
                 "Skipping deleted asset.",
@@ -1018,11 +995,10 @@ class MuxAsset extends Model
             );
             return [];
         }
-        
         $allFiles = [];
         return $allFiles;
     }
-    
+
     /**
      * Transfers a Mux video to cloud storage and/or local storage
      *
@@ -1041,9 +1017,7 @@ class MuxAsset extends Model
         bool $localOnly,
         callable $status,
         callable $error
-    )
-    {
-        
+    ) {
         if ( $this->isDeleted === 1 ) {
             $status(
                 "Skipping deleted asset.",
@@ -1053,13 +1027,12 @@ class MuxAsset extends Model
             );
             return true;
         }
-        
         $relatedFiles = [];
         return true;
     }
-    
-    public function backgroundTransfer()
-    {
+
+    public function backgroundTransfer() {
     }
 
+    //endregion
 }

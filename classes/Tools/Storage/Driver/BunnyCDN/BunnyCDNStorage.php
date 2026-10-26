@@ -105,7 +105,7 @@ class BunnyCDNStorage implements StorageInterface, ConfiguresWizard {
 	 * @inheritDoc
 	 */
 	public function usesSignedURLs($type = null) {
-		return true;
+		return false;
 	}
 
 	/**
@@ -330,15 +330,17 @@ class BunnyCDNStorage implements StorageInterface, ConfiguresWizard {
 	 * @inheritDoc
 	 */
 	public function url($key, $type = null) {
-		$matches = explode("\n", $this->settings->signedMatches);
-		foreach($matches as $match) {
-			if (empty($match)) {
-				continue;
-			}
+		if (!empty($this->settings->signedMatches)) {
+			$matches = explode("\n", $this->settings->signedMatches);
+			foreach($matches as $match) {
+				if (empty($match)) {
+					continue;
+				}
 
-			$wildcard = new Wildcard($match);
-			if ($wildcard->match($key)) {
-				return $this->presignedUrl($key, 3600, []);
+				$wildcard = new Wildcard($match);
+				if ($wildcard->match($key)) {
+					return $this->presignedUrl($key, 3600, []);
+				}
 			}
 		}
 

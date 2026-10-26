@@ -1,0 +1,86 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "media-cloud/media-cloud-player",
+  "version": "0.1.0",
+  "title": "Media Cloud Player",
+  "category": "mediacloud",
+  "description": "Video player block for Media Cloud.",
+  "example": {},
+  "supports": {
+    "html": false,
+    "align": true,
+    "alignWide": true,
+    "anchor": true,
+    "customClassName": true,
+    "spacing": {
+      "margin": true,
+      "padding": true
+    }
+  },
+  "textdomain": "media-cloud-player",
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./index.css",
+  "style": "file:./style-index.css",
+  "attributes": {
+    "autoplay": {
+      "type": "boolean",
+      "default": false
+    },
+    "caption": {
+      "type": "string"
+    },
+    "controls": {
+      "type": "boolean",
+      "default": true
+    },
+    "id": {
+      "type": "number"
+    },
+    "outputDimensions": {
+      "type": "boolean",
+      "default": true
+    },
+    "loop": {
+      "type": "boolean",
+      "default": false
+    },
+    "muted": {
+      "type": "boolean",
+      "default": false
+    },
+    "poster": {
+      "type": "string"
+    },
+    "preload": {
+      "type": "string",
+      "default": "metadata"
+    },
+    "hls": {
+      "type": "string"
+    },
+    "mp4": {
+      "type": "string"
+    },
+    "width": {
+      "type": "number",
+      "default": 0
+    },
+    "height": {
+      "type": "number",
+      "default": 0
+    },
+    "playsInline": {
+      "type": "boolean",
+      "default": true
+    },
+    "allowDownload": {
+      "type": "string",
+      "default": "inherit"
+    },
+    "allowDownloadOriginal": {
+      "type": "string",
+      "default": "inherit"
+    }
+  }
+}

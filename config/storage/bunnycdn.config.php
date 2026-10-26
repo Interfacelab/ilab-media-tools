@@ -33,7 +33,7 @@ return [
 				"title" => "Pull Zone URL",
 				"description" => "The full url, including the http/https part, of your pull zone for your storage zone.  Usually something like <code>https://XXXX.b-cdn.net</code>",
 				"display-order" => 3,
-				"type" => "text-field",
+				"type" => "url",
 			],
 			"mcloud-storage-bunnycdn-region" => [
 				"title" => "Region",

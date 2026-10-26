@@ -16,30 +16,25 @@
 // **********************************************************************
 namespace MediaCloud\Plugin\Tools\Video\CLI;
 
-use  MediaCloud\Plugin\CLI\Command ;
-use  MediaCloud\Plugin\Tools\Storage\StorageConstants ;
-use  MediaCloud\Plugin\Tools\Storage\StorageTool ;
-use  MediaCloud\Plugin\Tools\ToolsManager ;
-use  MediaCloud\Plugin\Tools\Video\Driver\Mux\Models\MuxAsset ;
-use  MediaCloud\Plugin\Utilities\Logging\Logger ;
-use  MediaCloud\Vendor\Chrisyue\PhpM3u8\Facade\DumperFacade ;
-use  MediaCloud\Vendor\Chrisyue\PhpM3u8\Facade\ParserFacade ;
-use  MediaCloud\Vendor\Chrisyue\PhpM3u8\Stream\TextStream ;
-use function  MediaCloud\Plugin\Utilities\arrayPath ;
-use function  MediaCloud\Plugin\Utilities\ilab_stream_download ;
-
+use MediaCloud\Plugin\CLI\Command;
+use MediaCloud\Plugin\Tools\Storage\StorageTool;
+use MediaCloud\Plugin\Tools\ToolsManager;
+use MediaCloud\Plugin\Tools\Video\Driver\Mux\Tasks\RelinkTask;
+use MediaCloud\Plugin\Tools\Video\Driver\Mux\Tasks\TransferTask;
+use MediaCloud\Plugin\Tools\VideoPlayer\StoryboardTool;
+use MediaCloud\Plugin\Utilities\Logging\Logger;
+use function MediaCloud\Plugin\Utilities\arrayPath;
 if ( !defined( 'ABSPATH' ) ) {
     header( 'Location: /' );
     die;
 }
-
 /**
  * Import to Cloud Storage, rebuild thumbnails, etc.
  * @package MediaCloud\Plugin\CLI\Storage
  */
-class VideoCommands extends Command
-{
-    private  $debugMode = false ;
+class VideoCommands extends Command {
+    private $debugMode = false;
+
     /**
      * Transfers a mux encoded video to cloud storage
      *
@@ -92,13 +87,12 @@ class VideoCommands extends Command
      *
      * @throws \Exception
      */
-    public function transfer( $args, $assoc_args )
-    {
+    public function transfer( $args, $assoc_args ) {
         /** @var \Freemius $media_cloud_licensing */
-        global  $media_cloud_licensing ;
+        global $media_cloud_licensing;
         self::Error( "Only available in the Premium version.  To upgrade: https://mediacloud.press/pricing/" );
     }
-    
+
     /**
      * Relinks Mux videos that were transferred to the local server or cloud storage.
      *
@@ -139,15 +133,34 @@ class VideoCommands extends Command
      *
      * @throws \Exception
      */
-    public function relink( $args, $assoc_args )
-    {
+    public function relink( $args, $assoc_args ) {
         /** @var \Freemius $media_cloud_licensing */
-        global  $media_cloud_licensing ;
+        global $media_cloud_licensing;
         self::Error( "Only available in the Premium version.  To upgrade: https://mediacloud.press/pricing/" );
     }
-    
-    public static function Register()
-    {
+
+    /**
+     * Generates a storyboard from a video
+     *
+     * ## OPTIONS
+     *
+     * <asset_id>
+     * : Asset ID
+     *
+     * @when after_wp_load
+     *
+     * @param $args
+     * @param $assoc_args
+     *
+     * @throws \Exception
+     */
+    public function storyboard( $args, $assoc_args ) {
+        $aid = $args[0];
+        $st = new StoryboardTool();
+        $st->generateStoryboard( $aid );
+    }
+
+    public static function Register() {
         \WP_CLI::add_command( 'mediacloud:video', __CLASS__ );
     }
 

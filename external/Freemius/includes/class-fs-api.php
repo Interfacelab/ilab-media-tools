@@ -318,9 +318,12 @@
 				$flush = true;
 			}
 
-			$cached_result = self::$_cache->get( $cache_key );
+			$has_valid_cache = self::$_cache->has_valid( $cache_key, $expiration );
+			$cached_result   = $has_valid_cache ?
+				self::$_cache->get( $cache_key ) :
+				null;
 
-			if ( $flush || ! self::$_cache->has_valid( $cache_key, $expiration ) ) {
+			if ( $flush || is_null( $cached_result ) ) {
 				$result = $this->call( $path );
 
 				if ( ! is_object( $result ) || isset( $result->error ) ) {
@@ -352,7 +355,9 @@
 					}
 				}
 
-				self::$_cache->set( $cache_key, $result, $expiration );
+				if ( is_numeric( $expiration ) ) {
+					self::$_cache->set( $cache_key, $result, $expiration );
+				}
 
 				$cached_result = $result;
 			} else {

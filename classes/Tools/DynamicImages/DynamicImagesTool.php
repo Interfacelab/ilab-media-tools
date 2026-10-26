@@ -440,7 +440,7 @@ abstract class DynamicImagesTool extends Tool {
                     return $actions;
 		        }
 
-		        $newaction['ilab_edit_image'] = '<a class="ilab-thickbox" href="' . $this->editPageURL($post->ID) . '" title="Edit Image">' . __('Edit Image') . '</a>';
+		        $newaction['ilab_edit_image'] = '<a class="ilab-thickbox" href="' . $this->editPageURL($post->ID) . '" title="Edit Image">' . __('Edit Image', 'media-cloud') . '</a>';
                 return array_merge($actions, $newaction);
 	        }
 
@@ -453,7 +453,7 @@ abstract class DynamicImagesTool extends Tool {
 		    $buttons[] = [
 			    'type' => 'image',
                 'cloudonly' => true,
-			    'label' => __('Edit Image'),
+			    'label' => __('Edit Image', 'media-cloud'),
 			    'url' => $this->editPageURL('__ID__'),
 		    ];
 
@@ -464,7 +464,7 @@ abstract class DynamicImagesTool extends Tool {
 		    $links[] = [
 			    'type' => 'image',
 			    'cloudonly' => true,
-			    'label' => __('Edit Image'),
+			    'label' => __('Edit Image', 'media-cloud'),
 			    'url' => $this->editPageURL('__ID__'),
 		    ];
 
@@ -472,7 +472,7 @@ abstract class DynamicImagesTool extends Tool {
 	    }, 2);
 
 	    add_filter('mediacloud/ui/media-detail-remove', function($toRemove) {
-	        $toRemove[] = "'<button type=\"button\" class=\"button edit-attachment\">".translate('Edit Image')."</button>'";
+	        $toRemove[] = "'<button type=\"button\" class=\"button edit-attachment\">".__('Edit Image', 'media-cloud')."</button>'";
 	        $toRemove[] = '/(<a class="(?:.*)edit-attachment(?:.*)"[^>]+[^<]+<\/a>)/';
 
 		    return $toRemove;
@@ -617,6 +617,9 @@ COOL;
                     'mode' => $mode,
                     'presets' => $presetsUI,
                     'currentPreset' => $current_preset,
+                    'new_preset_nonce' => wp_create_nonce('new-preset'),
+                    'edit_preset_nonce' => wp_create_nonce('edit-preset'),
+                    'delete_preset_nonce' => wp_create_nonce('delete-preset'),
                     'params' => $this->toolInfo['settings']['params'],
                     'paramProps' => $this->paramProps
                 ]);
@@ -816,6 +819,20 @@ COOL;
      * Create a new preset
      */
     public function newPreset() {
+        if(!current_user_can('edit_posts')) {
+            json_response([
+                    'status' => 'error',
+                    'message' => 'You are not strong enough, smart enough or fast enough.'
+            ]);
+        }
+
+        if (!wp_verify_nonce($_POST['nonce'], 'new-preset')) {
+            json_response([
+                    'status' => 'error',
+                    'message' => 'Invalid nonce.'
+            ]);
+        }
+
         $name = esc_html($_POST['name']);
         if(empty($name)) {
             json_response([
@@ -850,6 +867,20 @@ COOL;
      * Save an existing preset
      */
     public function savePreset() {
+        if(!current_user_can('edit_posts')) {
+            json_response([
+                    'status' => 'error',
+                    'message' => 'You are not strong enough, smart enough or fast enough.'
+            ]);
+        }
+
+        if (!wp_verify_nonce($_POST['nonce'], 'edit-preset')) {
+            json_response([
+                    'status' => 'error',
+                    'message' => 'Invalid nonce.'
+            ]);
+        }
+
         $key = esc_html($_POST['key']);
         if(empty($key)) {
             json_response([
@@ -884,6 +915,20 @@ COOL;
      * Delete an existing preset
      */
     public function deletePreset() {
+        if(!current_user_can('edit_posts')) {
+            json_response([
+                    'status' => 'error',
+                    'message' => 'You are not strong enough, smart enough or fast enough.'
+            ]);
+        }
+
+        if (!wp_verify_nonce($_POST['nonce'], 'delete-preset')) {
+            json_response([
+                    'status' => 'error',
+                    'message' => 'Invalid nonce.'
+            ]);
+        }
+
         $key = esc_html($_POST['key']);
         if(empty($key)) {
             json_response([

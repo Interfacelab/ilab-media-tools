@@ -438,11 +438,15 @@ class BladeCompiler extends Compiler implements CompilerInterface
      */
     protected function callCustomDirective($name, $value)
     {
-        if (Str::startsWith($value, '(') && Str::endsWith($value, ')')) {
-            $value = Str::substr($value, 1, -1);
-        }
+		if (!empty($value)) {
+	        if (Str::startsWith($value, '(') && Str::endsWith($value, ')')) {
+	            $value = Str::substr($value, 1, -1);
+	        }
 
-        return call_user_func($this->customDirectives[$name], trim($value));
+			$value = trim($value);
+		}
+
+        return call_user_func($this->customDirectives[$name], $value);
     }
 
     /**

@@ -17,12 +17,7 @@
     "/js/ilab-media-upload.js": "/js/ilab-media-upload.js",
     "/js/ilab-modal.js": "/js/ilab-modal.js",
     "/js/ilab-settings.js": "/js/ilab-settings.js",
-    "/js/mcloud-admin.js": "/js/mcloud-admin.js",
-    "/js/mcloud-reports.js": "/js/mcloud-reports.js",
-    "/js/mux-admin.js": "/js/mux-admin.js",
-    "/js/mux-hls.js": "/js/mux-hls.js",
     "/js/mux-player.js": "/js/mux-player.js",
-    "/js/mux-player-admin.js": "/js/mux-player-admin.js",
     "/models/face_landmark_68_model-weights_manifest.json": "/models/face_landmark_68_model-weights_manifest.json",
     "/models/ssd_mobilenetv1_model-weights_manifest.json": "/models/ssd_mobilenetv1_model-weights_manifest.json",
     "/js/face-api.js": "/js/face-api.js"

@@ -14,6 +14,7 @@ class MultipartStream implements StreamInterface
     use StreamDecoratorTrait;
 
     private $boundary;
+	public $stream;
 
     /**
      * @param array  $elements Array of associative arrays, each containing a

@@ -48,13 +48,13 @@ interface BladeInterface extends FactoryInterface
      *
      * @return $this
      */
-    public function aliasComponent(string $path, string $alias = null): BladeInterface;
+    public function aliasComponent(string $path, ?string $alias = null): BladeInterface;
 
 
     /**
      * @deprecated Use aliasComponent()
      */
-    public function component(string $path, string $alias = null): BladeInterface;
+    public function component(string $path, ?string $alias = null): BladeInterface;
 
 
     /**

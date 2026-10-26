@@ -21,7 +21,7 @@ return [
                 "title" => "Supabase Storage URL",
                 "description" => "URL for your Supabase application's storage.",
                 "display-order" => 1,
-                "type" => "text-field",
+                "type" => "url",
             ],
             "mcloud-storage-supabase-key" => [
                 "title" => "Key",
@@ -45,10 +45,6 @@ return [
         ]
     ],
 	"ilab-media-cloud-signed-urls" => [
-		"title" => "Secure URL Settings",
-		"description" => "These settings control how pre-signed URLs work.",
-		"dynamic" => true,
-		"options" => [
-		]
+		"conditions" => [ "mcloud-storage-provider" => [ "!supabase" ] ]
 	],
 ];

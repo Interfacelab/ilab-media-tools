@@ -172,6 +172,14 @@ return [
 				"type" => "advanced-presigned",
 				"plan" => "pro"
 			],
+			"mcloud-storage-exclude-presigned-urls-rest" => [
+				"title" => "Exclude signed URLs from WP-REST",
+				"description" => "Enabling this will not sign any URLs when requested through a WP-REST request.  If you want to override this for authenticated users, use the <code>media-cloud/rest/override-signed-url-restriction</code> filter that returns <code>true</code> or <code>false</code> depending.",
+				"display-order" => 4,
+				"type" => "checkbox",
+				"plan" => "pro",
+				"default" => true,
+			],
 			"mcloud-storage-signed-cdn-base" => [
 				"display-order" => 10,
 				"title" => "Signed CDN Base URL",

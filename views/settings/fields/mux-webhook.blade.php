@@ -1,5 +1,5 @@
 <div id="setting-{{$name}}" {{(($conditions) ? 'data-conditions="true"' : '')}}>
-    <input size='40' readonly type='text' value='{{$value}}'>
+    <input size='40' readonly type='text' value='{{$webhookUrl}}'>
     @if($description)
         <p class='description'>{!! $description !!}</p>
     @endif
