@@ -5,7 +5,7 @@ Requires at least: 4.9
 Tested up to: 7.1.3
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Stable tag: 4.7.3
+Stable tag: 4.7.4
 Requires PHP: 7.4
 
 Automatically store media on Amazon S3, Cloudflare R2, Google Cloud Storage, DigitalOcean Spaces + others. Serve CSS/JS assets through CDNs.  Integrate with Imgix.
@@ -104,6 +104,12 @@ Imgix is a content delivery network with a twist.  In addition to distributing y
 
 
 == Changelog ==
+
+= 4.7.4 - 10/27/2026 =
+
+- Fix for WooCommerce trimming post content to a single line causing Media Cloud's replacement regex to fail.  Thanks to @LeTraceurSnork for the fix.
+- Fix for width/height of video player when mux asset is missing.  Thanks to @huysynf for the fix.
+- When running Media Cloud on Google infra, use the Google application default credentials instead of having to specify them in the settings.  Thanks to @wmuizelaar for the new feature.
 
 = 4.7.3 - 10/26/2026 =
 

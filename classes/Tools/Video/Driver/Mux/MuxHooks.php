@@ -748,10 +748,12 @@ class MuxHooks {
                 $playlistUrl = $originalUrl;
             }
         }
+        $width = ( $asset ? (int) $asset->width : (int) arrayPath( (array) $meta, 'width', 0 ) );
+        $height = ( $asset ? (int) $asset->height : (int) arrayPath( (array) $meta, 'height', 0 ) );
         return new VideoPlayerData(
             ( $asset ? $asset->title : $attachmentId ),
-            ( $asset ? $asset->width : 0 ),
-            ( $asset ? $asset->height : 0 ),
+            $width,
+            $height,
             ( $asset ? $asset->duration : 0 ),
             $renditionUrl,
             $originalUrl,

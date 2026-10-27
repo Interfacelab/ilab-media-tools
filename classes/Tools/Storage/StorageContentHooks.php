@@ -277,7 +277,7 @@ class StorageContentHooks {
 			foreach($figures[0] as $figureMatch) {
 				if (preg_match('/<figure(?:.*)class\s*=\s*(?:.*)wp-block-image(?:.*)size-([aA-zZ0-9-_.]+)/', $figureMatch, $sizeMatches)) {
 					$size = $sizeMatches[1];
-					if (preg_match('/class\s*=\s*(?:.*)wp-image-([0-9]+)/m', $figureMatch, $imageIdMatches)) {
+					if (preg_match('/class\s*=\s*(?:.*)wp-image-([0-9]+)\D/mU', $figureMatch, $imageIdMatches)) {
 						$imageId = $imageIdMatches[1];
 						if (preg_match('/<img\s+([^>]+)>/m', $figureMatch, $imageTagMatch)) {
 							if (preg_match('/\s+src=[\'"]([^\'"]+)[\'"]+/', $imageTagMatch[0], $srcs)) {
