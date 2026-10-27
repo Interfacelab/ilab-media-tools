@@ -1,7 +1,7 @@
 <div class="imgix-parameter" data-default-value="bottom,right" data-param="{{$param}}" data-param-type="{{$paramInfo['type']}}">
     <div class="imgix-param-title imgix-media-param-title">
         <div class="imgix-param-title-left">
-            <h3>{{__($paramInfo['title'])}}</h3>
+            <h3>{{__($paramInfo['title'], 'ilab-media-tools')}}</h3>
         </div>
         <div class="imgix-param-title-right"></div>
     </div>
@@ -17,7 +17,7 @@
         <a href="#" class="imgix-alignment-button {{imgixIsSelected($param,$settings,'bottom,center','bottom,right','selected-alignment')}}" data-param-value="bottom,center"><img src="{{ILAB_PUB_IMG_URL}}/wm-align-bottom-center.png"></a>
         <a href="#" class="imgix-alignment-button {{imgixIsSelected($param,$settings,'bottom,right','bottom,right','selected-alignment')}}" data-param-value="bottom,right"><img src="{{ILAB_PUB_IMG_URL}}/wm-align-bottom-right.png"></a>
     </div>
-    <div class="imgix-param-reset"><a href="#">{{__('Reset')}}</a></div>
+    <div class="imgix-param-reset"><a href="#">{{__('Reset', 'ilab-media-tools')}}</a></div>
     @if (!empty($paramInfo['hidden']))
     <div class="imgix-param-imagick-warning">
         <div>This parameter requires the <a target="_blank" href="http://php.net/manual/en/book.imagick.php">PHP ImageMagick extension</a> to be installed.</div>

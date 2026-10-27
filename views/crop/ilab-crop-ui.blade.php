@@ -3,7 +3,7 @@
 @section('modal_id', $modal_id)
 
 @section('title')
-{{ __('Crop Image') }} ({{$full_width}} x {{$full_height}})
+{{ __('Crop Image', 'ilab-media-tools') }} ({{$full_width}} x {{$full_height}})
 @endsection
 
 @section('main-tabs')
@@ -35,22 +35,22 @@
 @section('sidebar-content')
 <div class="ilabm-sidebar-content ilabm-sidebar-content-cropper">
     @if ($crop_exists)
-    <h3 class="ilabc-crop-size-title">{{ __('Current')}} {{(ucwords(str_replace('-', ' ', $size)))}} ({{$cropped_width}} x {{$cropped_height}})</h3>
+    <h3 class="ilabc-crop-size-title">{{ __('Current', 'ilab-media-tools')}} {{(ucwords(str_replace('-', ' ', $size)))}} ({{$cropped_width}} x {{$cropped_height}})</h3>
     <div class="ilabc-current-crop-container">
         <img class="ilab-current-crop-img" src="{!! $cropped_src !!}" />
     </div>
     @else
-    <h3 class="ilabc-crop-size-title">{{ __('Current')}} {{(ucwords(str_replace('-', ' ', $size)))}} ({{$crop_width}} x {{$crop_height}})</h3>
+    <h3 class="ilabc-crop-size-title">{{ __('Current', 'ilab-media-tools')}} {{(ucwords(str_replace('-', ' ', $size)))}} ({{$crop_width}} x {{$crop_height}})</h3>
     <div class="ilabc-current-crop-container">
         <img class="ilab-current-crop-img" />
     </div>
     <div class="ilab-not-existing-crop">
         <div class="message error">
-            <p>{{ __('Crop not generated yet, use the crop button here below to generate it')}}</p>
+            <p>{{ __('Crop not generated yet, use the crop button here below to generate it', 'ilab-media-tools')}}</p>
         </div>
     </div>
     @endif
-    <h3 class="ilab-crop-preview-title">{{ __( 'Crop preview') }}</h3>
+    <h3 class="ilab-crop-preview-title">{{ __( 'Crop preview', 'ilab-media-tools') }}</h3>
     <div class="ilabc-crop-preview-container">
         <div class="ilab-crop-preview"></div>
     </div>
@@ -59,8 +59,8 @@
 
 @section('sidebar-actions')
 <div class="ilabm-sidebar-actions">
-    <a href="#" class="button media-button button-reset ilabc-button-reset-crop">{{ __('Reset Crop') }}</a>
-    <a href="#" class="button media-button button-primary ilabc-button-crop">{{ __('Crop Image') }}</a>
+    <a href="#" class="button media-button button-reset ilabc-button-reset-crop">{{ __('Reset Crop', 'ilab-media-tools') }}</a>
+    <a href="#" class="button media-button button-primary ilabc-button-crop">{{ __('Crop Image', 'ilab-media-tools') }}</a>
 </div>
 @endsection
 

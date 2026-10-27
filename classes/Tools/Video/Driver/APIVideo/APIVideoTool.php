@@ -456,7 +456,7 @@ class APIVideoTool implements VideoEncodingInterface {
             function ( $actions, $post ) {
                 if ( strpos( $post->post_mime_type, 'video' ) === 0 ) {
                     $nonce = wp_create_nonce( 'media-cloud-mux-replace-poster' );
-                    $newaction['mcloud_mux_replace_poster'] = '<a data-nonce="' . $nonce . '" data-attachment-id="' . $post->ID . '" class="replace-video-poster" href="#" title="Replace Poster">' . __( 'Replace Poster', 'media-cloud' ) . '</a>';
+                    $newaction['mcloud_mux_replace_poster'] = '<a data-nonce="' . $nonce . '" data-attachment-id="' . $post->ID . '" class="replace-video-poster" href="#" title="Replace Poster">' . __( 'Replace Poster', 'ilab-media-tools' ) . '</a>';
                     return array_merge( $actions, $newaction );
                 }
                 return $actions;
@@ -473,7 +473,7 @@ class APIVideoTool implements VideoEncodingInterface {
                     'nonce'         => wp_create_nonce( 'media-cloud-mux-replace-poster' ),
                     'attachment-id' => '{{data.id}}',
                 ],
-                'label'    => __( 'Replace Poster', 'media-cloud' ),
+                'label'    => __( 'Replace Poster', 'ilab-media-tools' ),
                 'url'      => '#',
             ];
             return $buttons;
@@ -483,7 +483,7 @@ class APIVideoTool implements VideoEncodingInterface {
                 'type'     => 'video',
                 'class'    => 'replace-video-poster',
                 'thickbox' => false,
-                'label'    => __( 'Replace Poster', 'media-cloud' ),
+                'label'    => __( 'Replace Poster', 'ilab-media-tools' ),
                 'data'     => [
                     'nonce'         => wp_create_nonce( 'media-cloud-mux-replace-poster' ),
                     'attachment-id' => '{{data.id}}',

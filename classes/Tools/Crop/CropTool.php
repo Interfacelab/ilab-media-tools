@@ -108,7 +108,7 @@ class CropTool extends Tool  {
 	{
 		add_filter('media_row_actions',function($actions,$post){
 			if (strpos($post->post_mime_type, 'image') === 0) {
-				$newaction['ilab_crop_image'] = '<a class="ilab-thickbox" href="' . $this->cropPageURL($post->ID) . '" title="Crop Image">' . __('Crop Image', 'media-cloud') . '</a>';
+				$newaction['ilab_crop_image'] = '<a class="ilab-thickbox" href="' . $this->cropPageURL($post->ID) . '" title="Crop Image">' . __('Crop Image', 'ilab-media-tools') . '</a>';
 				return array_merge($actions, $newaction);
 			}
 
@@ -123,14 +123,14 @@ class CropTool extends Tool  {
 			if (!current_user_can('edit_post',$image_id))
 				return $content;
 
-			$content.='<p class="hide-if-no-js"><a class="ilab-thickbox" href="'.$this->cropPageURL($image_id).'">'.__('Crop Image', 'media-cloud').'</a></p>';
+			$content.='<p class="hide-if-no-js"><a class="ilab-thickbox" href="'.$this->cropPageURL($image_id).'">'.__('Crop Image', 'ilab-media-tools').'</a></p>';
 			return $content;
 		},10,2);
 
 		add_filter('mediacloud/ui/media-detail-buttons', function($buttons) {
             $buttons[] = [
                 'type' => 'image',
-                'label' => __('Crop Image', 'media-cloud'),
+                'label' => __('Crop Image', 'ilab-media-tools'),
                 'url' => $this->cropPageURL('__ID__'),
             ];
 
@@ -140,7 +140,7 @@ class CropTool extends Tool  {
 		add_filter('mediacloud/ui/media-detail-links', function($links) {
 			$links[] = [
 				'type' => 'image',
-				'label' => __('Crop Image', 'media-cloud'),
+				'label' => __('Crop Image', 'ilab-media-tools'),
 				'url' => $this->cropPageURL('__ID__'),
 			];
 

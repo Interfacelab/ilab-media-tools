@@ -5,7 +5,7 @@ $termMode = \MediaCloud\Plugin\Utilities\Environment::Option('mcloud-replace-ter
     <div class="mcloud-simple-modal-container">
         <div class="mcloud-simple-modal-title">
             <h1>Replace Image</h1>
-            <a title="{{__('Close')}}" class="mcloud-simple-modal-close">
+            <a title="{{__('Close', 'ilab-media-tools')}}" class="mcloud-simple-modal-close">
                 <span class="ilabm-modal-icon"></span>
             </a>
         </div>

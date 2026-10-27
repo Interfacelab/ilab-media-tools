@@ -2,7 +2,7 @@
     <div class="ilabm-container">
         <div class="ilabm-titlebar">
             <h1>@yield('title')</h1>
-            <a title="{{__('Close')}}" href="javascript:ILabModal.cancel();" class="ilabm-modal-close">
+            <a title="{{__('Close', 'ilab-media-tools')}}" href="javascript:ILabModal.cancel();" class="ilabm-modal-close">
                 <span class="ilabm-modal-icon"></span>
             </a>
         </div>

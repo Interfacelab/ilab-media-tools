@@ -440,7 +440,7 @@ abstract class DynamicImagesTool extends Tool {
                     return $actions;
 		        }
 
-		        $newaction['ilab_edit_image'] = '<a class="ilab-thickbox" href="' . $this->editPageURL($post->ID) . '" title="Edit Image">' . __('Edit Image', 'media-cloud') . '</a>';
+		        $newaction['ilab_edit_image'] = '<a class="ilab-thickbox" href="' . $this->editPageURL($post->ID) . '" title="Edit Image">' . __('Edit Image', 'ilab-media-tools') . '</a>';
                 return array_merge($actions, $newaction);
 	        }
 
@@ -453,7 +453,7 @@ abstract class DynamicImagesTool extends Tool {
 		    $buttons[] = [
 			    'type' => 'image',
                 'cloudonly' => true,
-			    'label' => __('Edit Image', 'media-cloud'),
+			    'label' => __('Edit Image', 'ilab-media-tools'),
 			    'url' => $this->editPageURL('__ID__'),
 		    ];
 
@@ -464,7 +464,7 @@ abstract class DynamicImagesTool extends Tool {
 		    $links[] = [
 			    'type' => 'image',
 			    'cloudonly' => true,
-			    'label' => __('Edit Image', 'media-cloud'),
+			    'label' => __('Edit Image', 'ilab-media-tools'),
 			    'url' => $this->editPageURL('__ID__'),
 		    ];
 
@@ -472,7 +472,7 @@ abstract class DynamicImagesTool extends Tool {
 	    }, 2);
 
 	    add_filter('mediacloud/ui/media-detail-remove', function($toRemove) {
-	        $toRemove[] = "'<button type=\"button\" class=\"button edit-attachment\">".__('Edit Image', 'media-cloud')."</button>'";
+	        $toRemove[] = "'<button type=\"button\" class=\"button edit-attachment\">".__('Edit Image', 'ilab-media-tools')."</button>'";
 	        $toRemove[] = '/(<a class="(?:.*)edit-attachment(?:.*)"[^>]+[^<]+<\/a>)/';
 
 		    return $toRemove;
