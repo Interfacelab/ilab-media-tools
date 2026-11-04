@@ -51,11 +51,25 @@ class DynamicImageEditor extends \WP_Image_Editor
     }
 
     public function get_size() {
-    	if ($this->size == null) {
+    	if ($this->size === null) {
     		$this->size = $this->storageEditor->get_size();
 	    }
 
     	return $this->size;
+    }
+
+    /**
+     * Make sure the current dimensions are known before resizing or reporting metadata.
+     *
+     * @return bool
+     */
+    private function ensureSize() {
+        if (empty($this->size['width']) || empty($this->size['height'])) {
+            $this->size = null;
+            $this->get_size();
+        }
+
+        return !empty($this->size['width']) && !empty($this->size['height']);
     }
 
 	private function loadFromFile() {
@@ -112,6 +126,10 @@ class DynamicImageEditor extends \WP_Image_Editor
 	        return $this->loadFromFile();
         }
         else {
+	        // Local file (the normal upload path). loadFromFile() reads $this->sourceFile,
+	        // which was never set on this branch, so load() always failed here and
+	        // $this->size stayed null for every later resize()/getMetadata() call.
+	        $this->sourceFile = $this->file;
 	        return $this->loadFromFile();
         }
     }
@@ -157,6 +175,10 @@ class DynamicImageEditor extends \WP_Image_Editor
     {
         $this->storageEditor->resize($max_w, $max_h, $crop);
 
+        if (!$this->ensureSize()) {
+            return new \WP_Error('image_resize_error', __('Image dimensions are unknown.', 'ilab-media-tools'));
+        }
+
         if ( ( $this->size['width'] == $max_w ) && ( $this->size['height'] == $max_h ) )
         {
             return true;
@@ -191,6 +213,11 @@ class DynamicImageEditor extends \WP_Image_Editor
             return $this->storageEditor->multi_resize($sizes);
         } else {
             $metadata = array();
+
+            if (!$this->ensureSize()) {
+                return $metadata;
+            }
+
             $orig_size = $this->size;
 
             foreach ($sizes as $size => $size_data) {
@@ -211,9 +238,10 @@ class DynamicImageEditor extends \WP_Image_Editor
                     $size_data['crop'] = false;
                 }
 
-                $this->resize($size_data['width'], $size_data['height'], $size_data['crop']);
-                $resized = $this->getMetadata(null);
-                $metadata[$size] = $resized;
+                $resized = $this->resize($size_data['width'], $size_data['height'], $size_data['crop']);
+                if (!is_wp_error($resized)) {
+                    $metadata[$size] = $this->getMetadata(null);
+                }
 
                 $this->size = $orig_size;
             }
@@ -237,12 +265,14 @@ class DynamicImageEditor extends \WP_Image_Editor
         }
 
 
+        $size = $this->ensureSize() ? $this->size : ['width' => 0, 'height' => 0];
+
         /** This filter is documented in wp-includes/class-wp-image-editor-gd.php */
         $result = array(
 	        'path'      => $filename,
             'file'      => wp_basename( $this->file ),
-            'width'     => $this->size['width'],
-            'height'    => $this->size['height'],
+            'width'     => $size['width'],
+            'height'    => $size['height'],
             'mime-type' => $mime
         );
 
